@@ -1,19 +1,20 @@
 <template>
   <div id="app">
-    <Students />
-    <footer class="info">
-      <h4>Seng302 Example</h4>
-    </footer>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-  import Students from './components/Students'
+  import Register from './components/Register'
+  import Login from './components/Login'
+  import Homepage from './components/Homepage'
   // app Vue instance
   const app = {
     name: 'app',
     components: {
-      Students
+      Register,
+      Login,
+      Homepage,
     },
     // app initial state
     data: () => {
@@ -27,4 +28,14 @@
 
 <style>
   [v-cloak] { display: none; }
+
+  input {
+    padding: 12px; /* Some padding */ 
+    border: 1px solid #ccc; /* Gray border */
+    border-radius: 4px; /* Rounded borders */
+    box-sizing: border-box; /* Make sure that padding and width stays in place */
+    margin-top: 6px; /* Add a top margin */
+    margin-bottom: 16px; /* Bottom margin */
+  }
+
 </style>
