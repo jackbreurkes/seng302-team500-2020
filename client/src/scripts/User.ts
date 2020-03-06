@@ -1,12 +1,23 @@
 export class User {
+    firstName: any;
+    lastName: any;
+    middleName: any;
+    nickname: any;
+    primaryEmail: any;
+    password: any;
+    bio: any;
+    dateOfBirth: any;
+    gender: any;
+    passports: any[];
+    secondaryEmails: any[];
 
     constructor(build) {
 
-        if (!build.firstName?.length > 0) {
+        if (!build.firstName.length || build.firstName.length < 1) {
             throw new Error("no first name given")
         }
 
-        if (!build.lastName?.length > 0) {
+        if (!build.firstName.length || build.firstName.length < 1) {
             throw new Error("no last name given")
         }
 
@@ -62,6 +73,15 @@ export class User {
 }
 
 export class UserBuilder {
+    firstName: any;
+    lastName: any;
+    middleName: any;
+    nickname: any;
+    email: any;
+    password: any;
+    bio: any;
+    dateOfBirth: any;
+    gender: any;
 
     setFirstName (firstName) {
         this.firstName = firstName;

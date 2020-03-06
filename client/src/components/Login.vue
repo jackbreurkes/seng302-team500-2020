@@ -18,11 +18,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
   import { tagMandatoryAttributes, login } from '../scripts/login-register-helpers'
+  import Vue from 'vue'
 
   // app Vue instance
-  const Login = {
+  const Login = Vue.extend({
     name: 'Login',
     
     // app initial state
@@ -54,7 +55,7 @@
     }
 
 
-  }
+  })
 
   export default Login
 </script>

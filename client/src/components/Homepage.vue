@@ -36,10 +36,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+  import Vue from 'vue';
 
   // app Vue instance
-  const Homepage = {
+const Homepage =  Vue.extend({
     name: 'Homepage',
     
     // app initial state
@@ -123,7 +124,7 @@
 
       }
     }
-  }
+  })
 
   export default Homepage
 </script>
