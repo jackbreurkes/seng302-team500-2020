@@ -10,9 +10,9 @@
   </div>
 </template>
 
-<script>
-  import Register from './components/Register'
-  import Login from './components/Login'
+<script lang="ts">
+  import Register from './components/Register.vue'
+  import Login from './components/Login.vue'
 
   
   // app Vue instance

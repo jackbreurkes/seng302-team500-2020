@@ -1,9 +1,9 @@
 import Vue from 'vue'
-import App from './App'
-import Login from './components/Login'
-import Register from './components/Register'
-import Homepage from './components/Homepage'
-import InitialPage from './InitialPage'
+import App from './App.vue'
+import Login from './components/Login.vue'
+import Register from './components/Register.vue'
+import Homepage from './components/Homepage.vue'
+import InitialPage from './InitialPage.vue'
 
 Vue.config.productionTip = false
 
@@ -41,7 +41,7 @@ const options = {
   showConsoleColors: true
 };
 
-Vue.use(VueLogger, options);
+// Vue.use(VueLogger, options); TODO reimplement
 Vue.use(VueRouter);
 
 /* eslint-disable no-new */
