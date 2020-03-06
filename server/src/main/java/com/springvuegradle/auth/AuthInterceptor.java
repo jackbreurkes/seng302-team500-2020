@@ -61,7 +61,14 @@ public class AuthInterceptor implements HandlerInterceptor {
 				}
 			}
 
-			return authenticated;
+			if (authenticated) {
+				return true;
+			} else {
+				response.setStatus(401);
+				response.setContentType("application/json");
+				response.getOutputStream().write("{\"error\": \"Auth you are not\"}".getBytes());
+				return false;
+			}
 		} else {
 			return true;
 		}
