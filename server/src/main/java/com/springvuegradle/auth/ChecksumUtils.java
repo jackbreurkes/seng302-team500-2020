@@ -40,6 +40,19 @@ public class ChecksumUtils {
 		return bytesToHex(hash);
 	}
 	
+	/**
+	 * 
+	 * @param userId User ID to generate session token for
+	 * @return hex string of session token
+	 * @throws NoSuchAlgorithmException 
+	 */
+	public static String generateToken(long userId) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-512");
+		String toChecksum = String.valueOf(userId) + "-" + String.valueOf(System.currentTimeMillis());
+		byte[] hash = digest.digest(toChecksum.getBytes(StandardCharsets.UTF_8));
+		return bytesToHex(hash);
+	}
+	
 	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 	
 	//copied from https://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java

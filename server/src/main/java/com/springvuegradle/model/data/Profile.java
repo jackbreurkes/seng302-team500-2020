@@ -11,9 +11,8 @@ import javax.persistence.*;
  *
  */
 @Entity
-/**
 @Table(name = "profile")
-@NamedQuery(name = "updateFirstName", query = "update profile p set p.firstName = ?1 where p.user = ?2")
+/*@NamedQuery(name = "updateFirstName", query = "update profile p set p.firstName = ?1 where p.user = ?2")
 @NamedQuery(name = "updateLastName", query = "update profile p set p.lastName = ?1 where p.user = ?2")
 @NamedQuery(name = "updateMiddleName", query = "update profile p set p.middleName = ?1 where p.user = ?2")
 @NamedQuery(name = "updateNickName", query = "update profile p set p.nickname = ?1 where p.user = ?2")
@@ -21,9 +20,8 @@ import javax.persistence.*;
 @NamedQuery(name = "updateBio", query = "update profile p set p.bio = ?1 where p.user = ?2")
 @NamedQuery(name = "updateDOB", query = "update profile p set p.dob = ?1 where p.user = ?2")
 @NamedQuery(name = "updateGender", query = "update profile p set p.gender = ?1 where p.user = ?2")
-**/
 @NamedQuery(name = "Profile.findById", query = "select p from Profile p where p.user = ?1")
-@NamedQuery(name = "Profile.updateFitness", query = "update Profile p set p.fitness = ?2 where p.user = ?1")
+@NamedQuery(name = "Profile.updateFitness", query = "update Profile p set p.fitness = ?2 where p.user = ?1")*/
 public class Profile implements Serializable {
 
 	/**
@@ -35,12 +33,14 @@ public class Profile implements Serializable {
 	 * User this profile represents
 	 */
 
-	@OneToOne
-    @JoinColumn(name = "user")
-	private User user;
-
 	@Id
-	private long uuid;
+	private long id;
+	
+	@OneToOne
+	@MapsId
+	@JoinColumn(name = "uuid")
+	private User user;
+	
     /**
      * Fitness level of the user (default null or -1)
      */
@@ -77,11 +77,11 @@ public class Profile implements Serializable {
      */
     public Profile(User user, String firstName, String lastName, Date dob, Gender gender) {
     	this.user = user;
+    	this.id = user.getUserId();
     	this.firstName = firstName;
     	this.lastName = lastName;
     	this.dob = dob;
     	this.gender = gender;
-    	this.uuid = user.getUserId();
     }
 
     /**
