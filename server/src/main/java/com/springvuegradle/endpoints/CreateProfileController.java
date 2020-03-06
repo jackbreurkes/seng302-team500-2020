@@ -45,8 +45,11 @@ public class CreateProfileController {
 
         //if information is invalid then correct error code is returned
         try {
-            tempUser.setPassword(userRequest.getPassword());
-
+        	String email = userRequest.getEmail();
+        	if (emailRepository.existsById(email)) {
+        		return new ErrorResponse("Account with specified email address already exists");
+        	}
+        	
             Gender tempGender;
 
             if(userRequest.getGender().equals("male")){
@@ -64,6 +67,9 @@ public class CreateProfileController {
             Email tempEmail = new Email(tempUser, userRequest.getEmail(), true);
 
             userRepository.save(tempUser);
+            tempUser.setPassword(userRequest.getPassword());
+            userRepository.save(tempUser);
+            
             emailRepository.save(tempEmail);
             profileRepository.save(tempProfile);
         } catch (Exception e){
