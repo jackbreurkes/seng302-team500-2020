@@ -43,7 +43,7 @@
 </template>
 
 <script>
-  import { tagMandatoryAttributes } from '../scripts/login-register-helpers'
+  import { tagMandatoryAttributes } from '../scripts/LoginRegisterHelpers'
   import { UserBuilder } from '../scripts/User'
 
   // app Vue instance

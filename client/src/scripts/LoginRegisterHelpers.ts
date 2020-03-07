@@ -1,4 +1,4 @@
-export function tagMandatoryAttributes(refs, attributes) {
+export function tagMandatoryAttributes(refs: { [x: string]: any; }, attributes: any) {
     for (let attribute of attributes) {
       let field = refs[attribute];
       field.setAttribute("class", "mandatory");
@@ -6,7 +6,7 @@ export function tagMandatoryAttributes(refs, attributes) {
     }
   }
 
-export async function login(email, password) {
+export async function login(email: string, password: string) {
   const users = await _getUsers();
   let targetUser = null;
   for (let user of users) {

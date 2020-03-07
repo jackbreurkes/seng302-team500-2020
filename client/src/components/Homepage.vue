@@ -38,6 +38,8 @@
 
 <script lang="ts">
   import Vue from 'vue';
+  // eslint-disable-next-line no-unused-vars
+  import { UserInterface, User, UserBuilder } from '../scripts/User'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -46,9 +48,9 @@ const Homepage =  Vue.extend({
     // app initial state
     data: function() {
       return {
-        currentUser: {},
+        currentUser: {} as UserInterface,
         passportCountries: [],
-        selectedCountry: "",
+        selectedCountry: "" as any,
         selectedFitnessLevel: 0
       }
     },
@@ -96,10 +98,11 @@ const Homepage =  Vue.extend({
         this.currentUser.passports.push(countryName)
         localStorage.currentUser = JSON.stringify(this.currentUser)
 
-        let users = JSON.parse(localStorage.users)
+        let users: Array<User> = JSON.parse(localStorage.users)
         for (let index = 0; index < users.length; index++) {
-          if (users[index].email === this.currentUser.email) {
-            users.splice(index, 1, this.currentUser)
+          if (users[index].primaryEmail === this.currentUser.primaryEmail) {
+            let updatedUser: User = new UserBuilder().fromUserInterface(users[index]).build()
+            users.splice(index, 1, updatedUser);
           }
         }
         localStorage.users = JSON.stringify(users)
@@ -116,7 +119,7 @@ const Homepage =  Vue.extend({
 
         let users = JSON.parse(localStorage.users)
         for (let index = 0; index < users.length; index++) {
-          if (users[index].email === this.currentUser.email) {
+          if (users[index].email === this.currentUser.primaryEmail) {
             users.splice(index, 1, this.currentUser)
           }
         }

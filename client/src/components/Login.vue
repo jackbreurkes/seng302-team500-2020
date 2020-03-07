@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-  import { tagMandatoryAttributes, login } from '../scripts/login-register-helpers'
+  import { tagMandatoryAttributes, login } from '../scripts/LoginRegisterHelpers'
   import Vue from 'vue'
 
   // app Vue instance
