@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SessionRepository extends JpaRepository<Session, String> {
 
+	@Deprecated
     public Session findSessionByUser(User user);
 
 }

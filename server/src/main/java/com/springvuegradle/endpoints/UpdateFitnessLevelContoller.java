@@ -1,17 +1,18 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.CreateUserRequest;
-import com.springvuegradle.model.requests.UpdateFitnessRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
+import java.security.NoSuchAlgorithmException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.NoSuchAlgorithmException;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.UpdateFitnessRequest;
+import com.springvuegradle.model.responses.ErrorResponse;
 
 @RestController
 public class UpdateFitnessLevelContoller {
@@ -25,7 +26,12 @@ public class UpdateFitnessLevelContoller {
     @PostMapping("/updatefitness")
     public Object updateFitness(@RequestBody UpdateFitnessRequest updateRequest) throws NoSuchAlgorithmException {
         try {
-            profileRepository.updateFitness(userRepository.findById(updateRequest.getUuid()).get(), updateRequest.getFitnessLevel());
+        	User user = userRepository.findById(updateRequest.getUuid()).get();
+        	if (profileRepository.existsById(user.getUserId())) {
+        		Profile profile = profileRepository.getOne(user.getUserId());
+        		profile.setFitness(updateRequest.getFitnessLevel());
+        		profileRepository.save(profile);
+        	}
         } catch (Exception e) {
             return new ErrorResponse("Cannot update fitness");
         }
