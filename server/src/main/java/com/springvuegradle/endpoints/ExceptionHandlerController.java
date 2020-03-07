@@ -1,6 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -32,8 +33,8 @@ public class ExceptionHandlerController {
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
-	public ErrorResponse requestHandlingRequestData() {
-		return new ErrorResponse("400 Bad Request");
+	public ResponseEntity<?> requestHandlingRequestData() {
+		return ResponseEntity.badRequest().build();
 	}
 	
 	@ExceptionHandler(AccessDeniedException.class)

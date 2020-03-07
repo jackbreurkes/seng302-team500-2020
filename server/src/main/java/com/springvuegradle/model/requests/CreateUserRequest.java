@@ -1,14 +1,11 @@
 package com.springvuegradle.model.requests;
 
-import com.springvuegradle.model.data.Gender;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class CreateUserRequest {
-    private String email, fname, lname, mname, nickname, password, bio;
+    private String primary_email, fname, lname, mname, nickname, password, bio;
     private Date dateOfBirth;
     private String genderG;
 
@@ -19,11 +16,11 @@ public class CreateUserRequest {
     //TODO Validate this and maybe fix up the input (i.e will probs pass a string for the DOB
 
     // Some attributes can be null, instead of creating a bunch of constructors just let the DB validate it
-    public CreateUserRequest(String lastname, String firstname, String middlename, String nickname, String email, String password, String bio, String date_of_birth, String gender){
+    public CreateUserRequest(String lastname, String firstname, String middlename, String nickname, String primary_email, String password, String bio, String date_of_birth, String gender){
 
         format = new SimpleDateFormat("yyyy-mm-dd");
 
-        this.email = email;
+        this.primary_email = primary_email;
         this.fname = firstname;
         this.lname = lastname;
         this.mname = middlename;
@@ -38,35 +35,35 @@ public class CreateUserRequest {
         this.genderG = gender;
     }
 
-    public String getEmail() {
-        return email;
+    public String getPrimaryEmail() {
+        return primary_email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setPrimaryEmail(String primary_email) {
+        this.primary_email = primary_email;
     }
 
-    public String getFname() {
+    public String getFirstname() {
         return fname;
     }
 
-    public void setFname(String fname) {
+    public void setFirstname(String fname) {
         this.fname = fname;
     }
 
-    public String getLname() {
+    public String getLastname() {
         return lname;
     }
 
-    public void setLname(String lname) {
+    public void setLastname(String lname) {
         this.lname = lname;
     }
 
-    public String getMname() {
+    public String getMiddlename() {
         return mname;
     }
 
-    public void setMname(String mname) {
+    public void setMiddlename(String mname) {
         this.mname = mname;
     }
 
