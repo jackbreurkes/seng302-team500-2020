@@ -102,6 +102,8 @@ const Homepage =  Vue.extend({
         for (let index = 0; index < users.length; index++) {
           if (users[index].primaryEmail === this.currentUser.primaryEmail) {
             let updatedUser: User = new UserBuilder().fromUserInterface(users[index]).build()
+            updatedUser.passports = this.currentUser.passports;
+            updatedUser.fitnessLevel = this.currentUser.fitnessLevel;
             users.splice(index, 1, updatedUser);
           }
         }
@@ -117,10 +119,13 @@ const Homepage =  Vue.extend({
         }
         localStorage.currentUser = JSON.stringify(this.currentUser)
 
-        let users = JSON.parse(localStorage.users)
+        let users: Array<User> = JSON.parse(localStorage.users)
         for (let index = 0; index < users.length; index++) {
-          if (users[index].email === this.currentUser.primaryEmail) {
-            users.splice(index, 1, this.currentUser)
+          if (users[index].primaryEmail === this.currentUser.primaryEmail) {
+            let updatedUser: User = new UserBuilder().fromUserInterface(users[index]).build()
+            updatedUser.passports = this.currentUser.passports;
+            updatedUser.fitnessLevel = this.currentUser.fitnessLevel;
+            users.splice(index, 1, updatedUser);
           }
         }
         localStorage.users = JSON.stringify(users)
