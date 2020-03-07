@@ -12,14 +12,15 @@
       
     </form>
     
-    <button @click="submitForm">Save</button>
+    <button @click="saveButtonClicked">Save</button>
 
     <p>{{ errorMessage }}</p>
   </div>
 </template>
 
 <script lang="ts">
-  import { tagMandatoryAttributes, login } from '../scripts/LoginRegisterHelpers'
+  import { tagMandatoryAttributes } from '../scripts/LoginRegisterHelpers'
+  import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
   // app Vue instance
@@ -42,15 +43,15 @@
     },
 
     methods: {
-      async submitForm() {
-        let userInfo = await login(this.email, this.password);
-
-        if (userInfo === null) {
-          this.errorMessage = "no matching user found";
-        } else {
-          this.errorMessage = "";
-          this.$router.push({ name: "profilePage" })
-        }
+      saveButtonClicked() {
+        submitForm({email: this.email, password: this.password})
+          .then(() => {
+            this.$router.push({ name: "profilePage" })
+          })
+          .catch((err: Error) => {
+            this.errorMessage = err.message;
+          })
+        this.errorMessage = "submitting..."
       }
     }
 

@@ -13,7 +13,7 @@ export interface UserInterface {
     fitnessLevel: number;
 }
 
-export class User implements UserInterface {
+export default class User implements UserInterface {
     firstName: string;
     lastName: string;
     middleName: string | null;
@@ -23,8 +23,28 @@ export class User implements UserInterface {
     bio: string | null;
     dateOfBirth: string;
     gender: string;
-    passports: string[];
-    secondaryEmails: string[];
+
+    _passports: string[];
+    set passports(passports: string[]) {
+        this._passports = passports
+    }
+    get passports() {
+        return this.passports
+    }
+
+    _secondaryEmails: string[];
+    set secondaryEmails(emails: string[]) {
+        emails.forEach(email => {
+            if (!this._validateEmail(email)) {
+                throw new Error(`${email} is not a valid email address`)
+            }
+        })
+        this._secondaryEmails = emails;
+    }
+    get secondaryEmails(): string[] {
+        return this.secondaryEmails
+    }
+
     fitnessLevel: number;
 
     constructor(build: UserBuilder) {
@@ -37,7 +57,7 @@ export class User implements UserInterface {
             throw new Error("no last name given")
         }
 
-        if (!build.email || !this.validateEmail(build.email)) {
+        if (!build.email || !this._validateEmail(build.email)) {
             throw new Error("invalid email address")
         }
 
@@ -71,12 +91,12 @@ export class User implements UserInterface {
         this.bio = build.bio || null;
         this.dateOfBirth = build.dateOfBirth;
         this.gender = build.gender;
-        this.passports = [];
-        this.secondaryEmails = [];
+        this._passports = [];
+        this._secondaryEmails = [];
         this.fitnessLevel = 0
     }
 
-    validateEmail(email: string) {
+    _validateEmail(email: string) {
         // RegEx taken from https://emailregex.com/
         // eslint-disable-next-line no-useless-escape
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -84,12 +104,11 @@ export class User implements UserInterface {
     }
 
     addEmail(email: string) {
-        if (!this.validateEmail(email)) {
+        if (!this._validateEmail(email)) {
             throw new Error("invalid email format");
         }
         this.secondaryEmails.push();
     }
-
 }
 
 export class UserBuilder {
@@ -115,39 +134,39 @@ export class UserBuilder {
         this.gender = user.gender;
         return this;
     }
-    setFirstName (firstName: string) {
+    setFirstName (firstName: string | null) {
         this.firstName = firstName;
         return this;
     }
-    setLastName (lastName: string) {
+    setLastName (lastName: string | null) {
         this.lastName = lastName;
         return this;
     }
-    setMiddleName (middleName: string) {
+    setMiddleName (middleName: string | null) {
         this.middleName = middleName;
         return this;
     }
-    setNickname (nickname: string) {
+    setNickname (nickname: string | null) {
         this.nickname = nickname;
         return this;
     }
-    setEmail (email: string) {
+    setEmail (email: string | null) {
         this.email = email;
         return this;
     }
-    setPassword (password: string) {
+    setPassword (password: string | null) {
         this.password = password;
         return this;
     }
-    setBio (bio: string) {
+    setBio (bio: string | null) {
         this.bio = bio;
         return this;
     }
-    setDateOfBirth (dateOfBirth: string) {
+    setDateOfBirth (dateOfBirth: string | null) {
         this.dateOfBirth = dateOfBirth;
         return this;
     }
-    setGender (gender: string) {
+    setGender (gender: string | null) {
         this.gender = gender;
         return this;
     }

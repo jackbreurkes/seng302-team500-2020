@@ -39,7 +39,7 @@
 <script lang="ts">
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
-  import { UserInterface, User, UserBuilder } from '../scripts/User'
+  import User, { UserInterface, UserBuilder } from '../scripts/User'
 
   // app Vue instance
 const Homepage =  Vue.extend({
