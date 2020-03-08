@@ -26,7 +26,7 @@ public class SpringConfig {
     public void checkPassportCountries(){
         String apiCountriesJSON = restService.getCountriesJSON("https://restcountries.eu/rest/v2/all");
         System.out.println(apiCountriesJSON);
-        
+        //TODO
         ArrayList<Country> apiCountries = new ArrayList<Country>();
         apiCountries.add(new Country(2233, "ASad"));
         for(Country country : apiCountries){
