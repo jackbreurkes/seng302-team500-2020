@@ -86,7 +86,7 @@ public class CreateProfileController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return tempProfile;
+		return tempProfile.getUser().getUserId();
 	}
 
 }

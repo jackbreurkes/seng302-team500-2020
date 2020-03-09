@@ -27,7 +27,7 @@ public class EditPasswordController {
         } else {
             //here we update
             tempUser.setPassword(updatePasswordRequest.getNewPassword());
-            return tempUser;
+            return true;
         }
 
     }
