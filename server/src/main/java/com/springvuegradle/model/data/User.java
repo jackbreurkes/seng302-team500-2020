@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.springvuegradle.auth.ChecksumUtils;
 
 /**
@@ -14,6 +16,11 @@ import com.springvuegradle.auth.ChecksumUtils;
  * @author Alex Hobson
  *
  */
+
+/**
+ * Used so that the password is never returned to the client
+ */
+@JsonIgnoreProperties(value = {"password"})
 
 @Entity
 @Table(name = "user")
@@ -29,6 +36,7 @@ public class User {
 	/**
 	 * hashed password of the user
 	 */
+
 	private String password;
 	
 	/**
@@ -69,4 +77,5 @@ public class User {
 		String hashed = ChecksumUtils.hashPassword(this.uuid, unhashed);
 		this.password = hashed;
 	}
+
 }

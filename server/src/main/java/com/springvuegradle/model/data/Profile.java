@@ -1,5 +1,7 @@
 package com.springvuegradle.model.data;
 
+import net.minidev.json.annotate.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -35,7 +37,7 @@ public class Profile implements Serializable {
 
 	@Id
 	private long id;
-	
+
 	@OneToOne
 	@MapsId
 	@JoinColumn(name = "uuid")
