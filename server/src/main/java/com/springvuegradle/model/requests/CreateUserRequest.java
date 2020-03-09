@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class CreateUserRequest {
     private String primary_email, fname, lname, mname, nickname, password, bio;
-    private Date dateOfBirth;
+    private String dob;
     private String genderG;
 
     private SimpleDateFormat format;
@@ -22,7 +22,7 @@ public class CreateUserRequest {
     // Some attributes can be null, instead of creating a bunch of constructors just let the DB validate it
     public CreateUserRequest(String lastname, String firstname, String middlename, String nickname, String primary_email, String password, String bio, String date_of_birth, String gender){
 
-        format = new SimpleDateFormat("yyyy-mm-dd");
+        format = new SimpleDateFormat("yyyy-MM-dd");
 
         this.primary_email = primary_email;
         this.fname = firstname;
@@ -31,11 +31,7 @@ public class CreateUserRequest {
         this.nickname = nickname;
         this.password = password;
         this.bio = bio;
-        try{
-            this.dateOfBirth = format.parse(date_of_birth);
-        } catch (ParseException e){
-            this.dateOfBirth = null;
-        }
+        this.dob = date_of_birth;
         this.genderG = gender;
     }
 
@@ -95,12 +91,12 @@ public class CreateUserRequest {
         this.bio = bio;
     }
 
-    public Date getDateOfBirth() {
-        return dateOfBirth;
+    public String getDateOfBirth() {
+        return dob;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dob = dateOfBirth;
     }
 
     public String getGender() {

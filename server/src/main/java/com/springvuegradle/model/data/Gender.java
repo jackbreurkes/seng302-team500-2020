@@ -6,7 +6,7 @@ package com.springvuegradle.model.data;
  *
  */
 public enum Gender {
-	MALE("male"), FEMALE("female"), NON_BINARY("nonbinary");
+	MALE("male"), FEMALE("female"), NON_BINARY("non-binary");
 	
 	/**
 	 * Name the gender is when sent by json
@@ -27,5 +27,19 @@ public enum Gender {
 	 */
 	public String getJsonName() {
 		return this.jsonName;
+	}
+	
+	/**
+	 * Matches a given input to a gender or returns null
+	 * @param input Input to match against
+	 * @return Gender enum representing input or null if not matching
+	 */
+	public static Gender matchGender(String input) {
+		for (Gender gender : values()) {
+			if (gender.getJsonName().equalsIgnoreCase(input)) {
+				return gender;
+			}
+		}
+		return null;
 	}
 }

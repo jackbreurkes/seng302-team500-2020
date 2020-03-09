@@ -1,11 +1,15 @@
 package com.springvuegradle.model.data;
 
-import net.minidev.json.annotate.JsonIgnore;
-
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 /**
  * JPA class for user profiles in persistent storage
@@ -50,9 +54,34 @@ public class Profile implements Serializable {
     private int fitness;
     
     /**
-     * Name of the profile
+     * First name of the profile
      */
-    private String firstName, lastName, middleName, nickName, bio;
+    @Column(columnDefinition = "varchar(30) not null")
+    private String firstName;
+    
+    /**
+     * Last name of the profile
+     */
+    @Column(columnDefinition = "varchar(30) not null")
+    private String lastName;
+    
+    /**
+     * Middle name of the profile
+     */
+    @Column(columnDefinition = "varchar(30)")
+    private String middleName;
+    
+    /**
+     * Nickname of the profile
+     */
+    @Column(columnDefinition = "varchar(30)")
+    private String nickName;
+    
+    /**
+     * Bio of the profile
+     */
+    @Column(columnDefinition = "text")
+    private String bio;
     
     /**
      * Date of birth of the profile
