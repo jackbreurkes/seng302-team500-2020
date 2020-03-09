@@ -49,12 +49,45 @@ export default class User implements UserInterface {
 
     constructor(build: UserBuilder) {
 
+        // swapped first name and last name around to follow order of the actual page
+        if (!build.lastName || build.lastName.length < 1) {
+            throw new Error("no last name given")
+        }
+
+        if (build.lastName.length > 30) {
+            throw new Error("last name must be less than 30 characters")
+        }
+
+        if (this.hasNumber(build.lastName)) {
+            throw new Error("last name cannot contain numbers")
+        }
+
         if (!build.firstName || build.firstName.length < 1) {
             throw new Error("no first name given")
         }
 
-        if (!build.lastName || build.lastName.length < 1) {
-            throw new Error("no last name given")
+        if (build.firstName.length > 30) {
+            throw new Error("first name must be less than 30 characters")
+        }
+
+        if (this.hasNumber(build.firstName)) {
+            throw new Error("first name cannot contain numbers")
+        }
+
+        if (build.middleName!.length > 30) {
+            throw new Error("middle name must be less than 30 characters")
+        }
+
+        if (this.hasNumber(build.middleName!)) {
+            throw new Error("middle name cannot contain numbers")
+        }
+
+        if (build.nickname!.length !== 0 && build.nickname!.length < 6) {
+            throw new Error("nick name must be at least 6 characters long")
+        }
+
+        if (this.hasWhiteSpace(build.nickname!)) {
+            throw new Error("nick name cannot contain white space")
         }
 
         if (!build.email || !this._validateEmail(build.email)) {
@@ -63,6 +96,14 @@ export default class User implements UserInterface {
 
         if (!build.password) {
             throw new Error("password cannot be empty")
+        }
+
+        if (build.password.length < 8) {
+            throw new Error("password must be at least 8 characters")
+        }
+
+        if (build.bio!.length !== 0 && build.bio!.length < 8) {
+            throw new Error("Bio must be at least 8 characters")
         }
 
         if (!build.dateOfBirth) {
@@ -109,6 +150,14 @@ export default class User implements UserInterface {
         }
         this.secondaryEmails.push();
     }
+//  Function that checks if string "myString" contains a number
+    hasNumber(myString: string) {
+        return /\d/.test(myString);
+      }
+
+    hasWhiteSpace(myString: string) {
+        return /\s/g.test(myString);
+}
 }
 
 export class UserBuilder {
