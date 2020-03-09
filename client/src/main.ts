@@ -45,7 +45,8 @@ const options = {
   showConsoleColors: true
 };
 
-// Vue.use(VueLogger, options); TODO reimplement
+// @ts-ignore required to allow VueLogger to be recognised
+Vue.use(VueLogger, options);
 Vue.use(VueRouter);
 
 /* eslint-disable no-new */
