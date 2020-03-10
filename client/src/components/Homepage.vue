@@ -3,7 +3,16 @@
     <h1>Homepage</h1>
       <p>Homepage</p>
       <p>First Name: {{ currentUser.firstName }}</p>
+      <p>Middle name: {{currentUser.middleName}}</p>
       <p>Last Name: {{ currentUser.lastName }} </p>
+      <p>Nickname: {{ currentUser.nickname }} </p>
+      <p>Date of Birth: {{ currentUser.dateOfBirth }} </p>
+      <p>Bio: {{ currentUser.bio }} </p>
+      <p>Gender: {{ currentUser.gender }} </p>
+
+
+
+
 
       <label for="countryDropdown">Select a Country:</label>
       <select id="countryDropdown" v-model="selectedCountry">
@@ -34,6 +43,9 @@
       <ul>
         <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
       </ul>
+
+      <br>
+      <button>Edit Profile</button>
 
       <br>
       <button @click="logoutButtonClicked">Logout</button>
