@@ -1,8 +1,12 @@
 package com.springvuegradle.model.data;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -20,12 +24,13 @@ public class Country implements Serializable {
      * ISO country code for searching
      */
     @Id
-    public int code;
+    public int numericCode;
+
 
     /**
      * Country name
      */
-    public String countryName;
+    public String name;
 
     /**
      * Constructor requried by spring
@@ -34,23 +39,23 @@ public class Country implements Serializable {
     protected Country() {}
 
     public Country(int numericCode, String name){
-        this.code = code;
-        this.countryName = countryName;
+        this.numericCode = numericCode;
+        this.name = name;
     }
 
-    public int getIsoCode() {
-        return code;
+    public int getNumericCode() {
+        return numericCode;
     }
 
-    public void setIsoCode(int isoCode) {
-        this.code = isoCode;
+    public void setNumericCode(int code) {
+        this.numericCode = code;
     }
 
-    public String getCountryName() {
-        return countryName;
+    public String getName() {
+        return name;
     }
 
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
+    public void setName(String countryName) {
+        this.name = countryName;
     }
 }
