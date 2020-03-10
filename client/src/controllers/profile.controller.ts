@@ -33,6 +33,27 @@ export async function fetchCurrentUser() {
     }
     return user;
 }
+export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+
+    if(user.password === oldPassword){
+        if(newPassword === repeatPassword){
+            user.password = newPassword
+          alert("password changed")
+        }
+        else {
+          alert("passwords do not match")
+        }
+      }
+      else{
+        alert("incorrect current password")
+      }
+      
+    await saveCurrentUser(user);
+}
 
 export async function setFitnessLevel(fitnessLevel: number, userEmail: string) {
     let user = await getCurrentUser();

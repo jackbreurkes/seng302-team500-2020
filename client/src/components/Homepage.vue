@@ -36,7 +36,12 @@
       </ul>
 
       <br>
+      <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
+      <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
+      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label>
       <button id="updatePassword" @click="updatePassword">Update your password</button>
+
+      <br>
       <button @click="logoutButtonClicked">Logout</button>
   </div>
 </template>
@@ -45,7 +50,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import User, { UserInterface, UserBuilder } from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, updatePassword } from '../controllers/profile.controller'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -59,6 +64,9 @@ const Homepage =  Vue.extend({
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
         newEmail: "",
+        oldPassword: "",
+        newPassword: "",
+        repeatPassword: "",
       }
     },
 
@@ -88,12 +96,21 @@ const Homepage =  Vue.extend({
     },
 
     methods: {
+      updatePassword: function(){
+        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+          .then(() => {
+            this.$router.push({ name: "updatePassword" })
+          })
+          .catch((err) => {
+            console.error(err);
+          })
 
-      //click login button
+      },
+      //click logout button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            this.$router.push({ name: "initialPage" })
+            console.log("updatePassword")
           })
           .catch((err) => {
             console.error(err);
