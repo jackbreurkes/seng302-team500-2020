@@ -25,8 +25,7 @@ public class SpringConfig {
     private RestService restService;
 
 
-    //@Scheduled(cron = "0 0 12 ? * MON *")
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(cron = "0 0 0 * * SAT")
     public void checkPassportCountries(){
         String apiCountriesJSON = restService.getCountriesJSON("https://restcountries.eu/rest/v2/all?fields=name;numericCode");
         //System.out.println(apiCountriesJSON);
@@ -36,10 +35,12 @@ public class SpringConfig {
             //Check if it exists in the repo
             if(countryRepository.existsById(country.numericCode)){
                 //checking if names are the same
-                 if(!countryRepository.getOne(country.numericCode).name.equals(country.name)){
+                Country tempCountry = countryRepository.findById(country.numericCode).get();
+                if(!(tempCountry.name).equals(country.name)){
                      //then the name is wrong and needs to be updated
-                    countryRepository.getOne(country.numericCode).setName(country.name);
+                    countryRepository.findById(country.numericCode).get().setName(country.name);
                  }
+                 //leaves
             } else {
                 //Country does not exist in database and needs to be added
                 countryRepository.save(country);
