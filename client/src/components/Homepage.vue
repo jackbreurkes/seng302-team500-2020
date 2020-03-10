@@ -99,6 +99,7 @@ const Homepage =  Vue.extend({
           })
       },
 
+      //add passport country
       selectCountry: function () {
         addPassportCountry(this.selectedCountry, this.currentUser.primaryEmail)
           .then(() => {
