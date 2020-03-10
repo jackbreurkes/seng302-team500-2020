@@ -88,6 +88,7 @@ const Homepage =  Vue.extend({
 
     methods: {
 
+      //click login button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
