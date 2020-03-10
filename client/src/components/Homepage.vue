@@ -32,7 +32,7 @@
       </ul>
 
       <br>
-      <button @click="logout">Logout</button>
+      <button @click="logoutButtonClicked">Logout</button>
   </div>
 </template>
 
@@ -76,7 +76,7 @@ const Homepage =  Vue.extend({
 
     methods: {
 
-      logout: function() {
+      logoutButtonClicked: function() {
         localStorage.removeItem("currentUser")
         this.$router.push({ name: "initialPage" })
       },
