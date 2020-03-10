@@ -36,6 +36,7 @@
       </ul>
 
       <br>
+      <button id="updatePassword" @click="updatePassword">Update your password</button>
       <button @click="logoutButtonClicked">Logout</button>
   </div>
 </template>
