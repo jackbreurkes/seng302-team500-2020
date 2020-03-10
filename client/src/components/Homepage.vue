@@ -26,7 +26,11 @@
       </select>
       <button id="selectFitness" @click="selectFitnessLevel">Select</button>
       <p>Primary email: {{ currentUser.primaryEmail }}</p>
-      <p>All emails:</p>
+
+      <!-- New Email input field and button -->
+      <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
+      <button id="addEmail" @click="addEmailAddress">Add Email</button>
+
       <ul>
         <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
       </ul>
@@ -51,7 +55,8 @@ const Homepage =  Vue.extend({
         currentUser: {} as UserInterface,
         passportCountries: [],
         selectedCountry: "" as any,
-        selectedFitnessLevel: 0
+        selectedFitnessLevel: 0,
+        newEmail: "",
       }
     },
 
@@ -130,6 +135,12 @@ const Homepage =  Vue.extend({
         }
         localStorage.users = JSON.stringify(users)
 
+      },
+
+      addEmailAddress: function() {
+        if (this.newEmail) {
+          localStorage.currentUser.secondaryEmails.push(this.newEmail);
+        }
       }
     }
   })
