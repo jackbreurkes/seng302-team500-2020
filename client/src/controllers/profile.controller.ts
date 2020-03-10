@@ -46,3 +46,12 @@ export async function setFitnessLevel(fitnessLevel: number, userEmail: string) {
 
     await saveCurrentUser(user);
 }
+
+export async function addEmail(newEmail: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+    user.secondaryEmails.push(newEmail);
+    await saveCurrentUser(user);
+}

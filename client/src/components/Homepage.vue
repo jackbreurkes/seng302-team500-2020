@@ -27,13 +27,19 @@
       <button id="selectFitness" @click="selectFitnessLevel">Select</button>
       <p>Primary email: {{ currentUser.primaryEmail }}</p>
 
-      <!-- New Email input field and button -->
-      <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
-      <button id="addEmail" @click="addEmailAddress">Add Email</button>
 
+      <p>Secondary Emails:</p>
       <ul>
         <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
       </ul>
+
+      <!-- New Email input field and button -->
+      <template v-if="currentUser.secondaryEmails.length < 5">
+        <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
+        <button id="addEmailAddress" @click="addEmailAddress">Add Email</button>
+      </template>
+
+      
 
       <br>
       <button @click="logoutButtonClicked">Logout</button>
@@ -44,7 +50,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import User, { UserInterface, UserBuilder } from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail } from '../controllers/profile.controller'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -122,10 +128,14 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        if (this.newEmail) {
-          localStorage.currentUser.secondaryEmails.push(this.newEmail);
-        }
-      }
+        addEmail(this.newEmail)
+        .then(() => {
+          console.log("Email address added");
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+      },
     }
   })
 
