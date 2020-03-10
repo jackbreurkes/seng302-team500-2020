@@ -4,10 +4,10 @@
   </div>
 </template>
 
-<script>
-  import Register from './components/Register'
-  import Login from './components/Login'
-  import Homepage from './components/Homepage'
+<script lang="ts">
+  import Register from './components/Register.vue'
+  import Login from './components/Login.vue'
+  import Homepage from './components/Homepage.vue'
   // app Vue instance
   const app = {
     name: 'app',

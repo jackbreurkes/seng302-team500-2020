@@ -36,7 +36,7 @@
       </ul>
 
       <br>
-      <button @click="logout">Logout</button>
+      <button @click="logoutButtonClicked">Logout</button>
   </div>
 </template>
 
@@ -44,6 +44,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import User, { UserInterface, UserBuilder } from '../scripts/User'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -52,7 +53,7 @@ const Homepage =  Vue.extend({
     // app initial state
     data: function() {
       return {
-        currentUser: {} as UserInterface,
+        currentUser: {} as User,
         passportCountries: [],
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
@@ -61,8 +62,13 @@ const Homepage =  Vue.extend({
     },
 
     created() {
-      this.currentUser = JSON.parse(localStorage.currentUser);
-      this.selectedFitnessLevel = this.currentUser.fitnessLevel || 0
+      fetchCurrentUser()
+        .then((user) => {
+          this.currentUser = user;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
 
       const Http = new XMLHttpRequest();
       const url='https://restcountries.eu/rest/v2/all';
@@ -81,59 +87,34 @@ const Homepage =  Vue.extend({
 
     methods: {
 
-      logout: function() {
-        localStorage.removeItem("currentUser")
-        this.$router.push({ name: "initialPage" })
+      logoutButtonClicked: function() {
+        logoutCurrentUser()
+          .then(() => {
+            this.$router.push({ name: "initialPage" })
+          })
+          .catch((err) => {
+            console.error(err);
+          })
       },
+
       selectCountry: function () {
-        if (this.currentUser.passports === undefined) {
-          this.currentUser.passports = []
-        }
-
-        const countryName = this.selectedCountry.name || null
-        if (countryName === null) {
-          return
-        }
-
-        if (this.currentUser.passports.includes(countryName)) {
-          alert("you already have this as a passport country")
-          return;
-        }
-
-        this.currentUser.passports.push(countryName)
-        localStorage.currentUser = JSON.stringify(this.currentUser)
-
-        let users: Array<User> = JSON.parse(localStorage.users)
-        for (let index = 0; index < users.length; index++) {
-          if (users[index].primaryEmail === this.currentUser.primaryEmail) {
-            let updatedUser: User = new UserBuilder().fromUserInterface(users[index]).build()
-            updatedUser.passports = this.currentUser.passports;
-            updatedUser.fitnessLevel = this.currentUser.fitnessLevel;
-            users.splice(index, 1, updatedUser);
-          }
-        }
-        localStorage.users = JSON.stringify(users)
-
+        addPassportCountry(this.selectedCountry, this.currentUser.primaryEmail)
+          .then(() => {
+            console.log('passport country added')
+          })
+          .catch((err) => {
+            console.log(err)
+          })
       },
 
       selectFitnessLevel: function () {
-        const selection = this.selectedFitnessLevel;
-        if (this.currentUser.fitnessLevel !== selection) {
-          alert("Set fitness level to " + selection)
-          this.currentUser.fitnessLevel = selection
-        }
-        localStorage.currentUser = JSON.stringify(this.currentUser)
-
-        let users: Array<User> = JSON.parse(localStorage.users)
-        for (let index = 0; index < users.length; index++) {
-          if (users[index].primaryEmail === this.currentUser.primaryEmail) {
-            let updatedUser: User = new UserBuilder().fromUserInterface(users[index]).build()
-            updatedUser.passports = this.currentUser.passports;
-            updatedUser.fitnessLevel = this.currentUser.fitnessLevel;
-            users.splice(index, 1, updatedUser);
-          }
-        }
-        localStorage.users = JSON.stringify(users)
+        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primaryEmail)
+        .then(() => {
+          console.log("Fitness level set");
+        })
+        .catch((err) => {
+          console.log(err);
+        })
 
       },
 
