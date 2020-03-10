@@ -81,8 +81,7 @@ public class LoginController {
 			cookie.setMaxAge(loginSeconds);
 			response.addCookie(cookie);
 			
-			return ResponseEntity.status(HttpStatus.resolve(302))
-					.header("Location", "/viewprofile").body("");
+			return ResponseEntity.status(HttpStatus.resolve(201)).body(null);
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
 		}

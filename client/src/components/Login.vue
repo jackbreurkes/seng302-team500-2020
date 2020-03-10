@@ -9,9 +9,9 @@
       <input ref="email" id="email" type="email" v-model="email">
       <label for="password">password</label>
       <input ref="password" id="password" type="password" v-model="password">
-      
+
     </form>
-    
+
     <button @click="saveButtonClicked">Save</button>
 
     <p>{{ errorMessage }}</p>
@@ -26,7 +26,7 @@
   // app Vue instance
   const Login = Vue.extend({
     name: 'Login',
-    
+
     // app initial state
     data: function() {
       return {
@@ -47,6 +47,10 @@
         submitForm({email: this.email, password: this.password})
           .then(() => {
             this.$router.push({ name: "profilePage" })
+              .catch((err) => {
+                console.error(err);
+                this.errorMessage = "failed to load profile page";
+              })
           })
           .catch((err: Error) => {
             this.errorMessage = err.message;
