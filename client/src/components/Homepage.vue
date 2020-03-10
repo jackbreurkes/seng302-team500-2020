@@ -65,6 +65,7 @@ const Homepage =  Vue.extend({
       fetchCurrentUser()
         .then((user) => {
           this.currentUser = user;
+          this.selectedFitnessLevel = this.currentUser.fitnessLevel;
         })
         .catch((err) => {
           console.error(err);
