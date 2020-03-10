@@ -29,7 +29,7 @@ export default class User implements UserInterface {
         this._passports = passports
     }
     get passports() {
-        return this.passports
+        return this._passports
     }
 
     _secondaryEmails: string[];
@@ -42,7 +42,7 @@ export default class User implements UserInterface {
         this._secondaryEmails = emails;
     }
     get secondaryEmails(): string[] {
-        return this.secondaryEmails
+        return this._secondaryEmails
     }
 
     fitnessLevel: number;
@@ -74,19 +74,19 @@ export default class User implements UserInterface {
             throw new Error("first name cannot contain numbers")
         }
 
-        if (build.middleName!.length > 30) {
+        if (build.middleName && build.middleName.length > 30) {
             throw new Error("middle name must be less than 30 characters")
         }
 
-        if (this.hasNumber(build.middleName!)) {
+        if (build.middleName && this.hasNumber(build.middleName)) {
             throw new Error("middle name cannot contain numbers")
         }
 
-        if (build.nickname!.length !== 0 && build.nickname!.length < 6) {
+        if (build.nickname && build.nickname.length < 6) {
             throw new Error("nick name must be at least 6 characters long")
         }
 
-        if (this.hasWhiteSpace(build.nickname!)) {
+        if (build.nickname && this.hasWhiteSpace(build.nickname)) {
             throw new Error("nick name cannot contain white space")
         }
 
@@ -102,7 +102,7 @@ export default class User implements UserInterface {
             throw new Error("password must be at least 8 characters")
         }
 
-        if (build.bio!.length !== 0 && build.bio!.length < 8) {
+        if (build.bio && build.bio.length < 8) {
             throw new Error("Bio must be at least 8 characters")
         }
 
@@ -148,8 +148,9 @@ export default class User implements UserInterface {
         if (!this._validateEmail(email)) {
             throw new Error("invalid email format");
         }
-        this.secondaryEmails.push();
+        this.secondaryEmails.push(email);
     }
+
 //  Function that checks if string "myString" contains a number
     hasNumber(myString: string) {
         return /\d/.test(myString);
