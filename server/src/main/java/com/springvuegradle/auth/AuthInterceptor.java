@@ -55,25 +55,21 @@ public class AuthInterceptor implements HandlerInterceptor {
 
 		if (needsAuthentication) {
 			boolean authenticated = false;
-			if (request.getCookies() != null)
-				for (Cookie cookie : request.getCookies()) {
-					if (cookie.getName().equalsIgnoreCase("sessionid")) {
-						String sessionId = cookie.getValue();
-						if (sessionRepo.existsById(sessionId)) {
-							Session session = sessionRepo.findById(sessionId).get();
-							if (session.getExpiry().isBefore(Instant.now().atOffset(ZoneOffset.UTC))) {
-								sessionRepo.delete(session);
-							} else {
-								authenticated = true;
-								User user = session.getUser();
-								long profileId = user.getUserId();
-								if (adminRepo.existsById(user.getUserId())) {
-									profileId = -1;
-								}
-								request.setAttribute("authenticateduser", user);
-								request.setAttribute("authenticatedid", profileId);
-							}
+			String token = request.getHeader("X-Auth-Token");
+			if (token != null)
+				if (sessionRepo.existsById(token)) {
+					Session session = sessionRepo.findById(token).get();
+					if (session.getExpiry().isBefore(Instant.now().atOffset(ZoneOffset.UTC))) {
+						sessionRepo.delete(session);
+					} else {
+						authenticated = true;
+						User user = session.getUser();
+						long profileId = user.getUserId();
+						if (adminRepo.existsById(user.getUserId())) {
+							profileId = -1;
 						}
+						request.setAttribute("authenticateduser", user);
+						request.setAttribute("authenticatedid", profileId);
 					}
 				}
 
