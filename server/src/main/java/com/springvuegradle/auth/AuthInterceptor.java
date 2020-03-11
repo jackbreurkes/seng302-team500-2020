@@ -39,10 +39,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 			response.addHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
 		}
 		if (!response.containsHeader("Access-Control-Allow-Headers")) {
-			response.addHeader("Access-Control-Allow-Headers", "content-type,DNT");
-		}
-		if (!response.containsHeader("Access-Control-Allow-Credentials")) {
-			response.addHeader("Access-Control-Allow-Credentials", "true");
+			response.addHeader("Access-Control-Allow-Headers", "content-type,DNT,x-auth-token");
 		}
 
 		boolean needsAuthentication = true;
