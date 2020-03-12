@@ -30,7 +30,9 @@
 
       <p>Secondary Emails:</p>
       <ul>
-        <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
+        <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
+          <button @click="deleteEmailAddress(email)">delete</button>
+        </li>
       </ul>
 
       <!-- New Email input field and button -->
@@ -50,7 +52,8 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, deleteEmail } from '../controllers/profile.controller'
+  import { isValidEmail, } from '../scripts/LoginRegisterHelpers'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -64,6 +67,7 @@ const Homepage =  Vue.extend({
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
         newEmail: "",
+        email: "",
       }
     },
 
@@ -114,6 +118,8 @@ const Homepage =  Vue.extend({
           .catch((err) => {
             console.log(err)
           })
+          // refresh page after adding passport
+        history.go(0);
       },
 
       selectFitnessLevel: function () {
@@ -128,13 +134,31 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        addEmail(this.newEmail)
+        if(isValidEmail(this.newEmail)) {
+          addEmail(this.newEmail)
+          .then(() => {
+            console.log("Email address added");
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          // refresh page after adding emails
+          history.go(0);
+        } else {
+          alert("Not valid email")
+        }
+      },
+
+      deleteEmailAddress: function (email: string) {
+        deleteEmail(email)
         .then(() => {
-          console.log("Email address added");
+          console.log("Email address deleted");
         })
         .catch((err) => {
           console.log(err);
         })
+        // refresh page after deleting emails
+        history.go(0);
       },
     }
   })
