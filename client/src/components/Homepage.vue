@@ -31,15 +31,15 @@
       <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
       <ul>
         <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
-          <button @click="deleteEmailAddress(email)">delete</button>
-          <button @click="setPrimaryEmail(email)">Make Primary</button>
+          <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
+          <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
         </li>
       </ul>
 
       <!-- New Email input field and button -->
       <template v-if="currentUser.additional_email && currentUser.additional_email.length < 5">
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
-        <button id="addEmailAddress" @click="addEmailAddress">Add Email</button>
+        <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
       </template>
 
       
