@@ -2,11 +2,22 @@
   <div>
     <h1>Homepage</h1>
       <p>Homepage</p>
-      <p>First Name:{{ currentUser.firstName }}</p>
-      <p>Middle name: {{currentUser.middleName}}</p>
-      <p>Last Name: {{ currentUser.lastName }} </p>
+
+      <!--label for="currentUser.firstname">First Name:</label>
+      <div class="field">
+        <span class="field_value" v-show="!showField('currentUser.firstname')" @click="focusField('currentUser.firstname')">{{currentUser.firstname}}</span>
+        <input v-model="currentUser.firstname" v-show="showField('currentUser.firstname')" id="currentUser.firstname" type="text" class="field-value form-control" @focus="focusField('currentUser.firstname')" >
+      </div-->
+
+      <!--div class="editable_text">
+        {{message}}
+      </div-->
+
+      <p>First Name:{{ currentUser.firstname }}</p>
+      <p>Middle name: {{currentUser.middlename}}</p>
+      <p>Last Name: {{ currentUser.lastname }} </p>
       <p>Nickname: {{ currentUser.nickname }} </p>
-      <p>Date of Birth: {{ currentUser.dateOfBirth }} </p>
+      <p>Date of Birth: {{ currentUser.date_of_birth }} </p>
       <p>Bio: {{ currentUser.bio }} </p>
       <p>Gender: {{ currentUser.gender }} </p>
 
@@ -49,6 +60,31 @@
 
       <br>
       <button @click="logoutButtonClicked">Logout</button>
+
+      <form submit="false">
+      <label for="lastname">lastname</label>
+      <input ref="lastname" id="lastname" type="text" v-model="lastName" />
+      <label for="firstname">firstname</label>
+      <input ref="firstname" id="firstname" type="text" v-model="firstName" />
+      <label for="middlename">middlename</label>
+      <input ref="middlename" id="middlename" type="text" v-model="middleName" />
+      <label for="nickname">nickname</label>
+      <input ref="nickname" id="nickname" type="text" v-model="nickname" />
+      <label for="bio">bio</label>
+      <input ref="bio" id="bio" type="text" v-model="bio" />
+      <label for="date-of-birth">date of birth</label>
+      <input ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" />
+
+      <label for="gender">Gender:</label>
+      <select ref="gender" id="gender" v-model="gender">
+        <option disabled value>Please select a gender...</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="non-binary">Non-binary</option>
+      </select>
+    </form>
+
+
   </div>
 </template>
 
@@ -77,7 +113,7 @@ const Homepage =  Vue.extend({
       fetchCurrentUser()
         .then((user) => {
           this.currentUser = user;
-          this.selectedFitnessLevel = this.currentUser.fitnessLevel;
+          this.selectedFitnessLevel = this.currentUser.fitness;
         })
         .catch((err) => {
           console.error(err);
@@ -100,8 +136,16 @@ const Homepage =  Vue.extend({
 
     methods: {
 
-      focusField(){
-        
+      focusField(name){
+          this.currentUser.firstname = name;
+      },
+
+      blurField(){
+        this.currentUser.firstname = '';
+      },
+
+      showField(name){
+        return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
       },
 
       //click login button
@@ -117,7 +161,7 @@ const Homepage =  Vue.extend({
 
       //add passport country
       selectCountry: function () {
-        addPassportCountry(this.selectedCountry, this.currentUser.primaryEmail)
+        addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
           .then(() => {
             console.log('passport country added')
           })
@@ -127,7 +171,7 @@ const Homepage =  Vue.extend({
       },
 
       selectFitnessLevel: function () {
-        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primaryEmail)
+        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primary_email)
         .then(() => {
           console.log("Fitness level set");
         })
