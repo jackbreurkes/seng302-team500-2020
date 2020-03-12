@@ -100,6 +100,7 @@ const Homepage =  Vue.extend({
 
     methods: {
 
+      //click login button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
@@ -110,6 +111,7 @@ const Homepage =  Vue.extend({
           })
       },
 
+      //add passport country
       selectCountry: function () {
         addPassportCountry(this.selectedCountry, this.currentUser.primaryEmail)
           .then(() => {
