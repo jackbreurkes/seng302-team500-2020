@@ -1,9 +1,10 @@
-import User, { UserBuilder, UserInterface } from '../scripts/User'
+import { RegisterFormData } from '@/controllers/register.controller';
+import { UserApiFormat } from '@/scripts/User';
 
 
-export async function login(email: string, password: string): Promise<User> {
+export async function login(email: string, password: string): Promise<UserApiFormat> {
   const users = await getAll();
-  let targetUser = users.find(user => user.primaryEmail === email && user.password === password)
+  let targetUser = users.find(user => user.primary_email === email)
 
   if (targetUser === undefined) {
       throw new Error("no user with matching credentials found");
@@ -20,9 +21,9 @@ export async function logout() {
 }
 
 
-export async function create(user: User) {
+export async function create(user: UserApiFormat) {
     let users = await getAll();
-    users.push(user);
+    users.push(user)
     localStorage.users = JSON.stringify(users);
 }
 
@@ -31,21 +32,17 @@ export async function getCurrentUser() {
   if (!localStorage.currentUser) {
     return null;
   }
-  let userJson: any = JSON.parse(localStorage.currentUser);
-  let user: User = new UserBuilder().fromUserInterface(userJson).build();
-  user.passports = userJson._passports;
-  user.fitnessLevel = userJson.fitnessLevel;
-  user.secondaryEmails = userJson._secondaryEmails;
+  let user: UserApiFormat = JSON.parse(localStorage.currentUser);
   return user;
 }
 
 
-export async function saveCurrentUser(user: User) {
+export async function saveCurrentUser(user: UserApiFormat) {
   localStorage.currentUser = JSON.stringify(user)
 
-  let users: Array<User> = JSON.parse(localStorage.users)
+  let users: Array<UserApiFormat> = JSON.parse(localStorage.users)
   for (let index = 0; index < users.length; index++) {
-    if (users[index].primaryEmail === user.primaryEmail) {
+    if (users[index].primary_email === user.primary_email) {
       users.splice(index, 1, user);
     }
   }
@@ -53,25 +50,15 @@ export async function saveCurrentUser(user: User) {
 }
 
 
-export async function getAll(): Promise<Array<User>> {
+export async function getAll(): Promise<Array<UserApiFormat>> {
   return _getUsersFromLocalStorage();
 }
 
 
-function _getUsersFromLocalStorage(): Array<User> {
-  let parsedUsers: any[] = [];
-  let users: User[] = [];
+function _getUsersFromLocalStorage(): Array<UserApiFormat> {
+  let users: UserApiFormat[] = [];
   try {
-    parsedUsers = JSON.parse(localStorage.users);
-    users = parsedUsers.map(userJson => {
-
-      let user: User = new UserBuilder().fromUserInterface(userJson).build();
-      user.passports = userJson._passports;
-      user.fitnessLevel = userJson.fitnessLevel;
-      user.secondaryEmails = userJson._secondaryEmails;
-      return user
-    
-    })
+    users = JSON.parse(localStorage.users);
   } catch (err) {
     console.error(err);
     users = []
