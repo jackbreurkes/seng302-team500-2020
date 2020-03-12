@@ -42,9 +42,27 @@
       
 
       <br>
-      <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
+      <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
       <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
-      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label>
+      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
+      <v-form v-model="changePassword">
+      <v-text-field
+        v-model="oldPassword"
+        label="old Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="newPassword"
+        label="new Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="repeatPassword"
+        label="repeat Password"
+        type="password"
+        required></v-text-field>
+    </v-form>
+      
       <button id="updatePassword" @click="updatePassword">Update your password</button>
 
       <br>
@@ -56,7 +74,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, updatePassword } from '../controllers/profile.controller'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -70,9 +88,9 @@ const Homepage =  Vue.extend({
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
         newEmail: "",
-        oldPassword: "",
-        newPassword: "",
-        repeatPassword: "",
+        oldPassword: '',
+        newPassword: '',
+        repeatPassword: '',
       }
     },
 
@@ -107,7 +125,7 @@ const Homepage =  Vue.extend({
           .then(() => {
             this.$router.push({ name: "updatePassword" })
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error(err);
           })
 
@@ -118,7 +136,7 @@ const Homepage =  Vue.extend({
           .then(() => {
             console.log("updatePassword")
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error(err);
           })
       },
@@ -129,7 +147,7 @@ const Homepage =  Vue.extend({
           .then(() => {
             console.log('passport country added')
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.log(err)
           })
       },
@@ -139,7 +157,7 @@ const Homepage =  Vue.extend({
         .then(() => {
           console.log("Fitness level set");
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.log(err);
         })
 
@@ -150,7 +168,7 @@ const Homepage =  Vue.extend({
         .then(() => {
           console.log("Email address added");
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.log(err);
         })
       },
