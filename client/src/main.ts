@@ -9,6 +9,7 @@ Vue.config.productionTip = false
 
 import VueLogger from 'vuejs-logger';
 import VueRouter, { Route } from 'vue-router';
+import vuetify from './plugins/vuetify';
 
 
 const routes = [
@@ -54,5 +55,6 @@ new Vue({
   router,
   el: '#app',
   template: '<App/>',
+  vuetify,
   components: { App }
 });

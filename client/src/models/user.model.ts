@@ -4,7 +4,7 @@ import { UserApiFormat } from '@/scripts/User';
 
 export async function login(email: string, password: string): Promise<UserApiFormat> {
   const users = await getAll();
-  let targetUser = users.find(user => user.primary_email)
+  let targetUser = users.find(user => user.primary_email === email)
 
   if (targetUser === undefined) {
       throw new Error("no user with matching credentials found");
