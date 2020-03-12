@@ -82,7 +82,7 @@ public class LoginController {
 			response.addCookie(cookie);
 			
 			return ResponseEntity.status(HttpStatus.resolve(302))
-					.header("Location", "/viewprofile").body("");
+					.header("Location", "/profiles").body("");
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
 		}
