@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.SessionRepository;
 import com.springvuegradle.model.requests.LoginRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
+import com.springvuegradle.model.responses.LoginSuccessResponse;
 
 /**
  * REST endpoint for logging in a user
@@ -77,12 +77,7 @@ public class LoginController {
 					Instant.now().plus(loginSeconds, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
 			sessionRepo.save(session);
 			
-			Cookie cookie = new Cookie("sessionid", token);
-			cookie.setMaxAge(loginSeconds);
-			response.addCookie(cookie);
-			
-			return ResponseEntity.status(HttpStatus.resolve(302))
-					.header("Location", "/profiles").body("");
+			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token));
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
 		}

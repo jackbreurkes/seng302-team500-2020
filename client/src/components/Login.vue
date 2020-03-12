@@ -28,7 +28,7 @@
   // app Vue instance
   const Login = Vue.extend({
     name: 'Login',
-    
+
     // app initial state
     data: function() {
       return {
@@ -50,6 +50,10 @@
         submitForm({email: this.email, password: this.password})
           .then(() => {
             this.$router.push({ name: "profilePage" })
+              .catch((err) => {
+                console.error(err);
+                this.errorMessage = "failed to load profile page";
+              })
           })
           .catch((err: Error) => {
             this.errorMessage = err.message;

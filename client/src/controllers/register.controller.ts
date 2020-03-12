@@ -1,5 +1,5 @@
 // import User, { UserBuilder } from '@/scripts/User';
-import { getAll, create, login } from '@/models/user.model';
+import { getAll, create, login, getCurrentUser } from '@/models/user.model';
 import { isValidEmail, hasNumber, hasWhiteSpace } from '@/scripts/LoginRegisterHelpers';
 import { UserApiFormat } from '@/scripts/User';
 
@@ -95,36 +95,8 @@ export async function registerUser(formData: RegisterFormData) {
       throw new Error("passwords do not match")
     }
 
-    let users: UserApiFormat[] = await getAll();
-    if (users.filter(user => user.primary_email === formData.email).length > 0) {
-      throw new Error("user with that email already exists")
-    }
-
-    let userData: UserApiFormat = {
-      lastname: formData.lastName,
-      firstname: formData.firstName,
-      primary_email: formData.email,
-      date_of_birth: formData.dateOfBirth,
-      gender: formData.gender,
-      passports: [],
-      fitness: 0,
-      additional_email: [],
-      password: formData.password
-    }
-    
-    if (formData.middleName) {
-      userData.middlename = formData.middleName;
-    }
-
-    if (formData.nickname) {
-      userData.nickname = formData.nickname;
-    }
-
-    if (formData.bio) {
-      userData.bio = formData.bio;
-    }
-
-    await create(userData);
-    let user = await login(formData.email, formData.password);
+    await create(formData);
+    let isLoggedIn = await login(formData.email, formData.password);
+    let user = await getCurrentUser();
     return user;
   }
