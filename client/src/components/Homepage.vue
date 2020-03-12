@@ -2,7 +2,7 @@
   <div>
     <h1>Homepage</h1>
       <p>Homepage</p>
-      <p>First Name: {{ currentUser.firstName }}</p>
+      <p>First Name:{{ currentUser.firstName }}</p>
       <p>Middle name: {{currentUser.middleName}}</p>
       <p>Last Name: {{ currentUser.lastName }} </p>
       <p>Nickname: {{ currentUser.nickname }} </p>
