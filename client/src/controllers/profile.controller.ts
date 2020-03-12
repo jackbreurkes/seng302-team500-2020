@@ -16,6 +16,9 @@ export async function addPassportCountry(country: any, userEmail: string) {
         throw new Error("current user not found")
     }
     console.log(user)
+    if (!user.passports) {
+        user.passports = []
+    }
     if (user.passports.includes(countryName)) {
         throw new Error("you already have this as a passport country")
     }
@@ -34,7 +37,7 @@ export async function fetchCurrentUser() {
     return user;
 }
 
-export async function setFitnessLevel(fitnessLevel: number, userEmail: string) {
+export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("no active user found");
@@ -51,6 +54,9 @@ export async function addEmail(newEmail: string) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("no active user found");
+    }
+    if (!user.additional_email) {
+        user.additional_email = []
     }
     user.additional_email.push(newEmail);
     await saveCurrentUser(user);

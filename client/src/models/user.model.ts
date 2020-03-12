@@ -4,17 +4,10 @@ import { UserApiFormat } from '@/scripts/User';
 
 export async function login(email: string, password: string): Promise<boolean> {
   let res = await loginWithApi(email, password);
-  const resData = await res.json();
   if (res.status !== 201) {
-    console.error(resData);
-    throw new Error(resData.message);
-// export async function login(email: string, password: string): Promise<UserApiFormat> {
-//   const users = await getAll();
-//   let targetUser = users.find(user => user.primary_email === email)
-
-//   if (targetUser === undefined) {
-//       throw new Error("no user with matching credentials found");
+    throw new Error(res.statusText);
   }
+  const resData = await res.json();
   let token = resData.token;
   localStorage.setItem("token", token);
   return true;
@@ -35,13 +28,41 @@ async function loginWithApi(email: string, password: string): Promise<Response> 
 
 export async function logout() {
   localStorage.removeItem("currentUser")
+  let res = await sendRequest("logmeout",
+  {
+    credentials: "include",
+    method: "DELETE"
+  })
+  if (res.status !== 204) {
+    throw new Error(res.statusText);
+  }
 }
 
 
-export async function create(user: UserApiFormat) {
-    let users = await getAll();
-    users.push(user)
-    localStorage.users = JSON.stringify(users);
+export async function create(formData: RegisterFormData) {
+    let userData = {
+      lastname: formData.lastName,
+      firstname: formData.firstName,
+      primary_email: formData.email,
+      date_of_birth: formData.dateOfBirth,
+      gender: formData.gender,
+      passports: [],
+      fitness: 0,
+      additional_email: [],
+      password: formData.password
+    }
+    let res = await sendRequest("profiles",
+    {
+      credentials: "include",
+      method: "POST",
+      body: JSON.stringify(userData)
+    })
+    console.log(res)
+    let resData = await res.json();
+    if (res.status !== 201) {
+      throw new Error(resData);
+    }
+    return resData.profile_id;
 }
 
 
@@ -64,62 +85,16 @@ async function sendRequest(endpoint: string, options: RequestInit, authenticated
 }
 
 
-interface ViewProfileResponseFormat {
-  user: {
-    userId: number
-  },
-  fitness: number,
-  lastName: string,
-  firstName: string,
-  middleName: string | null,
-  nickName: string | null,
-  bio: string | null,
-  dob: number,
-  gender: string
-}
-
-
 export async function getCurrentUser() {
-  let res = await sendRequest("viewprofile", {
+  let res = await sendRequest("profiles", {
+    credentials: 'include',
     method: "GET"
   });
   if (res.status !== 200) {
     throw new Error("failed to get current user")
   }
-  let json: ViewProfileResponseFormat = await res.json();
-  
-  let user: UserApiFormat {
-    lastname: json.lastName,
-    firstname: json.firstName,
-    primary_email: json.email,
-    date_of_birth: "0000-01-01",
-    gender: json.gender,
-    fitness: 0,
-    passports: [],
-    additional_email: []
-  }
-  if (json.middleName) {
-    user.middlename = json.middleName;
-  }
-  if (json.nickName) {
-    user.nickname = json.nickName;
-  }
-  if (json.bio) {
-    user.bio = json.bio;
-  }
-
-  // let user: UserApiFormat = JSON.parse(localStorage.currentUser);
+  let user: UserApiFormat = await res.json();
   return user;
-
-  // if (!localStorage.currentUser) {
-  //   return null;
-  // }
-  // let userJson: any = JSON.parse(localStorage.currentUser);
-  // let user: User = new UserBuilder().fromUserInterface(userJson).build();
-  // user.passports = userJson._passports;
-  // user.fitnessLevel = userJson.fitnessLevel;
-  // user.secondaryEmails = userJson._secondaryEmails;
-  // return user;
 }
 
 
@@ -144,17 +119,7 @@ export async function getAll(): Promise<Array<UserApiFormat>> {
 function _getUsersFromLocalStorage(): Array<UserApiFormat> {
   let users: UserApiFormat[] = [];
   try {
-    parsedUsers = JSON.parse(localStorage.users);
-    users = parsedUsers.map(userJson => {
-
-      let user: User = new UserBuilder().fromUserInterface(userJson).build();
-      user.passports = userJson._passports;
-      user.fitnessLevel = userJson.fitnessLevel;
-      user.secondaryEmails = userJson._secondaryEmails;
-      return user
-
-    })
-    // users = JSON.parse(localStorage.users);
+    let users = JSON.parse(localStorage.users);
   } catch (err) {
     console.error(err);
     users = []

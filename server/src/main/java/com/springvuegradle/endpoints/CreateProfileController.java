@@ -59,7 +59,7 @@ public class CreateProfileController {
 	/**
 	 * Handle when user tries to POST to /createprofile
 	 */
-	@PostMapping("/createprofile")
+	@PostMapping("/profiles")
 	public Object createprofile(@RequestBody CreateUserRequest userRequest) throws NoSuchAlgorithmException {
 		String firstname = userRequest.getFirstname();
 		String middlename = userRequest.getMiddlename();

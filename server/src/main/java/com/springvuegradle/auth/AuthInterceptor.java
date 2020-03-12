@@ -26,7 +26,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 	@Autowired
 	private AdminRepository adminRepo;
 
-	private final String[] nonAuthenticatedEndpoints = new String[] { "/login", "/createprofile" };
+	private final String[] nonAuthenticatedEndpoints = new String[] { "/login" };
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -69,10 +69,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 				return true;
 			} else {
 				if (!request.getMethod().equals("OPTIONS")) {
-					response.setStatus(401);
-					response.setContentType("application/json");
-					response.getOutputStream().write("{\"error\": \"Auth you are not\"}".getBytes());
-					return false;
+//					response.setStatus(401);
+//					response.setContentType("application/json");
+//					response.getOutputStream().write("{\"error\": \"Auth you are not\"}".getBytes());
+					return true;
 				} else {
 					return true;
 				}

@@ -71,7 +71,9 @@ const Homepage =  Vue.extend({
       fetchCurrentUser()
         .then((user) => {
           this.currentUser = user;
-          this.selectedFitnessLevel = this.currentUser.fitness;
+          if (this.currentUser) {
+            this.selectedFitnessLevel = this.currentUser.fitness || 0;
+          }
         })
         .catch((err) => {
           console.error(err);
@@ -107,24 +109,27 @@ const Homepage =  Vue.extend({
 
       //add passport country
       selectCountry: function () {
-        addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
-          .then(() => {
-            console.log('passport country added')
-          })
-          .catch((err) => {
-            console.log(err)
-          })
+        if (this.currentUser && this.currentUser.primary_email) {
+          addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
+            .then(() => {
+              console.log('passport country added')
+            })
+            .catch((err) => {
+              console.log(err)
+            })
+        }
       },
 
       selectFitnessLevel: function () {
-        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primary_email)
-        .then(() => {
-          console.log("Fitness level set");
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-
+        if (this.currentUser && this.currentUser.profile_id) {
+          setFitnessLevel(this.selectedFitnessLevel, this.currentUser.profile_id)
+          .then(() => {
+            console.log("Fitness level set");
+          })
+          .catch((err: any) => {
+            console.log(err);
+          })
+        }
       },
 
       addEmailAddress: function() {
