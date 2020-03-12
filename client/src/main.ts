@@ -9,6 +9,7 @@ Vue.config.productionTip = false
 
 import VueLogger from 'vuejs-logger';
 import VueRouter, { Route } from 'vue-router';
+import { getCurrentUser } from './models/user.model'
 
 
 const routes = [
@@ -20,12 +21,9 @@ const routes = [
     name: 'profilePage',
     component: Homepage,
     beforeEnter(to: Route, from: Route, next: any) {
-      try {
-        JSON.parse(localStorage.currentUser);
-        next()
-      } catch {
-        next({ name: 'login' });
-      }
+      getCurrentUser()
+      .then(() => {next()})
+      .catch(next({ name: 'login' }))
     }
   },
 ];

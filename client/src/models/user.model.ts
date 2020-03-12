@@ -3,26 +3,25 @@ import User, { UserBuilder, UserInterface } from '../scripts/User'
 
 export async function login(email: string, password: string): Promise<boolean> {
   let res = await loginWithApi(email, password);
+  const resData = await res.json();
   if (res.status !== 201) {
-    const resData = await res.json();
-      console.error(resData);
-      throw new Error(resData.message);
+    console.error(resData);
+    throw new Error(resData.message);
   }
+  let token = resData.token;
+  localStorage.setItem("token", token);
   return true;
 }
 
 
 async function loginWithApi(email: string, password: string): Promise<Response> {
   const data = {email, password}
-  let res = await fetch(process.env.VUE_APP_SERVER_ADD + process.env.VUE_APP_BASE_URL + "login",
+  let res = await sendRequest("login",
     {
       credentials: "include",
       method: "POST",
-      headers: {
-         'Content-Type': 'application/json',
-       },
       body: JSON.stringify(data)
-    })
+    }, false)
   return res;
 }
 
@@ -39,16 +38,63 @@ export async function create(user: User) {
 }
 
 
-export async function getCurrentUser() {
-  let res = await fetch(process.env.VUE_APP_SERVER_ADD + process.env.VUE_APP_BASE_URL + "viewprofile",
-    {
-      credentials: "include",
-      method: "GET",
-      headers: {
-         'Content-Type': 'application/json'
-       }
-    })
+async function sendRequest(endpoint: string, options: RequestInit, authenticated: boolean = true) {
+  if (!options.headers) {
+    options.headers = {};
+  }
+  options.headers = {...options.headers, "Content-Type": "application/json"};
+  if (authenticated) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("no token found")
+    }
+    options.headers = {...options.headers, "X-Auth-Token": token};
+  }
+
+  let res = await fetch(process.env.VUE_APP_SERVER_ADD + process.env.VUE_APP_BASE_URL + endpoint,
+    options)
   return res;
+}
+
+
+interface ViewProfileResponseFormat {
+  user: {
+    userId: number
+  },
+  fitness: number,
+  lastName: string,
+  firstName: string,
+  middleName: string | null,
+  nickName: string | null,
+  bio: string | null,
+  dob: number,
+  gender: string
+}
+
+
+export async function getCurrentUser() {
+  let res = await sendRequest("viewprofile", {
+    method: "GET"
+  });
+  if (res.status !== 200) {
+    throw new Error("failed to get current user")
+  }
+  let json: ViewProfileResponseFormat = await res.json();
+  
+  let user: User = new UserBuilder()
+                .setFirstName(json.firstName)
+                .setLastName(json.lastName)
+                .setMiddleName(json.middleName)
+                .setNickname(json.nickName)
+                .setBio(json.bio)
+                .setDateOfBirth("2000-01-01")
+                .setGender(json.gender)
+                .setEmail("temorary@bugfix.com")
+                .setPassword("mysecretpassword")
+                .build()
+  user.fitnessLevel = json.fitness;
+
+  return user;
 
   // if (!localStorage.currentUser) {
   //   return null;
