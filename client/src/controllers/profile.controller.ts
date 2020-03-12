@@ -60,10 +60,19 @@ export async function setFitnessLevel(fitnessLevel: number, userEmail: string) {
     if (user === null) {
         throw new Error("no active user found");
     }
-    if (user.fitnessLevel !== fitnessLevel) {
+    if (user.fitness !== fitnessLevel) {
         console.log("User fitness level changed");
-        user.fitnessLevel = fitnessLevel;
+        user.fitness = fitnessLevel;
     }
 
+    await saveCurrentUser(user);
+}
+
+export async function addEmail(newEmail: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+    user.additional_email.push(newEmail);
     await saveCurrentUser(user);
 }

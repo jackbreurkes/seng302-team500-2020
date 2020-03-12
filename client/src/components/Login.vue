@@ -4,13 +4,15 @@
       <p>this is link to the register page</p>
     </router-link>
     <h1>This is the login page</h1>
-    <form submit="false">
-      <label for="email">email</label>
-      <input ref="email" id="email" type="email" v-model="email">
-      <label for="password">password</label>
-      <input ref="password" id="password" type="password" v-model="password">
-      
-    </form>
+    <v-form v-model="isValid">
+      <v-text-field
+        v-model="email"
+        label="email"></v-text-field>
+      <v-text-field
+        v-model="password"
+        label="password"
+        type="password"></v-text-field>
+    </v-form>
     
     <button @click="saveButtonClicked">Save</button>
 
@@ -30,6 +32,7 @@
     // app initial state
     data: function() {
       return {
+        isValid: false,
         mandatoryAttributes: ['email', 'password'],
         email: "",
         password: "",
