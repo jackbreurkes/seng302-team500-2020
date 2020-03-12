@@ -34,21 +34,15 @@
         <option value=4>Kale</option>
       </select>
       <button id="selectFitness" @click="selectFitnessLevel">Select</button>
-      <p>Primary email: {{ currentUser.primary_email }}</p>
-
-
-      <p>Secondary Emails:</p>
-      <ul>
-        <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
-      </ul>
+      <p>Primary email: {{ currentUser.primaryEmail }}</p>
 
       <!-- New Email input field and button -->
-      <template v-if="currentUser.additional_email && currentUser.additional_email.length < 5">
-        <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
-        <button id="addEmailAddress" @click="addEmailAddress">Add Email</button>
-      </template>
+      <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
+      <button id="addEmail" @click="addEmailAddress">Add Email</button>
 
-      
+      <ul>
+        <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
+      </ul>
 
       <br>
       <button>Edit Profile</button>
@@ -61,8 +55,8 @@
 <script lang="ts">
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
-  import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail } from '../controllers/profile.controller'
+  import { UserApiFormat} from '../scripts/User'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -83,7 +77,7 @@ const Homepage =  Vue.extend({
       fetchCurrentUser()
         .then((user) => {
           this.currentUser = user;
-          this.selectedFitnessLevel = this.currentUser.fitness;
+          this.selectedFitnessLevel = this.currentUser.fitnessLevel;
         })
         .catch((err) => {
           console.error(err);
@@ -106,6 +100,10 @@ const Homepage =  Vue.extend({
 
     methods: {
 
+      focusField(){
+        
+      },
+
       //click login button
       logoutButtonClicked: function() {
         logoutCurrentUser()
@@ -119,7 +117,7 @@ const Homepage =  Vue.extend({
 
       //add passport country
       selectCountry: function () {
-        addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
+        addPassportCountry(this.selectedCountry, this.currentUser.primaryEmail)
           .then(() => {
             console.log('passport country added')
           })
@@ -129,7 +127,7 @@ const Homepage =  Vue.extend({
       },
 
       selectFitnessLevel: function () {
-        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primary_email)
+        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primaryEmail)
         .then(() => {
           console.log("Fitness level set");
         })
@@ -140,14 +138,10 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        addEmail(this.newEmail)
-        .then(() => {
-          console.log("Email address added");
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-      },
+        if (this.newEmail) {
+          localStorage.currentUser.secondaryEmails.push(this.newEmail);
+        }
+      }
     }
   })
 
