@@ -27,11 +27,12 @@
       <button id="selectFitness" @click="selectFitnessLevel">Select</button>
       <p>Primary email: {{ currentUser.primary_email }}</p>
 
-
-      <p>Secondary Emails:</p>
+      <!-- as per U3 AC3, user knows the limit of additional emails -->
+      <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
       <ul>
         <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
           <button @click="deleteEmailAddress(email)">delete</button>
+          <button @click="setPrimaryEmail(email)">Make Primary</button>
         </li>
       </ul>
 
@@ -76,7 +77,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, updatePassword, deleteEmail } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, deleteEmail, setPrimary, updatePassword } from '../controllers/profile.controller'
   import { isValidEmail, } from '../scripts/LoginRegisterHelpers'
 
   // app Vue instance
@@ -194,6 +195,18 @@ const Homepage =  Vue.extend({
           console.log(err);
         })
         // refresh page after deleting emails
+        history.go(0);
+      },
+
+      setPrimaryEmail: function(email: string) {
+        setPrimary(email)
+        .then(() => {
+          console.log("primary email changed");
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        // refresh page after changing primary email
         history.go(0);
       },
     }

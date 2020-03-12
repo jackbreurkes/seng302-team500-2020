@@ -89,3 +89,18 @@ export async function deleteEmail(email: string) {
     }
     await saveCurrentUser(user);
 }
+
+export async function setPrimary(email: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+    user.additional_email.push(user.primary_email);
+    user.primary_email = email;
+    for (let index = 0; index < user.additional_email.length; index++) {
+        if (email === user.additional_email[index]) {  
+            user.additional_email.splice(index, 1);
+        }
+    }
+    await saveCurrentUser(user);
+}
