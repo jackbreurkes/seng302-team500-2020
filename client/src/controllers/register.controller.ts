@@ -108,7 +108,8 @@ export async function registerUser(formData: RegisterFormData) {
       gender: formData.gender,
       passports: [],
       fitness: 0,
-      additional_email: []
+      additional_email: [],
+      password: formData.password
     }
     
     if (formData.middleName) {

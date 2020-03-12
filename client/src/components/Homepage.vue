@@ -44,6 +44,30 @@
       
 
       <br>
+      <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
+      <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
+      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
+      <v-form v-model="changePassword">
+      <v-text-field
+        v-model="oldPassword"
+        label="old Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="newPassword"
+        label="new Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="repeatPassword"
+        label="repeat Password"
+        type="password"
+        required></v-text-field>
+    </v-form>
+      
+      <button id="updatePassword" @click="updatePassword">Update your password</button>
+
+      <br>
       <button @click="logoutButtonClicked">Logout</button>
   </div>
 </template>
@@ -52,7 +76,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, deleteEmail } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, updatePassword, deleteEmail } from '../controllers/profile.controller'
   import { isValidEmail, } from '../scripts/LoginRegisterHelpers'
 
   // app Vue instance
@@ -68,6 +92,9 @@ const Homepage =  Vue.extend({
         selectedFitnessLevel: 0,
         newEmail: "",
         email: "",
+        oldPassword: '',
+        newPassword: '',
+        repeatPassword: '',
       }
     },
 
@@ -97,14 +124,23 @@ const Homepage =  Vue.extend({
     },
 
     methods: {
+      updatePassword: function(){
+        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+          .then(() => {
+            this.$router.push({ name: "updatePassword" })
+          })
+          .catch((err: any) => {
+            console.error(err);
+          })
 
-      //click login button
+      },
+      //click logout button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            this.$router.push({ name: "initialPage" })
+            console.log("updatePassword")
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error(err);
           })
       },
@@ -115,7 +151,7 @@ const Homepage =  Vue.extend({
           .then(() => {
             console.log('passport country added')
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.log(err)
           })
           // refresh page after adding passport
@@ -127,7 +163,7 @@ const Homepage =  Vue.extend({
         .then(() => {
           console.log("Fitness level set");
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.log(err);
         })
 
@@ -154,7 +190,7 @@ const Homepage =  Vue.extend({
         .then(() => {
           console.log("Email address deleted");
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.log(err);
         })
         // refresh page after deleting emails
