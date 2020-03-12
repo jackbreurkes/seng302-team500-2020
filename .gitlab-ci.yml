@@ -14,7 +14,7 @@ junit:
 dev-build:
   stage: deploy
   script:
-    - fuser -k 9499/tcp 9500/tcp
+    - if [ -f "fuser -k 9499/tcp 9500/tcp" ]; then echo "INFO: Client and/or server was killed"; else echo "INFO: Client and server were not running"; fi
     - cd client
     - npm install
     - npm run build
