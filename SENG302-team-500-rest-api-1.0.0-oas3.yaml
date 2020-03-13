@@ -78,7 +78,7 @@ components:
       title: FullUser
       type: object
       allOf:
-        - $ref: '#components/schemas/User'
+        - $ref: '#/components/schemas/User'
       required:
         - profile_id
         - password
@@ -208,6 +208,13 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /profiles/{profile_id}/password:
+    parameters:
+      - in: path
+        name: profile_id
+        schema:
+          $ref: '#/components/schemas/FullUser/properties/profile_id'
+        required: true
+        description: numeric ID of the target
     put:
       description: >
         Updates the given user's password.
