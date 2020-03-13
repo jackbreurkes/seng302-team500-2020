@@ -1,0 +1,250 @@
+openapi: 3.0.0
+
+info:
+  description: |
+    API specification for Team 500 app.  
+    [Min spec from Learn](https://learn.canterbury.ac.nz/pluginfile.php/1896014/mod_resource/content/3/api-minimal-spec.txt)
+    ## Spec requirements
+    Retrieve: GET  
+    Creation: POST  
+    Update: PUT  
+    Delete: DELETE
+
+    Successful request (GET/PUT/DELETE): 200  
+    Successful creation (POST): 201  
+    No content returned (some DELETE): 204  
+    Syntactical problem in request (ANY): 400  
+    Semantic problem in request (ANY): 403  
+    Unauthenticated (ANY): 401  
+    Forbidden/insufficient access rights (ANY): 403  
+
+  version: "0.2.0"
+  title: SENG302 Team 500 API
+tags:
+  - name: profiles
+    description: Profile information
+components:
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      name: X-Auth-Token
+      description: session token for a user
+      in: header
+  schemas:
+    User:
+      title: User
+      type: object
+      properties:
+        lastname:
+          type: string
+          example: "Aaronson"
+        firstname:
+          type: string
+          example: "Aaron"
+        middlename:
+          type: string
+          example: "Bartholomew"
+        nickname:
+          type: string
+          example: "A-Dog"
+        primary_email:
+          type: string
+          format: email
+          example: "aaron.a@gmail.com"
+        bio:
+          type: string
+          example: "Aaron loves to keep his API spec updated, lest he be unable to determine how his software fits together"
+        date_of_birth:
+          type: string
+          format: YYYY-MM-DD
+          example: "1969-06-17"
+        gender:
+          type: string
+          example: "male"
+        fitness:
+          type: number
+          example: 2
+        passports:
+          type: array
+          items:
+            type: string
+          example: ["New Zealand", "Australia"]
+        additional_email:
+          type: array
+          items:
+            type: string
+          example: ["john.smith@secretservice.govt.nz"]
+    FullUser:
+      title: FullUser
+      type: object
+      allOf:
+        - $ref: '#components/schemas/User'
+      required:
+        - profile_id
+        - password
+        - lastname
+        - firstname
+        - primary_email
+        - date_of_birth
+        - gender
+      properties:
+        profile_id:
+          type: integer
+          example: 1
+        password:
+          type: string
+          minLength: 8
+          example: my secret password
+  responses:
+    InternalServerError:
+      description: An internal server error occurred   
+    MissingRequiredFields:
+      description: Missing required fields  
+
+paths:
+  /login:
+    post:
+      tags:
+        - profiles
+      summary: logs in a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: LoginRequest
+              properties:
+                email:
+                  $ref: '#/components/schemas/User/properties/primary_email'
+                password:
+                  $ref: '#/components/schemas/FullUser/properties/password'
+              required:
+                - email
+                - password
+      responses:
+        '201':
+          description: log in successful
+          headers:
+            X-Auth-Token:
+              schema:
+                $ref: '#/components/securitySchemes/SessionToken'
+          content:
+            application/json:
+              schema:
+                properties:
+                  profile_id:
+                    $ref: '#/components/schemas/FullUser/properties/profile_id'
+        '401':
+          $ref: '#/components/responses/MissingRequiredFields'
+        '403':
+          description: invalid email or password
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /profiles:
+    post:
+      tags:
+        - profiles
+      summary: creates a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/User'
+              required:
+                - password
+              properties:
+                password:
+                  $ref: '#/components/schemas/FullUser/properties/password'
+
+      responses:
+        '201':
+          description: 'User created'
+        '400':
+          description: 'Invalid input'
+        '403':
+          description: 'Collision (e.g. email already exists)'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /profiles/{profile_id}:
+    parameters:
+      - in: path
+        name: profile_id
+        schema:
+          $ref: '#/components/schemas/FullUser/properties/profile_id'
+        required: true
+        description: numeric ID of the target
+    get:
+      tags:
+        - profiles
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: profile of desired user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullUser'
+        '404':
+          description: user not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      description: >
+        Updates the user with the given ID.
+        Only available to users with permission.
+      tags:
+        - profiles
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /profiles/{profile_id}/password:
+    put:
+      description: >
+        Updates the given user's password.
+        Only available to users with permission.
+      tags:
+        - profiles
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - old_password
+                - new_password
+                - repeat_password
+              properties:
+                old_password:
+                  # TODO should admin users be able to omit this field?
+                  $ref: '#/components/schemas/FullUser/properties/password'
+                  description: the user's original password
+                new_password:
+                  $ref: '#/components/schemas/FullUser/properties/password'
+                  description: the new password to set
+                  example: newer better password
+                repeat_password:
+                  $ref: '#/components/schemas/FullUser/properties/password'
+                  description: must have the same value as the new_password field
+                  example: newer better password
+      responses:
+        '200':
+          description: Profile updated
+        '401':
+          description: User not authenticated
+        '400':
+          $ref: '#/components/responses/MissingRequiredFields'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# TODO we have duplicate functionality with the PUT / POST email routes and PUT profile. discuss.
