@@ -67,9 +67,99 @@ export async function editProfile(user: UserApiFormat) {
     }    
 }
 
+export function checkFirstnameValidity(firstname: string) {
+    if (!firstname || firstname.length < 1) {
+        return "no first name given";
+    }
+
+    if (firstname.length > 30) {
+        return "first name must be less than 30 characters";
+    }
+
+    if (hasNumber(firstname)) {
+        return "first name cannot contain numbers";
+    }
+
+    return true;
+}
+
+export function checkLastnameValidity(lastname: string) {
+    if (!lastname || lastname.length < 1) {
+        return "no last name given";
+      }
+  
+    if (lastname.length > 30) {
+        return "last name must be less than 30 characters";
+    }
+  
+    if (hasNumber(lastname)) {
+        return "last name cannot contain numbers";
+    }
+
+    return true;
+
+    }
+
+
+export function checkMiddlenameValidity(middlename: string) {
+        if (middlename && middlename.length > 30) {
+            return "middle name must be less than 30 characters";
+        }
+    
+        if (middlename && hasNumber(middlename)) {
+            return "middle name cannot contain numbers";
+        }
+    
+        return true;
+    }
+
+export function checkNicknameValidity(nickname: string) {
+        if (nickname && nickname.length < 6) {
+            return "nick name must be at least 6 characters long";
+        }
+    
+        if (nickname && hasWhiteSpace(nickname)) {
+            return "nickname cannot contain white space";
+        }
+    
+        return true;
+    }
+
+export function checkBioValidity(bio: string) {
+        if (bio && bio.length < 8) {
+            return "Bio must be at least 8 characters";
+        }
+    
+        return true;
+    }
+
+export function checkDobValidity(date_of_birth: string) {
+        if (!date_of_birth) {
+            return "date of birth cannot be empty";
+        }
+        const date = Date.parse(date_of_birth);
+            if (isNaN(date)) {
+                return 'valid date not given';
+        }
+
+        if (date > Date.now()) {
+            return "date of birth cannot be in the future";
+        }
+    
+        return true;
+    }
+
+export function checkGenderValidity(gender: string) {
+    if (!gender) {
+        return "no gender given";
+    }
+    
+        return true;
+    }
+
 async function checkProfileValidity(formData: UserApiFormat) {
-    if (!formData.lastname || formData.lastname.length < 1) {
-        throw new Error("no last name given")
+    /*if (!formData.lastname || formData.lastname.length < 1) {
+        throw new Error("no last name given");
       }
   
       if (formData.lastname.length > 30) {
@@ -79,6 +169,8 @@ async function checkProfileValidity(formData: UserApiFormat) {
       if (hasNumber(formData.lastname)) {
           throw new Error("last name cannot contain numbers")
       }
+
+      console.log(formData.date_of_birth)
   
       if (!formData.firstname || formData.firstname.length < 1) {
           throw new Error("no first name given")
@@ -127,6 +219,6 @@ async function checkProfileValidity(formData: UserApiFormat) {
   
       if (!formData.gender) {
           throw new Error("no gender given")
-      }
+      }*/
 
   }

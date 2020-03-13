@@ -62,18 +62,18 @@
       <button @click="logoutButtonClicked">Logout</button>
 
       <v-form>
-        <v-text-field id="firstname" label="First name" v-model="currentUser.firstname"></v-text-field>
-        <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename"></v-text-field>
-        <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname"></v-text-field>
-        <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname"></v-text-field>
-        <v-text-field id="bio" label="Bio" v-model="currentUser.bio"></v-text-field>
+        <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+        <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+        <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+        <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+        <v-text-field id="bio" label="Bio" v-model="currentUser.bio" :rules="inputRules.bioRules"></v-text-field>
         <v-menu>
           <template v-slot:activator="{ on }">
-          <v-text-field :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth"></v-text-field>
+          <v-text-field v-model="currentUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
           </template>
           <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
         </v-menu>
-        <v-select label="Gender" v-model="currentUser.gender" :items="genders"></v-select>
+        <v-select label="Gender" v-model="currentUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
       </v-form>
 
     <button @click="saveButtonClicked">Save</button>
@@ -86,7 +86,8 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile,
+    checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from '../controllers/profile.controller'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
 
@@ -103,6 +104,15 @@ const Homepage =  Vue.extend({
         selectedFitnessLevel: 0,
         newEmail: "",
         genders: ["Male", "Female", "Non-binary"],
+        inputRules: {
+          "lastnameRules": [(v: string) => checkLastnameValidity(v)],
+          "firstnameRules": [(v: string) => checkFirstnameValidity(v)],
+          "middlenameRules": [(v: string) => checkMiddlenameValidity(v)],
+          "nicknameRules": [(v: string) => checkNicknameValidity(v)],
+          "bioRules": [(v: string) => checkBioValidity(v)],
+          "dobRules": [(v: string) => checkDobValidity(v)],
+          "genderRules": [(v: string) => checkGenderValidity(v)]
+        }
       }
     },
 
