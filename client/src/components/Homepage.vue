@@ -62,22 +62,22 @@
       <button @click="logoutButtonClicked">Logout</button>
 
       <v-form>
-        <v-text-field label="First name" v-model="firstname"></v-text-field>
-        <v-text-field label="Middle name" v-model="middlename"></v-text-field>
-        <v-text-field label="Last name" v-model="lastname"></v-text-field>
-        <v-text-field label="Nickname" v-model="nickname"></v-text-field>
-        <v-text-field label="Bio" v-model="bio"></v-text-field>
-        <!-- Doesn't work and pop up! :( --------->
+        <v-text-field id="firstname" label="First name" v-model="currentUser.firstname"></v-text-field>
+        <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename"></v-text-field>
+        <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname"></v-text-field>
+        <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname"></v-text-field>
+        <v-text-field id="bio" label="Bio" v-model="currentUser.bio"></v-text-field>
         <v-menu>
-          <v-text-field :value="dateOfBirth" slot="activator" label="Date of Birth"></v-text-field>
-          <v-date-picker v-model="dateOfBirth"></v-date-picker>
+          <template v-slot:activator="{ on }">
+          <v-text-field :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth"></v-text-field>
+          </template>
+          <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
         </v-menu>
-        <v-select label="Gender" v-model="gender" :items="genders"></v-select>
+        <v-select label="Gender" v-model="currentUser.gender" :items="genders"></v-select>
       </v-form>
 
     <button @click="saveButtonClicked">Save</button>
     <button @click="cancelButtonClicked">Cancel</button>
-
 
   </div>
 </template>
@@ -86,7 +86,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile } from '../controllers/profile.controller'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
 
@@ -185,16 +185,7 @@ const Homepage =  Vue.extend({
       },
 
       saveButtonClicked: function() {
-      let formData: RegisterFormData = {
-        firstName: this.currentUser.firstname,
-        lastName: this.currentUser.lastname,
-        middleName: this.currentUser.middlename,
-        nickname: this.currentUser.nickname,
-        bio: this.currentUser.bio,
-        dateOfBirth: this.currentUser.date_of_birth,
-        gender: this.currentUser.gender
-      }
-      alert(formData);
+        editProfile(this.currentUser);
       },
 
       cancelButtonClicked: function() {
