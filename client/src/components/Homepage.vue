@@ -61,28 +61,22 @@
       <br>
       <button @click="logoutButtonClicked">Logout</button>
 
-      <form submit="false">
-      <label for="lastname">lastname</label>
-      <input ref="lastname" id="lastname" type="text" v-model="lastName" />
-      <label for="firstname">firstname</label>
-      <input ref="firstname" id="firstname" type="text" v-model="firstName" />
-      <label for="middlename">middlename</label>
-      <input ref="middlename" id="middlename" type="text" v-model="middleName" />
-      <label for="nickname">nickname</label>
-      <input ref="nickname" id="nickname" type="text" v-model="nickname" />
-      <label for="bio">bio</label>
-      <input ref="bio" id="bio" type="text" v-model="bio" />
-      <label for="date-of-birth">date of birth</label>
-      <input ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" />
+      <v-form>
+        <v-text-field label="First name" v-model="firstname"></v-text-field>
+        <v-text-field label="Middle name" v-model="middlename"></v-text-field>
+        <v-text-field label="Last name" v-model="lastname"></v-text-field>
+        <v-text-field label="Nickname" v-model="nickname"></v-text-field>
+        <v-text-field label="Bio" v-model="bio"></v-text-field>
+        <!-- Doesn't work and pop up! :( --------->
+        <v-menu>
+          <v-text-field :value="dateOfBirth" slot="activator" label="Date of Birth"></v-text-field>
+          <v-date-picker v-model="dateOfBirth"></v-date-picker>
+        </v-menu>
+        <v-select label="Gender" v-model="gender" :items="genders"></v-select>
+      </v-form>
 
-      <label for="gender">Gender:</label>
-      <select ref="gender" id="gender" v-model="gender">
-        <option disabled value>Please select a gender...</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="non-binary">Non-binary</option>
-      </select>
-    </form>
+    <button @click="saveButtonClicked">Save</button>
+    <button @click="cancelButtonClicked">Cancel</button>
 
 
   </div>
@@ -93,6 +87,8 @@
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
   import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel } from '../controllers/profile.controller'
+  // eslint-disable-next-line no-unused-vars
+  import { RegisterFormData } from '../controllers/register.controller';
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -106,6 +102,7 @@ const Homepage =  Vue.extend({
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
         newEmail: "",
+        genders: ["Male", "Female", "Non-binary"],
       }
     },
 
@@ -136,17 +133,17 @@ const Homepage =  Vue.extend({
 
     methods: {
 
-      focusField(name){
-          this.currentUser.firstname = name;
-      },
+      // focusField(name){
+      //     this.currentUser.firstname = name;
+      // },
 
-      blurField(){
-        this.currentUser.firstname = '';
-      },
+      // blurField(){
+      //   this.currentUser.firstname = '';
+      // },
 
-      showField(name){
-        return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
-      },
+      // showField(name){
+      //   return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
+      // },
 
       //click login button
       logoutButtonClicked: function() {
@@ -185,6 +182,23 @@ const Homepage =  Vue.extend({
         if (this.newEmail) {
           localStorage.currentUser.secondaryEmails.push(this.newEmail);
         }
+      },
+
+      saveButtonClicked: function() {
+      let formData: RegisterFormData = {
+        firstName: this.currentUser.firstname,
+        lastName: this.currentUser.lastname,
+        middleName: this.currentUser.middlename,
+        nickname: this.currentUser.nickname,
+        bio: this.currentUser.bio,
+        dateOfBirth: this.currentUser.date_of_birth,
+        gender: this.currentUser.gender
+      }
+      alert(formData);
+      },
+
+      cancelButtonClicked: function() {
+        alert("CANCELLED");
       }
     }
   })
