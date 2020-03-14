@@ -13,71 +13,69 @@
         {{message}}
       </div-->
 
-      <p>First Name:{{ currentUser.firstname }}</p>
-      <p>Middle name: {{currentUser.middlename}}</p>
-      <p>Last Name: {{ currentUser.lastname }} </p>
-      <p>Nickname: {{ currentUser.nickname }} </p>
-      <p>Date of Birth: {{ currentUser.date_of_birth }} </p>
-      <p>Bio: {{ currentUser.bio }} </p>
-      <p>Gender: {{ currentUser.gender }} </p>
+      <div v-if="!editing">
+        <p>First Name:{{ currentUser.firstname }}</p>
+        <p>Middle name: {{currentUser.middlename}}</p>
+        <p>Last Name: {{ currentUser.lastname }} </p>
+        <p>Nickname: {{ currentUser.nickname }} </p>
+        <p>Date of Birth: {{ currentUser.date_of_birth }} </p>
+        <p>Bio: {{ currentUser.bio }} </p>
+        <p>Gender: {{ currentUser.gender }} </p>
+        <br>
+        <button @click="editProfile">Edit Profile</button><br>
 
+        <label for="countryDropdown">Select a Country:</label>
+        <select id="countryDropdown" v-model="selectedCountry">
+          <option value="" selected disabled>choose a country</option>
+          <option value="" v-if="passportCountries.length === 0" disabled>please wait...</option>
+          <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
+        </select>
+        <button id="selectCountry" @click="selectCountry">Select</button>
+        <ul id="passports">
+          <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
+        </ul>
 
+        <label for="fitnessDropdown">Select a Fitness Level:</label>
+        <select id="fitnessDropdown" v-model="selectedFitnessLevel">
+          <option value=0>Muffin</option>
+          <option value=1>Potato</option>
+          <option value=2>Carrot</option>
+          <option value=3>Blueberry</option>
+          <option value=4>Kale</option>
+        </select>
+        <button id="selectFitness" @click="selectFitnessLevel">Select</button>
 
+        <p>Primary email: {{ currentUser.primaryEmail }}</p>
+        <!-- New Email input field and button -->
+        <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
+        <button id="addEmail" @click="addEmailAddress">Add Email</button>
+        <ul>
+          <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
+        </ul>
+      
+        <br>
+        <button @click="logoutButtonClicked">Logout</button>
+      </div>
 
+      <div v-if="editing">
+        <v-form>
+          <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+          <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+          <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+          <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field id="bio" label="Bio" v-model="currentUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <v-menu>
+            <template v-slot:activator="{ on }">
+            <v-text-field v-model="currentUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            </template>
+            <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
+          </v-menu>
+          <v-select label="Gender" v-model="currentUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+        </v-form>
 
-      <label for="countryDropdown">Select a Country:</label>
-      <select id="countryDropdown" v-model="selectedCountry">
-        <option value="" selected disabled>choose a country</option>
-        <option value="" v-if="passportCountries.length === 0" disabled>please wait...</option>
-        <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
-      </select>
-      <button id="selectCountry" @click="selectCountry">Select</button>
-      <ul id="passports">
-        <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
-      </ul>
-
-      <label for="fitnessDropdown">Select a Fitness Level:</label>
-      <select id="fitnessDropdown" v-model="selectedFitnessLevel">
-        <option value=0>Muffin</option>
-        <option value=1>Potato</option>
-        <option value=2>Carrot</option>
-        <option value=3>Blueberry</option>
-        <option value=4>Kale</option>
-      </select>
-      <button id="selectFitness" @click="selectFitnessLevel">Select</button>
-      <p>Primary email: {{ currentUser.primaryEmail }}</p>
-
-      <!-- New Email input field and button -->
-      <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
-      <button id="addEmail" @click="addEmailAddress">Add Email</button>
-
-      <ul>
-        <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
-      </ul>
-
-      <br>
-      <button>Edit Profile</button>
-
-      <br>
-      <button @click="logoutButtonClicked">Logout</button>
-
-      <v-form>
-        <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
-        <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
-        <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
-        <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
-        <v-text-field id="bio" label="Bio" v-model="currentUser.bio" :rules="inputRules.bioRules"></v-text-field>
-        <v-menu>
-          <template v-slot:activator="{ on }">
-          <v-text-field v-model="currentUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
-          </template>
-          <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
-        </v-menu>
-        <v-select label="Gender" v-model="currentUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
-      </v-form>
-
-    <button @click="saveButtonClicked">Save</button>
-    <button @click="cancelButtonClicked">Cancel</button>
+        <button @click="saveButtonClicked">Save</button>
+        <button @click="cancelButtonClicked">Cancel</button>
+      </div>
 
   </div>
 </template>
@@ -104,6 +102,7 @@ const Homepage =  Vue.extend({
         selectedFitnessLevel: 0,
         newEmail: "",
         genders: ["Male", "Female", "Non-binary"],
+        editing: false,
         inputRules: {
           "lastnameRules": [(v: string) => checkLastnameValidity(v)],
           "firstnameRules": [(v: string) => checkFirstnameValidity(v)],
@@ -194,12 +193,18 @@ const Homepage =  Vue.extend({
         }
       },
 
+      editProfile: function() {
+        this.editing = true;
+      },
+
       saveButtonClicked: function() {
         editProfile(this.currentUser);
+        this.editing = false;
       },
 
       cancelButtonClicked: function() {
         alert("CANCELLED");
+        this.editing = false;
       }
     }
   })
