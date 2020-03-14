@@ -27,6 +27,10 @@ public class NewEmailController {
 	@PostMapping("/profiles/{profileId}/emails")
 	public Object newEmailRequest(@RequestBody NewEmailRequest credentials, @PathVariable("profileId") long profileId,
 			HttpServletRequest request) {
+		if (request.getAttribute("authenticatedid") == null) {
+			return ResponseEntity.badRequest()
+					.body(new ErrorResponse("you must be authenticated"));
+		}
 
 		long id = (long) request.getAttribute("authenticatedid");
 		

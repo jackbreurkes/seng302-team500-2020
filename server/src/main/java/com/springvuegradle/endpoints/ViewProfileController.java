@@ -3,6 +3,7 @@ package com.springvuegradle.endpoints;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.springvuegradle.model.responses.ProfileResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,16 +53,15 @@ public class ViewProfileController {
 	 */
 	@GetMapping("/profiles")
 	public ResponseEntity<?> viewProfile(HttpServletRequest request) {
-		if (request.getAttribute("authenticatedid") != null) {
-			long id = (long) request.getAttribute("authenticatedid");
-			if (id == -1) {
-				return ResponseEntity.ok().body(new AdminLoggedInResponse());
-			} else {
-				return view(id);
-			}
-		} else {
+		if (request.getAttribute("authenticatedid") == null) {
 			return ResponseEntity.badRequest()
-					.body(new ErrorResponse("Somehow you bypassed authentication. This shouldn't be possible"));
+					.body(new ErrorResponse("you must be authenticated"));
+		}
+		long id = (long) request.getAttribute("authenticatedid");
+		if (id == -1) {
+			return ResponseEntity.ok().body(new AdminLoggedInResponse());
+		} else {
+			return view(id);
 		}
 	}
 
@@ -73,7 +73,7 @@ public class ViewProfileController {
 	private ResponseEntity<?> view(long id) {
 		if (profileRepo.existsById(id)) {
 			Profile profile = profileRepo.findById(id).get();
-			return ResponseEntity.ok().body(profile);
+			return ResponseEntity.ok().body(new ProfileResponse(profile));
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(500))
 					.body(new ErrorResponse("Profile with id " + id + " does not exist"));

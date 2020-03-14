@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 
 import com.springvuegradle.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,8 @@ import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.requests.UpdatePrimaryEmailRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 public class UpdatePrimaryEmailController {
 	
@@ -25,7 +28,11 @@ public class UpdatePrimaryEmailController {
 	private UserRepository userRepository;
 
 	@PostMapping("/editprimaryemail")
-	public Object UpdatePrimaryEmail(@RequestBody UpdatePrimaryEmailRequest credentials, String newAddress) {
+	public Object UpdatePrimaryEmail(@RequestBody UpdatePrimaryEmailRequest credentials, String newAddress, HttpServletRequest request) {
+		if (request.getAttribute("authenticatedid") == null) {
+			return ResponseEntity.badRequest()
+					.body(new ErrorResponse("you must be authenticated"));
+		}
 		int numEmails = emailRepo.getNumberOfEmails(credentials.getUser());
 		String oldAddress = emailRepo.getPrimaryEmail(userRepository.getOne(credentials.getUser()));
 		if(oldAddress.equals(credentials.getNewPrimaryEmail())){

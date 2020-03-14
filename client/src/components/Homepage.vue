@@ -13,6 +13,14 @@
         {{message}}
       </div-->
 
+      <!-- as per U3 AC3, user knows the limit of additional emails -->
+      <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
+      <ul>
+        <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
+          <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
+          <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
+        </li>
+      </ul>
       <div v-if="!editing">
         <p>First Name:{{ currentUser.firstname }}</p>
         <p>Middle name: {{currentUser.middlename}}</p>
@@ -48,15 +56,40 @@
         <p>Primary email: {{ currentUser.primaryEmail }}</p>
         <!-- New Email input field and button -->
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
-        <button id="addEmail" @click="addEmailAddress">Add Email</button>
-        <ul>
-          <li v-for="email in currentUser.secondaryEmails" :key="email">{{ email }}</li>
-        </ul>
+        <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
+      </template>
+
       
         <br>
         <button @click="logoutButtonClicked">Logout</button>
       </div>
 
+      <br>
+      <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
+      <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
+      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
+      <v-form v-model="changePassword">
+      <v-text-field
+        v-model="oldPassword"
+        label="old Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="newPassword"
+        label="new Password"
+        type="password"
+        required></v-text-field>
+      <v-text-field
+        v-model="repeatPassword"
+        label="repeat Password"
+        type="password"
+        required></v-text-field>
+    </v-form>
+      
+      <button id="updatePassword" @click="updatePassword">Update your password</button>
+
+      <br>
+      <button @click="logoutButtonClicked">Logout</button>
       <div v-if="editing">
         <v-form>
           <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
@@ -101,6 +134,10 @@ const Homepage =  Vue.extend({
         selectedCountry: "" as any,
         selectedFitnessLevel: 0,
         newEmail: "",
+        email: "",
+        oldPassword: '',
+        newPassword: '',
+        repeatPassword: '',
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
         inputRules: {
@@ -119,7 +156,9 @@ const Homepage =  Vue.extend({
       fetchCurrentUser()
         .then((user) => {
           this.currentUser = user;
-          this.selectedFitnessLevel = this.currentUser.fitness;
+          if (this.currentUser) {
+            this.selectedFitnessLevel = this.currentUser.fitness || 0;
+          }
         })
         .catch((err) => {
           console.error(err);
@@ -141,6 +180,14 @@ const Homepage =  Vue.extend({
     },
 
     methods: {
+      updatePassword: function(){
+        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+          .then(() => {
+            this.$router.push({ name: "updatePassword" })
+          })
+          .catch((err: any) => {
+            console.error(err);
+          })
 
       // focusField(name){
       //     this.currentUser.firstname = name;
@@ -158,39 +205,79 @@ const Homepage =  Vue.extend({
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            this.$router.push({ name: "initialPage" })
+            console.log("updatePassword")
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error(err);
           })
       },
 
       //add passport country
       selectCountry: function () {
-        addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
-          .then(() => {
-            console.log('passport country added')
-          })
-          .catch((err) => {
-            console.log(err)
-          })
+
+        if (this.currentUser && this.currentUser.primary_email) {
+          addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
+            .then(() => {
+              console.log('passport country added')
+            })
+            .catch((err: any) => {
+              console.log(err)
+            })
+            // refresh page after adding passport
+        history.go(0);
+        }
       },
 
       selectFitnessLevel: function () {
-        setFitnessLevel(this.selectedFitnessLevel, this.currentUser.primary_email)
+        if (this.currentUser && this.currentUser.profile_id) {
+          setFitnessLevel(this.selectedFitnessLevel, this.currentUser.profile_id)
+          .then(() => {
+            console.log("Fitness level set");
+          })
+          .catch((err: any) => {
+            console.log(err);
+          })
+        }
+      },
+
+      addEmailAddress: function() {
+        if(isValidEmail(this.newEmail)) {
+          addEmail(this.newEmail)
+          .then(() => {
+            console.log("Email address added");
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          // refresh page after adding emails
+          history.go(0);
+        } else {
+          alert("Not valid email")
+        }
+      },
+
+      deleteEmailAddress: function (email: string) {
+        deleteEmail(email)
         .then(() => {
-          console.log("Fitness level set");
+          console.log("Email address deleted");
+        })
+        .catch((err: any) => {
+          console.log(err);
+        })
+        // refresh page after deleting emails
+        history.go(0);
+      },
+
+      setPrimaryEmail: function(email: string) {
+        setPrimary(email)
+        .then(() => {
+          console.log("primary email changed");
         })
         .catch((err) => {
           console.log(err);
         })
-
-      },
-
-      addEmailAddress: function() {
-        if (this.newEmail) {
-          localStorage.currentUser.secondaryEmails.push(this.newEmail);
-        }
+        // refresh page after changing primary email
+        history.go(0);
       },
 
       editProfile: function() {

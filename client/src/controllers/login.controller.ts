@@ -1,4 +1,4 @@
-import { login } from '../models/user.model'
+import { login, getCurrentUser } from '../models/user.model'
 
 export interface LoginFormData {
     email: string;
@@ -6,11 +6,8 @@ export interface LoginFormData {
 }
 
 export async function submitForm(formData: LoginFormData) {
-    let userInfo = await login(formData.email, formData.password);
-
-    if (userInfo === null) {
-        throw new Error("no matching user found");
-    } else {
-        return
-    }
+    let loggedIn = await login(formData.email, formData.password);
+    // console.log(loggedIn);
+    let user = await getCurrentUser();
+    return
 }

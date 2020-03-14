@@ -18,6 +18,9 @@ export async function addPassportCountry(country: any, userEmail: string) {
         throw new Error("current user not found")
     }
     console.log(user)
+    if (!user.passports) {
+        user.passports = []
+    }
     if (user.passports.includes(countryName)) {
         throw new Error("you already have this as a passport country")
     }
@@ -35,8 +38,29 @@ export async function fetchCurrentUser() {
     }
     return user;
 }
+export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
 
-export async function setFitnessLevel(fitnessLevel: number, userEmail: string) {
+    if(user.password === oldPassword){
+        if(newPassword === repeatPassword){
+            user.password = newPassword
+          alert("password changed")
+        }
+        else {
+          alert("passwords do not match")
+        }
+      }
+      else{
+        alert("incorrect current password")
+      }
+      
+    await saveCurrentUser(user);
+}
+
+export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("no active user found");
@@ -54,7 +78,38 @@ export async function addEmail(newEmail: string) {
     if (user === null) {
         throw new Error("no active user found");
     }
+    if (!user.additional_email) {
+        user.additional_email = []
+    }
     user.additional_email.push(newEmail);
+    await saveCurrentUser(user);
+}
+
+export async function deleteEmail(email: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+    for (let index = 0; index < user.additional_email.length; index++) {
+        if (email === user.additional_email[index]) {  
+            user.additional_email.splice(index, 1);
+        }
+    }
+    await saveCurrentUser(user);
+}
+
+export async function setPrimary(email: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+    user.additional_email.push(user.primary_email);
+    user.primary_email = email;
+    for (let index = 0; index < user.additional_email.length; index++) {
+        if (email === user.additional_email[index]) {  
+            user.additional_email.splice(index, 1);
+        }
+    }
     await saveCurrentUser(user);
 }
 
