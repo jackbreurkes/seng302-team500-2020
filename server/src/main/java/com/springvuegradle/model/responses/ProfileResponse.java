@@ -1,6 +1,8 @@
 package com.springvuegradle.model.responses;
 
 import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.repository.EmailRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 
@@ -19,16 +21,15 @@ public class ProfileResponse {
     private final String[] passports;
     private final String[] additional_email;
 
-    public ProfileResponse(Profile profile) {
+    public ProfileResponse(Profile profile, EmailRepository emailRepository) {
         profile_id = profile.getUser().getUserId();
         lastname = profile.getLastName();
         firstname = profile.getFirstName();
         middlename = profile.getMiddleName();
-        nickname = profile.getMiddleName();
-        primary_email = profile.getMiddleName();
+        nickname = profile.getNickName();
+        primary_email = emailRepository.getPrimaryEmail(profile.getUser());
         bio = profile.getBio();
         gender = profile.getGender().getJsonName();
-
         fitness = profile.getFitness() != -1 ? profile.getFitness() : 0;
         passports = new String[0];
         additional_email = new String[0];

@@ -77,7 +77,7 @@ public class LoginController {
 					Instant.now().plus(loginSeconds, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
 			sessionRepo.save(session);
 			
-			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token));
+			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token, user.getUserId()));
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
 		}
