@@ -10,5 +10,6 @@ export interface UserApiFormat {
     gender?: string,
     fitness?: number,
     passports?: string[],
-    additional_email?: string[]
+    additional_email?: string[],
+    password?: string
 }

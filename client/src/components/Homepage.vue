@@ -57,8 +57,6 @@
         <!-- New Email input field and button -->
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
-      </template>
-
       
         <br>
         <button @click="logoutButtonClicked">Logout</button>
@@ -192,19 +190,6 @@ const Homepage =  Vue.extend({
           })
 
       },
-
-
-      // focusField(name){
-      //     this.currentUser.firstname = name;
-      // },
-
-      // blurField(){
-      //   this.currentUser.firstname = '';
-      // },
-
-      // showField(name){
-      //   return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
-      // },
 
       //click login button
       logoutButtonClicked: function() {
