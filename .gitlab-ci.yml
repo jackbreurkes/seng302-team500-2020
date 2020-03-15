@@ -26,7 +26,7 @@ dev-build:
     - cp -r ./server/build/libs ../server-dev
     - fuser -k 9499/tcp 9500/tcp || if [ $? -eq 1 ]; then echo "Server was not running"; fi
     - screen -d -m npm run serve -s ../client-dev/dist -l 9500
-    - screen -d -m sh /home/sengstudent/deployservertest.sh
+    - screen -d -m /home/sengstudent/deployservertest.sh
   except:
     - tags
 
