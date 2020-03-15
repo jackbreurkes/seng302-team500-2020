@@ -32,23 +32,6 @@ public class ProfileObjectMapper {
     private SimpleDateFormat format;
 
     public ProfileObjectMapper() {}
-//
-//    //TODO Validate this and maybe fix up the input (i.e will probs pass a string for the DOB
-//
-//    // Some attributes can be null, instead of creating a bunch of constructors just let the DB validate it
-//    public ProfileObjectMapper(String lastname, String firstname, String middlename, String nickname, String primary_email, String bio, String date_of_birth, String gender){
-//
-//        format = new SimpleDateFormat("yyyy-MM-dd");
-//
-//        this.primary_email = primary_email;
-//        this.fname = firstname;
-//        this.lname = lastname;
-//        this.mname = middlename;
-//        this.nickname = nickname;
-//        this.bio = bio;
-//        this.dob = date_of_birth;
-//        this.gender = gender;
-//    }
 
     public String getPrimaryEmail() {
         return primary_email;
@@ -167,24 +150,24 @@ public class ProfileObjectMapper {
     public void updateExistingProfile(Profile profile, ProfileRepository profileRepository) throws InvalidRequestFieldException {
         checkParseErrors();
         if (this.fname != null) {
-            profile.setFirst_name(this.fname);
+            profile.setFirstName(this.fname);
         }
         if (this.lname != null) {
-            profile.setLast_name(this.lname);
+            profile.setLastName(this.lname);
         }
         if (this.mname != null) {
-            profile.setMiddle_name(this.mname);
+            profile.setMiddleName(this.mname);
         }
         if (this.nickname != null) {
-            profile.setNickname(this.nickname);
+            profile.setNickName(this.nickname);
         }
         if (this.bio != null) {
-            profile.setNickname(this.bio);
+            profile.setBio(this.bio);
         }
         if (this.dob != null) {
             Date validDob = FormValidator.getValidDateOfBirth(this.dob);
             if (validDob != null) {
-                profile.setDate_of_birth(validDob);
+                profile.setDob(validDob);
             }
         }
         if (this.gender != null) {
@@ -214,8 +197,8 @@ public class ProfileObjectMapper {
         Profile profile = new Profile(user, getFirstname(), getLastname(), dob, gender);
 
         profile.setBio(bio);
-        profile.setMiddle_name(getMiddlename());
-        profile.setNickname(getNickname());
+        profile.setMiddleName(getMiddlename());
+        profile.setNickName(getNickname());
 
         // workaround since userid is not known until saved to the DB
         userRepository.save(user);

@@ -9,10 +9,10 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateUserRequest;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
+import com.springvuegradle.model.responses.AdminLoggedInResponse;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
-import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +20,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,11 +56,6 @@ public class UserProfileController {
     @Autowired
     private ProfileRepository profileRepository;
 
-    /**
-     * Date format to parse
-     */
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -67,13 +63,19 @@ public class UserProfileController {
     @PutMapping("/{id}")
     public Object updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("id") Long id) throws RecordNotFoundException, ParseException {
+            @PathVariable("id") Long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException {
+        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
+        if (authId == null || (!authId.equals((long)-1) && !authId.equals(id))) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("cannot edit user unless you are them or an admin"));
+        }
+
         Optional<Profile> optionalProfile = profileRepository.findById(id);
         if (optionalProfile.isPresent()) {
             try {
                 Profile profile = optionalProfile.get();
                 request.updateExistingProfile(profile, profileRepository);
-                return ResponseEntity.status(HttpStatus.OK).body(new ProfileResponse(profile));
+                return ResponseEntity.status(HttpStatus.OK).body(new ProfileResponse(profile, emailRepository));
             } catch (InvalidRequestFieldException ex) {
                 return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
             }
@@ -98,5 +100,56 @@ public class UserProfileController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ProfileCreatedResponse(user.getUserId()));
+    }
+
+
+
+    /**
+     * Handles viewing another profile
+     *
+     * @param profileId
+     *            profile id to view
+     * @return response entity to be sent to the client
+     */
+    @GetMapping("/{profileId}")
+    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId) {
+
+        return view(profileId);
+    }
+//
+//    /**
+//     * Handles viewing your own profile, including when you don't know what your
+//     * profile ID is
+//     *
+//     * @param request HttpServletRequest including attribute of authentication information
+//     * @return response entity to be sent to the client
+//     */
+//    @GetMapping("/profiles")
+//    public ResponseEntity<?> viewProfile(HttpServletRequest request) {
+//        if (request.getAttribute("authenticatedid") == null) {
+//            return ResponseEntity.badRequest()
+//                    .body(new ErrorResponse("you must be authenticated"));
+//        }
+//        long id = (long) request.getAttribute("authenticatedid");
+//        if (id == -1) {
+//            return ResponseEntity.ok().body(new AdminLoggedInResponse());
+//        } else {
+//            return view(id);
+//        }
+//    }
+
+    /**
+     * Gets information about a certain profile or returns an error object for the client
+     * @param id Profile ID of the profile to view
+     * @return response entity to be sent to the client
+     */
+    private ResponseEntity<?> view(long id) {
+        if (profileRepository.existsById(id)) {
+            Profile profile = profileRepository.findById(id).get();
+            return ResponseEntity.ok().body(new ProfileResponse(profile, emailRepository));
+        } else {
+            return ResponseEntity.status(HttpStatus.resolve(500))
+                    .body(new ErrorResponse("Profile with id " + id + " does not exist"));
+        }
     }
 }
