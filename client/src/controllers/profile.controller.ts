@@ -40,7 +40,7 @@ export async function fetchCurrentUser() {
 }
 
 
-export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
+/*export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("no active user found");
@@ -60,7 +60,7 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
       }
       
     await saveCurrentUser(user);
-}
+}*/
 
 
 

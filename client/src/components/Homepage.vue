@@ -57,7 +57,6 @@
         <!-- New Email input field and button -->
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
-      </template>
 
       
         <br>
@@ -117,7 +116,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary, updatePassword,
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary,
     checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from '../controllers/profile.controller'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -183,13 +182,13 @@ const Homepage =  Vue.extend({
 
     methods: {
       updatePassword: function(){
-        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
-          .then(() => {
-            this.$router.push({ name: "updatePassword" })
-          })
-          .catch((err: any) => {
-            console.error(err);
-          })
+        // updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+        //   .then(() => {
+        //     this.$router.push({ name: "updatePassword" })
+        //   })
+        //   .catch((err: any) => {
+        //     console.error(err);
+        //   })
 
       },
 
