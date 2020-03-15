@@ -2,30 +2,16 @@
   <div>
     <h1>Homepage</h1>
       <p>Homepage</p>
-      <p>First Name: {{ currentUser.firstName }}</p>
-      <p>Last Name: {{ currentUser.lastName }} </p>
 
-      <label for="countryDropdown">Select a Country:</label>
-      <select id="countryDropdown" v-model="selectedCountry">
-        <option value="" selected disabled>choose a country</option>
-        <option value="" v-if="passportCountries.length === 0" disabled>please wait...</option>
-        <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
-      </select>
-      <button id="selectCountry" @click="selectCountry">Select</button>
-      <ul id="passports">
-        <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
-      </ul>
+      <!--label for="currentUser.firstname">First Name:</label>
+      <div class="field">
+        <span class="field_value" v-show="!showField('currentUser.firstname')" @click="focusField('currentUser.firstname')">{{currentUser.firstname}}</span>
+        <input v-model="currentUser.firstname" v-show="showField('currentUser.firstname')" id="currentUser.firstname" type="text" class="field-value form-control" @focus="focusField('currentUser.firstname')" >
+      </div-->
 
-      <label for="fitnessDropdown">Select a Fitness Level:</label>
-      <select id="fitnessDropdown" v-model="selectedFitnessLevel">
-        <option value=0>Muffin</option>
-        <option value=1>Potato</option>
-        <option value=2>Carrot</option>
-        <option value=3>Blueberry</option>
-        <option value=4>Kale</option>
-      </select>
-      <button id="selectFitness" @click="selectFitnessLevel">Select</button>
-      <p>Primary email: {{ currentUser.primary_email }}</p>
+      <!--div class="editable_text">
+        {{message}}
+      </div-->
 
       <!-- as per U3 AC3, user knows the limit of additional emails -->
       <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
@@ -35,14 +21,48 @@
           <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
         </li>
       </ul>
+      <div v-if="!editing">
+        <p>First Name:{{ currentUser.firstname }}</p>
+        <p>Middle name: {{currentUser.middlename}}</p>
+        <p>Last Name: {{ currentUser.lastname }} </p>
+        <p>Nickname: {{ currentUser.nickname }} </p>
+        <p>Date of Birth: {{ currentUser.date_of_birth }} </p>
+        <p>Bio: {{ currentUser.bio }} </p>
+        <p>Gender: {{ currentUser.gender }} </p>
+        <br>
+        <button @click="editProfile">Edit Profile</button><br>
 
-      <!-- New Email input field and button -->
-      <template v-if="currentUser.additional_email && currentUser.additional_email.length < 5">
+        <label for="countryDropdown">Select a Country:</label>
+        <select id="countryDropdown" v-model="selectedCountry">
+          <option value="" selected disabled>choose a country</option>
+          <option value="" v-if="passportCountries.length === 0" disabled>please wait...</option>
+          <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
+        </select>
+        <button id="selectCountry" @click="selectCountry">Select</button>
+        <ul id="passports">
+          <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
+        </ul>
+
+        <label for="fitnessDropdown">Select a Fitness Level:</label>
+        <select id="fitnessDropdown" v-model="selectedFitnessLevel">
+          <option value=0>Muffin</option>
+          <option value=1>Potato</option>
+          <option value=2>Carrot</option>
+          <option value=3>Blueberry</option>
+          <option value=4>Kale</option>
+        </select>
+        <button id="selectFitness" @click="selectFitnessLevel">Select</button>
+
+        <p>Primary email: {{ currentUser.primaryEmail }}</p>
+        <!-- New Email input field and button -->
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
       </template>
 
       
+        <br>
+        <button @click="logoutButtonClicked">Logout</button>
+      </div>
 
       <br>
       <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
@@ -70,15 +90,39 @@
 
       <br>
       <button @click="logoutButtonClicked">Logout</button>
+      <div v-if="editing">
+        <v-form>
+          <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+          <v-text-field id="middlename" label="Middle name" v-model="currentUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+          <v-text-field id="lastname" label="Last name" v-model="currentUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+          <v-text-field id="nickname" label="Nickname" v-model="currentUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field id="bio" label="Bio" v-model="currentUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <v-menu>
+            <template v-slot:activator="{ on }">
+            <v-text-field v-model="currentUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            </template>
+            <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
+          </v-menu>
+          <v-select label="Gender" v-model="currentUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+        </v-form>
+
+        <button @click="saveButtonClicked">Save</button>
+        <button @click="cancelButtonClicked">Cancel</button>
+      </div>
+
   </div>
 </template>
 
 <script lang="ts">
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
-  import { UserApiFormat } from '../scripts/User';
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, addEmail, deleteEmail, setPrimary, updatePassword } from '../controllers/profile.controller'
+  import { UserApiFormat} from '../scripts/User'
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary, updatePassword,
+    checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from '../controllers/profile.controller'
+  // eslint-disable-next-line no-unused-vars
+  import { RegisterFormData } from '../controllers/register.controller';
   import { isValidEmail, } from '../scripts/LoginRegisterHelpers'
+
 
   // app Vue instance
 const Homepage =  Vue.extend({
@@ -96,6 +140,17 @@ const Homepage =  Vue.extend({
         oldPassword: '',
         newPassword: '',
         repeatPassword: '',
+        genders: ["Male", "Female", "Non-binary"],
+        editing: false,
+        inputRules: {
+          "lastnameRules": [(v: string) => checkLastnameValidity(v)],
+          "firstnameRules": [(v: string) => checkFirstnameValidity(v)],
+          "middlenameRules": [(v: string) => checkMiddlenameValidity(v)],
+          "nicknameRules": [(v: string) => checkNicknameValidity(v)],
+          "bioRules": [(v: string) => checkBioValidity(v)],
+          "dobRules": [(v: string) => checkDobValidity(v)],
+          "genderRules": [(v: string) => checkGenderValidity(v)]
+        }
       }
     },
 
@@ -137,7 +192,21 @@ const Homepage =  Vue.extend({
           })
 
       },
-      //click logout button
+
+
+      // focusField(name){
+      //     this.currentUser.firstname = name;
+      // },
+
+      // blurField(){
+      //   this.currentUser.firstname = '';
+      // },
+
+      // showField(name){
+      //   return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
+      // },
+
+      //click login button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
@@ -215,6 +284,20 @@ const Homepage =  Vue.extend({
         // refresh page after changing primary email
         history.go(0);
       },
+
+      editProfile: function() {
+        this.editing = true;
+      },
+
+      saveButtonClicked: function() {
+        editProfile(this.currentUser);
+        this.editing = false;
+      },
+
+      cancelButtonClicked: function() {
+        alert("CANCELLED");
+        this.editing = false;
+      }
     }
   })
 

@@ -1,4 +1,6 @@
 import { logout, getCurrentUser, saveCurrentUser } from '../models/user.model'
+import { hasNumber, hasWhiteSpace, isValidEmail } from '@/scripts/LoginRegisterHelpers';
+import { UserApiFormat } from '@/scripts/User';
 
 
 export async function logoutCurrentUser() {
@@ -36,6 +38,8 @@ export async function fetchCurrentUser() {
     }
     return user;
 }
+
+
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
     let user = await getCurrentUser();
     if (user === null) {
@@ -57,6 +61,8 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
       
     await saveCurrentUser(user);
 }
+
+
 
 export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     let user = await getCurrentUser();
@@ -85,15 +91,19 @@ export async function addEmail(newEmail: string) {
 
 export async function deleteEmail(email: string) {
     let user = await getCurrentUser();
-    if (user === null) {
-        throw new Error("no active user found");
-    }
-    for (let index = 0; index < user.additional_email.length; index++) {
-        if (email === user.additional_email[index]) {  
-            user.additional_email.splice(index, 1);
+    if (user.additional_email) {
+        if (user === null) {
+            throw new Error("no active user found");
         }
+        for (let index = 0; index < user.additional_email.length; index++) {
+            if (email === user.additional_email[index]) {  
+                user.additional_email.splice(index, 1);
+            }
+        }
+        await saveCurrentUser(user);
+    } else {
+        throw new Error("No additional emails to delete.");
     }
-    await saveCurrentUser(user);
 }
 
 export async function setPrimary(email: string) {
@@ -101,12 +111,130 @@ export async function setPrimary(email: string) {
     if (user === null) {
         throw new Error("no active user found");
     }
-    user.additional_email.push(user.primary_email);
-    user.primary_email = email;
-    for (let index = 0; index < user.additional_email.length; index++) {
-        if (email === user.additional_email[index]) {  
-            user.additional_email.splice(index, 1);
+    if (user.additional_email) {
+        if (user.primary_email) {
+            user.additional_email.push(user.primary_email);
+            user.primary_email = email;
+            for (let index = 0; index < user.additional_email.length; index++) {
+                if (email === user.additional_email[index]) {  
+                    user.additional_email.splice(index, 1);
+                }
+            }
         }
     }
     await saveCurrentUser(user);
 }
+
+export async function editProfile(user: UserApiFormat) {
+    try {
+        await checkProfileValidity(user);
+        await saveCurrentUser(user);
+    } catch (err) {
+        alert(err);
+    }    
+}
+
+export function checkFirstnameValidity(firstname: any) {
+    if (!firstname || firstname.length < 1) {
+        throw new Error("no first name given");
+    }
+
+    if (firstname.length > 30) {
+        throw new Error("first name must be less than 30 characters");
+    }
+
+    if (hasNumber(firstname)) {
+        throw new Error("first name cannot contain numbers");
+    }
+
+    return true;
+}
+
+export function checkLastnameValidity(lastname: any) {
+    if (!lastname || lastname.length < 1) {
+        throw new Error("no last name given");
+      }
+  
+    if (lastname.length > 30) {
+        throw new Error("last name must be less than 30 characters");
+    }
+  
+    if (hasNumber(lastname)) {
+        throw new Error("last name cannot contain numbers");
+    }
+
+    return true;
+
+    }
+
+
+export function checkMiddlenameValidity(middlename: any) {
+        if (middlename && middlename.length > 30) {
+            throw new Error("middle name must be less than 30 characters");
+        }
+    
+        if (middlename && hasNumber(middlename)) {
+            throw new Error("middle name cannot contain numbers");
+        }
+    
+        return true;
+    }
+
+export function checkNicknameValidity(nickname: any) {
+        if (nickname && nickname.length < 6) {
+            throw new Error("nick name must be at least 6 characters long");
+        }
+    
+        if (nickname && hasWhiteSpace(nickname)) {
+            throw new Error("nickname cannot contain white space");
+        }
+    
+        return true;
+    }
+
+export function checkBioValidity(bio: any) {
+        if (bio && bio.length < 8) {
+            throw new Error("Bio must be at least 8 characters");
+        }
+    
+        return true;
+    }
+
+export function checkDobValidity(date_of_birth: any) {
+        if (!date_of_birth) {
+            throw new Error("date of birth cannot be empty");
+        }
+        const date = Date.parse(date_of_birth);
+            if (isNaN(date)) {
+                throw new Error('valid date not given');
+        }
+
+        if (date > Date.now()) {
+            throw new Error("date of birth cannot be in the future");
+        }
+    
+        return true;
+    }
+
+export function checkGenderValidity(gender: any) {
+    if (!gender) {
+        throw new Error("no gender given");
+    }
+    
+        return true;
+    }
+
+function checkProfileValidity(formData: UserApiFormat) {
+    try{
+        checkFirstnameValidity(formData["firstname"]);
+        checkLastnameValidity(formData["lastname"]);
+        checkMiddlenameValidity(formData["middlename"]);
+        checkNicknameValidity(formData["nickname"]);
+        checkBioValidity(formData["bio"]);
+        checkDobValidity(formData["date_of_birth"]);
+        checkGenderValidity(formData["gender"]);
+    } catch (err) {
+        throw err;
+    }
+
+  }
