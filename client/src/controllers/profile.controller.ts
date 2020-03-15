@@ -225,16 +225,12 @@ export function checkGenderValidity(gender: any) {
     }
 
 function checkProfileValidity(formData: UserApiFormat) {
-    try{
-        checkFirstnameValidity(formData["firstname"]);
-        checkLastnameValidity(formData["lastname"]);
-        checkMiddlenameValidity(formData["middlename"]);
-        checkNicknameValidity(formData["nickname"]);
-        checkBioValidity(formData["bio"]);
-        checkDobValidity(formData["date_of_birth"]);
-        checkGenderValidity(formData["gender"]);
-    } catch (err) {
-        throw err;
-    }
+    checkFirstnameValidity(formData["firstname"]);
+    checkLastnameValidity(formData["lastname"]);
+    checkMiddlenameValidity(formData["middlename"]);
+    checkNicknameValidity(formData["nickname"]);
+    checkBioValidity(formData["bio"]);
+    checkDobValidity(formData["date_of_birth"]);
+    checkGenderValidity(formData["gender"]);
 
   }
