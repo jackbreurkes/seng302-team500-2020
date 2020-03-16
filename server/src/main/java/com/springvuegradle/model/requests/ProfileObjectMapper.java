@@ -37,8 +37,8 @@ public class ProfileObjectMapper {
         return primary_email;
     }
 
-    public void setPrimaryEmail(String primary_email) throws InvalidRequestFieldException {
-        if (!FormValidator.validateEmail(primary_email, true)) {
+    public void setPrimaryEmail(String primary_email) {
+        if (!FormValidator.validateEmail(primary_email)) {
             parseErrors.add(new String("invalid email address"));
         }
         this.primary_email = primary_email;
@@ -49,7 +49,7 @@ public class ProfileObjectMapper {
     }
 
     public void setFirstname(String fname) {
-        if (!FormValidator.validateName(fname, true)) {
+        if (!FormValidator.validateName(fname)) {
             parseErrors.add( new String("invalid first name"));
         }
         this.fname = fname;
@@ -60,7 +60,7 @@ public class ProfileObjectMapper {
     }
 
     public void setLastname(String lname) {
-        if (!FormValidator.validateName(lname, true)) {
+        if (!FormValidator.validateName(lname)) {
             parseErrors.add( new String("invalid last name"));
         }
         this.lname = lname;
@@ -71,7 +71,7 @@ public class ProfileObjectMapper {
     }
 
     public void setMiddlename(String mname) {
-        if (!FormValidator.validateName(mname, true)) {
+        if (!FormValidator.validateName(mname)) {
             parseErrors.add( new String("invalid middle name"));
         }
         this.mname = mname;
@@ -82,7 +82,7 @@ public class ProfileObjectMapper {
     }
 
     public void setNickname(String nickname) {
-        if (!FormValidator.validateNickname(nickname, true)) {
+        if (!FormValidator.validateNickname(nickname)) {
             parseErrors.add( new String("invalid nickname"));
         }
         this.nickname = nickname;
@@ -94,7 +94,7 @@ public class ProfileObjectMapper {
     }
 
     public void setPassword(String password) {
-        if (!FormValidator.validatePassword(password, true)) {
+        if (!FormValidator.validatePassword(password)) {
             parseErrors.add("invalid password");
         }
         this.password = password;
@@ -105,7 +105,7 @@ public class ProfileObjectMapper {
     }
 
     public void setBio(String bio) {
-        if (!FormValidator.validateBio(bio, true)) {
+        if (!FormValidator.validateBio(bio)) {
             parseErrors.add( new String("invalid bio"));
         }
         this.bio = bio;
@@ -116,7 +116,7 @@ public class ProfileObjectMapper {
     }
 
     public void setDateOfBirth(String dateOfBirth) {
-        if (!FormValidator.validateDateOfBirth(dateOfBirth, true)) {
+        if (!FormValidator.validateDateOfBirth(dateOfBirth)) {
             parseErrors.add( new String("invalid date of birth"));
         }
         this.dob = dateOfBirth;
@@ -127,7 +127,7 @@ public class ProfileObjectMapper {
     }
 
     public void setGender(String gender) {
-        if (!FormValidator.validateGender(gender, true)) {
+        if (!FormValidator.validateGender(gender)) {
             parseErrors.add( new String("invalid gender"));
         }
         this.gender = gender;

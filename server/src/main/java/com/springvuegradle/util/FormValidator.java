@@ -18,58 +18,49 @@ public class FormValidator {
 	/**
 	 * Maximum length of a firstname, middlename, lastname or nickname
 	 */
-	private static final int NAME_MAX_LENGTH = 30;
+	public static final int NAME_MAX_LENGTH = 30;
 
 	/**
 	 * Minimum length of a password
 	 */
-	private static final int PASSWORD_MIN_LENGTH = 8;
+	public static final int PASSWORD_MIN_LENGTH = 8;
 
 	/**
 	 * Minimum length of a nickname
 	 */
-	private static final int NICKNAME_MIN_LENGTH = 6;
+	public static final int NICKNAME_MIN_LENGTH = 6;
 
 	/**
 	 * Minimum length of a bio
 	 */
-	private static final int BIO_MIN_LENGTH = 8;
+	public static final int BIO_MIN_LENGTH = 8;
 
 	/**
 	 * Maximum length of a bio
 	 */
-	private static final int BIO_MAX_LENGTH = 60000;
+	public static final int BIO_MAX_LENGTH = 60000;
 
 	/**
 	 * Maximum length of the user side (before the @) of an email address
 	 */
-	private static final int EMAIL_USER_MAX_LENGTH = 64;
+	public static final int EMAIL_USER_MAX_LENGTH = 64;
 
 	/**
 	 * Maximum length of the domain side (after the @) of an email address
 	 */
-	private static final int EMAIL_DOMAIN_MAX_LENGTH = 128;
+	public static final int EMAIL_DOMAIN_MAX_LENGTH = 128;
 
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	/**
 	 * Validates a first, middle or lastname
 	 * 
 	 * @param input
 	 *            Name to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid name
 	 */
-	public static boolean validateName(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateName(String input) {
 		// check for numbers
 		for (char c : input.toCharArray()) {
 			if (Character.isDigit(c)) {
@@ -85,18 +76,9 @@ public class FormValidator {
 	 * 
 	 * @param input
 	 *            Nickname to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid nickname
 	 */
-	public static boolean validateNickname(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateNickname(String input) {
 		// check if appropriate length
 		if (input.length() < NICKNAME_MIN_LENGTH || input.length() > NAME_MAX_LENGTH) {
 			return false;
@@ -115,18 +97,9 @@ public class FormValidator {
 	 * 
 	 * @param input
 	 *            Bio to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid bio
 	 */
-	public static boolean validateBio(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateBio(String input) {
 		// check if appropriate length
 		if (input.length() < BIO_MIN_LENGTH || input.length() > BIO_MAX_LENGTH) {
 			return false;
@@ -140,18 +113,9 @@ public class FormValidator {
 	 *
 	 * @param input
 	 *            Date of birth string to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid date of birth
 	 */
-	public static boolean validateDateOfBirth(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateDateOfBirth(String input) {
 		try {
 			dateFormat.parse(input);
 			return true;
@@ -166,18 +130,9 @@ public class FormValidator {
 	 *
 	 * @param input
 	 *           gender string to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid gender
 	 */
-	public static boolean validateGender(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateGender(String input) {
 		Gender gender = Gender.matchGender(input);
 		return gender != null;
 	}
@@ -189,18 +144,9 @@ public class FormValidator {
 	 *
 	 * @param input
 	 *           password string to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid password
 	 */
-	public static boolean validatePassword(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validatePassword(String input) {
 		// check if appropriate length
 		if (input.length() < PASSWORD_MIN_LENGTH) {
 			return false;
@@ -233,18 +179,9 @@ public class FormValidator {
 	 *
 	 * @param input
 	 *            Email to validate
-	 * @param isMandatory
-	 *            True if the field is mandatory
 	 * @return true if the input is a valid email
 	 */
-	public static boolean validateEmail(String input, boolean isMandatory) {
-		// check it's mandatory and empty
-		if (isMandatory && (input == null || input.length() == 0)) {
-			return false;
-		} else if (!isMandatory) {
-			return true;
-		}
-
+	public static boolean validateEmail(String input) {
 		// check if there is exactly 1 '@'
 		if (input.indexOf("@") != -1 && input.indexOf("@") == input.lastIndexOf("@")) {
 			String[] components = input.split(Pattern.quote("@"));
