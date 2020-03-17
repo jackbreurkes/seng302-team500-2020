@@ -1,43 +1,49 @@
 <template>
   <div id="Register">
-    <router-link to="/login">
-      <p>this is a link to the login page</p>
-    </router-link>
 
-    <p>mandatory fields shown in blue</p>
+    
 
-    <form submit="false">
-      <label for="lastname">lastname</label>
-      <input ref="lastname" id="lastname" type="text" v-model="lastName" />
-      <label for="firstname">firstname</label>
-      <input ref="firstname" id="firstname" type="text" v-model="firstName" />
-      <label for="middlename">middlename</label>
-      <input ref="middlename" id="middlename" type="text" v-model="middleName" />
-      <label for="nickname">nickname</label>
-      <input ref="nickname" id="nickname" type="text" v-model="nickname" />
-      <label for="email">email</label>
-      <input ref="email" id="email" type="email" v-model="email" />
-      <label for="password">password</label>
-      <input ref="password" id="password" type="password" v-model="password" />
-      <label for="password">confirm password</label>
-      <input ref="confirm-password" id="confirm-password" type="password" v-model="confirmPassword" />
-      <label for="bio">bio</label>
-      <input ref="bio" id="bio" type="text" v-model="bio" />
-      <label for="date-of-birth">date of birth</label>
-      <input ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" />
+    <v-form submit="false">
+      <v-container fluid>
+        <v-col
+        cols="12"
+        sm="6"
+        >
+          <router-link to="/login">
+           <p>Log In</p>
+          </router-link>
+          <p class="font-weight-bold">Blue fields are mandatory</p>
+          <v-text-field label="lastname" ref="lastname" id="lastname" type="text" v-model="lastName" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field label="firstname" ref="firstname" id="firstname" type="text" v-model="firstName" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field label="middlename" ref="middlename" id="middlename" type="text" v-model="middleName" outlined=true rounded=true dense=true></v-text-field>
+          <v-text-field label="nickname" ref="nickname" id="nickname" type="text" v-model="nickname" outlined=true rounded=true dense=true></v-text-field>
+          <v-text-field label="email" ref="email" id="email" type="email" v-model="email" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field label="password" ref="password" id="password" type="password" v-model="password" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field label="confirm password" ref="confirm-password" id="confirm-password" type="password" v-model="confirmPassword" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field label="bio" ref="bio" id="bio" type="text" v-model="bio" outlined=true rounded=true dense=true></v-text-field>
+          <v-text-field label="date of birth" ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <label for="gender" class="font-weight-bold">Gender: </label>
+          <select ref="gender" id="gender" v-model="gender">
+            <option disabled value>Please select a gender...</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non-binary">Non-binary</option>
+          </select>
+          <!-- <br> 2x just for aesthetic spacing -->
+          <br>
+          <br>
+          <v-btn @click="saveButtonClicked" co>Save</v-btn>
+          <br>
+          <br>
+          <p class="font-weight-bold">{{ errorMessage }}</p>
+        </v-col>
+      </v-container>
+    </v-form>
 
-      <label for="gender">Gender:</label>
-      <select ref="gender" id="gender" v-model="gender">
-        <option disabled value>Please select a gender...</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="non-binary">Non-binary</option>
-      </select>
-    </form>
 
-    <button @click="saveButtonClicked">Save</button>
+    
 
-    <p>{{ errorMessage }}</p>
+    
   </div>
 </template>
 
