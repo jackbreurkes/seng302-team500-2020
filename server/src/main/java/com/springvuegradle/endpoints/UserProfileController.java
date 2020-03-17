@@ -61,6 +61,7 @@ public class UserProfileController {
      * handle when user tries to PUT /profiles/{profile_id}
      */
     @PutMapping("/{id}")
+    @CrossOrigin
     public Object updateProfile(
             @RequestBody ProfileObjectMapper request,
             @PathVariable("id") Long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException {
@@ -88,6 +89,7 @@ public class UserProfileController {
      * Handle when user tries to POST to /profiles
      */
     @PostMapping
+    @CrossOrigin
     public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException {
 
         User user = null;
@@ -112,6 +114,7 @@ public class UserProfileController {
      * @return response entity to be sent to the client
      */
     @GetMapping("/{profileId}")
+    @CrossOrigin
     public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId) {
 
         return view(profileId);

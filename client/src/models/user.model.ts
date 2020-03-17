@@ -17,9 +17,15 @@ interface LoginResponse {
 
 const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 
+axios.interceptors.request.use(function (config) {
+  const token = localStorage.getItem("token") || "";
+  config.headers["X-Auth-Token"] = token;
+  return config;
+})
+
 const instance = axios.create({  
   baseURL: SERVER_URL,  
-  timeout: 1000  
+  timeout: 10000  
 });
 
 
@@ -36,27 +42,25 @@ export async function login(email: string, password: string): Promise<boolean> {
   try {
     res = await instance.post("login", {email, password});
   } catch (e) {
+    console.error(e.name);
     throw new Error(e.response.data.error);
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
-  localStorage.setItem("userId", res.data.profile_id);
+  localStorage.setItem("userId", responseData.profile_id);
   return true;
 }
 
 /**
- * Attempts to log the user into their account via GET /{{SERVER_URL}}/login
- * On unsuccessful login will throw an error containing the message from the endpoint.
- * On successful login will add the returned token and profile_id to localStorage.
+ * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/login
  * For more endpoint information see file team-500/*.yaml
- * @param email the email to attempt a login with
- * @param password the user's password
  */
 export async function getCurrentUser() {
   let res;
   try {
     res = await instance.get("profiles/" + localStorage.userId);
   } catch (e) {
+    console.error(e.response);
     throw new Error(e.response.data.error);
   }
   let user: UserApiFormat = res.data;
@@ -65,7 +69,6 @@ export async function getCurrentUser() {
 
 
 export async function logout() {
-  localStorage.removeItem("currentUser")
   let res = await sendRequest("logmeout",
   {
     credentials: "include",
@@ -74,9 +77,15 @@ export async function logout() {
   if (res.status !== 204) {
     throw new Error(res.statusText);
   }
+  localStorage.removeItem("token")
+  localStorage.removeItem("userId")
 }
 
-
+/**
+ * creates a user given the data from the register form. Returns the new user's profile ID.
+ * For more endpoint information see file team-500/*.yaml
+ * @param formData the register form data to use to create the user
+ */
 export async function create(formData: RegisterFormData) {
     let userData = {
       lastname: formData.lastName,
@@ -89,18 +98,18 @@ export async function create(formData: RegisterFormData) {
       additional_email: [],
       password: formData.password
     }
-    let res = await sendRequest("profiles",
-    {
-      credentials: "include",
-      method: "POST",
-      body: JSON.stringify(userData)
-    }, false)
-    console.log(res)
-    let resData = await res.json();
-    if (res.status !== 201) {
-      throw new Error(resData);
+    let res;
+    try {
+      res = await instance.post("profiles", userData, {
+        headers: {
+          "X-Auth-Token": localStorage.getItem("token")
+        }
+      });
+    } catch (e) {
+      throw new Error(e.response.data.error);
     }
-    return resData.profile_id;
+    let user: UserApiFormat = res.data;
+    return user.profile_id;
 }
 
 
@@ -124,30 +133,10 @@ async function sendRequest(endpoint: string, options: RequestInit, authenticated
 
 
 export async function saveCurrentUser(user: UserApiFormat) {
-  localStorage.currentUser = JSON.stringify(user)
-
-  let users: Array<UserApiFormat> = JSON.parse(localStorage.users)
-  for (let index = 0; index < users.length; index++) {
-    if (users[index].primary_email === user.primary_email) {
-      users.splice(index, 1, user);
-    }
-  }
-  localStorage.users = JSON.stringify(users)
-}
-
-
-export async function getAll(): Promise<Array<UserApiFormat>> {
-  return _getUsersFromLocalStorage();
-}
-
-
-function _getUsersFromLocalStorage(): Array<UserApiFormat> {
-  let users: UserApiFormat[] = [];
+  let res;
   try {
-    let users = JSON.parse(localStorage.users);
-  } catch (err) {
-    console.error(err);
-    users = []
+    res = await instance.post("profiles", user);
+  } catch (e) {
+    throw new Error(e.response.data.error);
   }
-  return users;
 }

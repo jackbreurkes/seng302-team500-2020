@@ -88,7 +88,6 @@ public class ProfileObjectMapper {
         this.nickname = nickname;
     }
 
-    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -225,6 +224,9 @@ public class ProfileObjectMapper {
         }
         if (getLastname() == null) {
             throw new InvalidRequestFieldException("no lastname field");
+        }
+        if (getPassword() == null) {
+            throw new InvalidRequestFieldException("no password field");
         }
         if (Gender.matchGender(this.gender) == null) {
             throw new InvalidRequestFieldException("invalid gender");

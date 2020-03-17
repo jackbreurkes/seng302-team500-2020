@@ -1,5 +1,5 @@
 // import User, { UserBuilder } from '@/scripts/User';
-import { getAll, create, login, getCurrentUser } from '@/models/user.model';
+import { create, login, getCurrentUser } from '@/models/user.model';
 import { isValidEmail, hasNumber, hasWhiteSpace } from '@/scripts/LoginRegisterHelpers';
 import { UserApiFormat } from '@/scripts/User';
 

@@ -32,10 +32,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:9500");
-		response.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers", "content-type,DNT,x-auth-token");
-		response.setHeader("Access-Control-Allow-Credentials", "true");
+//		response.setHeader("Access-Control-Allow-Origin", "http://localhost:9500");
+//		response.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+//		response.setHeader("Access-Control-Allow-Headers", "content-type,DNT,x-auth-token");
+//		response.setHeader("Access-Control-Allow-Credentials", "true");
 
 		boolean needsAuthentication = true;
 		for (String endpoint : this.nonAuthenticatedEndpoints) {

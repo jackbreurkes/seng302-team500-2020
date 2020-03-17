@@ -6,6 +6,7 @@ import com.springvuegradle.model.requests.UpdatePasswordRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,7 @@ public class EditPasswordController {
     private UserRepository userRepository;
 
     @PostMapping("/editpassword")
+    @CrossOrigin
     public Object editPassword(@RequestBody UpdatePasswordRequest updatePasswordRequest, HttpServletRequest request) throws NoSuchAlgorithmException {
         if (request.getAttribute("authenticatedid") == null) {
             return ResponseEntity.badRequest()
