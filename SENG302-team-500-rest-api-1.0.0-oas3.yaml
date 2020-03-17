@@ -31,6 +31,19 @@ components:
       description: session token for a user
       in: header
   schemas:
+    LoginResponse:
+      title: LoginResponse
+      type: object
+      required:
+        - token
+        - profile_id
+      properties:
+        token:
+          type: string
+          example: "7FA47D3C418614CE6C5A6FB588BF8F0C6C1D64E71358A4A6D9B3F255764337A5EAC6B574807B4208F79383D89533746FE72342CB46060F1192CF1E7B6AC6F1FA"
+        profile_id:
+          type: integer
+          example: 5
     User:
       title: User
       type: object
@@ -123,16 +136,11 @@ paths:
       responses:
         '201':
           description: log in successful
-          headers:
-            X-Auth-Token:
-              schema:
-                $ref: '#/components/securitySchemes/SessionToken'
           content:
             application/json:
               schema:
-                properties:
-                  profile_id:
-                    $ref: '#/components/schemas/FullUser/properties/profile_id'
+                allOf:
+                  - $ref: '#/components/schemas/LoginResponse'
         '401':
           $ref: '#/components/responses/MissingRequiredFields'
         '403':

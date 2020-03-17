@@ -1,28 +1,66 @@
 import { RegisterFormData } from '@/controllers/register.controller';
 import { UserApiFormat } from '@/scripts/User';
+import axios from 'axios'  
+  
 
-
-export async function login(email: string, password: string): Promise<boolean> {
-  let res = await loginWithApi(email, password);
-  if (res.status !== 201) {
-    throw new Error(res.statusText);
-  }
-  const resData = await res.json();
-  let token = resData.token;
-  localStorage.setItem("token", token);
-  return true;
+/**
+ * response format for POST /login
+ * see API spec for more details
+ */
+interface LoginResponse {
+  token: string,
+  profile_id: string
 }
 
 
-async function loginWithApi(email: string, password: string): Promise<Response> {
-  const data = {email, password}
-  let res = await sendRequest("login",
-    {
-      credentials: "include",
-      method: "POST",
-      body: JSON.stringify(data)
-    }, false)
-  return res;
+
+
+const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
+
+const instance = axios.create({  
+  baseURL: SERVER_URL,  
+  timeout: 1000  
+});
+
+
+/**
+ * Attempts to log the user into their account via POST /{{SERVER_URL}}/login
+ * On unsuccessful login will throw an error containing the message from the endpoint.
+ * On successful login will add the returned token and profile_id to localStorage.
+ * For more endpoint information see file team-500/*.yaml
+ * @param email the email to attempt a login with
+ * @param password the user's password
+ */
+export async function login(email: string, password: string): Promise<boolean> {
+  let res;
+  try {
+    res = await instance.post("login", {email, password});
+  } catch (e) {
+    throw new Error(e.response.data.error);
+  }
+  let responseData: LoginResponse = res.data.token;
+  localStorage.setItem("token", responseData.token);
+  localStorage.setItem("userId", res.data.profile_id);
+  return true;
+}
+
+/**
+ * Attempts to log the user into their account via GET /{{SERVER_URL}}/login
+ * On unsuccessful login will throw an error containing the message from the endpoint.
+ * On successful login will add the returned token and profile_id to localStorage.
+ * For more endpoint information see file team-500/*.yaml
+ * @param email the email to attempt a login with
+ * @param password the user's password
+ */
+export async function getCurrentUser() {
+  let res;
+  try {
+    res = await instance.get("profiles/" + localStorage.userId);
+  } catch (e) {
+    throw new Error(e.response.data.error);
+  }
+  let user: UserApiFormat = res.data;
+  return user;
 }
 
 
@@ -82,19 +120,6 @@ async function sendRequest(endpoint: string, options: RequestInit, authenticated
   let res = await fetch(process.env.VUE_APP_SERVER_ADD + process.env.VUE_APP_BASE_URL + endpoint,
     options)
   return res;
-}
-
-
-export async function getCurrentUser() {
-  let res = await sendRequest("profiles", {
-    credentials: 'include',
-    method: "GET"
-  });
-  if (res.status !== 200) {
-    throw new Error("failed to get current user")
-  }
-  let user: UserApiFormat = await res.json();
-  return user;
 }
 
 
