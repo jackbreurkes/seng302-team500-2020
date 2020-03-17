@@ -10,8 +10,8 @@
             <p>this is link to the register page</p>
           </router-link>
           <h1>This is the login page</h1>
-          <v-text-field v-model="email" label="email" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
-          <v-text-field v-model="password" label="password" type="password" outlined=true rounded=true dense=true filled=true background-color=#c4daff></v-text-field>
+          <v-text-field v-model="email" label="email" outlined rounded dense filled background-color=#c4daff></v-text-field>
+          <v-text-field v-model="password" label="password" type="password" outlined rounded dense filled background-color=#c4daff></v-text-field>
           <v-btn @click="saveButtonClicked">Save</v-btn>
           <p>{{ errorMessage }}</p>
         </v-col>

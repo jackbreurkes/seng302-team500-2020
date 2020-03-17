@@ -23,6 +23,7 @@
           <v-text-field label="bio" ref="bio" id="bio" type="text" v-model="bio" outlined rounded dense></v-text-field>
           <v-text-field label="date of birth" ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" outlined rounded dense filled background-color=#c4daff></v-text-field>
           <v-select label="gender" v-model="gender" ref="gender" id="gender" :items="genders"></v-select>
+
           <!-- <br> 2x just for aesthetic spacing -->
           <br>
           <br>
