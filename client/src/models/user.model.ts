@@ -38,7 +38,7 @@ export async function login(email: string, password: string): Promise<boolean> {
   } catch (e) {
     throw new Error(e.response.data.error);
   }
-  let responseData: LoginResponse = res.data.token;
+  let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
   localStorage.setItem("userId", res.data.profile_id);
   return true;
