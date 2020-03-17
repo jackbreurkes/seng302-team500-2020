@@ -4,7 +4,7 @@ import axios from 'axios'
   
 
 /**
- * response format for POST /login
+ * Response format for POST /login
  * see API spec for more details
  */
 interface LoginResponse {
