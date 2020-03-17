@@ -57,7 +57,7 @@ public class Email implements Serializable {
 	 * @param is_primary Whether this email address is the user's primary email
 	 */
 	public Email(User user, String email, boolean is_primary) {
-		this.user = user;;
+		this.user = user;
 		this.email = email;
 		this.isPrimary = is_primary;
 	}
@@ -99,6 +99,6 @@ public class Email implements Serializable {
 	 * @param is_primary
 	 */
 	public void setIsPrimary(boolean is_primary) {
-		this.isPrimary = is_primary;	
+		this.isPrimary = is_primary;
 	}
 }
