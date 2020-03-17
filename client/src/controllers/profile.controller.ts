@@ -26,7 +26,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
     }
 
     user.passports.push(countryName);
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 
 }
 
@@ -74,7 +74,7 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
         user.fitness = fitnessLevel;
     }
 
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 }
 
 export async function addEmail(newEmail: string) {
@@ -86,7 +86,7 @@ export async function addEmail(newEmail: string) {
         user.additional_email = []
     }
     user.additional_email.push(newEmail);
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 }
 
 export async function deleteEmail(email: string) {
@@ -100,7 +100,7 @@ export async function deleteEmail(email: string) {
                 user.additional_email.splice(index, 1);
             }
         }
-        await saveCurrentUser(user);
+        await saveCurrentUser();
     } else {
         throw new Error("No additional emails to delete.");
     }
@@ -122,16 +122,12 @@ export async function setPrimary(email: string) {
             }
         }
     }
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 }
 
 export async function editProfile(user: UserApiFormat) {
-    try {
-        await checkProfileValidity(user);
-        await saveCurrentUser(user);
-    } catch (err) {
-        alert(err);
-    }    
+    await checkProfileValidity(user);
+    await saveCurrentUser();
 }
 
 export function checkFirstnameValidity(firstname: any) {

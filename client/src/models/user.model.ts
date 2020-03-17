@@ -98,8 +98,8 @@ export async function getCurrentUser() {
 }
 
 
-export async function saveCurrentUser(user: UserApiFormat) {
-  localStorage.currentUser = JSON.stringify(user)
+async function saveUser(user: UserApiFormat) {
+  /*localStorage.currentUser = JSON.stringify(user)
 
   let users: Array<UserApiFormat> = JSON.parse(localStorage.users)
   for (let index = 0; index < users.length; index++) {
@@ -107,9 +107,18 @@ export async function saveCurrentUser(user: UserApiFormat) {
       users.splice(index, 1, user);
     }
   }
-  localStorage.users = JSON.stringify(users)
+  localStorage.users = JSON.stringify(users)*/
+
+  let res = await sendRequest('/profiles/' + user.profile_id, {credentials: 'include', method: "PUT", body: JSON.stringify(user)}, true);
+  if (res.status != 200) {
+    throw new Error("Failed to save user.");
+  }
 }
 
+export async function saveCurrentUser() {
+  const user = await getCurrentUser();
+  saveUser(user);
+}
 
 export async function getAll(): Promise<Array<UserApiFormat>> {
   return _getUsersFromLocalStorage();
