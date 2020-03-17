@@ -56,7 +56,7 @@ export async function create(formData: RegisterFormData) {
       credentials: "include",
       method: "POST",
       body: JSON.stringify(userData)
-    })
+    }, false)
     console.log(res)
     let resData = await res.json();
     if (res.status !== 201) {
