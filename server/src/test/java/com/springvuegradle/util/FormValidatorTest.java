@@ -38,7 +38,9 @@ class FormValidatorTest {
 
     @Test
     void testNullName() {
-        assertFalse(FormValidator.validateName(null));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateName(null);
+        });
     }
 
     @Test
@@ -145,7 +147,9 @@ class FormValidatorTest {
     @Test
     void testNullEmail() {
         String email = null;
-        assertFalse(FormValidator.validateEmail(email));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateEmail(email);
+        });
     }
 
     @Test
@@ -163,7 +167,9 @@ class FormValidatorTest {
     @Test
     void testNullBio() {
         String bio = null;
-        assertFalse(FormValidator.validateBio(bio));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateBio(bio);
+        });
     }
 
     @Test
@@ -180,7 +186,7 @@ class FormValidatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "2000-04-15", "1990-06-18", "1870-12-12", "1969-07-17"
+            "2000-04-15", "1990-06-18", "1970-12-12", "1969-07-17"
     })
     void testValidDateOfBirth(String dob) {
         // DOB must be in yyyy-MM-dd format
@@ -189,9 +195,25 @@ class FormValidatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "20-04-15", "1990/06/18", "", "yesterday", "yyyy-MM-dd", "wrongformat", ""
+            "99-05-17", "1990/06/18", "yesterday", "yyyy-MM-dd", "wrongformat"
     })
     void testInvalidDateOfBirthFormat(String dob) {
+        assertFalse(FormValidator.validateDateOfBirth(dob));
+    }
+
+
+    @Test
+    void testEmptyDateOfBirth() {
+        String dob = "";
+        assertFalse(FormValidator.validateDateOfBirth(dob));
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "1899-12-31", "99-05-17", "1000-05-19"
+    })
+    void testDateBefore1900(String dob) {
         assertFalse(FormValidator.validateDateOfBirth(dob));
     }
 
@@ -204,7 +226,9 @@ class FormValidatorTest {
     @Test
     void testNullDateOfBirth() {
         String dob = null;
-        assertFalse(FormValidator.validateDateOfBirth(dob));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateDateOfBirth(dob);
+        });
     }
 
     @ParameterizedTest
@@ -248,7 +272,9 @@ class FormValidatorTest {
     @Test
     void testNullGender() {
         String gender = null;
-        assertFalse(FormValidator.validateGender(gender));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateGender(gender);
+        });
     }
 
     @ParameterizedTest
@@ -274,7 +300,9 @@ class FormValidatorTest {
     @Test
     void testNullPassword() {
         String password = null;
-        assertFalse(FormValidator.validatePassword(password));
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validatePassword(password);
+        });
     }
 
 

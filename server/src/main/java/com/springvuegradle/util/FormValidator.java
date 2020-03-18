@@ -2,6 +2,7 @@ package com.springvuegradle.util;
 
 import com.springvuegradle.model.data.Gender;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
  * Used to consistently validate form fields between endpoints
  * 
  * @author Alex Hobson
- *
+ * @author Jack van Heugten Breurkes
  */
 public class FormValidator {
 
@@ -50,7 +51,9 @@ public class FormValidator {
 	 */
 	public static final int EMAIL_DOMAIN_MAX_LENGTH = 128;
 
-
+	/**
+	 * date format to use when validating and parsing date strings
+	 */
 	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	/**
@@ -60,7 +63,9 @@ public class FormValidator {
 	 *            Name to validate
 	 * @return true if the input is a valid name
 	 */
-	public static boolean validateName(String input) {
+	public static boolean validateName(@NotNull String input) {
+		if (input.length() < 1) return false;
+
 		// check for numbers
 		for (char c : input.toCharArray()) {
 			if (Character.isDigit(c)) {
@@ -78,7 +83,9 @@ public class FormValidator {
 	 *            Nickname to validate
 	 * @return true if the input is a valid nickname
 	 */
-	public static boolean validateNickname(String input) {
+	public static boolean validateNickname(@NotNull String input) {
+		if (input == null) return false;
+
 		// check if appropriate length
 		if (input.length() < NICKNAME_MIN_LENGTH || input.length() > NAME_MAX_LENGTH) {
 			return false;
@@ -99,7 +106,7 @@ public class FormValidator {
 	 *            Bio to validate
 	 * @return true if the input is a valid bio
 	 */
-	public static boolean validateBio(String input) {
+	public static boolean validateBio(@NotNull String input) {
 		// check if appropriate length
 		if (input.length() < BIO_MIN_LENGTH || input.length() > BIO_MAX_LENGTH) {
 			return false;
@@ -115,9 +122,17 @@ public class FormValidator {
 	 *            Date of birth string to validate
 	 * @return true if the input is a valid date of birth
 	 */
-	public static boolean validateDateOfBirth(String input) {
+	public static boolean validateDateOfBirth(@NotNull String input) {
+		dateFormat.setLenient(false);
+		if (input == null) throw new NullPointerException("date of birth cannot be null");
 		try {
-			dateFormat.parse(input);
+			Date date = dateFormat.parse(input);
+			if (date.before(dateFormat.parse("1900-01-01"))) {
+				return false;
+			}
+			if (date.after(new Date())) { // a new Date object defaults to the current date
+				return false;
+			}
 			return true;
 		} catch (ParseException e) {
 			return false;
@@ -132,7 +147,8 @@ public class FormValidator {
 	 *           gender string to validate
 	 * @return true if the input is a valid gender
 	 */
-	public static boolean validateGender(String input) {
+	public static boolean validateGender(@NotNull String input) {
+		if (input == null) throw new NullPointerException();
 		Gender gender = Gender.matchGender(input);
 		return gender != null;
 	}
@@ -146,7 +162,7 @@ public class FormValidator {
 	 *           password string to validate
 	 * @return true if the input is a valid password
 	 */
-	public static boolean validatePassword(String input) {
+	public static boolean validatePassword(@NotNull String input) {
 		// check if appropriate length
 		if (input.length() < PASSWORD_MIN_LENGTH) {
 			return false;
@@ -183,9 +199,11 @@ public class FormValidator {
 	 */
 	public static boolean validateEmail(String input) {
 		// check if there is exactly 1 '@'
+		if (input.length() == 0) return false;
 		if (input.indexOf("@") != -1 && input.indexOf("@") == input.lastIndexOf("@")) {
 			String[] components = input.split(Pattern.quote("@"));
 
+			if (components.length != 2) return false;
 			if (components[0].length() == 0 || components[0].length() > EMAIL_USER_MAX_LENGTH) {
 				return false;
 			}
