@@ -4,8 +4,9 @@ import com.springvuegradle.model.data.Gender;
 
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 
 /**
@@ -52,9 +53,9 @@ public class FormValidator {
 	public static final int EMAIL_DOMAIN_MAX_LENGTH = 128;
 
 	/**
-	 * date format to use when validating and parsing date strings
+	 * Minimum LocalDate for date of birth
 	 */
-	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static final LocalDate MIN_DATE_OF_BIRTH = LocalDate.of(1900, 01, 01);
 
 	/**
 	 * Validates a first, middle or lastname
@@ -64,7 +65,8 @@ public class FormValidator {
 	 * @return true if the input is a valid name
 	 */
 	public static boolean validateName(@NotNull String input) {
-		if (input.length() < 1) return false;
+		if (input.length() == 0) return false;
+		if (input.isBlank()) return false; // only whitespace
 
 		// check for numbers
 		for (char c : input.toCharArray()) {
@@ -72,7 +74,6 @@ public class FormValidator {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -84,16 +85,16 @@ public class FormValidator {
 	 * @return true if the input is a valid nickname
 	 */
 	public static boolean validateNickname(@NotNull String input) {
-		if (input == null) return false;
-
 		// check if appropriate length
 		if (input.length() < NICKNAME_MIN_LENGTH || input.length() > NAME_MAX_LENGTH) {
 			return false;
 		}
 
 		// check for whitespace
-		if (input.contains(" ")) {
-			return false;
+		for (char c : input.toCharArray()) {
+			if (Character.isWhitespace(c)) {
+				return false;
+			}
 		}
 
 		return true;
@@ -123,22 +124,21 @@ public class FormValidator {
 	 * @return true if the input is a valid date of birth
 	 */
 	public static boolean validateDateOfBirth(@NotNull String input) {
-		dateFormat.setLenient(false);
 		if (input == null) throw new NullPointerException("date of birth cannot be null");
+
+		LocalDate date = null;
 		try {
-			Date date = dateFormat.parse(input);
-			if (date.before(dateFormat.parse("1900-01-01"))) {
-				return false;
-			}
-			if (date.after(new Date())) { // a new Date object defaults to the current date
-				return false;
-			}
-			return true;
-		} catch (ParseException e) {
+			date = LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
+		} catch (DateTimeParseException e) {
 			return false;
 		}
-	}
 
+		if (date.isBefore(MIN_DATE_OF_BIRTH) || date.isAfter(LocalDate.now())) {
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * Validates a gender
@@ -149,11 +149,10 @@ public class FormValidator {
 	 */
 	public static boolean validateGender(@NotNull String input) {
 		if (input == null) throw new NullPointerException();
-		Gender gender = Gender.matchGender(input);
+
+		Gender gender = Gender.matchGender(input); // returns null if invalid
 		return gender != null;
 	}
-
-
 
 	/**
 	 * Validates a password
@@ -171,25 +170,6 @@ public class FormValidator {
 		return true;
 	}
 
-
-	/**
-	 * Returns a valid date of birth or null if not possible
-	 *
-	 * @param input
-	 *            Date of birth string to convert
-	 * @return the Date if a valid date exists or null if not possible
-	 */
-	public static Date getValidDateOfBirth(String input) {
-
-		try {
-			return dateFormat.parse(input);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-
-
-
 	/**
 	 * Validates an email address
 	 *
@@ -198,23 +178,39 @@ public class FormValidator {
 	 * @return true if the input is a valid email
 	 */
 	public static boolean validateEmail(String input) {
-		// check if there is exactly 1 '@'
 		if (input.length() == 0) return false;
-		if (input.indexOf("@") != -1 && input.indexOf("@") == input.lastIndexOf("@")) {
-			String[] components = input.split(Pattern.quote("@"));
 
-			if (components.length != 2) return false;
-			if (components[0].length() == 0 || components[0].length() > EMAIL_USER_MAX_LENGTH) {
-				return false;
-			}
-
-			if (components[1].length() == 0 || components[1].length() > EMAIL_DOMAIN_MAX_LENGTH) {
-				return false;
-			}
-
-			return true;
-		} else {
+		// check if there is exactly 1 '@'
+		if (!input.contains("@") || input.indexOf("@") != input.lastIndexOf("@")) {
 			return false;
+		}
+
+		String[] components = input.split(Pattern.quote("@"));
+		if (components.length != 2) return false;
+
+		if (components[0].length() == 0 || components[0].length() > EMAIL_USER_MAX_LENGTH) {
+			return false;
+		}
+
+		if (components[1].length() == 0 || components[1].length() > EMAIL_DOMAIN_MAX_LENGTH) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns a valid date of birth as a LocalDate or null if not possible
+	 *
+	 * @param input
+	 *            date of birth string to convert
+	 * @return the LocalDate if a valid date exists or null if not possible
+	 */
+	public static LocalDate getValidDateOfBirth(String input) {
+		try {
+			return LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
+		} catch (DateTimeParseException e) {
+			return null;
 		}
 	}
 }

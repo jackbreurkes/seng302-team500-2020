@@ -44,8 +44,25 @@ class FormValidatorTest {
     }
 
     @Test
+    void testAllSpacesName() {
+        String name = "     ";
+        assertFalse(FormValidator.validateName(name));
+    }
+
+    @Test
+    void testAllNewlinesName() {
+        String name = "\n\n\n";
+        assertFalse(FormValidator.validateName(name));
+    }
+
+    @Test
     void testOneCharacterName() {
         assertTrue(FormValidator.validateName("A"));
+    }
+
+    @Test
+    void testNameWithNumbers() {
+        assertFalse(FormValidator.validateName("Jack2"));
     }
 
     @Test
@@ -83,16 +100,34 @@ class FormValidatorTest {
         assertFalse(FormValidator.validateNickname(nickname));
     }
 
-    @Test
-    void testNicknameWithWhitespace() {
-        String nickname = "This is bad";
+    @ParameterizedTest
+    @CsvSource({
+            "This is bad", "this\nis\nworse", "worst\tof\tall"
+    })
+    void testNicknameWithWhitespace(String nickname) {
         assertFalse(FormValidator.validateNickname(nickname));
+    }
+
+    @Test
+    void testNullNickname() {
+        String nickname = null;
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validateNickname(nickname);
+        });
     }
 
     @Test
     void testValidEmail() {
         String email = "test@gmail.com";
         assertTrue(FormValidator.validateEmail(email));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "jeff@cavaliere@athleanx.com", "@dam.conover@test.com", "justin.tredeu@govt.c@"
+    })
+    void testEmailTooManyAts(String email) {
+        assertFalse(FormValidator.validateEmail(email));
     }
 
     @Test
