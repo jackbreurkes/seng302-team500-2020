@@ -393,3 +393,7 @@ html .clear-checked:active {
     font-size: 18px;
     text-decoration: underline;
 }
+
+#app {
+    background: url('background.jpg') center center, white;
+}
