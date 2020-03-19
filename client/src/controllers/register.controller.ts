@@ -66,6 +66,10 @@ export async function registerUser(formData: RegisterFormData) {
         throw new Error("Password cannot be empty")
     }
 
+    if (formData.password !== formData.confirmPassword) {
+        throw new Error("Passwords do not match")
+    }
+
     if (formData.password.length < 8) {
         throw new Error("Password must be at least 8 characters")
     }
@@ -89,10 +93,6 @@ export async function registerUser(formData: RegisterFormData) {
 
     if (!formData.gender) {
         throw new Error("No gender given")
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      throw new Error("Passwords do not match")
     }
 
     await create(formData);
