@@ -65,7 +65,7 @@ public class UserProfileController {
     @CrossOrigin
     public Object updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("id") Long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException {
+            @PathVariable("id") long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         if (authId == null) {
         	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));

@@ -48,7 +48,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 		// response.setHeader("Access-Control-Allow-Credentials", "true");
 
 		String token = request.getHeader("X-Auth-Token");
-		if (token != null)
+		if (token != null) {
 			if (sessionRepo.existsById(token)) {
 				Session session = sessionRepo.findById(token).get();
 				if (session.getExpiry().isBefore(Instant.now().atOffset(ZoneOffset.UTC))) {
@@ -63,6 +63,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 					request.setAttribute("authenticatedid", profileId);
 				}
 			}
+		}
 
 		return true;
 	}
