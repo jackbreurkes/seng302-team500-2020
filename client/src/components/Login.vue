@@ -22,7 +22,7 @@
                 </v-toolbar>
                   <v-card-text>
                     <v-text-field v-model="email" label="Email address"></v-text-field>
-                    <v-text-field v-model="password" label="Password" type="password"></v-text-field>
+                    <v-text-field v-model="password" label="Password" type="password" @keyup.enter.native="saveButtonClicked"></v-text-field>
                   </v-card-text>
                   <v-card-actions>
                     <p>New user?</p>
