@@ -1,6 +1,6 @@
 // import User, { UserBuilder } from '@/scripts/User';
 import { create, login, getCurrentUser } from '@/models/user.model';
-import { isValidEmail, hasNumber, hasWhiteSpace } from '@/scripts/LoginRegisterHelpers';
+import { isValidEmail, hasNumber, hasWhiteSpace } from '@/scripts/FormValidator';
 import { UserApiFormat } from '@/scripts/User';
 
 export interface RegisterFormData {

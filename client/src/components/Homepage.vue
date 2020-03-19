@@ -57,38 +57,36 @@
         <!-- New Email input field and button -->
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
-
-      
-        <br>
-        <button @click="logoutButtonClicked">Logout</button>
       </div>
 
       <br>
       <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
       <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
       <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
-      <v-form v-model="changePassword">
+      <v-form>
       <v-text-field
         v-model="oldPassword"
-        label="old Password"
+        label="old password"
         type="password"
         required></v-text-field>
       <v-text-field
         v-model="newPassword"
-        label="new Password"
+        label="new password"
         type="password"
         required></v-text-field>
       <v-text-field
         v-model="repeatPassword"
-        label="repeat Password"
+        label="repeat password"
         type="password"
         required></v-text-field>
     </v-form>
-      
-      <button id="updatePassword" @click="updatePassword">Update your password</button>
+      <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
+      <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
+      <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
 
       <br>
-      <button @click="logoutButtonClicked">Logout</button>
+      <br>
+      <v-btn @click="logoutButtonClicked">Logout</v-btn>
       <div v-if="editing">
         <v-form>
           <v-text-field id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
@@ -116,11 +114,10 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary,
-    checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from '../controllers/profile.controller'
+  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
+  import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '@/scripts/FormValidator'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
-  import { isValidEmail, } from '../scripts/LoginRegisterHelpers'
 
 
   // app Vue instance
@@ -139,6 +136,8 @@ const Homepage =  Vue.extend({
         oldPassword: '',
         newPassword: '',
         repeatPassword: '',
+        passwordErrorMessage: '',
+        passwordSuccessMessage: '',
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
         inputRules: {
@@ -181,14 +180,16 @@ const Homepage =  Vue.extend({
     },
 
     methods: {
-      updatePassword: function(){
-        // updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
-        //   .then(() => {
-        //     this.$router.push({ name: "updatePassword" })
-        //   })
-        //   .catch((err: any) => {
-        //     console.error(err);
-        //   })
+      updatePasswordButtonClicked: function(){
+        this.passwordSuccessMessage = "";
+        this.passwordErrorMessage = "";
+        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+          .then(() => {
+            this.passwordSuccessMessage = "password changed successfully";
+          })
+          .catch((err: any) => {
+            this.passwordErrorMessage = err.message;
+          })
 
       },
 
