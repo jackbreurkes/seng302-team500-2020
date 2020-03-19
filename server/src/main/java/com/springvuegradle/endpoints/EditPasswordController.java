@@ -1,9 +1,9 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
+import java.security.NoSuchAlgorithmException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.security.NoSuchAlgorithmException;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.UpdatePasswordRequest;
+import com.springvuegradle.model.responses.ErrorResponse;
 
 @RestController
 public class EditPasswordController {
@@ -24,8 +26,7 @@ public class EditPasswordController {
     @CrossOrigin
     public Object editPassword(@RequestBody UpdatePasswordRequest updatePasswordRequest, HttpServletRequest request) throws NoSuchAlgorithmException {
         if (request.getAttribute("authenticatedid") == null) {
-            return ResponseEntity.badRequest()
-                    .body(new ErrorResponse("you must be authenticated"));
+        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
         }
 
         User tempUser = userRepository.findById(updatePasswordRequest.getProfile_id()).get();

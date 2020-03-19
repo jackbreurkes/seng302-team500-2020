@@ -1,33 +1,34 @@
 package com.springvuegradle.endpoints;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.CreateUserRequest;
-import com.springvuegradle.model.requests.ProfileObjectMapper;
-import com.springvuegradle.model.responses.AdminLoggedInResponse;
-import com.springvuegradle.model.responses.ErrorResponse;
-import com.springvuegradle.model.responses.ProfileCreatedResponse;
-import com.springvuegradle.model.responses.ProfileResponse;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.ProfileObjectMapper;
+import com.springvuegradle.model.responses.ErrorResponse;
+import com.springvuegradle.model.responses.ProfileCreatedResponse;
+import com.springvuegradle.model.responses.ProfileResponse;
 
 
 /**
@@ -66,9 +67,10 @@ public class UserProfileController {
             @RequestBody ProfileObjectMapper request,
             @PathVariable("id") Long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        if (authId == null || (!authId.equals((long)-1) && !authId.equals(id))) {
-            return ResponseEntity.badRequest()
-                    .body(new ErrorResponse("cannot edit user unless you are them or an admin"));
+        if (authId == null) {
+        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
+        } else if (!authId.equals((long)-1) && !authId.equals(id)) {
+            return ResponseEntity.status(403).body(new ErrorResponse("Insufficient permission"));
         }
 
         Optional<Profile> optionalProfile = profileRepository.findById(id);
@@ -119,27 +121,6 @@ public class UserProfileController {
 
         return view(profileId);
     }
-//
-//    /**
-//     * Handles viewing your own profile, including when you don't know what your
-//     * profile ID is
-//     *
-//     * @param request HttpServletRequest including attribute of authentication information
-//     * @return response entity to be sent to the client
-//     */
-//    @GetMapping("/profiles")
-//    public ResponseEntity<?> viewProfile(HttpServletRequest request) {
-//        if (request.getAttribute("authenticatedid") == null) {
-//            return ResponseEntity.badRequest()
-//                    .body(new ErrorResponse("you must be authenticated"));
-//        }
-//        long id = (long) request.getAttribute("authenticatedid");
-//        if (id == -1) {
-//            return ResponseEntity.ok().body(new AdminLoggedInResponse());
-//        } else {
-//            return view(id);
-//        }
-//    }
 
     /**
      * Gets information about a certain profile or returns an error object for the client
@@ -151,7 +132,7 @@ public class UserProfileController {
             Profile profile = profileRepository.findById(id).get();
             return ResponseEntity.ok().body(new ProfileResponse(profile, emailRepository));
         } else {
-            return ResponseEntity.status(HttpStatus.resolve(500))
+            return ResponseEntity.status(HttpStatus.resolve(404))
                     .body(new ErrorResponse("Profile with id " + id + " does not exist"));
         }
     }
