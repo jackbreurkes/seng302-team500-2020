@@ -5,10 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.repository.EmailRepository;
@@ -25,6 +22,7 @@ public class NewEmailController {
 	private UserRepository userRepository;
 
 	@PostMapping("/profiles/{profileId}/emails")
+	@CrossOrigin
 	public Object newEmailRequest(@RequestBody NewEmailRequest credentials, @PathVariable("profileId") long profileId,
 			HttpServletRequest request) {
 		if (request.getAttribute("authenticatedid") == null) {

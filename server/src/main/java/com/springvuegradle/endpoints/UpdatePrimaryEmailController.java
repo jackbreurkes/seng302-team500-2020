@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import com.springvuegradle.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class UpdatePrimaryEmailController {
 	private UserRepository userRepository;
 
 	@PostMapping("/editprimaryemail")
+	@CrossOrigin
 	public Object UpdatePrimaryEmail(@RequestBody UpdatePrimaryEmailRequest credentials, String newAddress, HttpServletRequest request) {
 		if (request.getAttribute("authenticatedid") == null) {
 			return ResponseEntity.badRequest()

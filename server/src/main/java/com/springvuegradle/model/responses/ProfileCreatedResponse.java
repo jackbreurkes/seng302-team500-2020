@@ -1,10 +1,14 @@
 package com.springvuegradle.model.responses;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 /**
  * Response when a profile is created
  * @author Alex Hobson
  *
  */
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ProfileCreatedResponse {
 
 	/**

@@ -2,10 +2,10 @@
   <div id="app">
     <label>Initial</label>
     <router-link to="/login">
-      <p>this is login link</p>
+      <p>Login</p>
     </router-link>
     <router-link to="/register">
-      <p>this is register link</p>
+      <p>Register</p>
     </router-link>
   </div>
 </template>

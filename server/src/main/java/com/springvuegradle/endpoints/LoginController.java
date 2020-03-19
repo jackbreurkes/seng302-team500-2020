@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +58,7 @@ public class LoginController {
 	 */
 
 	@PostMapping("/login")
+	@CrossOrigin
 	public ResponseEntity<?> login(@RequestBody(required = true) LoginRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
 		if (credentials.getEmail() == null || credentials.getPassword() == null) {
 			return ResponseEntity.status(HttpStatus.resolve(400)).body(new ErrorResponse("Missing email and/or password field"));
@@ -77,7 +79,7 @@ public class LoginController {
 					Instant.now().plus(loginSeconds, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
 			sessionRepo.save(session);
 			
-			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token));
+			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token, user.getUserId()));
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
 		}
