@@ -228,5 +228,22 @@ function checkProfileValidity(formData: UserApiFormat) {
     checkBioValidity(formData["bio"]);
     checkDobValidity(formData["date_of_birth"]);
     checkGenderValidity(formData["gender"]);
+export function returnValidityIssue(func: any, value: any) {
+    try {
+        func(value);
+        return true;
+    } catch (err) {
+        return err.message;
+    }
+}
+
+function checkProfileValidity(formData: UserApiFormat) {
+    checkFirstnameValidity(formData["firstname"]);
+    checkLastnameValidity(formData["lastname"]);
+    checkMiddlenameValidity(formData["middlename"]);
+    checkNicknameValidity(formData["nickname"]);
+    checkBioValidity(formData["bio"]);
+    checkDobValidity(formData["date_of_birth"]);
+    checkGenderValidity(formData["gender"]);
 
   }
