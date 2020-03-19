@@ -136,15 +136,15 @@ export async function editProfile(user: UserApiFormat) {
 
 export function checkFirstnameValidity(firstname: any) {
     if (!firstname || firstname.length < 1) {
-        throw new Error("no first name given");
+        throw new Error("No first name given");
     }
 
     if (firstname.length > 30) {
-        throw new Error("first name must be less than 30 characters");
+        throw new Error("First name must be less than 30 characters");
     }
 
     if (hasNumber(firstname)) {
-        throw new Error("first name cannot contain numbers");
+        throw new Error("First name cannot contain numbers");
     }
 
     return true;
@@ -152,15 +152,15 @@ export function checkFirstnameValidity(firstname: any) {
 
 export function checkLastnameValidity(lastname: any) {
     if (!lastname || lastname.length < 1) {
-        throw new Error("no last name given");
+        throw new Error("No last name given");
       }
   
     if (lastname.length > 30) {
-        throw new Error("last name must be less than 30 characters");
+        throw new Error("Last name must be less than 30 characters");
     }
   
     if (hasNumber(lastname)) {
-        throw new Error("last name cannot contain numbers");
+        throw new Error("Last name cannot contain numbers");
     }
 
     return true;
@@ -170,11 +170,11 @@ export function checkLastnameValidity(lastname: any) {
 
 export function checkMiddlenameValidity(middlename: any) {
         if (middlename && middlename.length > 30) {
-            throw new Error("middle name must be less than 30 characters");
+            throw new Error("Middle name must be less than 30 characters");
         }
     
         if (middlename && hasNumber(middlename)) {
-            throw new Error("middle name cannot contain numbers");
+            throw new Error("Middle name cannot contain numbers");
         }
     
         return true;
@@ -182,11 +182,11 @@ export function checkMiddlenameValidity(middlename: any) {
 
 export function checkNicknameValidity(nickname: any) {
         if (nickname && nickname.length < 6) {
-            throw new Error("nick name must be at least 6 characters long");
+            throw new Error("Nick name must be at least 6 characters long");
         }
     
         if (nickname && hasWhiteSpace(nickname)) {
-            throw new Error("nickname cannot contain white space");
+            throw new Error("Nickname cannot contain white space");
         }
     
         return true;
@@ -202,15 +202,15 @@ export function checkBioValidity(bio: any) {
 
 export function checkDobValidity(date_of_birth: any) {
         if (!date_of_birth) {
-            throw new Error("date of birth cannot be empty");
+            throw new Error("Date of birth cannot be empty");
         }
         const date = Date.parse(date_of_birth);
             if (isNaN(date)) {
-                throw new Error('valid date not given');
+                throw new Error("Valid date not given");
         }
 
         if (date > Date.now()) {
-            throw new Error("date of birth cannot be in the future");
+            throw new Error("Date of birth cannot be in the future");
         }
     
         return true;
@@ -218,7 +218,7 @@ export function checkDobValidity(date_of_birth: any) {
 
 export function checkGenderValidity(gender: any) {
     if (!gender) {
-        throw new Error("no gender given");
+        throw new Error("No gender given");
     }
     
         return true;
