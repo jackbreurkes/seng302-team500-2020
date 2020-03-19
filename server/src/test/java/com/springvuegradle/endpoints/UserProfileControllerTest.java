@@ -164,7 +164,7 @@ class UserProfileControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("no firstname field"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("No firstname field"));
     }
 
     @Test
@@ -184,7 +184,7 @@ class UserProfileControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("no password field"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("No password field"));
     }
 
     @Test
