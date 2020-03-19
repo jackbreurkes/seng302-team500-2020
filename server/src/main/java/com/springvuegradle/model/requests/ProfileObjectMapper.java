@@ -15,6 +15,7 @@ import com.springvuegradle.util.FormValidator;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -164,7 +165,7 @@ public class ProfileObjectMapper {
             profile.setBio(this.bio);
         }
         if (this.dob != null) {
-            Date validDob = FormValidator.getValidDateOfBirth(this.dob);
+            LocalDate validDob = FormValidator.getValidDateOfBirth(this.dob);
             if (validDob != null) {
                 profile.setDob(validDob);
             }
@@ -190,8 +191,7 @@ public class ProfileObjectMapper {
             throw new InvalidRequestFieldException("email already in use");
         }
         User user = new User();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date dob = dateFormat.parse(getDateOfBirth());
+        LocalDate dob = FormValidator.getValidDateOfBirth(getDateOfBirth());
         Gender gender = Gender.matchGender(this.gender);
         Profile profile = new Profile(user, getFirstname(), getLastname(), dob, gender);
 

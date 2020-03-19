@@ -2,16 +2,18 @@ package com.springvuegradle.util;
 
 import com.springvuegradle.model.data.Gender;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 
 /**
  * Used to consistently validate form fields between endpoints
  * 
  * @author Alex Hobson
- *
+ * @author Jack van Heugten Breurkes
  */
 public class FormValidator {
 
@@ -50,8 +52,10 @@ public class FormValidator {
 	 */
 	public static final int EMAIL_DOMAIN_MAX_LENGTH = 128;
 
-
-	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	/**
+	 * Minimum LocalDate for date of birth
+	 */
+	public static final LocalDate MIN_DATE_OF_BIRTH = LocalDate.of(1900, 01, 01);
 
 	/**
 	 * Validates a first, middle or lastname
@@ -60,14 +64,16 @@ public class FormValidator {
 	 *            Name to validate
 	 * @return true if the input is a valid name
 	 */
-	public static boolean validateName(String input) {
+	public static boolean validateName(@NotNull String input) {
+		if (input.length() == 0) return false;
+		if (input.isBlank()) return false; // only whitespace
+
 		// check for numbers
 		for (char c : input.toCharArray()) {
 			if (Character.isDigit(c)) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -78,15 +84,17 @@ public class FormValidator {
 	 *            Nickname to validate
 	 * @return true if the input is a valid nickname
 	 */
-	public static boolean validateNickname(String input) {
+	public static boolean validateNickname(@NotNull String input) {
 		// check if appropriate length
 		if (input.length() < NICKNAME_MIN_LENGTH || input.length() > NAME_MAX_LENGTH) {
 			return false;
 		}
 
 		// check for whitespace
-		if (input.contains(" ")) {
-			return false;
+		for (char c : input.toCharArray()) {
+			if (Character.isWhitespace(c)) {
+				return false;
+			}
 		}
 
 		return true;
@@ -99,7 +107,7 @@ public class FormValidator {
 	 *            Bio to validate
 	 * @return true if the input is a valid bio
 	 */
-	public static boolean validateBio(String input) {
+	public static boolean validateBio(@NotNull String input) {
 		// check if appropriate length
 		if (input.length() < BIO_MIN_LENGTH || input.length() > BIO_MAX_LENGTH) {
 			return false;
@@ -115,15 +123,22 @@ public class FormValidator {
 	 *            Date of birth string to validate
 	 * @return true if the input is a valid date of birth
 	 */
-	public static boolean validateDateOfBirth(String input) {
+	public static boolean validateDateOfBirth(@NotNull String input) {
+		if (input == null) throw new NullPointerException("date of birth cannot be null");
+
+		LocalDate date = null;
 		try {
-			dateFormat.parse(input);
-			return true;
-		} catch (ParseException e) {
+			date = LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
+		} catch (DateTimeParseException e) {
 			return false;
 		}
-	}
 
+		if (date.isBefore(MIN_DATE_OF_BIRTH) || date.isAfter(LocalDate.now())) {
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * Validates a gender
@@ -132,12 +147,12 @@ public class FormValidator {
 	 *           gender string to validate
 	 * @return true if the input is a valid gender
 	 */
-	public static boolean validateGender(String input) {
-		Gender gender = Gender.matchGender(input);
+	public static boolean validateGender(@NotNull String input) {
+		if (input == null) throw new NullPointerException();
+
+		Gender gender = Gender.matchGender(input); // returns null if invalid
 		return gender != null;
 	}
-
-
 
 	/**
 	 * Validates a password
@@ -146,7 +161,7 @@ public class FormValidator {
 	 *           password string to validate
 	 * @return true if the input is a valid password
 	 */
-	public static boolean validatePassword(String input) {
+	public static boolean validatePassword(@NotNull String input) {
 		// check if appropriate length
 		if (input.length() < PASSWORD_MIN_LENGTH) {
 			return false;
@@ -154,25 +169,6 @@ public class FormValidator {
 
 		return true;
 	}
-
-
-	/**
-	 * Returns a valid date of birth or null if not possible
-	 *
-	 * @param input
-	 *            Date of birth string to convert
-	 * @return the Date if a valid date exists or null if not possible
-	 */
-	public static Date getValidDateOfBirth(String input) {
-
-		try {
-			return dateFormat.parse(input);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-
-
 
 	/**
 	 * Validates an email address
@@ -182,21 +178,39 @@ public class FormValidator {
 	 * @return true if the input is a valid email
 	 */
 	public static boolean validateEmail(String input) {
+		if (input.length() == 0) return false;
+
 		// check if there is exactly 1 '@'
-		if (input.indexOf("@") != -1 && input.indexOf("@") == input.lastIndexOf("@")) {
-			String[] components = input.split(Pattern.quote("@"));
-
-			if (components[0].length() == 0 || components[0].length() > EMAIL_USER_MAX_LENGTH) {
-				return false;
-			}
-
-			if (components[1].length() == 0 || components[1].length() > EMAIL_DOMAIN_MAX_LENGTH) {
-				return false;
-			}
-
-			return true;
-		} else {
+		if (!input.contains("@") || input.indexOf("@") != input.lastIndexOf("@")) {
 			return false;
+		}
+
+		String[] components = input.split(Pattern.quote("@"));
+		if (components.length != 2) return false;
+
+		if (components[0].length() == 0 || components[0].length() > EMAIL_USER_MAX_LENGTH) {
+			return false;
+		}
+
+		if (components[1].length() == 0 || components[1].length() > EMAIL_DOMAIN_MAX_LENGTH) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns a valid date of birth as a LocalDate or null if not possible
+	 *
+	 * @param input
+	 *            date of birth string to convert
+	 * @return the LocalDate if a valid date exists or null if not possible
+	 */
+	public static LocalDate getValidDateOfBirth(String input) {
+		try {
+			return LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
+		} catch (DateTimeParseException e) {
+			return null;
 		}
 	}
 }

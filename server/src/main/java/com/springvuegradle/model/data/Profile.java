@@ -1,8 +1,7 @@
 package com.springvuegradle.model.data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 
@@ -81,7 +80,7 @@ public class Profile implements Serializable {
     /**
      * Date of birth of the profile
      */
-    private Date dob;
+    private LocalDate dob;
     
     /**
      * Gender of the profile
@@ -101,7 +100,7 @@ public class Profile implements Serializable {
      * @param dob Date of birth of the user
      * @param gender Gender of the user
      */
-    public Profile(User user, String firstName, String lastName, Date dob, Gender gender) {
+    public Profile(User user, String firstName, String lastName, LocalDate dob, Gender gender) {
     	this.user = user;
     	this.id = user.getUserId();
     	this.firstName = firstName;
@@ -170,7 +169,7 @@ public class Profile implements Serializable {
 	 * Get the date of birth of this profile
 	 * @return date of birth of this profile
 	 */
-	public Date getDob() {
+	public LocalDate getDob() {
 		return dob;
 	}
 
@@ -240,7 +239,7 @@ public class Profile implements Serializable {
 	 * Set the date of birth of this profile
 	 * @param dob DOB to set to (mandatory field cannot be null)
 	 */
-	public void setDob(Date dob) {
+	public void setDob(LocalDate dob) {
 		if (dob == null) {
 			throw new IllegalArgumentException("Cannot set dob to null (mandatory field)");
 		}
