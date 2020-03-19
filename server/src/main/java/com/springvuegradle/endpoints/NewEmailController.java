@@ -26,8 +26,7 @@ public class NewEmailController {
 	public Object newEmailRequest(@RequestBody NewEmailRequest credentials, @PathVariable("profileId") long profileId,
 			HttpServletRequest request) {
 		if (request.getAttribute("authenticatedid") == null) {
-			return ResponseEntity.badRequest()
-					.body(new ErrorResponse("you must be authenticated"));
+			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
 		}
 
 		long id = (long) request.getAttribute("authenticatedid");

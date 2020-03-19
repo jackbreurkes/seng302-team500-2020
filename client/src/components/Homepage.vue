@@ -45,6 +45,7 @@
 
         <label for="fitnessDropdown">Select a Fitness Level:</label>
         <select id="fitnessDropdown" v-model="selectedFitnessLevel">
+          <option value=-1>Not specified</option>
           <option value=0>Muffin</option>
           <option value=1>Potato</option>
           <option value=2>Carrot</option>
@@ -58,7 +59,7 @@
         <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
 
-      
+
         <br>
         <button @click="logoutButtonClicked">Logout</button>
       </div>
@@ -84,7 +85,7 @@
         type="password"
         required></v-text-field>
     </v-form>
-      
+
       <button id="updatePassword" @click="updatePassword">Update your password</button>
 
       <br>
@@ -126,14 +127,14 @@
   // app Vue instance
 const Homepage =  Vue.extend({
     name: 'Homepage',
-    
+
     // app initial state
     data: function() {
       return {
         currentUser: {} as UserApiFormat,
         passportCountries: [],
         selectedCountry: "" as any,
-        selectedFitnessLevel: 0,
+        selectedFitnessLevel: -1,
         newEmail: "",
         email: "",
         oldPassword: '',
@@ -158,7 +159,7 @@ const Homepage =  Vue.extend({
         .then((user) => {
           this.currentUser = user;
           if (this.currentUser) {
-            this.selectedFitnessLevel = this.currentUser.fitness || 0;
+            this.selectedFitnessLevel = this.currentUser.fitness || -1;
           }
         })
         .catch((err) => {
@@ -174,7 +175,7 @@ const Homepage =  Vue.extend({
         try {
           const countries = JSON.parse(Http.responseText)
           this.passportCountries = countries
-        } catch (err) { 
+        } catch (err) {
           console.error(err)
         }
       }
