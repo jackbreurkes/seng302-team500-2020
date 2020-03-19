@@ -1,20 +1,44 @@
 <template>
   <div>
     <v-form v-model="isValid">
-      <v-container fluid>
-        <v-col
-        cols="12"
-        sm="6"
-        >
-          <router-link to="/register">
-            <p>this is link to the register page</p>
-          </router-link>
-          <h1>This is the login page</h1>
-          <v-text-field v-model="email" label="email" outlined rounded dense filled background-color=#c4daff></v-text-field>
-          <v-text-field v-model="password" label="password" type="password" outlined rounded dense filled background-color=#c4daff></v-text-field>
-          <v-btn @click="saveButtonClicked">Save</v-btn>
-          <p>{{ errorMessage }}</p>
-        </v-col>
+      <v-container class="fill-height" fluid>
+          <v-row
+            align="center"
+            justify="center"
+          >
+            <v-col
+            cols="12"
+            sm="8"
+            md="4"
+            >
+              <v-card class="elevation-12" width=100%>
+                <v-toolbar
+                  color="primary"
+                  dark
+                  flat
+                >
+                <v-toolbar-title>Login:</v-toolbar-title>
+                
+                </v-toolbar>
+                  <v-card-text>
+                    <p>New Here?</p>
+                    <router-link to="/register">
+                      <p>Register</p>
+                    </router-link>
+                  </v-card-text>
+                  <v-card-text>
+                    <v-text-field v-model="email" label="email" dense filled background-color=#c4daff m></v-text-field>
+                    <v-text-field v-model="password" label="password" type="password" dense filled background-color=#c4daff ></v-text-field>
+                  </v-card-text>
+                  <v-card-actions>
+                    <p>{{ errorMessage }}</p>
+                    <v-spacer/>
+                    <v-btn @click="saveButtonClicked">Save</v-btn>
+                  </v-card-actions>
+                  
+              </v-card>
+            </v-col>
+          </v-row>
       </v-container>
     </v-form>
     
@@ -73,4 +97,7 @@
 
 <style>
   [v-cloak] { display: none; }
+  p {
+    display: inline-block;
+  }
 </style>
