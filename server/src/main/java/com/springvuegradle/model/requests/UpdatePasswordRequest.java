@@ -1,29 +1,30 @@
 package com.springvuegradle.model.requests;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 /**
  * Class for update password requests
- * @Author Michael Freeeman
+ * @author Michael Freeeman
+ * @author Jack van Heugten Breurkes
+ * @author Josh Yee
  */
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UpdatePasswordRequest {
 
-    private long profile_id;
     private String oldPassword, newPassword, repeatPassword;
 
     protected UpdatePasswordRequest() {}
 
-    public UpdatePasswordRequest(long profile_id, String old_password, String new_password, String repeat_password){
-        this.profile_id = profile_id;
-        this.oldPassword = old_password;
-        this.newPassword = new_password;
-        this.repeatPassword = repeat_password;
-    }
-
-    public long getProfile_id() {
-        return profile_id;
-    }
-
-    public void setProfile_id(long profile_id) {
-        this.profile_id = profile_id;
+    /**
+     * @param oldPassword the user's old password
+     * @param newPassword the new password to set
+     * @param repeatPassword repeat of the newPassword field
+     */
+    public UpdatePasswordRequest(String oldPassword, String newPassword, String repeatPassword){
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
+        this.repeatPassword = repeatPassword;
     }
 
     public String getOldPassword() {
