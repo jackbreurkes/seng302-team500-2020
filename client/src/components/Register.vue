@@ -4,34 +4,50 @@
     
 
     <v-form submit="false">
-      <v-container fluid>
-        <v-col
-        cols="12"
-        sm="6"
+      <v-container class="fill-height" fluid>
+        <v-row
+        align="center"
+        justify="center"
         >
-          <router-link to="/login">
-           <p>Log In</p>
-          </router-link>
-          <p class="font-weight-bold">Blue fields are mandatory</p>
-          <v-text-field label="lastname" ref="lastname" id="lastname" type="text" v-model="lastName" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-text-field label="firstname" ref="firstname" id="firstname" type="text" v-model="firstName" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-text-field label="middlename" ref="middlename" id="middlename" type="text" v-model="middleName" outlined rounded dense></v-text-field>
-          <v-text-field label="nickname" ref="nickname" id="nickname" type="text" v-model="nickname" outlined rounded dense></v-text-field>
-          <v-text-field label="email" ref="email" id="email" type="email" v-model="email" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-text-field label="password" ref="password" id="password" type="password" v-model="password" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-text-field label="confirm password" ref="confirm-password" id="confirm-password" type="password" v-model="confirmPassword" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-text-field label="bio" ref="bio" id="bio" type="text" v-model="bio" outlined rounded dense></v-text-field>
-          <v-text-field label="date of birth" ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" outlined rounded dense background-color=#c4daff></v-text-field>
-          <v-select label="gender" v-model="gender" ref="gender" id="gender" :items="genders" outlined rounded dense background-color=#c4daff></v-select>
-
-          <!-- <br> 2x just for aesthetic spacing -->
-          <br>
-          <br>
-          <v-btn @click="saveButtonClicked" co>Save</v-btn>
-          <br>
-          <br>
-          <p class="font-weight-bold">{{ errorMessage }}</p>
-        </v-col>
+          <v-col
+          cols="12"
+          sm="8"
+          md="4"
+          >
+            <v-card class="elevation-12" width=100%>
+              <v-toolbar
+                color="primary"
+                dark
+                flat
+              >
+              <v-toolbar-title>Register:</v-toolbar-title>   
+              </v-toolbar>
+              <v-card-text>
+                <p>Already registered?</p>
+                <router-link to="/login">
+                  <p class="pl-1">Log In</p>
+                </router-link>
+                <br>
+                <p class="text--disabled">*Blue fields are mandatory</p>
+                <v-text-field label="lastname" ref="lastname" id="lastname" type="text" v-model="lastName" background-color=#c4daff></v-text-field>
+                <v-text-field label="firstname" ref="firstname" id="firstname" type="text" v-model="firstName" background-color=#c4daff></v-text-field>
+                <v-text-field label="middlename" ref="middlename" id="middlename" type="text" v-model="middleName"></v-text-field>
+                <v-text-field label="nickname" ref="nickname" id="nickname" type="text" v-model="nickname"></v-text-field>
+                <v-text-field label="email" ref="email" id="email" type="email" v-model="email" background-color=#c4daff></v-text-field>
+                <v-text-field label="password" ref="password" id="password" type="password" v-model="password" background-color=#c4daff></v-text-field>
+                <v-text-field label="confirm password" ref="confirm-password" id="confirm-password" type="password" v-model="confirmPassword" background-color=#c4daff></v-text-field>
+                <v-text-field label="bio" ref="bio" id="bio" type="text" v-model="bio"></v-text-field>
+                <v-text-field label="date of birth" ref="date-of-birth" id="date-of-birth" type="date" v-model="dateOfBirth" background-color=#c4daff></v-text-field>
+                <v-select label="gender" v-model="gender" ref="gender" id="gender" :items="genders" background-color=#c4daff></v-select>
+              </v-card-text>
+              <v-card-actions>
+                <p class="font-weight-bold">{{ errorMessage }}</p>
+                <v-spacer />
+                <v-btn @click="saveButtonClicked" >Register</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-container>
     </v-form>
 
@@ -125,4 +141,8 @@ export default Register;
 .mandatory {
   background-color: #ccf;
 }
+
+p {
+    display: inline-block;
+  }
 </style>
