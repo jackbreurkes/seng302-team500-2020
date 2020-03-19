@@ -29,6 +29,19 @@ const instance = axios.create({
 });
 
 
+function getMyUserId() {
+  return localStorage.getItem("userId")
+}
+
+function setMyUserId(value: string | null) {
+  if (value === null) {
+    localStorage.removeItem("userId")
+  } else {
+    localStorage.setItem("userId", value);
+  }
+}
+
+
 /**
  * Attempts to log the user into their account via POST /{{SERVER_URL}}/login
  * On unsuccessful login will throw an error containing the message from the endpoint.
@@ -47,7 +60,7 @@ export async function login(email: string, password: string): Promise<boolean> {
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
-  localStorage.setItem("userId", responseData.profile_id);
+  setMyUserId(responseData.profile_id);
   return true;
 }
 
@@ -58,7 +71,7 @@ export async function login(email: string, password: string): Promise<boolean> {
 export async function getCurrentUser() {
   let res;
   try {
-    res = await instance.get("profiles/" + localStorage.userId);
+    res = await instance.get("profiles/" + getMyUserId());
   } catch (e) {
     console.error(e.response);
     throw new Error(e.response.data.error);
@@ -78,7 +91,7 @@ export async function logout() {
     throw new Error(res.statusText);
   }
   localStorage.removeItem("token")
-  localStorage.removeItem("userId")
+  setMyUserId(null); // removes userId
 }
 
 /**
@@ -141,6 +154,22 @@ export async function saveCurrentUser(user: UserApiFormat) {
       }
     }
     await instance.put("profiles/" + localStorage.userId, notNullUser, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error);
+  }
+}
+
+
+export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
+  let res;
+  try {
+    res = await instance.post("profiles/" + getMyUserId() + "/password",
+    {old_password, new_password, repeat_password},
+    {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
