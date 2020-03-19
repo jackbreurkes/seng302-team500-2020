@@ -41,9 +41,9 @@
                 <v-select label="gender" v-model="gender" ref="gender" id="gender" :items="genders" background-color=#c4daff></v-select>
               </v-card-text>
               <v-card-actions>
-                <p class="font-weight-bold">{{ errorMessage }}</p>
+                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-spacer />
-                <v-btn @click="saveButtonClicked" >Register</v-btn>
+                <v-btn @click="saveButtonClicked" color="primary" >Register</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
