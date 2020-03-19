@@ -25,8 +25,8 @@ dev-build:
     - cp -r ./client/dist/ ../client-dev/
     - cp -r ./server/build/libs ../server-dev
     - fuser -k 9499/tcp 9500/tcp || if [ $? -eq 1 ]; then echo "Server was not running"; fi
-    # - java -jar ../server-dev/libs/server-0.0.1-SNAPSHOT.jar --server.port=9499 # convert to be run with service
-    # - serve -s ../client-dev/dist -l 9500 # convert to be run with service
+    - screen -d -m /home/sengstudent/deployclienttest.sh
+    - screen -d -m /home/sengstudent/deployservertest.sh
   except:
     - tags
 
