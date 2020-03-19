@@ -67,16 +67,30 @@ export async function getCurrentUser() {
   return user;
 }
 
-
 export async function logout() {
-  let res = await sendRequest("logmeout",
+  /*let res = await sendRequest("logmeout",
   {
     credentials: "include",
     method: "DELETE"
   })
   if (res.status !== 204) {
+    alert(JSON.stringify(res.statusText))
     throw new Error(res.statusText);
   }
+  alert(JSON.stringify(res))*/
+
+  try {
+    await instance.delete("logmeout", {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+    alert(JSON.stringify(instance.toString()));
+  } catch (e) {
+    alert(JSON.stringify(e));
+    throw new Error(e.response.data.error);
+  }
+
   localStorage.removeItem("token")
   localStorage.removeItem("userId")
 }
@@ -132,49 +146,12 @@ async function sendRequest(endpoint: string, options: RequestInit, authenticated
 }
 
 
-export async function getCurrentUser() {
-  let res = await sendRequest("profiles", {
-    credentials: 'include',
-    method: "GET"
-  });
-  if (res.status !== 200) {
-    throw new Error("failed to get current user")
-  }
-  let user: UserApiFormat = await res.json();
-  return user;
-}
-
-
-async function saveUser(user: UserApiFormat) {
-  /*localStorage.currentUser = JSON.stringify(user)
-
-  let users: Array<UserApiFormat> = JSON.parse(localStorage.users)
-  for (let index = 0; index < users.length; index++) {
-    if (users[index].primary_email === user.primary_email) {
-      users.splice(index, 1, user);
-    }
-  }
-  localStorage.users = JSON.stringify(users)*/
-
-  let res = await sendRequest('/profiles/' + user.profile_id, {credentials: 'include', method: "PUT", body: JSON.stringify(user)}, true);
-  if (res.status != 200) {
-    throw new Error("Failed to save user.");
-  }
-}
-
 export async function saveCurrentUser() {
   const user = await getCurrentUser();
   saveUser(user);
 }
 
-export async function getAll(): Promise<Array<UserApiFormat>> {
-  return _getUsersFromLocalStorage();
-}
-
-
-function _getUsersFromLocalStorage(): Array<UserApiFormat> {
-  let users: UserApiFormat[] = [];
-export async function saveCurrentUser(user: UserApiFormat) {
+export async function saveUser(user: UserApiFormat) {
   try {
     let notNullUser = user as any;
     for (let key in notNullUser) {

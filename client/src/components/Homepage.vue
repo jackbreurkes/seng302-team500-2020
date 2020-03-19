@@ -197,7 +197,8 @@ const Homepage =  Vue.extend({
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            console.log("updatePassword")
+            console.log("logout")
+            history.go(0);
           })
           .catch((err: any) => {
             console.error(err);
