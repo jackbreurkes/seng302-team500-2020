@@ -1,8 +1,7 @@
 package com.springvuegradle.endpoints;
 
-import java.security.NoSuchAlgorithmException;
+import javax.servlet.http.HttpServletRequest;
 
-import com.springvuegradle.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,15 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.springvuegradle.auth.ChecksumUtils;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Session;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePrimaryEmailRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public class UpdatePrimaryEmailController {
@@ -32,8 +26,7 @@ public class UpdatePrimaryEmailController {
 	@CrossOrigin
 	public Object UpdatePrimaryEmail(@RequestBody UpdatePrimaryEmailRequest credentials, String newAddress, HttpServletRequest request) {
 		if (request.getAttribute("authenticatedid") == null) {
-			return ResponseEntity.badRequest()
-					.body(new ErrorResponse("you must be authenticated"));
+			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
 		}
 		int numEmails = emailRepo.getNumberOfEmails(credentials.getUser());
 		String oldAddress = emailRepo.getPrimaryEmail(userRepository.getOne(credentials.getUser()));

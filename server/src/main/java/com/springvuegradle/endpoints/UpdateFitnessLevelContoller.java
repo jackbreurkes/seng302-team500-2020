@@ -31,8 +31,7 @@ public class UpdateFitnessLevelContoller {
     @CrossOrigin
     public Object updateFitness(@RequestBody UpdateFitnessRequest updateRequest, HttpServletRequest request) throws NoSuchAlgorithmException {
         if (request.getAttribute("authenticatedid") == null) {
-            return ResponseEntity.badRequest()
-                    .body(new ErrorResponse("you must be authenticated"));
+        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
         }
         try {
         	User user = userRepository.findById(updateRequest.getUuid()).get();

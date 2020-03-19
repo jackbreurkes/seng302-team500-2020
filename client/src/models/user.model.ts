@@ -1,7 +1,7 @@
 import { RegisterFormData } from '@/controllers/register.controller';
 import { UserApiFormat } from '@/scripts/User';
-import axios from 'axios'  
-  
+import axios from 'axios'
+
 
 /**
  * Response format for POST /login
@@ -23,9 +23,9 @@ axios.interceptors.request.use(function (config) {
   return config;
 })
 
-const instance = axios.create({  
-  baseURL: SERVER_URL,  
-  timeout: 10000  
+const instance = axios.create({
+  baseURL: SERVER_URL,
+  timeout: 10000
 });
 
 
@@ -175,9 +175,18 @@ export async function getAll(): Promise<Array<UserApiFormat>> {
 function _getUsersFromLocalStorage(): Array<UserApiFormat> {
   let users: UserApiFormat[] = [];
 export async function saveCurrentUser(user: UserApiFormat) {
-  let res;
   try {
-    res = await instance.post("profiles", user);
+    let notNullUser = user as any;
+    for (let key in notNullUser) {
+      if (notNullUser[key] === null) {
+        delete notNullUser[key];
+      }
+    }
+    await instance.put("profiles/" + localStorage.userId, notNullUser, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
   } catch (e) {
     throw new Error(e.response.data.error);
   }
