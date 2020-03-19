@@ -2,47 +2,72 @@ package com.springvuegradle.model.requests;
 
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.util.FormValidator;
-
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.util.FormValidator;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ProfileObjectMapper {
 
-    private String primary_email;
-    private String fname, lname, mname, nickname, password, bio;
+	@JsonProperty(value = "primary_email", required = false)
+    private String primaryEmail;
+	
+	@JsonProperty(value = "firstname", required = false)
+    private String fname;
+	
+	@JsonProperty(value = "lastname", required = false)
+	private String lname;
+	
+	@JsonProperty(value = "middlename", required = false)
+	private String mname;
+	
+	@JsonProperty(value = "nickname", required = false)
+	private String nickname;
+	
+	@JsonProperty(value = "password", required = false)
+	private String password;
+	
+	@JsonProperty(value = "bio", required = false)
+	private String bio;
+	
+	@JsonProperty(value = "date_of_birth", required = false)
     private String dob;
+    
+	@JsonProperty(value = "gender", required = false)
     private String gender;
+    
+	@JsonProperty(value = "fitness", required = false)
     private Integer fitness;
+    
     private List<String> parseErrors = new ArrayList<>();
 
-    private SimpleDateFormat format;
-
-    public ProfileObjectMapper() {}
+    protected ProfileObjectMapper() {}
 
     public String getPrimaryEmail() {
-        return primary_email;
+        return primaryEmail;
     }
 
     public void setPrimaryEmail(String primary_email) {
         if (!FormValidator.validateEmail(primary_email)) {
-            parseErrors.add(new String("invalid email address"));
+            parseErrors.add(new String("Invalid e-mail address"));
         }
-        this.primary_email = primary_email;
+        this.primaryEmail = primary_email;
     }
 
     public String getFirstname() {
@@ -51,7 +76,7 @@ public class ProfileObjectMapper {
 
     public void setFirstname(String fname) {
         if (!FormValidator.validateName(fname)) {
-            parseErrors.add( new String("invalid first name"));
+            parseErrors.add( new String("Invalid first name"));
         }
         this.fname = fname;
     }
@@ -62,7 +87,7 @@ public class ProfileObjectMapper {
 
     public void setLastname(String lname) {
         if (!FormValidator.validateName(lname)) {
-            parseErrors.add( new String("invalid last name"));
+            parseErrors.add( new String("Invalid last name"));
         }
         this.lname = lname;
     }
@@ -73,7 +98,7 @@ public class ProfileObjectMapper {
 
     public void setMiddlename(String mname) {
         if (!FormValidator.validateName(mname)) {
-            parseErrors.add( new String("invalid middle name"));
+            parseErrors.add( new String("Invalid middle name"));
         }
         this.mname = mname;
     }
@@ -84,7 +109,7 @@ public class ProfileObjectMapper {
 
     public void setNickname(String nickname) {
         if (!FormValidator.validateNickname(nickname)) {
-            parseErrors.add( new String("invalid nickname"));
+            parseErrors.add( new String("Invalid nickname"));
         }
         this.nickname = nickname;
     }
@@ -95,7 +120,7 @@ public class ProfileObjectMapper {
 
     public void setPassword(String password) {
         if (!FormValidator.validatePassword(password)) {
-            parseErrors.add("invalid password");
+            parseErrors.add("Invalid password");
         }
         this.password = password;
     }
@@ -106,7 +131,7 @@ public class ProfileObjectMapper {
 
     public void setBio(String bio) {
         if (!FormValidator.validateBio(bio)) {
-            parseErrors.add( new String("invalid bio"));
+            parseErrors.add( new String("Invalid bio"));
         }
         this.bio = bio;
     }
@@ -117,7 +142,7 @@ public class ProfileObjectMapper {
 
     public void setDateOfBirth(String dateOfBirth) {
         if (!FormValidator.validateDateOfBirth(dateOfBirth)) {
-            parseErrors.add( new String("invalid date of birth"));
+            parseErrors.add( new String("Invalid date of birth"));
         }
         this.dob = dateOfBirth;
     }
@@ -128,7 +153,7 @@ public class ProfileObjectMapper {
 
     public void setGender(String gender) {
         if (!FormValidator.validateGender(gender)) {
-            parseErrors.add( new String("invalid gender"));
+            parseErrors.add( new String("Invalid gender"));
         }
         this.gender = gender;
     }
@@ -188,7 +213,7 @@ public class ProfileObjectMapper {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
-            throw new InvalidRequestFieldException("email already in use");
+            throw new InvalidRequestFieldException("E-mail already in use");
         }
         User user = new User();
         LocalDate dob = FormValidator.getValidDateOfBirth(getDateOfBirth());
@@ -215,24 +240,24 @@ public class ProfileObjectMapper {
     private void checkRequiredFields() throws InvalidRequestFieldException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            Date dob = dateFormat.parse(getDateOfBirth());
+            dateFormat.parse(getDateOfBirth());
         } catch (ParseException e) {
-            throw new InvalidRequestFieldException("invalid date");
+            throw new InvalidRequestFieldException("Invalid date");
         }
         if (getFirstname() == null) {
-            throw new InvalidRequestFieldException("no firstname field");
+            throw new InvalidRequestFieldException("No firstname field");
         }
         if (getLastname() == null) {
-            throw new InvalidRequestFieldException("no lastname field");
+            throw new InvalidRequestFieldException("No lastname field");
         }
         if (getPassword() == null) {
-            throw new InvalidRequestFieldException("no password field");
+            throw new InvalidRequestFieldException("No password field");
         }
         if (Gender.matchGender(this.gender) == null) {
-            throw new InvalidRequestFieldException("invalid gender");
+            throw new InvalidRequestFieldException("Invalid gender");
         }
         if (getPrimaryEmail() == null) {
-            throw new InvalidRequestFieldException("no primary email");
+            throw new InvalidRequestFieldException("No primary email");
         }
     }
 }
