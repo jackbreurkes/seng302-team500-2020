@@ -13,6 +13,6 @@ import com.springvuegradle.model.data.Email;
 public interface EmailRepository extends JpaRepository<Email, String> {
 
 	public Email findByEmail(String email);
-	public int getNumberOfEmails(long user);
+	public int getNumberOfEmails(User user);
 	public String getPrimaryEmail(User u);
 }

@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser } from '../models/user.model'
+import { logout, getCurrentUser, saveCurrentUser, addEmail } from '../models/user.model'
 import { hasNumber, hasWhiteSpace, isValidEmail } from '@/scripts/LoginRegisterHelpers';
 import { UserApiFormat } from '@/scripts/User';
 
@@ -77,7 +77,7 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     await saveCurrentUser();
 }
 
-export async function addEmail(newEmail: string) {
+export async function addNewEmail(newEmail: string) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("no active user found");
@@ -85,8 +85,8 @@ export async function addEmail(newEmail: string) {
     if (!user.additional_email) {
         user.additional_email = []
     }
-    user.additional_email.push(newEmail);
-    await saveCurrentUser();
+    await addEmail(newEmail); 
+    
 }
 
 export async function deleteEmail(email: string) {

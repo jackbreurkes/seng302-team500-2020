@@ -117,7 +117,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary,
+  import { logoutCurrentUser, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary,
     checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from '../controllers/profile.controller'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -217,7 +217,7 @@ const Homepage =  Vue.extend({
               console.log(err)
             })
             // refresh page after adding passport
-        history.go(0);
+        //history.go(0);
         }
       },
 
@@ -235,7 +235,7 @@ const Homepage =  Vue.extend({
 
       addEmailAddress: function() {
         if(isValidEmail(this.newEmail)) {
-          addEmail(this.newEmail)
+          addNewEmail(this.newEmail)
           .then(() => {
             console.log("Email address added");
           })
@@ -243,7 +243,7 @@ const Homepage =  Vue.extend({
             console.log(err);
           })
           // refresh page after adding emails
-          history.go(0);
+          //history.go(0);
         } else {
           alert("Not valid email")
         }
