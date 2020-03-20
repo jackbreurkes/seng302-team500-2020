@@ -49,7 +49,7 @@ public class NewEmailController {
 		}
 		
 		Email email = emailRepo.findByEmail(credentials.getEmail());
-		User user = email.getUser();
+		//User user = email.getUser();
 		/*String hashedRequestPassword = ChecksumUtils.hashPassword(user.getUserId(), credentials.getPassword());
 		
 		if (hashedRequestPassword.equals(user.getPassword())) {

@@ -18,11 +18,11 @@ public class NewEmailRequest {
 	private long profile_id;
 	private String email;
 	private int numEmails;
-	private String additional_email;
+	private String[] additional_email;
 	
 	protected NewEmailRequest() {};
 	
-	public NewEmailRequest(long profile_id, String email) {
+	public NewEmailRequest(long profile_id, String additional_email, String email) {
 		this.profile_id = profile_id;
 		this.email = email;
 		this.numEmails = 0;
@@ -39,12 +39,8 @@ public class NewEmailRequest {
 		return this.numEmails;
 	}
 	
-	public String getAdditionalEmail() {
+	public String[] getAdditionalEmail() {
 		return this.additional_email;
-	}
-	
-	public void setAdditionalEmail(String emails) {
-		this.additional_email = emails;
 	}
 	
 }
