@@ -183,9 +183,10 @@ public class ProfileObjectMapper {
         if (this.mname != null) {
             profile.setMiddleName(this.mname);
         }
-        if (this.nickname != null) {
+        /*if (this.nickname != null) {
             profile.setNickName(this.nickname);
-        }
+        }*/
+        profile.setNickName(this.nickname);
         if (this.bio != null) {
             profile.setBio(this.bio);
         }

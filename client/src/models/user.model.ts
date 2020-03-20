@@ -156,7 +156,7 @@ export async function addEmail(email: string) {
     } else {
       emails.push(email);
     }
-    let emailDict = {"additional_email": emails}
+    let emailDict = {"additional_email": emails, "email": "wwwwwwwwwww@wwww.com"}
     console.log(JSON.stringify(emailDict));
     let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
       headers: {
