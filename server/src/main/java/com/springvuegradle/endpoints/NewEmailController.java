@@ -50,6 +50,8 @@ public class NewEmailController {
 		System.out.println(profileId);
 		User user = userRepo.getOne(profileId);
 		
+		int numEmails = emailRepo.getNumberOfEmails(user);
+		
 		JSONParser parser = new JSONParser(raw);
 		//JSONObject json;
 		LinkedHashMap<String, Object> json = null;
@@ -76,9 +78,14 @@ public class NewEmailController {
 					System.out.println(entry.getKey());
 					System.out.println(entry.getValue());
 					if (!emailRepo.existsById(entry.getValue())) {
-						Email newEmail = new Email(user, emailString, false);
-						emailRepo.save(newEmail);
-						addedEmail = true;
+						if (numEmails >= 5) {
+							return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses reached (5)"));
+						} else {
+							Email newEmail = new Email(user, emailString, false);
+							emailRepo.save(newEmail);
+							addedEmail = true;
+							numEmails++;
+						}
 					} else if (emailRepo.findByEmail(emailString).getUser().getUserId() != profileId) {
 						return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Email address already registered to another user."));
 					}
@@ -110,9 +117,6 @@ public class NewEmailController {
 		} else {
 			return new ErrorResponse("Maximum email addresses reached (5)");
 		}	*/
-		
-		return ResponseEntity.status(HttpStatus.resolve(201)).body("HI");
-
 	}
 	
 	
