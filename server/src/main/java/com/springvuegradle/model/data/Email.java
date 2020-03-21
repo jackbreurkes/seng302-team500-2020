@@ -13,12 +13,14 @@ import javax.persistence.Table;
  * JPA class for Email addresses in persistent storage
  * @author Alex Hobson
  * @author Riley Symon
+ * @author Olivia Mackintosh
  *
  */
 @Entity
 @Table(name = "email")
 @NamedQuery(name = "Email.findByEmail", query = "select e from Email e where e.email = ?1")
 @NamedQuery(name = "Email.getNumberOfEmails", query = "select count(user) from Email e where e.user = ?1")
+@NamedQuery(name = "Email.getNonPrimaryEmails", query = "select e from Email e where e.user = ?1 and isPrimary = false")
 @NamedQuery(name = "Email.getPrimaryEmail", query = "select email from Email e where e.user = ?1 and isPrimary = true")
 public class Email implements Serializable {
 
