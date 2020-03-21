@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,24 +40,60 @@ public class NewEmailController {
 	@Autowired
 	private EmailRepository emailRepo;
 	@Autowired
-	private UserRepository userRepository;
+	private UserRepository userRepo;
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody String raw, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletResponse response) throws NoSuchAlgorithmException {
+		System.out.println("========================================================================");
 		System.out.println(raw);
+		System.out.println(profileId);
+		User user = userRepo.getOne(profileId);
 		
 		JSONParser parser = new JSONParser(raw);
 		//JSONObject json;
+		LinkedHashMap<String, Object> json = null;
 		try {
-			LinkedHashMap<String, String> json = (LinkedHashMap<String, String>) parser.parse();
+			json = (LinkedHashMap<String, Object>) parser.parse();
 			System.out.println("json");
 			System.out.println(json);
 		} catch (org.apache.tomcat.util.json.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
 		}
 		
+		if (json.containsKey("additional_email")) {
+			System.out.println("He has emails! <3");
+			try {
+				LinkedHashMap<String, String> emails = (LinkedHashMap<String, String>) json.get("additional_email");
+				System.out.println(emails.get(0));
+				System.out.println(emails.size());
+				System.out.println(emails.toString());
+				boolean addedEmail = false;
+				for (Entry<String, String> entry : emails.entrySet()) {
+					String emailString = entry.getValue();
+					System.out.println(entry.getKey());
+					System.out.println(entry.getValue());
+					if (!emailRepo.existsById(entry.getValue())) {
+						Email newEmail = new Email(user, emailString, false);
+						emailRepo.save(newEmail);
+						addedEmail = true;
+					} else if (emailRepo.findByEmail(emailString).getUser().getUserId() != profileId) {
+						return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Email address already registered to another user."));
+					}
+				}
+				if (addedEmail) {
+					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully added email(s) to account.");
+				} else {
+					return ResponseEntity.status(HttpStatus.resolve(200)).body("No email(s) to add to account.");
+				}
+			} catch (Error e) {
+				return ResponseEntity.status(HttpStatus.resolve(400)).body("Illformatted additional email list.");
+			}
+		} else {
+			return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
+		}
 		
 		/*User user = userRepository.findById(profileId).get();
 		int numEmails = emailRepo.getNumberOfEmails(user);
@@ -78,14 +115,6 @@ public class NewEmailController {
 
 	}
 	
-	
-	
-	/*public ResponseEntity<?> updateEmails(@RequestBody HttpEntity<String> httpEntity, HttpServletResponse response) throws NoSuchAlgorithmException {
-		String json = httpEntity.getBody();
-		System.out.println(json);
-		
-		return ResponseEntity.status(HttpStatus.resolve(201)).body("HI");
-	}*/
 	
 	
 	/*public ResponseEntity<?> updateEmails(@RequestBody NewEmailRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
