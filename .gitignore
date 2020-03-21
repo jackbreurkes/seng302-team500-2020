@@ -36,3 +36,6 @@ out/
 
 ### System Files ###
 **/.DS_Store
+
+### Reports ###
+client/coverage/

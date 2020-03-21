@@ -65,7 +65,7 @@ public class ProfileObjectMapper {
 
     public void setPrimaryEmail(String primary_email) {
         if (!FormValidator.validateEmail(primary_email)) {
-            parseErrors.add(new String("invalid email address"));
+            parseErrors.add(new String("Invalid e-mail address"));
         }
         this.primaryEmail = primary_email;
     }
@@ -76,7 +76,7 @@ public class ProfileObjectMapper {
 
     public void setFirstname(String fname) {
         if (!FormValidator.validateName(fname)) {
-            parseErrors.add( new String("invalid first name"));
+            parseErrors.add( new String("Invalid first name"));
         }
         this.fname = fname;
     }
@@ -87,7 +87,7 @@ public class ProfileObjectMapper {
 
     public void setLastname(String lname) {
         if (!FormValidator.validateName(lname)) {
-            parseErrors.add( new String("invalid last name"));
+            parseErrors.add( new String("Invalid last name"));
         }
         this.lname = lname;
     }
@@ -98,7 +98,7 @@ public class ProfileObjectMapper {
 
     public void setMiddlename(String mname) {
         if (!FormValidator.validateName(mname)) {
-            parseErrors.add( new String("invalid middle name"));
+            parseErrors.add( new String("Invalid middle name"));
         }
         this.mname = mname;
     }
@@ -109,7 +109,7 @@ public class ProfileObjectMapper {
 
     public void setNickname(String nickname) {
         if (!FormValidator.validateNickname(nickname)) {
-            parseErrors.add( new String("invalid nickname"));
+            parseErrors.add( new String("Invalid nickname"));
         }
         this.nickname = nickname;
     }
@@ -120,7 +120,7 @@ public class ProfileObjectMapper {
 
     public void setPassword(String password) {
         if (!FormValidator.validatePassword(password)) {
-            parseErrors.add("invalid password");
+            parseErrors.add("Invalid password");
         }
         this.password = password;
     }
@@ -131,7 +131,7 @@ public class ProfileObjectMapper {
 
     public void setBio(String bio) {
         if (!FormValidator.validateBio(bio)) {
-            parseErrors.add( new String("invalid bio"));
+            parseErrors.add( new String("Invalid bio"));
         }
         this.bio = bio;
     }
@@ -142,7 +142,7 @@ public class ProfileObjectMapper {
 
     public void setDateOfBirth(String dateOfBirth) {
         if (!FormValidator.validateDateOfBirth(dateOfBirth)) {
-            parseErrors.add( new String("invalid date of birth"));
+            parseErrors.add( new String("Invalid date of birth"));
         }
         this.dob = dateOfBirth;
     }
@@ -153,7 +153,7 @@ public class ProfileObjectMapper {
 
     public void setGender(String gender) {
         if (!FormValidator.validateGender(gender)) {
-            parseErrors.add( new String("invalid gender"));
+            parseErrors.add( new String("Invalid gender"));
         }
         this.gender = gender;
     }
@@ -214,7 +214,7 @@ public class ProfileObjectMapper {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
-            throw new InvalidRequestFieldException("email already in use");
+            throw new InvalidRequestFieldException("E-mail already in use");
         }
         User user = new User();
         LocalDate dob = FormValidator.getValidDateOfBirth(getDateOfBirth());
@@ -243,22 +243,22 @@ public class ProfileObjectMapper {
         try {
             dateFormat.parse(getDateOfBirth());
         } catch (ParseException e) {
-            throw new InvalidRequestFieldException("invalid date");
+            throw new InvalidRequestFieldException("Invalid date");
         }
         if (getFirstname() == null) {
-            throw new InvalidRequestFieldException("no firstname field");
+            throw new InvalidRequestFieldException("No firstname field");
         }
         if (getLastname() == null) {
-            throw new InvalidRequestFieldException("no lastname field");
+            throw new InvalidRequestFieldException("No lastname field");
         }
         if (getPassword() == null) {
-            throw new InvalidRequestFieldException("no password field");
+            throw new InvalidRequestFieldException("No password field");
         }
         if (Gender.matchGender(this.gender) == null) {
-            throw new InvalidRequestFieldException("invalid gender");
+            throw new InvalidRequestFieldException("Invalid gender");
         }
         if (getPrimaryEmail() == null) {
-            throw new InvalidRequestFieldException("no primary email");
+            throw new InvalidRequestFieldException("No primary email");
         }
     }
 }
