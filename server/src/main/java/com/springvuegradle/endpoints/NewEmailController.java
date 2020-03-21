@@ -1,15 +1,21 @@
 package com.springvuegradle.endpoints;
 
+import java.io.StringWriter;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +31,8 @@ import com.springvuegradle.model.requests.NewEmailRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.LoginSuccessResponse;
 
+import net.minidev.json.JSONObject;
+
 @RestController
 public class NewEmailController {
 
@@ -35,13 +43,58 @@ public class NewEmailController {
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody(required = true) NewEmailRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, HttpServletResponse response) throws NoSuchAlgorithmException {
+		System.out.println(raw);
+		
+		JSONParser parser = new JSONParser(raw);
+		//JSONObject json;
+		try {
+			LinkedHashMap<String, String> json = (LinkedHashMap<String, String>) parser.parse();
+			System.out.println("json");
+			System.out.println(json);
+		} catch (org.apache.tomcat.util.json.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		/*User user = userRepository.findById(profileId).get();
+		int numEmails = emailRepo.getNumberOfEmails(user);
+		if (numEmails < 5) {
+			Email email = new Email(user, emailRequest.getEmail(), false);
+			System.out.println("The email is:");
+			System.out.println(emailRequest);
+			//System.out.println(emailRequest.getAdditionalEmails());
+			System.out.println(emailRequest.getEmail());
+			System.out.println(emailRequest.getNumEmails());
+			//return emailRequest.getAdditionalEmails();
+			//emailRepo.save(email);
+			return email;
+		} else {
+			return new ErrorResponse("Maximum email addresses reached (5)");
+		}	*/
+		
+		return ResponseEntity.status(HttpStatus.resolve(201)).body("HI");
+
+	}
+	
+	
+	
+	/*public ResponseEntity<?> updateEmails(@RequestBody HttpEntity<String> httpEntity, HttpServletResponse response) throws NoSuchAlgorithmException {
+		String json = httpEntity.getBody();
+		System.out.println(json);
+		
+		return ResponseEntity.status(HttpStatus.resolve(201)).body("HI");
+	}*/
+	
+	
+	/*public ResponseEntity<?> updateEmails(@RequestBody NewEmailRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
 		if (credentials.getEmail() == null) {
 			System.out.println("=======================================================================================================================================================================================");
 			return ResponseEntity.status(HttpStatus.resolve(400)).body(new ErrorResponse("Missing email and/or password field"));
 		}
 		System.out.println(credentials.getEmail());
-		System.out.println(credentials.getAdditionalEmail());
+		//System.out.println(credentials.getAdditional_Email());
 		System.out.println("32143243=======================================================================================================================================================================================");
 
 		if (emailRepo.existsById(credentials.getEmail())) {
@@ -62,9 +115,9 @@ public class NewEmailController {
 			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token, user.getUserId()));
 		} else {
 			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
-		}*/
+		}
 		return ResponseEntity.status(HttpStatus.resolve(201)).body("HI");
-	}
+	}*/
 	/*public Object newEmailRequest(@RequestBody NewEmailRequest emailRequest, @PathVariable("profileId") long profileId,
 			HttpServletRequest request) {
 		System.out.println("The properties");

@@ -2,6 +2,8 @@ package com.springvuegradle.model.requests;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -18,14 +20,17 @@ public class NewEmailRequest {
 	private long profile_id;
 	private String email;
 	private int numEmails;
-	private String[] additional_email;
+	
+	@JsonProperty("additional_email")
+	private List<String> additional_email;
 	
 	protected NewEmailRequest() {};
 	
-	public NewEmailRequest(long profile_id, String additional_email, String email) {
+	public NewEmailRequest(long profile_id, List<String> additional_email, String email) {
 		this.profile_id = profile_id;
 		this.email = email;
 		this.numEmails = 0;
+		this.additional_email = additional_email;
 	}
 	
 	public long getUser() {
@@ -39,8 +44,12 @@ public class NewEmailRequest {
 		return this.numEmails;
 	}
 	
-	public String[] getAdditionalEmail() {
+	public List<String> getAdditional_Email() {
 		return this.additional_email;
+	}
+	
+	public void setAdditional_Email(List<String> additional_email) {
+		this.additional_email = additional_email;
 	}
 	
 }
