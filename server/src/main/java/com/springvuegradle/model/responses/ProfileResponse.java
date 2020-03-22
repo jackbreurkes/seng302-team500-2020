@@ -1,11 +1,13 @@
 package com.springvuegradle.model.responses;
 
+import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.repository.EmailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class ProfileResponse {
 
@@ -33,7 +35,12 @@ public class ProfileResponse {
         gender = profile.getGender().getJsonName();
         fitness = profile.getFitness() != -1 ? profile.getFitness() : 0;
         passports = new String[0];
-        additional_email = new String[0];
+        
+        ArrayList<String> emailArray = new ArrayList<String>();
+        for (Email email: emailRepository.getNonPrimaryEmails(profile.getUser())) {
+        	emailArray.add(email.getEmail());
+        }
+        additional_email = emailArray.toArray(new String[emailArray.size()]);
 
         date_of_birth = profile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
