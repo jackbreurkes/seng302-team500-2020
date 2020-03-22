@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.springvuegradle.model.repository.CountryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +58,12 @@ public class UserProfileController {
     @Autowired
     private ProfileRepository profileRepository;
 
+    /**
+     * Repository (database) of countries
+     */
+    @Autowired
+    private CountryRepository countryRepository;
+
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -77,7 +84,7 @@ public class UserProfileController {
         if (optionalProfile.isPresent()) {
             try {
                 Profile profile = optionalProfile.get();
-                request.updateExistingProfile(profile, profileRepository);
+                request.updateExistingProfile(profile, profileRepository, countryRepository);
                 return ResponseEntity.status(HttpStatus.OK).body(new ProfileResponse(profile, emailRepository));
             } catch (InvalidRequestFieldException ex) {
                 return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
@@ -92,11 +99,11 @@ public class UserProfileController {
      */
     @PostMapping
     @CrossOrigin
-    public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException {
+    public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException {
 
         User user = null;
         try {
-            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository);
+            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository);
         } catch (InvalidRequestFieldException ex) {
             return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
         } catch (ParseException ex) {

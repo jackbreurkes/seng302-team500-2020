@@ -4,6 +4,7 @@ import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.CountryRepository;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
@@ -44,6 +45,8 @@ class UserProfileControllerTest {
     private EmailRepository emailRepository;
     @MockBean
     private ProfileRepository profileRepository;
+    @MockBean
+    private CountryRepository countryRepository;
 
 
     @Test
@@ -79,8 +82,8 @@ class UserProfileControllerTest {
                 "  \"password\": \"aaaaaaaa\",\n" +
                 "  \"fitness\": 4,\n" +
                 "  \"passports\": [\n" +
-                "    \"United States of America\",\n" +
-                "    \"Thailand\"\n" +
+//                "    \"United States of America\",\n" +
+//                "    \"Thailand\"\n" +
                 "  ],\n" +
                 "  \"activities\": [\n" +
                 "    \"tramping\",\n" +
