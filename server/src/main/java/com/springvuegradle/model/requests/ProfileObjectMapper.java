@@ -188,6 +188,7 @@ public class ProfileObjectMapper {
 
     public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository) throws InvalidRequestFieldException, RecordNotFoundException {
         checkParseErrors();
+        System.out.println("setting things");
         if (this.fname != null) {
             profile.setFirstName(this.fname);
         }

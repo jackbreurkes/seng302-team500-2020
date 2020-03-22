@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model';
+import { logout, getCurrentUser, saveCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '@/scripts/FormValidator';
 
@@ -107,7 +107,7 @@ export async function setPrimary(primaryEmail: string) {
 
 export async function editProfile(user: UserApiFormat) {
     await checkProfileValidity(user);
-    await saveCurrentUser(user);
+    await saveUser(user);
 }
 
 
