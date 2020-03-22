@@ -54,6 +54,8 @@ public class NewEmailController {
 	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletResponse response) throws NoSuchAlgorithmException {
 		User user = userRepo.getOne(profileId);
 		
+		System.out.println("Updating emails through post");
+		
 		LinkedHashMap<String, Object> json = null;
 		try {
 			json = getJson(raw);
@@ -137,55 +139,12 @@ public class NewEmailController {
 		return json;
 	}
 	
-	private ResponseEntity<?> updateEmailsHelper(String raw, User user, HttpServletResponse response) throws NoSuchAlgorithmException {
-		System.out.println("========================================================================");				
-		JSONParser parser = new JSONParser(raw);
-		LinkedHashMap<String, Object> json = null;
-		try {
-			json = (LinkedHashMap<String, Object>) parser.parse();
-		} catch (org.apache.tomcat.util.json.ParseException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
-		}
-		
-		if (json.containsKey("additional_email")) {
-			try {
-				LinkedHashMap<String, String> emails = (LinkedHashMap<String, String>) json.get("additional_email");
-				System.out.println(emails.size());
-				Collection<String> newEmails = emails.values();
-				if (emails.size() >= 5) {					// As this list does not include the primary email
-					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
-				} else {
-					List<Email> nonPrimaryEmails = emailRepo.getNonPrimaryEmails(user);
-					List<Email> deletedEmails = new ArrayList<Email>();
-					for (Email oldEmail: nonPrimaryEmails) {
-						if (newEmails.contains(oldEmail.getEmail())) {
-							newEmails.remove(oldEmail);
-							System.out.println("Kept in:" + oldEmail.getEmail());
-						} else {
-							emailRepo.delete(oldEmail);
-							deletedEmails.add(oldEmail);
-							System.out.println("Removed:" + oldEmail.getEmail());
-						}
-					}
-					for (String newEmailString: newEmails) {
-						emailRepo.save(new Email(user, newEmailString, false));
-						System.out.println("Added:" + newEmailString);
-					}
-					
-					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
-					}
-			} catch (Error e) {
-				return ResponseEntity.status(HttpStatus.resolve(400)).body("Illformatted additional email list.");
-			}
-		} else {
-			return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
-		}
-	}
 	
 	private void updateAdditionalEmails(User user, Collection<String> newEmails) {
+		System.out.println("Updateadditionalemaisl");
 		System.out.println(newEmails);
 		List<Email> nonPrimaryEmails = emailRepo.getNonPrimaryEmails(user);
+		System.out.println(nonPrimaryEmails);
 		List<Email> deletedEmails = new ArrayList<Email>();
 		for (Email oldEmail: nonPrimaryEmails) {
 			if (newEmails.contains(oldEmail.getEmail())) {
@@ -196,10 +155,10 @@ public class NewEmailController {
 				deletedEmails.add(oldEmail);
 				System.out.println("Removed:" + oldEmail.getEmail());
 			}
-			for (String newEmailString: newEmails) {
-				emailRepo.save(new Email(user, newEmailString, false));
-				System.out.println("Added:" + newEmailString);
-			}
+		}
+		for (String newEmailString: newEmails) {
+			emailRepo.save(new Email(user, newEmailString, false));
+			System.out.println("Added:" + newEmailString);
 		}
 	}
 

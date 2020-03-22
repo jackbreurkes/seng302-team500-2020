@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail } from '../models/user.model'
+import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '@/scripts/FormValidator';
 
@@ -82,16 +82,12 @@ export async function addNewEmail(newEmail: string) {
 
 export async function deleteEmail(email: string) {
     let user = await getCurrentUser();
-    if (user.additional_email) {
-        if (user === null) {
-            throw new Error("no active user found");
-        }
-        for (let index = 0; index < user.additional_email.length; index++) {
-            if (email === user.additional_email[index]) {  
-                user.additional_email.splice(index, 1);
-            }
-        }
-        await saveCurrentUser();
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+
+    if (user.additional_email !== undefined) {
+        deleteUserEmail(email);
     } else {
         throw new Error("No additional emails to delete.");
     }

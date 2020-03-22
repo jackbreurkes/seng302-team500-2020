@@ -217,6 +217,36 @@ export async function updatePrimaryEmail(primaryEmail: string) {
   }
 }
 
+export async function deleteUserEmail(email: string) {
+  try {
+    let user = await getCurrentUser();
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      throw new Error("No additional emails to delete.");
+    } else {
+      let index = emails.indexOf(email);
+      if (index == -1) {
+        throw new Error("Email is not registered to user.");
+      } else {
+        emails.splice(index, 1);
+      }
+    }
+    let emailDict = {"additional_email": emails}
+    console.log(JSON.stringify(emailDict));
+    let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: emailDict
+    });
+    console.log(JSON.stringify(res))
+  } catch (e) {
+    console.log(e)
+    console.log(e.response.data)
+    console.log(e.response.data.error)
+    throw new Error(e.response.data.error)
+  }
+}
+
 
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
   let res;
