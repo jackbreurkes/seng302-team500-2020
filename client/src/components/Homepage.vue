@@ -3,16 +3,6 @@
     <h1>Homepage</h1>
       <p>Homepage</p>
 
-      <!--label for="currentUser.firstname">First Name:</label>
-      <div class="field">
-        <span class="field_value" v-show="!showField('currentUser.firstname')" @click="focusField('currentUser.firstname')">{{currentUser.firstname}}</span>
-        <input v-model="currentUser.firstname" v-show="showField('currentUser.firstname')" id="currentUser.firstname" type="text" class="field-value form-control" @focus="focusField('currentUser.firstname')" >
-      </div-->
-
-      <!--div class="editable_text">
-        {{message}}
-      </div-->
-
       <!-- as per U3 AC3, user knows the limit of additional emails -->
       <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
       <ul>
@@ -61,9 +51,6 @@
       </div>
 
       <br>
-      <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
-      <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
-      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
       <v-form>
       <v-text-field
         v-model="oldPassword"
@@ -115,7 +102,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
+  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
   import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';

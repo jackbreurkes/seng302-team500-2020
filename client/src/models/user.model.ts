@@ -80,7 +80,7 @@ export async function getCurrentUser() {
   return user;
 }
 
-/**
+	/**
  * Logs out the currently logged in user.
  * For more endpoint information see file team-500/*.yaml
  */
@@ -141,6 +141,16 @@ export async function saveCurrentUser() {
   saveUser(user);
 }
 
+/**
+ * Gets the current user and then saves their profile information.
+ * For more endpoint information see file team-500/*.yaml
+ */
+export async function saveCurrentUser(user: UserApiFormat) {
+  //const user = await getCurrentUser();
+  saveUser(user);
+}
+
+
 export async function saveUser(user: UserApiFormat) {
   try {
     let notNullUser = user as any;
@@ -185,7 +195,6 @@ export async function addEmail(email: string) {
   }
 }
 
-
 export async function updatePrimaryEmail(primaryEmail: string) {
   try {
     let user = await getCurrentUser();
@@ -216,7 +225,6 @@ export async function updatePrimaryEmail(primaryEmail: string) {
     throw new Error(e.response.data.error)
   }
 }
-
 export async function deleteUserEmail(email: string) {
   try {
     let user = await getCurrentUser();
@@ -246,7 +254,6 @@ export async function deleteUserEmail(email: string) {
     throw new Error(e.response.data.error)
   }
 }
-
 
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
   let res;
