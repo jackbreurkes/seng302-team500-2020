@@ -10,7 +10,8 @@ import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
 
 /**
- * Used to consistently validate form fields between endpoints
+ * Used to consistently validate form fields between endpoints.
+ * Tests are based on the rules laid out in the Form Field Rules page on the wiki.
  * 
  * @author Alex Hobson
  * @author Jack van Heugten Breurkes
@@ -171,6 +172,24 @@ public class FormValidator {
 	}
 
 	/**
+	 * Validates a list of passport countries
+	 *
+	 * @param input
+	 *           list of strings to validate
+	 * @return true if all passport countries in the list are valid
+	 */
+    public static boolean validatePassportCountries(String[] input) {
+		if (input == null) throw new NullPointerException("passport countries cannot be null");
+    	for (String country : input) {
+			if (country.equals("")) {
+				return false;
+			}
+		}
+		return true;
+    }
+
+
+	/**
 	 * Validates an email address
 	 *
 	 * @param input
@@ -213,4 +232,5 @@ public class FormValidator {
 			return null;
 		}
 	}
+
 }
