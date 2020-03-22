@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Homepage</h1>
-      <p>Homepage</p>
+      
 
       <!-- as per U3 AC3, user knows the limit of additional emails -->
       <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
@@ -32,7 +32,7 @@
         <ul id="passports">
           <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
         </ul>
-
+        <br>
         <label for="fitnessDropdown">Select a Fitness Level:</label>
         <select id="fitnessDropdown" v-model="selectedFitnessLevel">
           <option value=-1>Not specified</option>
@@ -43,11 +43,20 @@
           <option value=4>Kale</option>
         </select>
         <button id="selectFitness" @click="selectFitnessLevel">Select</button>
+        <br>
 
-        <p>Primary email: {{ currentUser.primaryEmail }}</p>
+        <p>Primary email: {{ currentUser.primary_email }}</p>
         <!-- New Email input field and button -->
-        <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" />
+        <br>
+        <p>Add a new email: </p>
+        <!-- <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" /> -->
+        <v-text-field
+        v-model="newEmail"
+        label="enter new email here"
+        type="email"
+        required></v-text-field>
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
+        <br>
       </div>
 
       <br>
@@ -74,6 +83,7 @@
 
       <br>
       <br>
+
       <v-btn @click="logoutButtonClicked">Logout</v-btn>
       <div v-if="editing">
         <v-form>

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "feff0843-e1f9-4c43-bdd5-ef02e0d79f1a",
+		"_postman_id": "ec3c1f7c-4526-4f57-9518-12ff8d141366",
 		"name": "SENG302",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -142,7 +142,7 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -238,6 +238,275 @@
 				}
 			],
 			"description": "ordered test calls to test the POST /profiles/{id}/password endpoint.",
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Sprint 2 Acceptance Tests",
+			"item": [
+				{
+					"name": "Create User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e2ee46d6-698b-4a50-aa78-d5084d9f06f8",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"lastname\": \"Michael\",\r\n  \"firstname\": \"Freeman\",\r\n  \"middlename\": \"Joseph\",\r\n  \"nickname\": \"thefreezmo\",\r\n  \"primary_email\": \"{{$randomEmail}}\",\r\n  \"bio\": \"Killer Brah\",\r\n  \"date_of_birth\": \"1985-12-20\",\r\n  \"gender\": \"female\",\r\n  \"fitness\": 4,\r\n  \"password\": \"password\",\r\n  \"passports\": [\"New Zealand\"\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles"
+							]
+						},
+						"description": "\t"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update the Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"lastname\": \"Michael\",\r\n  \"firstname\": \"Freeman\",\r\n  \"middlename\": \"Joseph\",\r\n  \"nickname\": \"thefreemanator\",\r\n  \"primary_email\": \"{{email}}\",\r\n  \"bio\": \"Killer Brah\",\r\n  \"date_of_birth\": \"1985-12-20\",\r\n  \"gender\": \"female\",\r\n  \"fitness\": 2,\r\n  \"password\": \"{{password}}\",\r\n  \"passports\": [\"New Zealand\", \"Australia\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"exec": [
+									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"old_password\": \"{{password}}\",\n\t\"new_password\": \"{{new_password}}\",\n\t\"repeat_password\": \"{{new_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/password",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Primary Email",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"primary_email\": \"triplej@google.com\",\r\n  \"additional_email\": [\r\n    \"triplej@xtra.co.nz\",\r\n    \"triplej@msn.com\"\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/emails",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"emails"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"additional_email\": [\r\n    \"ddddd@xtra.co.nz\",\r\n    \"lslsls@msn.com\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/emails",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"emails"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "All backend requests that need to be working to complete sprint 2\n",
 			"protocolProfileBehavior": {}
 		},
 		{
