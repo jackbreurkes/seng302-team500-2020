@@ -3,16 +3,6 @@
     <h1>Homepage</h1>
       <p>Homepage</p>
 
-      <!--label for="currentUser.firstname">First Name:</label>
-      <div class="field">
-        <span class="field_value" v-show="!showField('currentUser.firstname')" @click="focusField('currentUser.firstname')">{{currentUser.firstname}}</span>
-        <input v-model="currentUser.firstname" v-show="showField('currentUser.firstname')" id="currentUser.firstname" type="text" class="field-value form-control" @focus="focusField('currentUser.firstname')" >
-      </div-->
-
-      <!--div class="editable_text">
-        {{message}}
-      </div-->
-
       <!-- as per U3 AC3, user knows the limit of additional emails -->
       <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
       <ul>
@@ -60,10 +50,27 @@
         <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
       </div>
 
+      <div v-if="editing">
+        <v-form ref="editForm">
+          <v-text-field id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+          <v-text-field id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+          <v-text-field id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+          <v-text-field id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <v-menu>
+            <template v-slot:activator="{ on }">
+            <v-text-field v-model="editedUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            </template>
+            <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
+          </v-menu>
+          <v-select label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+        </v-form>
+
+        <button @click="saveButtonClicked">Save</button>
+        <button @click="cancelButtonClicked">Cancel</button>
+      </div>
+
       <br>
-      <!-- <label>Enter Old Password <input ref="oldPassword" id="oldPassword" type="password" v-model="oldPassword" /></label>
-      <label>Enter New Password <input ref="newPassword" id="newPassword" type="password" v-model="newPassword" /></label>
-      <label>Repeat New Password <input ref="repeatPassword" id="repeatPassword" type="password" v-model="repeatPassword" /></label> -->
       <v-form>
       <v-text-field
         v-model="oldPassword"
@@ -88,26 +95,7 @@
       <br>
       <br>
       <v-btn @click="logoutButtonClicked">Logout</v-btn>
-      <div v-if="editing">
-        <v-form ref="editForm">
-          <v-text-field id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
-          <v-text-field id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
-          <v-text-field id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
-          <v-text-field id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
-          <v-text-field id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
-          <v-menu>
-            <template v-slot:activator="{ on }">
-            <v-text-field v-model="editedUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
-            </template>
-            <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
-          </v-menu>
-          <v-select label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
-        </v-form>
-
-        <button @click="saveButtonClicked">Save</button>
-        <button @click="cancelButtonClicked">Cancel</button>
-      </div>
-
+      
   </div>
 </template>
 
@@ -280,15 +268,19 @@ const Homepage =  Vue.extend({
         this.editing = true;
       },
 
-      saveButtonClicked: function() {
+      saveButtonClicked: async function() {
         if ((this.$refs.editForm as Vue & { validate: () => boolean }).validate()) {
-          editProfile(this.editedUser);
-          this.editing = false;
+          try {
+            await editProfile(this.editedUser);
+            Object.assign(this.currentUser, this.editedUser);
+            this.editing = false;
+          } catch {
+            alert("Unable to update user.");
+          }
         }
       },
 
       cancelButtonClicked: function() {
-        alert("CANCELLED");
         this.editing = false;
       }
     }

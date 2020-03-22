@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '@/scripts/FormValidator';
 
@@ -26,7 +26,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
     }
 
     user.passports.push(countryName);
-    await saveCurrentUser();
+    await saveUser(user);
 
 }
 
@@ -62,7 +62,7 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
         user.fitness = fitnessLevel;
     }
 
-    await saveCurrentUser();
+    await saveUser(user);
 }
 
 export async function addNewEmail(newEmail: string) {
