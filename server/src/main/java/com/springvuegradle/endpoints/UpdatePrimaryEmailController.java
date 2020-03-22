@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePrimaryEmailRequest;
@@ -28,8 +29,9 @@ public class UpdatePrimaryEmailController {
 		if (request.getAttribute("authenticatedid") == null) {
 			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
 		}
-		int numEmails = emailRepo.getNumberOfEmails(credentials.getUser());
-		String oldAddress = emailRepo.getPrimaryEmail(userRepository.getOne(credentials.getUser()));
+		User user = userRepository.findById(credentials.getUser()).get();
+		int numEmails = emailRepo.getNumberOfEmails(user);
+		String oldAddress = emailRepo.getPrimaryEmail(user);
 		if(oldAddress.equals(credentials.getNewPrimaryEmail())){
 			//Attempting to make the current primary email the new primary email
 			return new ErrorResponse("Old email address is same as new email address.");

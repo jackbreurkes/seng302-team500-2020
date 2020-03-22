@@ -115,8 +115,8 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
-  import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '@/scripts/FormValidator'
+  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
+  import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
 
@@ -194,24 +194,12 @@ const Homepage =  Vue.extend({
 
       },
 
-
-      // focusField(name){
-      //     this.currentUser.firstname = name;
-      // },
-
-      // blurField(){
-      //   this.currentUser.firstname = '';
-      // },
-
-      // showField(name){
-      //   return (this.currentUser.firstname == '' || this.currentUser.firstname == name)
-      // },
-
       //click login button
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            console.log("updatePassword")
+            console.log("logout")
+            history.go(0);
           })
           .catch((err: any) => {
             console.error(err);
@@ -230,7 +218,7 @@ const Homepage =  Vue.extend({
               console.log(err)
             })
             // refresh page after adding passport
-        history.go(0);
+        //history.go(0);
         }
       },
 
@@ -248,7 +236,7 @@ const Homepage =  Vue.extend({
 
       addEmailAddress: function() {
         if(isValidEmail(this.newEmail)) {
-          addEmail(this.newEmail)
+          addNewEmail(this.newEmail)
           .then(() => {
             console.log("Email address added");
           })
@@ -256,7 +244,7 @@ const Homepage =  Vue.extend({
             console.log(err);
           })
           // refresh page after adding emails
-          history.go(0);
+          //history.go(0);
         } else {
           alert("Not valid email")
         }
@@ -271,7 +259,7 @@ const Homepage =  Vue.extend({
           console.log(err);
         })
         // refresh page after deleting emails
-        history.go(0);
+        //history.go(0);
       },
 
       setPrimaryEmail: function(email: string) {
@@ -283,7 +271,7 @@ const Homepage =  Vue.extend({
           console.log(err);
         })
         // refresh page after changing primary email
-        history.go(0);
+        //history.go(0);
       },
 
       editProfile: function() {

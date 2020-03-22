@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword } from '../models/user.model'
+import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '@/scripts/FormValidator';
 
@@ -26,7 +26,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
     }
 
     user.passports.push(countryName);
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 
 }
 
@@ -62,64 +62,52 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
         user.fitness = fitnessLevel;
     }
 
-    await saveCurrentUser(user);
+    await saveCurrentUser();
 }
 
-export async function addEmail(newEmail: string) {
+export async function addNewEmail(newEmail: string) {
     let user = await getCurrentUser();
+    console.log(user)
     if (user === null) {
         throw new Error("no active user found");
     }
-    if (!user.additional_email) {
+    if (user.additional_email === undefined) {
         user.additional_email = []
+    } else if (user.additional_email.length >= 4) {
+        throw new Error("Maximum number of emails reached (5).");
     }
-    user.additional_email.push(newEmail);
-    await saveCurrentUser(user);
+    console.log(user.additional_email)
+    await addEmail(newEmail); 
 }
 
 export async function deleteEmail(email: string) {
     let user = await getCurrentUser();
-    if (user.additional_email) {
-        if (user === null) {
-            throw new Error("no active user found");
-        }
-        for (let index = 0; index < user.additional_email.length; index++) {
-            if (email === user.additional_email[index]) {  
-                user.additional_email.splice(index, 1);
-            }
-        }
-        await saveCurrentUser(user);
+    if (user === null) {
+        throw new Error("no active user found");
+    }
+
+    if (user.additional_email !== undefined) {
+        deleteUserEmail(email);
     } else {
         throw new Error("No additional emails to delete.");
     }
 }
 
-export async function setPrimary(email: string) {
+export async function setPrimary(primaryEmail: string) {
     let user = await getCurrentUser();
     if (user === null) {
-        throw new Error("no active user found");
+        throw new Error("No active user found");
     }
-    if (user.additional_email) {
-        if (user.primary_email) {
-            user.additional_email.push(user.primary_email);
-            user.primary_email = email;
-            for (let index = 0; index < user.additional_email.length; index++) {
-                if (email === user.additional_email[index]) {  
-                    user.additional_email.splice(index, 1);
-                }
-            }
-        }
+    if (user.additional_email !== undefined && user.additional_email.length > 0) {
+        updatePrimaryEmail(primaryEmail);
+    } else {
+        throw new Error("Must have additional emails to update it with.");
     }
-    await saveCurrentUser(user);
 }
 
 export async function editProfile(user: UserApiFormat) {
-    try {
-        await checkProfileValidity(user);
-        await saveCurrentUser(user);
-    } catch (err) {
-        alert(err);
-    }    
+    await checkProfileValidity(user);
+    await saveCurrentUser();
 }
 
 

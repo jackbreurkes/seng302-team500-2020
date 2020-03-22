@@ -2,6 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -40,58 +41,66 @@ public class Profile implements Serializable {
 	@MapsId
 	@JoinColumn(name = "uuid")
 	private User user;
-	
+
+	@ManyToMany
+	@JoinTable(
+			name = "profile_country",
+			joinColumns = {@JoinColumn(name = "profile_id")},
+			inverseJoinColumns = {@JoinColumn(name = "country_code")}
+	)
+	private List<Country> countries;
+
     /**
      * Fitness level of the user (default null or -1)
      */
     @Column(columnDefinition = "smallint default -1")
     private int fitness;
-    
+
     /**
      * First name of the profile
      */
     @Column(columnDefinition = "varchar(30) not null")
     private String firstName;
-    
+
     /**
      * Last name of the profile
      */
     @Column(columnDefinition = "varchar(30) not null")
     private String lastName;
-    
+
     /**
      * Middle name of the profile
      */
     @Column(columnDefinition = "varchar(30)")
     private String middleName;
-    
+
     /**
      * Nickname of the profile
      */
     @Column(columnDefinition = "varchar(30)")
     private String nickName;
-    
+
     /**
      * Bio of the profile
      */
     @Column(columnDefinition = "text")
     private String bio;
-    
+
     /**
      * Date of birth of the profile
      */
     private LocalDate dob;
-    
+
     /**
      * Gender of the profile
      */
     private Gender gender;
-    
+
     /**
      * Constructor required by spring
      */
     protected Profile() {}
-    
+
     /**
      * Create a profile with the minimum required values
      * @param user User this profile belongs to
@@ -255,5 +264,13 @@ public class Profile implements Serializable {
 			 throw new IllegalArgumentException("Cannot set gender to null (mandatory field)");
 		}
 		this.gender = gender;
+	}
+
+	public List<Country> getCountries() {
+		return countries;
+	}
+
+	public void setCountries(List<Country> countries) {
+		this.countries = countries;
 	}
 }
