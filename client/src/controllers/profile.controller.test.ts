@@ -4,7 +4,7 @@ const userModel = require('../models/user.model');
 const formValidator = require('../scripts/FormValidator');
 formValidator.checkPasswordValidity = jest.fn(password => {
     switch (password) {
-        case "invalid":
+        case "INVALID":
             return false
         default:
             return true
@@ -22,7 +22,9 @@ test('expect updatePassword to throw an error if newPassword is different from r
 
 test('expect updatePassword to throw an error if newPassword is an invalid password',
     async () => {
-        await expect(updatePassword("password", "invalid", "invalid")).rejects.toThrowError();
+        await expect(updatePassword("password", "INVALID", "INVALID")).rejects.toThrow(
+            new Error("new password must be at least 8 characters")
+        );
     }
 )
 
@@ -40,7 +42,7 @@ test('expect updatePassword send update password request even if old password do
     async () => {
         userModel.updateCurrentPassword = jest.fn();
 
-        await expect(updatePassword("invalid", "newpassword", "newpassword")).resolves.toBe(undefined);
+        await expect(updatePassword("INVALID", "newpassword", "newpassword")).resolves.toBe(undefined);
         expect(userModel.updateCurrentPassword.mock.calls.length).toBe(1);
     }
 )
