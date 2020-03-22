@@ -104,7 +104,10 @@ public class ProfileObjectMapper {
     }
 
     public void setMiddlename(String mname) {
-        if (mname != null && mname!= "" && !FormValidator.validateName(mname)) {
+        if (mname.equals("")) {
+            mname = null;
+        }
+        if (mname != null && !FormValidator.validateName(mname)) {
             parseErrors.add( new String("Invalid middle name"));
         }
         this.mname = mname;
@@ -115,7 +118,10 @@ public class ProfileObjectMapper {
     }
 
     public void setNickname(String nickname) {
-        if (nickname != null && nickname != "" && !FormValidator.validateNickname(nickname)) {
+        if (nickname.equals("")) {
+            nickname = null;
+        }
+        if (nickname != null && !FormValidator.validateNickname(nickname)) {
             parseErrors.add( new String("Invalid nickname"));
         }
         this.nickname = nickname;
@@ -137,7 +143,10 @@ public class ProfileObjectMapper {
     }
 
     public void setBio(String bio) {
-        if (bio != null && bio != "" && !FormValidator.validateBio(bio)) {
+        if (bio.equals("")) {
+            bio = null;
+        }
+        if (bio != null && !FormValidator.validateBio(bio)) {
             parseErrors.add( new String("Invalid bio"));
         }
         this.bio = bio;
@@ -195,19 +204,9 @@ public class ProfileObjectMapper {
         if (this.lname != null) {
             profile.setLastName(this.lname);
         }
-        if (this.mname != null && this.mname.equals("")) {
-            this.mname = null;
-        }
-        profile.setMiddleName(this.mname);
 
-        if (this.nickname != null && this.nickname.equals("")) {
-            this.nickname = null;
-        }
+        profile.setMiddleName(this.mname);
         profile.setNickName(this.nickname);
-        
-        if (this.bio != null && this.bio.equals("")) {
-            this.bio = null;
-        }
         profile.setBio(this.bio);
         
         if (this.dob != null) {
