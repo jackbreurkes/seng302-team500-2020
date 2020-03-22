@@ -186,6 +186,38 @@ export async function addEmail(email: string) {
 }
 
 
+export async function updatePrimaryEmail(primaryEmail: string) {
+  try {
+    let user = await getCurrentUser();
+    let emails = user.additional_email;
+    let oldPrimaryEmail = user.primary_email;
+    if (emails === undefined) {
+      emails = [];
+    }
+    if (oldPrimaryEmail !== undefined) {
+      emails.splice(emails.indexOf(primaryEmail), 1, oldPrimaryEmail);
+    } else {
+      emails.splice(emails.indexOf(primaryEmail), 1);
+    }
+    
+    let emailDict = {"additional_email": emails, "primary_email": primaryEmail}
+    console.log(JSON.stringify(emailDict));
+    let res = await instance.put("profiles/" + localStorage.userId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      },
+      data: emailDict
+    });
+    console.log(JSON.stringify(res))
+  } catch (e) {
+    console.log(e)
+    console.log(e.response.data)
+    console.log(e.response.data.error)
+    throw new Error(e.response.data.error)
+  }
+}
+
+
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
   let res;
   try {

@@ -259,7 +259,7 @@ const Homepage =  Vue.extend({
           console.log(err);
         })
         // refresh page after deleting emails
-        history.go(0);
+        //history.go(0);
       },
 
       setPrimaryEmail: function(email: string) {
@@ -271,7 +271,7 @@ const Homepage =  Vue.extend({
           console.log(err);
         })
         // refresh page after changing primary email
-        history.go(0);
+        //history.go(0);
       },
 
       editProfile: function() {
