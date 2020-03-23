@@ -104,7 +104,10 @@ public class ProfileObjectMapper {
     }
 
     public void setMiddlename(String mname) {
-        if (!FormValidator.validateName(mname)) {
+        if (mname.equals("")) {
+            mname = null;
+        }
+        if (mname != null && !FormValidator.validateName(mname)) {
             parseErrors.add( new String("Invalid middle name"));
         }
         this.mname = mname;
@@ -115,7 +118,10 @@ public class ProfileObjectMapper {
     }
 
     public void setNickname(String nickname) {
-        if (!FormValidator.validateNickname(nickname)) {
+        if (nickname.equals("")) {
+            nickname = null;
+        }
+        if (nickname != null && !FormValidator.validateNickname(nickname)) {
             parseErrors.add( new String("Invalid nickname"));
         }
         this.nickname = nickname;
@@ -137,7 +143,10 @@ public class ProfileObjectMapper {
     }
 
     public void setBio(String bio) {
-        if (!FormValidator.validateBio(bio)) {
+        if (bio.equals("")) {
+            bio = null;
+        }
+        if (bio != null && !FormValidator.validateBio(bio)) {
             parseErrors.add( new String("Invalid bio"));
         }
         this.bio = bio;
@@ -188,22 +197,18 @@ public class ProfileObjectMapper {
 
     public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository) throws InvalidRequestFieldException, RecordNotFoundException {
         checkParseErrors();
+        System.out.println("setting things");
         if (this.fname != null) {
             profile.setFirstName(this.fname);
         }
         if (this.lname != null) {
             profile.setLastName(this.lname);
         }
-        if (this.mname != null) {
-            profile.setMiddleName(this.mname);
-        }
-        /*if (this.nickname != null) {
-            profile.setNickName(this.nickname);
-        }*/
+
+        profile.setMiddleName(this.mname);
         profile.setNickName(this.nickname);
-        if (this.bio != null) {
-            profile.setBio(this.bio);
-        }
+        profile.setBio(this.bio);
+        
         if (this.dob != null) {
             LocalDate validDob = FormValidator.getValidDateOfBirth(this.dob);
             if (validDob != null) {

@@ -82,6 +82,8 @@ public class UserProfileController {
 
         Optional<Profile> optionalProfile = profileRepository.findById(id);
         if (optionalProfile.isPresent()) {
+            System.out.println("you exist!");
+
             try {
                 Profile profile = optionalProfile.get();
                 request.updateExistingProfile(profile, profileRepository, countryRepository);

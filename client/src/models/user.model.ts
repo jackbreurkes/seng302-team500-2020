@@ -151,14 +151,9 @@ export async function create(formData: RegisterFormData) {
 }
 
 /**
- * Gets the current user and then saves their profile information.
+ * Takes a user and then saves their profile information under the user id in local storage.
  * For more endpoint information see file team-500/*.yaml
  */
-export async function saveCurrentUser() {
-  const user = await getCurrentUser();
-  saveUser(user);
-}
-
 export async function saveUser(user: UserApiFormat) {
   try {
     let notNullUser = user as any;
@@ -167,12 +162,14 @@ export async function saveUser(user: UserApiFormat) {
         delete notNullUser[key];
       }
     }
-    await instance.put("profiles/" + localStorage.userId, notNullUser, {
+    let res = await instance.put("profiles/" + localStorage.userId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
+    console.log(res)
   } catch (e) {
+    console.log(e.response.data.error)
     throw new Error(e.response.data.error);
   }
 }

@@ -28,7 +28,6 @@ public class ExceptionHandlerController {
 
 	/**
 	 * catches all NoHandlerFoundException thrown by endpoints and returns an ErrorResponse with code 405.
-	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
 	@ExceptionHandler(NoHandlerFoundException.class)
@@ -40,7 +39,6 @@ public class ExceptionHandlerController {
 	
 	/**
 	 * catches all HttpRequestMethodNotSupportedException thrown by endpoints and returns an ErrorResponse with code 405.
-	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -52,7 +50,6 @@ public class ExceptionHandlerController {
 	
 	/**
 	 * catches all HttpMessageNotReadableExceptions thrown by endpoints and returns an ErrorResponse with code 400.
-	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -64,7 +61,6 @@ public class ExceptionHandlerController {
 	
 	/**
 	 * catches all AccessDeniedExceptions thrown by endpoints and returns an ErrorResponse with code 403.
-	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
 	@ExceptionHandler(AccessDeniedException.class)
