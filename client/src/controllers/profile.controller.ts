@@ -1,6 +1,6 @@
 import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
-import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '@/scripts/FormValidator';
+import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '../scripts/FormValidator';
 
 
 export async function logoutCurrentUser() {
