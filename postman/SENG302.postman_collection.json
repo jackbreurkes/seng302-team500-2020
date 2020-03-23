@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "657a8e2d-452a-4550-a899-2a62fa0aa3a7",
+		"_postman_id": "ec3c1f7c-4526-4f57-9518-12ff8d141366",
 		"name": "SENG302",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -142,7 +142,7 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -241,15 +241,15 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Update Passport Countries Test",
+			"name": "Sprint 2 Acceptance Tests",
 			"item": [
 				{
-					"name": "/profiles",
+					"name": "Create User Profile",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "c2b520d9-3971-4ce8-ace4-db29453206bb",
+								"id": "e2ee46d6-698b-4a50-aa78-d5084d9f06f8",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -258,16 +258,6 @@
 									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
 									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
 									"}"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "e431708c-709d-4e74-a756-23841a31deee",
-								"exec": [
-									""
 								],
 								"type": "text/javascript"
 							}
@@ -285,7 +275,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"raw": "{\r\n  \"lastname\": \"Michael\",\r\n  \"firstname\": \"Freeman\",\r\n  \"middlename\": \"Joseph\",\r\n  \"nickname\": \"thefreezmo\",\r\n  \"primary_email\": \"{{$randomEmail}}\",\r\n  \"bio\": \"Killer Brah\",\r\n  \"date_of_birth\": \"1985-12-20\",\r\n  \"gender\": \"female\",\r\n  \"fitness\": 4,\r\n  \"password\": \"password\",\r\n  \"passports\": [\"New Zealand\"\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -293,15 +283,15 @@
 							}
 						},
 						"url": {
-							"raw": "{{BASE_URL}}/profiles/",
+							"raw": "{{BASE_URL}}/profiles",
 							"host": [
 								"{{BASE_URL}}"
 							],
 							"path": [
-								"profiles",
-								""
+								"profiles"
 							]
-						}
+						},
+						"description": "\t"
 					},
 					"response": []
 				},
@@ -363,7 +353,52 @@
 					"response": []
 				},
 				{
-					"name": "/profiles",
+					"name": "Update the Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"lastname\": \"Michael\",\r\n  \"firstname\": \"Freeman\",\r\n  \"middlename\": \"Joseph\",\r\n  \"nickname\": \"thefreemanator\",\r\n  \"primary_email\": \"{{email}}\",\r\n  \"bio\": \"Killer Brah\",\r\n  \"date_of_birth\": \"1985-12-20\",\r\n  \"gender\": \"female\",\r\n  \"fitness\": 2,\r\n  \"password\": \"{{password}}\",\r\n  \"passports\": [\"New Zealand\", \"Australia\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"exec": [
+									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -381,7 +416,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{email}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"{{password}}\",\n  \"passports\": [\"New Zealand\", \"Australia\", \"Uzbekistan\"]\n}",
+							"raw": "{\n\t\"old_password\": \"{{password}}\",\n\t\"new_password\": \"{{new_password}}\",\n\t\"repeat_password\": \"{{new_password}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -389,22 +424,23 @@
 							}
 						},
 						"url": {
-							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/password",
 							"host": [
 								"{{BASE_URL}}"
 							],
 							"path": [
 								"profiles",
-								"{{profile_id}}"
+								"{{profile_id}}",
+								"password"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "/profile",
+					"name": "Update Primary Email",
 					"request": {
-						"method": "GET",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "X-Auth-Token",
@@ -412,69 +448,9 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"profiles",
-								"{{profile_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"description": "test that updating an existing user's passport countries works",
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Create User with Passport Countries Test",
-			"item": [
-				{
-					"name": "/profiles",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "c2b520d9-3971-4ce8-ace4-db29453206bb",
-								"exec": [
-									"var requestData = JSON.parse(request.data);",
-									"var jsonData = JSON.parse(responseBody);",
-									"if (jsonData.profile_id !== undefined) {",
-									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
-									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
-									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "e431708c-709d-4e74-a756-23841a31deee",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"raw": "{\r\n  \"primary_email\": \"triplej@google.com\",\r\n  \"additional_email\": [\r\n    \"triplej@xtra.co.nz\",\r\n    \"triplej@msn.com\"\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -482,79 +458,23 @@
 							}
 						},
 						"url": {
-							"raw": "{{BASE_URL}}/profiles/",
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/emails",
 							"host": [
 								"{{BASE_URL}}"
 							],
 							"path": [
 								"profiles",
-								""
+								"{{profile_id}}",
+								"emails"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
-									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Add new email",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{BASE_URL}}/login",
-							"host": [
-								"{{BASE_URL}}"
-							],
-							"path": [
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "/profile",
-					"request": {
-						"method": "GET",
 						"header": [
 							{
 								"key": "X-Auth-Token",
@@ -562,43 +482,31 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"additional_email\": [\r\n    \"ddddd@xtra.co.nz\",\r\n    \"lslsls@msn.com\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/emails",
 							"host": [
 								"{{BASE_URL}}"
 							],
 							"path": [
 								"profiles",
-								"{{profile_id}}"
+								"{{profile_id}}",
+								"emails"
 							]
 						}
 					},
 					"response": []
 				}
 			],
-			"description": "test that creating a new user with passport countries works",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "e845619d-d621-4711-85c5-33907f6b6933",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "76c84386-b0b6-40b2-9582-71f142777a33",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
-			],
+			"description": "All backend requests that need to be working to complete sprint 2\n",
 			"protocolProfileBehavior": {}
 		},
 		{

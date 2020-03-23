@@ -17,38 +17,35 @@
                   dark
                   flat
                 >
-                <v-toolbar-title>Login:</v-toolbar-title>
-                
+                <v-toolbar-title>Login</v-toolbar-title>
+
                 </v-toolbar>
                   <v-card-text>
-                    <p>New Here?</p>
-                    <router-link to="/register">
-                      <p>Register</p>
-                    </router-link>
-                  </v-card-text>
-                  <v-card-text>
-                    <v-text-field v-model="email" label="email" dense filled background-color=#c4daff m></v-text-field>
-                    <v-text-field v-model="password" label="password" type="password" dense filled background-color=#c4daff ></v-text-field>
+                    <v-text-field v-model="email" label="Email address"></v-text-field>
+                    <v-text-field v-model="password" label="Password" type="password" @keyup.enter.native="saveButtonClicked"></v-text-field>
                   </v-card-text>
                   <v-card-actions>
-                    <p>{{ errorMessage }}</p>
+                    <p>New user?</p>
+                    <router-link to="/register">
+                        <p class="pl-1">Sign Up</p>
+                    </router-link>
+                    <p style="color: red;" class="pl-1">{{ errorMessage }}</p>
                     <v-spacer/>
-                    <v-btn @click="saveButtonClicked">Save</v-btn>
+                    <v-btn @click="saveButtonClicked" color="primary">Login</v-btn>
                   </v-card-actions>
-                  
+
               </v-card>
             </v-col>
           </v-row>
       </v-container>
     </v-form>
-    
+
 
 
   </div>
 </template>
 
 <script lang="ts">
-  import { tagMandatoryAttributes } from '../scripts/LoginRegisterHelpers'
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
@@ -68,8 +65,10 @@
     },
 
     mounted: function() {
-      let refs = this.$refs;
-      tagMandatoryAttributes(refs, this.mandatoryAttributes);
+      if (localStorage.getItem("token") !== null) {
+        this.errorMessage = "Automatically logging you in...";
+        this.$router.push({ name: "profilePage" });
+      }
     },
 
     methods: {

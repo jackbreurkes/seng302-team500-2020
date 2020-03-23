@@ -3,18 +3,17 @@ import App from './App.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Homepage from './components/Homepage.vue'
-import InitialPage from './InitialPage.vue'
 
 Vue.config.productionTip = false
 
 import VueLogger from 'vuejs-logger';
 import VueRouter, { Route } from 'vue-router';
-import { getCurrentUser } from './models/user.model'
+import { verifyUserId } from './models/user.model'
 import vuetify from './plugins/vuetify';
 
 
 const routes = [
-  {path: '/', name: 'initialPage', component: InitialPage},
+  {path: '/', name: 'login', component: Login},
   {path: '/login', name: 'login', component: Login},
   {path: '/register', name: 'register', component: Register},
   {
@@ -22,9 +21,13 @@ const routes = [
     name: 'profilePage',
     component: Homepage,
     beforeEnter(to: Route, from: Route, next: any) {
-      getCurrentUser()
+      verifyUserId()
       .then(() => {next()})
-      .catch(next({ name: 'login' }))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        next({ name: 'login' });
+      })
     }
   },
 ];

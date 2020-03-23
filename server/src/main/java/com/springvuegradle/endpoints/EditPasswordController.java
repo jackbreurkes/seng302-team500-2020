@@ -37,7 +37,7 @@ public class EditPasswordController {
      * @throws NoSuchAlgorithmException If SHA-256 doesn't exist in your version of java
      * @throws UserNotAuthenticatedException if the user is not authenticated as the target user or an admin
      */
-    @PostMapping("/profiles/{profileId}/password")
+    @PutMapping("/profiles/{profileId}/password")
     @CrossOrigin
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
