@@ -8,15 +8,15 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.CountryRepository;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
@@ -54,6 +54,13 @@ public class ProfileObjectMapper {
     
 	@JsonProperty(value = "fitness", required = false)
     private Integer fitness;
+
+    public String[] getPassports() {
+        return passports;
+    }
+
+    @JsonProperty(value = "passports", required = false)
+    private String[] passports;
     
     private List<String> parseErrors = new ArrayList<>();
 
@@ -166,13 +173,20 @@ public class ProfileObjectMapper {
         this.fitness = fitness;
     }
 
+    public void setPassports(String[] passports) {
+        if (!FormValidator.validatePassportCountries(passports)) {
+            parseErrors.add("invalid passport countries");
+        }
+        this.passports = passports;
+    }
+
     private void checkParseErrors() throws InvalidRequestFieldException {
         if (parseErrors.size() > 0) {
             throw new InvalidRequestFieldException(parseErrors.get(0));
         }
     }
 
-    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository) throws InvalidRequestFieldException {
+    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository) throws InvalidRequestFieldException, RecordNotFoundException {
         checkParseErrors();
         if (this.fname != null) {
             profile.setFirstName(this.fname);
@@ -183,9 +197,10 @@ public class ProfileObjectMapper {
         if (this.mname != null) {
             profile.setMiddleName(this.mname);
         }
-        if (this.nickname != null) {
+        /*if (this.nickname != null) {
             profile.setNickName(this.nickname);
-        }
+        }*/
+        profile.setNickName(this.nickname);
         if (this.bio != null) {
             profile.setBio(this.bio);
         }
@@ -204,12 +219,28 @@ public class ProfileObjectMapper {
         if (this.fitness != null) {
             profile.setFitness(this.fitness);
         }
+        if (this.passports != null) {
+            profile.setCountries(countries(this.passports, countryRepository));
+        }
         profileRepository.save(profile);
+    }
+
+    private List<Country> countries(String[] countryNames, CountryRepository countryRepository) throws RecordNotFoundException {
+        List<Country> countries = new ArrayList<>();
+        for (String countryName : countryNames) {
+            Optional<Country> country = countryRepository.findByName(countryName);
+            if (country.isEmpty()) {
+                throw new RecordNotFoundException("country " + countryName + " not found");
+            }
+            countries.add(country.get());
+        }
+        return countries;
     }
 
     public User createNewProfile(UserRepository userRepository,
                                  EmailRepository emailRepository,
-                                 ProfileRepository profileRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException {
+                                 ProfileRepository profileRepository,
+                                 CountryRepository countryRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
@@ -223,6 +254,9 @@ public class ProfileObjectMapper {
         profile.setBio(bio);
         profile.setMiddleName(getMiddlename());
         profile.setNickName(getNickname());
+        if (this.passports != null) {
+            profile.setCountries(countries(this.passports, countryRepository));
+        }
 
         // workaround since userid is not known until saved to the DB
         userRepository.save(user);

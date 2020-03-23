@@ -100,10 +100,13 @@ export async function getCurrentUser() {
   return user;
 }
 
-
+/**
+ * Logs out the currently logged in user.
+ * For more endpoint information see file team-500/*.yaml
+ */
 export async function logout() {
   try {
-    let res = await instance.delete("logmeout", {
+    await instance.delete("logmeout", {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
@@ -147,27 +150,16 @@ export async function create(formData: RegisterFormData) {
     return user.profile_id;
 }
 
-
-async function sendRequest(endpoint: string, options: RequestInit, authenticated: boolean = true) {
-  if (!options.headers) {
-    options.headers = {};
-  }
-  options.headers = {...options.headers, "Content-Type": "application/json"};
-  if (authenticated) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("no token found")
-    }
-    options.headers = {...options.headers, "X-Auth-Token": token};
-  }
-
-  let res = await fetch(process.env.VUE_APP_SERVER_ADD + process.env.VUE_APP_BASE_URL + endpoint,
-    options)
-  return res;
+/**
+ * Gets the current user and then saves their profile information.
+ * For more endpoint information see file team-500/*.yaml
+ */
+export async function saveCurrentUser() {
+  const user = await getCurrentUser();
+  saveUser(user);
 }
 
-
-export async function saveCurrentUser(user: UserApiFormat) {
+export async function saveUser(user: UserApiFormat) {
   try {
     let notNullUser = user as any;
     for (let key in notNullUser) {
@@ -182,6 +174,94 @@ export async function saveCurrentUser(user: UserApiFormat) {
     });
   } catch (e) {
     throw new Error(e.response.data.error);
+  }
+}
+
+
+export async function addEmail(email: string) {
+  try {
+    let user = await getCurrentUser();
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      emails = [email];
+    } else {
+      emails.push(email);
+    }
+    let emailDict = {"additional_email": emails, "email": email}
+    console.log(JSON.stringify(emailDict));
+    let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: emailDict
+    });
+    console.log(JSON.stringify(res))
+  } catch (e) {
+    console.log(e)
+    console.log(e.response.data)
+    console.log(e.response.data.error)
+    throw new Error(e.response.data.error)
+  }
+}
+
+
+export async function updatePrimaryEmail(primaryEmail: string) {
+  try {
+    let user = await getCurrentUser();
+    let emails = user.additional_email;
+    let oldPrimaryEmail = user.primary_email;
+    if (emails === undefined) {
+      emails = [];
+    }
+    if (oldPrimaryEmail !== undefined) {
+      emails.splice(emails.indexOf(primaryEmail), 1, oldPrimaryEmail);
+    } else {
+      emails.splice(emails.indexOf(primaryEmail), 1);
+    }
+    
+    let emailDict = {"additional_email": emails, "primary_email": primaryEmail}
+    console.log(JSON.stringify(emailDict));
+    let res = await instance.put("profiles/" + localStorage.userId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      },
+      data: emailDict
+    });
+    console.log(JSON.stringify(res))
+  } catch (e) {
+    console.log(e)
+    console.log(e.response.data)
+    console.log(e.response.data.error)
+    throw new Error(e.response.data.error)
+  }
+}
+
+export async function deleteUserEmail(email: string) {
+  try {
+    let user = await getCurrentUser();
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      throw new Error("No additional emails to delete.");
+    } else {
+      let index = emails.indexOf(email);
+      if (index == -1) {
+        throw new Error("Email is not registered to user.");
+      } else {
+        emails.splice(index, 1);
+      }
+    }
+    let emailDict = {"additional_email": emails}
+    console.log(JSON.stringify(emailDict));
+    let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: emailDict
+    });
+    console.log(JSON.stringify(res))
+  } catch (e) {
+    console.log(e)
+    console.log(e.response.data)
+    console.log(e.response.data.error)
+    throw new Error(e.response.data.error)
   }
 }
 

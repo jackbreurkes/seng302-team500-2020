@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,6 +25,7 @@ import com.springvuegradle.auth.ChecksumUtils;
 
 @Entity
 @Table(name = "user")
+@NamedQuery(name = "User.findById", query = "select u from User u where u.uuid = ?1")
 public class User {
 	
 	/**

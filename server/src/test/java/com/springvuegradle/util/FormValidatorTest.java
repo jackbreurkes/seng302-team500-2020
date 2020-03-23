@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -339,5 +341,46 @@ class FormValidatorTest {
             FormValidator.validatePassword(password);
         });
     }
+
+    @Test
+    void testEmptyPassportCountries() {
+        String[] passports = new String[0];
+        assertTrue(FormValidator.validatePassportCountries(passports));
+    }
+
+    @Test
+    void testSingleValidPassportCountry() {
+        String[] passports = {"Brazil"};
+        assertTrue(FormValidator.validatePassportCountries(passports));
+    }
+
+    @Test
+    void testMultipleValidPassportCountries() {
+        String[] passports = {"New Zealand", "Australia", "Belgium"};
+        assertTrue(FormValidator.validatePassportCountries(passports));
+    }
+
+    @Test
+    void testNullPassportCountries() {
+        String[] passports = null;
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validatePassportCountries(passports);
+        });
+    }
+
+    @Test
+    void testEmptyStringInPassportCountries() {
+        String[] passports = {"New Zealand", ""};
+        assertFalse(FormValidator.validatePassportCountries(passports));
+    }
+
+    @Test
+    void testNullElementInPassportCountries() {
+        String[] passports = {"New Zealand", null};
+        assertThrows(NullPointerException.class, () -> {
+            FormValidator.validatePassportCountries(passports);
+        });
+    }
+
 
 }

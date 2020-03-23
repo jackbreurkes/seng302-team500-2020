@@ -1,11 +1,15 @@
 package com.springvuegradle.model.responses;
 
+import com.springvuegradle.model.data.Country;
+import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.repository.EmailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileResponse {
 
@@ -19,7 +23,7 @@ public class ProfileResponse {
     private final String date_of_birth;
     private final String gender;
     private final int fitness;
-    private final String[] passports;
+    private final List<String> passports = new ArrayList<>();
     private final String[] additional_email;
 
     public ProfileResponse(Profile profile, EmailRepository emailRepository) {
@@ -32,8 +36,14 @@ public class ProfileResponse {
         bio = profile.getBio();
         gender = profile.getGender().getJsonName();
         fitness = profile.getFitness() != -1 ? profile.getFitness() : 0;
-        passports = new String[0];
-        additional_email = new String[0];
+        for (Country country : profile.getCountries()) {
+            passports.add(country.getName());
+        }
+        ArrayList<String> emailArray = new ArrayList<String>();
+        for (Email email: emailRepository.getNonPrimaryEmails(profile.getUser())) {
+        	emailArray.add(email.getEmail());
+        }
+        additional_email = emailArray.toArray(new String[emailArray.size()]);
 
         date_of_birth = profile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
@@ -78,7 +88,7 @@ public class ProfileResponse {
         return fitness;
     }
 
-    public String[] getPassports() {
+    public List<String> getPassports() {
         return passports;
     }
 
