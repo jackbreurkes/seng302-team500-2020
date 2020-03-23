@@ -17,7 +17,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
     if (user === null) {
         throw new Error("current user not found")
     }
-    console.log(user)
+
     if (!user.passports) {
         user.passports = []
     }
@@ -30,13 +30,16 @@ export async function addPassportCountry(country: any, userEmail: string) {
 
 }
 
+let loggedInUser: UserApiFormat = {};
 
-export async function fetchCurrentUser() {
-    let user = await getCurrentUser();
-    if (user === null) {
-        throw new Error("no active user found");
+export async function fetchCurrentUser(force = false) {
+    if (force || !loggedInUser.primary_email) {
+        loggedInUser = await getCurrentUser();
+        if (loggedInUser === null) {
+            throw new Error("no active user found");
+        }
     }
-    return user;
+    return loggedInUser;
 }
 
 
@@ -84,7 +87,7 @@ export async function deleteEmail(email: string) {
             throw new Error("no active user found");
         }
         for (let index = 0; index < user.additional_email.length; index++) {
-            if (email === user.additional_email[index]) {  
+            if (email === user.additional_email[index]) {
                 user.additional_email.splice(index, 1);
             }
         }
@@ -104,7 +107,7 @@ export async function setPrimary(email: string) {
             user.additional_email.push(user.primary_email);
             user.primary_email = email;
             for (let index = 0; index < user.additional_email.length; index++) {
-                if (email === user.additional_email[index]) {  
+                if (email === user.additional_email[index]) {
                     user.additional_email.splice(index, 1);
                 }
             }
@@ -119,7 +122,7 @@ export async function editProfile(user: UserApiFormat) {
         await saveCurrentUser(user);
     } catch (err) {
         alert(err);
-    }    
+    }
 }
 
 

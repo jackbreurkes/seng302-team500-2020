@@ -33,6 +33,26 @@ function getMyUserId() {
   return localStorage.getItem("userId")
 }
 
+export async function verifyUserId() {
+  let res;
+  try {
+    res = await instance.get("whoami", {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    console.error(e.name);
+    throw new Error(e.response.data.error);
+  }
+  if (res.data.profile_id == localStorage.getItem("userId")
+    || res.data.profile_id == -1) {
+      return true;
+  } else {
+    throw new Error("userId does not match")
+  }
+}
+
 function setMyUserId(value: string | null) {
   if (value === null) {
     localStorage.removeItem("userId")
@@ -65,7 +85,7 @@ export async function login(email: string, password: string): Promise<boolean> {
 }
 
 /**
- * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/login
+ * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/profiles/<their ID>
  * For more endpoint information see file team-500/*.yaml
  */
 export async function getCurrentUser() {
@@ -82,15 +102,17 @@ export async function getCurrentUser() {
 
 
 export async function logout() {
-  let res = await sendRequest("logmeout",
-  {
-    credentials: "include",
-    method: "DELETE"
-  })
-  if (res.status !== 204) {
-    throw new Error(res.statusText);
+  try {
+    let res = await instance.delete("logmeout", {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    console.error(e.response);
+    throw new Error(e.response.data.error);
   }
-  localStorage.removeItem("token")
+  localStorage.removeItem("token"); //still remove token if not deleted from backend
   setMyUserId(null); // removes userId
 }
 

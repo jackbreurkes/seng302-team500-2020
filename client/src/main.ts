@@ -8,7 +8,7 @@ Vue.config.productionTip = false
 
 import VueLogger from 'vuejs-logger';
 import VueRouter, { Route } from 'vue-router';
-import { getCurrentUser } from './models/user.model'
+import { verifyUserId } from './models/user.model'
 import vuetify from './plugins/vuetify';
 
 
@@ -21,9 +21,13 @@ const routes = [
     name: 'profilePage',
     component: Homepage,
     beforeEnter(to: Route, from: Route, next: any) {
-      getCurrentUser()
+      verifyUserId()
       .then(() => {next()})
-      .catch(next({ name: 'login' }))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        next({ name: 'login' });
+      })
     }
   },
 ];

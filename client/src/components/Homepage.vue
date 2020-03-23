@@ -211,10 +211,11 @@ const Homepage =  Vue.extend({
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            console.log("updatePassword")
+            this.$router.push({name: "login"});
           })
           .catch((err: any) => {
             console.error(err);
+            this.$router.push({name: "login"});
           })
       },
 
