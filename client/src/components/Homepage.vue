@@ -17,7 +17,7 @@
               dark
               flat
             >
-            <v-toolbar-title>{{ currentUser.firstname }} {{ currentUser.lastname }} </v-toolbar-title>
+            <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }} </v-toolbar-title>
             </v-toolbar>
 
       <!--label for="currentUser.firstname">First Name:</label>
@@ -62,11 +62,11 @@
         <label for="fitnessDropdown">Select a Fitness Level:</label>
         <select id="fitnessDropdown" v-model="selectedFitnessLevel">
           <option value=-1>Not specified</option>
-          <option value=0>Muffin</option>
-          <option value=1>Potato</option>
-          <option value=2>Carrot</option>
-          <option value=3>Blueberry</option>
-          <option value=4>Kale</option>
+          <option value=0>Muffin -No fitness</option>
+          <option value=1>Potato -Little fitness</option>
+          <option value=2>Carrot -Moderate fitness</option>
+          <option value=3>Blueberry -Outdoors enthusiast</option>
+          <option value=4>Kale -Professional athlete</option>
         </select>
         <v-btn id="selectFitness" @click="selectFitnessLevel">Select Level of fitness</v-btn>
         <br>
