@@ -2,46 +2,79 @@ package com.springvuegradle.model.requests;
 
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.CountryRepository;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.util.FormValidator;
 
-import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ProfileObjectMapper {
 
-    private String primary_email;
-    private String fname, lname, mname, nickname, password, bio;
+	@JsonProperty(value = "primary_email", required = false)
+    private String primaryEmail;
+	
+	@JsonProperty(value = "firstname", required = false)
+    private String fname;
+	
+	@JsonProperty(value = "lastname", required = false)
+	private String lname;
+	
+	@JsonProperty(value = "middlename", required = false)
+	private String mname;
+	
+	@JsonProperty(value = "nickname", required = false)
+	private String nickname;
+	
+	@JsonProperty(value = "password", required = false)
+	private String password;
+	
+	@JsonProperty(value = "bio", required = false)
+	private String bio;
+	
+	@JsonProperty(value = "date_of_birth", required = false)
     private String dob;
+    
+	@JsonProperty(value = "gender", required = false)
     private String gender;
+    
+	@JsonProperty(value = "fitness", required = false)
     private Integer fitness;
+
+    public String[] getPassports() {
+        return passports;
+    }
+
+    @JsonProperty(value = "passports", required = false)
+    private String[] passports;
+    
     private List<String> parseErrors = new ArrayList<>();
 
-    private SimpleDateFormat format;
-
-    public ProfileObjectMapper() {}
+    protected ProfileObjectMapper() {}
 
     public String getPrimaryEmail() {
-        return primary_email;
+        return primaryEmail;
     }
 
     public void setPrimaryEmail(String primary_email) {
         if (!FormValidator.validateEmail(primary_email)) {
-            parseErrors.add(new String("invalid email address"));
+            parseErrors.add(new String("Invalid e-mail address"));
         }
-        this.primary_email = primary_email;
+        this.primaryEmail = primary_email;
     }
 
     public String getFirstname() {
@@ -50,7 +83,7 @@ public class ProfileObjectMapper {
 
     public void setFirstname(String fname) {
         if (!FormValidator.validateName(fname)) {
-            parseErrors.add( new String("invalid first name"));
+            parseErrors.add( new String("Invalid first name"));
         }
         this.fname = fname;
     }
@@ -61,7 +94,7 @@ public class ProfileObjectMapper {
 
     public void setLastname(String lname) {
         if (!FormValidator.validateName(lname)) {
-            parseErrors.add( new String("invalid last name"));
+            parseErrors.add( new String("Invalid last name"));
         }
         this.lname = lname;
     }
@@ -71,8 +104,11 @@ public class ProfileObjectMapper {
     }
 
     public void setMiddlename(String mname) {
-        if (!FormValidator.validateName(mname)) {
-            parseErrors.add( new String("invalid middle name"));
+        if (mname.equals("")) {
+            mname = null;
+        }
+        if (mname != null && !FormValidator.validateName(mname)) {
+            parseErrors.add( new String("Invalid middle name"));
         }
         this.mname = mname;
     }
@@ -82,20 +118,22 @@ public class ProfileObjectMapper {
     }
 
     public void setNickname(String nickname) {
-        if (!FormValidator.validateNickname(nickname)) {
-            parseErrors.add( new String("invalid nickname"));
+        if (nickname.equals("")) {
+            nickname = null;
+        }
+        if (nickname != null && !FormValidator.validateNickname(nickname)) {
+            parseErrors.add( new String("Invalid nickname"));
         }
         this.nickname = nickname;
     }
 
-    @JsonIgnore
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         if (!FormValidator.validatePassword(password)) {
-            parseErrors.add("invalid password");
+            parseErrors.add("Invalid password");
         }
         this.password = password;
     }
@@ -105,8 +143,11 @@ public class ProfileObjectMapper {
     }
 
     public void setBio(String bio) {
-        if (!FormValidator.validateBio(bio)) {
-            parseErrors.add( new String("invalid bio"));
+        if (bio.equals("")) {
+            bio = null;
+        }
+        if (bio != null && !FormValidator.validateBio(bio)) {
+            parseErrors.add( new String("Invalid bio"));
         }
         this.bio = bio;
     }
@@ -117,7 +158,7 @@ public class ProfileObjectMapper {
 
     public void setDateOfBirth(String dateOfBirth) {
         if (!FormValidator.validateDateOfBirth(dateOfBirth)) {
-            parseErrors.add( new String("invalid date of birth"));
+            parseErrors.add( new String("Invalid date of birth"));
         }
         this.dob = dateOfBirth;
     }
@@ -128,7 +169,7 @@ public class ProfileObjectMapper {
 
     public void setGender(String gender) {
         if (!FormValidator.validateGender(gender)) {
-            parseErrors.add( new String("invalid gender"));
+            parseErrors.add( new String("Invalid gender"));
         }
         this.gender = gender;
     }
@@ -141,31 +182,35 @@ public class ProfileObjectMapper {
         this.fitness = fitness;
     }
 
+    public void setPassports(String[] passports) {
+        if (!FormValidator.validatePassportCountries(passports)) {
+            parseErrors.add("invalid passport countries");
+        }
+        this.passports = passports;
+    }
+
     private void checkParseErrors() throws InvalidRequestFieldException {
         if (parseErrors.size() > 0) {
             throw new InvalidRequestFieldException(parseErrors.get(0));
         }
     }
 
-    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository) throws InvalidRequestFieldException {
+    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository) throws InvalidRequestFieldException, RecordNotFoundException {
         checkParseErrors();
+        System.out.println("setting things");
         if (this.fname != null) {
             profile.setFirstName(this.fname);
         }
         if (this.lname != null) {
             profile.setLastName(this.lname);
         }
-        if (this.mname != null) {
-            profile.setMiddleName(this.mname);
-        }
-        if (this.nickname != null) {
-            profile.setNickName(this.nickname);
-        }
-        if (this.bio != null) {
-            profile.setBio(this.bio);
-        }
+
+        profile.setMiddleName(this.mname);
+        profile.setNickName(this.nickname);
+        profile.setBio(this.bio);
+        
         if (this.dob != null) {
-            Date validDob = FormValidator.getValidDateOfBirth(this.dob);
+            LocalDate validDob = FormValidator.getValidDateOfBirth(this.dob);
             if (validDob != null) {
                 profile.setDob(validDob);
             }
@@ -179,26 +224,44 @@ public class ProfileObjectMapper {
         if (this.fitness != null) {
             profile.setFitness(this.fitness);
         }
+        if (this.passports != null) {
+            profile.setCountries(countries(this.passports, countryRepository));
+        }
         profileRepository.save(profile);
+    }
+
+    private List<Country> countries(String[] countryNames, CountryRepository countryRepository) throws RecordNotFoundException {
+        List<Country> countries = new ArrayList<>();
+        for (String countryName : countryNames) {
+            Optional<Country> country = countryRepository.findByName(countryName);
+            if (country.isEmpty()) {
+                throw new RecordNotFoundException("country " + countryName + " not found");
+            }
+            countries.add(country.get());
+        }
+        return countries;
     }
 
     public User createNewProfile(UserRepository userRepository,
                                  EmailRepository emailRepository,
-                                 ProfileRepository profileRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException {
+                                 ProfileRepository profileRepository,
+                                 CountryRepository countryRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
-            throw new InvalidRequestFieldException("email already in use");
+            throw new InvalidRequestFieldException("E-mail already in use");
         }
         User user = new User();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date dob = dateFormat.parse(getDateOfBirth());
+        LocalDate dob = FormValidator.getValidDateOfBirth(getDateOfBirth());
         Gender gender = Gender.matchGender(this.gender);
         Profile profile = new Profile(user, getFirstname(), getLastname(), dob, gender);
 
         profile.setBio(bio);
         profile.setMiddleName(getMiddlename());
         profile.setNickName(getNickname());
+        if (this.passports != null) {
+            profile.setCountries(countries(this.passports, countryRepository));
+        }
 
         // workaround since userid is not known until saved to the DB
         userRepository.save(user);
@@ -216,21 +279,24 @@ public class ProfileObjectMapper {
     private void checkRequiredFields() throws InvalidRequestFieldException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            Date dob = dateFormat.parse(getDateOfBirth());
+            dateFormat.parse(getDateOfBirth());
         } catch (ParseException e) {
-            throw new InvalidRequestFieldException("invalid date");
+            throw new InvalidRequestFieldException("Invalid date");
         }
         if (getFirstname() == null) {
-            throw new InvalidRequestFieldException("no firstname field");
+            throw new InvalidRequestFieldException("No firstname field");
         }
         if (getLastname() == null) {
-            throw new InvalidRequestFieldException("no lastname field");
+            throw new InvalidRequestFieldException("No lastname field");
+        }
+        if (getPassword() == null) {
+            throw new InvalidRequestFieldException("No password field");
         }
         if (Gender.matchGender(this.gender) == null) {
-            throw new InvalidRequestFieldException("invalid gender");
+            throw new InvalidRequestFieldException("Invalid gender");
         }
         if (getPrimaryEmail() == null) {
-            throw new InvalidRequestFieldException("no primary email");
+            throw new InvalidRequestFieldException("No primary email");
         }
     }
 }

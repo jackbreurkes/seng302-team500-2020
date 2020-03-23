@@ -7,7 +7,8 @@
     "build": "vue-cli-service build --mode staging",
     "build-prod": "vue-cli-service build --mode prod",
     "kill-all": "fuser -k 9500/tcp 9499/tcp",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "jest"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -21,6 +22,8 @@
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/jest": "^25.1.4",
     "@typescript-eslint/eslint-plugin": "^2.18.0",
     "@typescript-eslint/parser": "^2.18.0",
     "@vue/cli-plugin-babel": "~4.2.0",
@@ -31,6 +34,7 @@
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
+    "jest": "^25.1.0",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",
     "typescript": "^3.8.3",

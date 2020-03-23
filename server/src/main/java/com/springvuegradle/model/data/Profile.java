@@ -1,7 +1,7 @@
 package com.springvuegradle.model.data;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.*;
@@ -41,58 +41,66 @@ public class Profile implements Serializable {
 	@MapsId
 	@JoinColumn(name = "uuid")
 	private User user;
-	
+
+	@ManyToMany
+	@JoinTable(
+			name = "profile_country",
+			joinColumns = {@JoinColumn(name = "profile_id")},
+			inverseJoinColumns = {@JoinColumn(name = "country_code")}
+	)
+	private List<Country> countries;
+
     /**
      * Fitness level of the user (default null or -1)
      */
     @Column(columnDefinition = "smallint default -1")
     private int fitness;
-    
+
     /**
      * First name of the profile
      */
     @Column(columnDefinition = "varchar(30) not null")
     private String firstName;
-    
+
     /**
      * Last name of the profile
      */
     @Column(columnDefinition = "varchar(30) not null")
     private String lastName;
-    
+
     /**
      * Middle name of the profile
      */
     @Column(columnDefinition = "varchar(30)")
     private String middleName;
-    
+
     /**
      * Nickname of the profile
      */
     @Column(columnDefinition = "varchar(30)")
     private String nickName;
-    
+
     /**
      * Bio of the profile
      */
     @Column(columnDefinition = "text")
     private String bio;
-    
+
     /**
      * Date of birth of the profile
      */
-    private Date dob;
-    
+    private LocalDate dob;
+
     /**
      * Gender of the profile
      */
     private Gender gender;
-    
+
     /**
      * Constructor required by spring
      */
     protected Profile() {}
-    
+
     /**
      * Create a profile with the minimum required values
      * @param user User this profile belongs to
@@ -101,7 +109,7 @@ public class Profile implements Serializable {
      * @param dob Date of birth of the user
      * @param gender Gender of the user
      */
-    public Profile(User user, String firstName, String lastName, Date dob, Gender gender) {
+    public Profile(User user, String firstName, String lastName, LocalDate dob, Gender gender) {
     	this.user = user;
     	this.id = user.getUserId();
     	this.firstName = firstName;
@@ -170,7 +178,7 @@ public class Profile implements Serializable {
 	 * Get the date of birth of this profile
 	 * @return date of birth of this profile
 	 */
-	public Date getDob() {
+	public LocalDate getDob() {
 		return dob;
 	}
 
@@ -240,7 +248,7 @@ public class Profile implements Serializable {
 	 * Set the date of birth of this profile
 	 * @param dob DOB to set to (mandatory field cannot be null)
 	 */
-	public void setDob(Date dob) {
+	public void setDob(LocalDate dob) {
 		if (dob == null) {
 			throw new IllegalArgumentException("Cannot set dob to null (mandatory field)");
 		}
@@ -256,5 +264,13 @@ public class Profile implements Serializable {
 			 throw new IllegalArgumentException("Cannot set gender to null (mandatory field)");
 		}
 		this.gender = gender;
+	}
+
+	public List<Country> getCountries() {
+		return countries;
+	}
+
+	public void setCountries(List<Country> countries) {
+		this.countries = countries;
 	}
 }

@@ -1,12 +1,12 @@
 package com.springvuegradle.endpoints;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,10 +20,10 @@ public class LogoutController {
 	private SessionRepository sessionRepo;
 
 	@DeleteMapping("/logmeout")
+	@CrossOrigin
 	public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 		if (request.getAttribute("authenticatedid") == null) {
-			return ResponseEntity.badRequest()
-					.body(new ErrorResponse("you must be authenticated"));
+			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
 		}
 
 		String token = request.getHeader("X-Auth-Token");
