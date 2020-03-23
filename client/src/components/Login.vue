@@ -46,7 +46,6 @@
 </template>
 
 <script lang="ts">
-  import { tagMandatoryAttributes } from '../scripts/LoginRegisterHelpers'
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
@@ -66,8 +65,10 @@
     },
 
     mounted: function() {
-      let refs = this.$refs;
-      tagMandatoryAttributes(refs, this.mandatoryAttributes);
+      if (localStorage.getItem("token") !== null) {
+        this.errorMessage = "Automatically logging you in...";
+        this.$router.push({ name: "profilePage" });
+      }
     },
 
     methods: {

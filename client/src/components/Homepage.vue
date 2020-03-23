@@ -255,11 +255,11 @@ const Homepage =  Vue.extend({
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            console.log("logout")
-            history.go(0);
+            this.$router.push({name: "login"});
           })
           .catch((err: any) => {
             console.error(err);
+            this.$router.push({name: "login"});
           })
       },
 
