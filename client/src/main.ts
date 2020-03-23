@@ -3,7 +3,6 @@ import App from './App.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Homepage from './components/Homepage.vue'
-import InitialPage from './InitialPage.vue'
 
 Vue.config.productionTip = false
 
@@ -14,7 +13,7 @@ import vuetify from './plugins/vuetify';
 
 
 const routes = [
-  {path: '/', name: 'initialPage', component: InitialPage},
+  {path: '/', name: 'login', component: Login},
   {path: '/login', name: 'login', component: Login},
   {path: '/register', name: 'register', component: Register},
   {
