@@ -6,8 +6,5 @@ export interface LoginFormData {
 }
 
 export async function submitForm(formData: LoginFormData) {
-    let loggedIn = await login(formData.email, formData.password);
-    // console.log(loggedIn);
-    let user = await getCurrentUser();
-    return
+    await login(formData.email, formData.password);
 }
