@@ -20,8 +20,10 @@ button {
     -moz-osx-font-smoothing: grayscale;
 }
 
+
 body {
-    font: 14px Arial, sans-serif;
+    /* font: 15px "Times New Roman"; */
+    font-family: 15px "Times New Roman", Times, serif;
     line-height: 1.4em;
     background: #f5f5f5;
     color: #4d4d4d;
