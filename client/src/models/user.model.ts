@@ -33,6 +33,26 @@ function getMyUserId() {
   return localStorage.getItem("userId")
 }
 
+export async function verifyUserId() {
+  let res;
+  try {
+    res = await instance.get("whoami", {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    console.error(e.name);
+    throw new Error(e.response.data.error);
+  }
+  if (res.data.profile_id == localStorage.getItem("userId")
+    || res.data.profile_id == -1) {
+      return true;
+  } else {
+    throw new Error("userId does not match")
+  }
+}
+
 function setMyUserId(value: string | null) {
   if (value === null) {
     localStorage.removeItem("userId")
@@ -65,7 +85,7 @@ export async function login(email: string, password: string): Promise<boolean> {
 }
 
 /**
- * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/login
+ * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/profiles/<their ID>
  * For more endpoint information see file team-500/*.yaml
  */
 export async function getCurrentUser() {
@@ -80,7 +100,7 @@ export async function getCurrentUser() {
   return user;
 }
 
-	/**
+/**
  * Logs out the currently logged in user.
  * For more endpoint information see file team-500/*.yaml
  */
@@ -91,13 +111,11 @@ export async function logout() {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
-    alert(JSON.stringify(instance.toString()));
   } catch (e) {
-    alert(JSON.stringify(e));
+    console.error(e.response);
     throw new Error(e.response.data.error);
   }
-
-  localStorage.removeItem("token")
+  localStorage.removeItem("token"); //still remove token if not deleted from backend
   setMyUserId(null); // removes userId
 }
 
@@ -133,24 +151,9 @@ export async function create(formData: RegisterFormData) {
 }
 
 /**
- * Gets the current user and then saves their profile information.
+ * Takes a user and then saves their profile information under the user id in local storage.
  * For more endpoint information see file team-500/*.yaml
  */
-export async function saveCurrentUser() {
-  const user = await getCurrentUser();
-  saveUser(user);
-}
-
-/**
- * Gets the current user and then saves their profile information.
- * For more endpoint information see file team-500/*.yaml
- */
-export async function saveCurrentUser(user: UserApiFormat) {
-  //const user = await getCurrentUser();
-  saveUser(user);
-}
-
-
 export async function saveUser(user: UserApiFormat) {
   try {
     let notNullUser = user as any;
@@ -159,12 +162,14 @@ export async function saveUser(user: UserApiFormat) {
         delete notNullUser[key];
       }
     }
-    await instance.put("profiles/" + localStorage.userId, notNullUser, {
+    let res = await instance.put("profiles/" + localStorage.userId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
+    console.log(res)
   } catch (e) {
+    console.log(e.response.data.error)
     throw new Error(e.response.data.error);
   }
 }
@@ -194,6 +199,7 @@ export async function addEmail(email: string) {
     throw new Error(e.response.data.error)
   }
 }
+
 
 export async function updatePrimaryEmail(primaryEmail: string) {
   try {
@@ -225,6 +231,7 @@ export async function updatePrimaryEmail(primaryEmail: string) {
     throw new Error(e.response.data.error)
   }
 }
+
 export async function deleteUserEmail(email: string) {
   try {
     let user = await getCurrentUser();
@@ -254,6 +261,7 @@ export async function deleteUserEmail(email: string) {
     throw new Error(e.response.data.error)
   }
 }
+
 
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
   let res;

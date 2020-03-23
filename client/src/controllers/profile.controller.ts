@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveCurrentUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model';
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '../scripts/FormValidator';
 
@@ -17,7 +17,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
     if (user === null) {
         throw new Error("current user not found")
     }
-    console.log(user)
+
     if (!user.passports) {
         user.passports = []
     }
@@ -26,17 +26,20 @@ export async function addPassportCountry(country: any, userEmail: string) {
     }
 
     user.passports.push(countryName);
-    await saveCurrentUser();
+    await saveUser(user);
 
 }
 
+let loggedInUser: UserApiFormat = {};
 
-export async function fetchCurrentUser() {
-    let user = await getCurrentUser();
-    if (user === null) {
-        throw new Error("no active user found");
+export async function fetchCurrentUser(force = false) {
+    if (force || !loggedInUser.primary_email) {
+        loggedInUser = await getCurrentUser();
+        if (loggedInUser === null) {
+            throw new Error("no active user found");
+        }
     }
-    return user;
+    return loggedInUser;
 }
 
 
@@ -62,7 +65,7 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
         user.fitness = fitnessLevel;
     }
 
-    await saveCurrentUser();
+    await saveUser(user);
 }
 
 export async function addNewEmail(newEmail: string) {
@@ -107,7 +110,7 @@ export async function setPrimary(primaryEmail: string) {
 
 export async function editProfile(user: UserApiFormat) {
     await checkProfileValidity(user);
-    await saveCurrentUser(user);
+    await saveUser(user);
 }
 
 

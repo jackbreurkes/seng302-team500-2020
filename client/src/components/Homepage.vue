@@ -91,6 +91,26 @@
         <v-btn @click="logoutButtonClicked">Logout</v-btn>
       </div>
 
+      <div v-if="editing">
+        <v-form ref="editForm">
+          <v-text-field id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+          <v-text-field id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+          <v-text-field id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+          <v-text-field id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <v-menu>
+            <template v-slot:activator="{ on }">
+            <v-text-field v-model="editedUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            </template>
+            <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
+          </v-menu>
+          <v-select label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+        </v-form>
+
+        <button @click="saveButtonClicked">Save</button>
+        <button @click="cancelButtonClicked">Cancel</button>
+      </div>
+
       <br>
       <v-form>
       <v-text-field
@@ -159,7 +179,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
+  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
   import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -185,6 +205,7 @@ const Homepage =  Vue.extend({
         passwordSuccessMessage: '',
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
+        editedUser: {} as UserApiFormat,
         inputRules: {
           "lastnameRules": [(v: string) => checkLastnameValidity(v)],
           "firstnameRules": [(v: string) => checkFirstnameValidity(v)],
@@ -242,11 +263,11 @@ const Homepage =  Vue.extend({
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
-            console.log("logout")
-            history.go(0);
+            this.$router.push({name: "login"});
           })
           .catch((err: any) => {
             console.error(err);
+            this.$router.push({name: "login"});
           })
       },
 
@@ -319,16 +340,23 @@ const Homepage =  Vue.extend({
       },
 
       editProfile: function() {
+        Object.assign(this.editedUser, this.currentUser);
         this.editing = true;
       },
 
-      saveButtonClicked: function() {
-        editProfile(this.currentUser);
-        this.editing = false;
+      saveButtonClicked: async function() {
+        if ((this.$refs.editForm as Vue & { validate: () => boolean }).validate()) {
+          try {
+            await editProfile(this.editedUser);
+            Object.assign(this.currentUser, this.editedUser);
+            this.editing = false;
+          } catch {
+            alert("Unable to update user.");
+          }
+        }
       },
 
       cancelButtonClicked: function() {
-        alert("CANCELLED");
         this.editing = false;
       }
     }
