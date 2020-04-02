@@ -1,5 +1,13 @@
 import { UserApiFormat } from './User';
 
+export let firstnameErrorString = "";
+export let lastnameErrorString = "";
+export let middlenameErrorString = "";
+export let nicknameErrorString = "";
+export let bioErrorString = "";
+export let dobErrorString = "";
+export let genderErrorString = "";
+
 export function isValidEmail(email: string) {
     // RegEx taken from https://emailregex.com/
     // eslint-disable-next-line no-useless-escape
@@ -16,81 +24,105 @@ export function isValidEmail(email: string) {
   }
 
 
-export function checkFirstnameValidity(firstname: any) {
+export function checkFirstnameValidity(firstname: string | undefined) {
     if (!firstname || firstname.length < 1) {
-        return "no first name given";
+        firstnameErrorString = "No first name given";
+        return false;
     }
 
     if (firstname.length > 30) {
-        return "first name must be less than 30 characters";
+        firstnameErrorString = "First name must be less than 30 characters";
+        return false;
     }
 
     if (hasNumber(firstname)) {
-        return "first name cannot contain numbers";
+        firstnameErrorString = "First name cannot contain numbers";
+        return false;
     }
 
     return true;
 }
 
-export function checkLastnameValidity(lastname: any) {
+export function checkLastnameValidity(lastname: string | undefined) {
     if (!lastname || lastname.length < 1) {
-        return "no last name given";
-      }
+        lastnameErrorString = "No last name given";
+        return false;
+    }
   
     if (lastname.length > 30) {
-        return "last name must be less than 30 characters";
+        lastnameErrorString = "Last name must be less than 30 characters";
+        return false;
     }
   
     if (hasNumber(lastname)) {
-        return "last name cannot contain numbers";
+        lastnameErrorString = "Last name cannot contain numbers";
+        return false;
     }
 
     return true;
 
     }
 
-export function checkMiddlenameValidity(middlename: any) {
+export function checkMiddlenameValidity(middlename: string | undefined) {
         if (middlename && middlename.length > 30) {
-            return "middle name must be less than 30 characters";
+            middlenameErrorString = "Middle name must be less than 30 characters";
+            return false;
         }
     
         if (middlename && hasNumber(middlename)) {
-            return "middle name cannot contain numbers";
+            middlenameErrorString = "Middle name cannot contain numbers";
+            return false;
         }
         return true;
     }
 
-export function checkNicknameValidity(nickname: any) {
+export function checkNicknameValidity(nickname: string | undefined) {
         if (nickname && nickname.length < 6) {
-            return "nick name must be at least 6 characters long";
+            nicknameErrorString = "Nickname must be at least 6 characters long";
+            return false;
+        }
+
+        if (nickname && nickname.length > 30) {
+            nicknameErrorString = "Nickname must be at most 30 characters long";
+            return false;
         }
     
         if (nickname && hasWhiteSpace(nickname)) {
-            return "nickname cannot contain white space";
+            nicknameErrorString = "Nickname cannot contain white space";
+            return false;
         }
     
         return true;
     }
 
-export function checkBioValidity(bio: any) {
+export function checkBioValidity(bio: string | undefined) {
         if (bio && bio.length < 8) {
-            return "Bio must be at least 8 characters";
+            bioErrorString = "Bio must be at least 8 characters";
+            return false;
         }
     
         return true;
     }
 
-export function checkDobValidity(date_of_birth: any) {
+export function checkDobValidity(date_of_birth: string | undefined) {
         if (!date_of_birth) {
-            return "date of birth cannot be empty";
+            dobErrorString = "Date of birth cannot be empty";
+            return false;
         }
         const date = Date.parse(date_of_birth);
             if (isNaN(date)) {
-                return 'valid date not given';
-        }
+                dobErrorString = 'Valid date not given';
+                return false;
+}
 
         if (date > Date.now()) {
-            return "date of birth cannot be in the future";
+            dobErrorString = "Date of birth cannot be in the future";
+            return false;
+        }
+
+        if (date < Date.parse("1900/01/01")) {
+            dobErrorString = "Date of birth cannot be before 1900-01-01";
+            return false;
         }
     
         return true;
@@ -98,7 +130,14 @@ export function checkDobValidity(date_of_birth: any) {
 
 export function checkGenderValidity(gender: string | undefined) {
     if (!gender) {
-        return "no gender given";
+        genderErrorString = "No gender given";
+        return false;
+    }
+
+    let genders = ["male", "female", "non-binary"];
+    if (!genders.includes(gender.toLowerCase())) {
+        genderErrorString = "Gender must be either Male, Female or Non-Binary.";
+        return false;
     }
     
     return true;
@@ -116,13 +155,3 @@ export function checkPasswordValidity(password: string): boolean {
 
     return true;
 }
-
-/*export function validateUserProfile(user: UserApiFormat) {
-    return (typeof checkFirstnameValidity(user.firstname) === Boolean) &&
-    checkLastnameValidity(user.lastname) &&
-    checkMiddlenameValidity(user.middlename) &&
-    checkNicknameValidity(user.nickname) &&
-    checkBioValidity(user.bio) &&
-    checkDobValidity(user.date_of_birth) &&
-    checkGenderValidity(user.gender);
-}*/

@@ -93,22 +93,22 @@
 
       <div v-if="editing">
         <v-form ref="editForm">
-          <v-text-field id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
-          <v-text-field id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
-          <v-text-field id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
-          <v-text-field id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
-          <v-text-field id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <v-text-field dense filled id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
+          <v-text-field dense filled id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
+          <v-text-field dense filled id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
+          <v-text-field dense filled id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field dense filled id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
           <v-menu>
             <template v-slot:activator="{ on }">
-            <v-text-field v-model="editedUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            <v-text-field dense filled  v-model="editedUser.dateOfBirth" :value="editedUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
             </template>
             <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
           </v-menu>
-          <v-select label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+          <v-select dense filled  label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
         </v-form>
 
-        <button @click="saveButtonClicked">Save</button>
-        <button @click="cancelButtonClicked">Cancel</button>
+        <v-btn @click="saveButtonClicked">Save</v-btn>
+        <v-btn @click="cancelButtonClicked">Cancel</v-btn>
       </div>
 
       <br>
@@ -142,31 +142,6 @@
       <br>
       <br>
 
-
-
-
-
-      <div v-if="editing">
-        <v-form>
-          <v-text-field dense filled id="firstname" label="First name" v-model="currentUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
-          <v-text-field dense filled id="middlename" label="Middle name" v-model="currentUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
-          <v-text-field dense filled id="lastname" label="Last name" v-model="currentUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
-          <v-text-field dense filled id="nickname" label="Nickname" v-model="currentUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
-          <v-text-field dense filled id="bio" label="Bio" v-model="currentUser.bio" :rules="inputRules.bioRules"></v-text-field>
-          <v-menu>
-            <template v-slot:activator="{ on }">
-            <v-text-field dense filled  v-model="currentUser.dateOfBirth" :value="currentUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
-            </template>
-            <v-date-picker v-model="currentUser.dateOfBirth"></v-date-picker>
-          </v-menu>
-          <v-select dense filled  label="Gender" v-model="currentUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
-        </v-form>
-
-        <v-btn @click="saveButtonClicked">Save</v-btn>
-        <v-btn @click="cancelButtonClicked">Cancel</v-btn>
-        
-      
-      </div>
        </v-card-text>
         </v-card>
       </v-col>
@@ -178,9 +153,10 @@
 <script lang="ts">
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
-  import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
-  import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
+  import { UserApiFormat} from '../scripts/User';
+  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
+  //import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
+  import * as FormValidator from '../scripts/FormValidator';
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
 
@@ -207,13 +183,13 @@ const Homepage =  Vue.extend({
         editing: false,
         editedUser: {} as UserApiFormat,
         inputRules: {
-          "lastnameRules": [(v: string) => checkLastnameValidity(v)],
-          "firstnameRules": [(v: string) => checkFirstnameValidity(v)],
-          "middlenameRules": [(v: string) => checkMiddlenameValidity(v)],
-          "nicknameRules": [(v: string) => checkNicknameValidity(v)],
-          "bioRules": [(v: string) => checkBioValidity(v)],
-          "dobRules": [(v: string) => checkDobValidity(v)],
-          "genderRules": [(v: string) => checkGenderValidity(v)]
+          "lastnameRules": [(v: string) => FormValidator.checkLastnameValidity(v) || FormValidator.lastnameErrorString],
+          "firstnameRules": [(v: string) => FormValidator.checkFirstnameValidity(v) || FormValidator.firstnameErrorString],
+          "middlenameRules": [(v: string) => FormValidator.checkMiddlenameValidity(v) || FormValidator.middlenameErrorString],
+          "nicknameRules": [(v: string) => FormValidator.checkNicknameValidity(v) || FormValidator.nicknameErrorString],
+          "bioRules": [(v: string) => FormValidator.checkBioValidity(v) || FormValidator.bioErrorString],
+          "dobRules": [(v: string) => FormValidator.checkDobValidity(v) || FormValidator.dobErrorString],
+          "genderRules": [(v: string) => FormValidator.checkGenderValidity(v) || FormValidator.genderErrorString]
         },
       }
     },
@@ -278,13 +254,13 @@ const Homepage =  Vue.extend({
           addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
             .then(() => {
               console.log('passport country added')
+            // refresh page after adding passport
+            history.go(0);
             })
             .catch((err: any) => {
               console.log(err)
             })
-            // refresh page after adding passport
-        //history.go(0);
-        }
+          }
       },
 
       selectFitnessLevel: function () {
@@ -300,16 +276,16 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        if(isValidEmail(this.newEmail)) {
+        if(FormValidator.isValidEmail(this.newEmail)) {
           addNewEmail(this.newEmail)
           .then(() => {
             console.log("Email address added");
+            // refresh page after adding emails
+            history.go(0);
           })
           .catch((err) => {
             console.log(err);
           })
-          // refresh page after adding emails
-          //history.go(0);
         } else {
           alert("Not valid email")
         }
@@ -319,24 +295,24 @@ const Homepage =  Vue.extend({
         deleteEmail(email)
         .then(() => {
           console.log("Email address deleted");
+          // refresh page after deleting emails
+          history.go(0);
         })
         .catch((err: any) => {
           console.log(err);
         })
-        // refresh page after deleting emails
-        //history.go(0);
       },
 
       setPrimaryEmail: function(email: string) {
         setPrimary(email)
         .then(() => {
           console.log("primary email changed");
+          // refresh page after changing primary email
+          history.go(0);
         })
         .catch((err) => {
           console.log(err);
         })
-        // refresh page after changing primary email
-        //history.go(0);
       },
 
       editProfile: function() {
@@ -353,7 +329,7 @@ const Homepage =  Vue.extend({
           } catch {
             alert("Unable to update user.");
           }
-        }
+        }        
       },
 
       cancelButtonClicked: function() {

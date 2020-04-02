@@ -90,7 +90,7 @@ export async function deleteEmail(email: string) {
     }
 
     if (user.additional_email !== undefined) {
-        deleteUserEmail(email);
+        await deleteUserEmail(email);
     } else {
         throw new Error("No additional emails to delete.");
     }
@@ -102,26 +102,31 @@ export async function setPrimary(primaryEmail: string) {
         throw new Error("No active user found");
     }
     if (user.additional_email !== undefined && user.additional_email.length > 0) {
-        updatePrimaryEmail(primaryEmail);
+        await updatePrimaryEmail(primaryEmail);
     } else {
         throw new Error("Must have additional emails to update it with.");
     }
 }
 
 export async function editProfile(user: UserApiFormat) {
-    await checkProfileValidity(user);
-    await saveUser(user);
+    if (await checkProfileValidity(user)) {
+        await saveUser(user);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
 
 function checkProfileValidity(formData: UserApiFormat) {
-    checkFirstnameValidity(formData["firstname"]);
-    checkLastnameValidity(formData["lastname"]);
-    checkMiddlenameValidity(formData["middlename"]);
-    checkNicknameValidity(formData["nickname"]);
-    checkBioValidity(formData["bio"]);
-    checkDobValidity(formData["date_of_birth"]);
+    
+    return checkFirstnameValidity(formData["firstname"]) &&
+    checkLastnameValidity(formData["lastname"]) &&
+    checkMiddlenameValidity(formData["middlename"]) &&
+    checkNicknameValidity(formData["nickname"]) &&
+    checkBioValidity(formData["bio"]) &&
+    checkDobValidity(formData["date_of_birth"]) &&
     checkGenderValidity(formData["gender"]);
-
   }
+
