@@ -45,9 +45,18 @@
           <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
         </select>
         <button id="selectCountry" @click="selectCountry">Select</button>
-        <ul id="passports">
-          <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
-        </ul>
+        <v-list id="passports" dense>
+           <v-subheader>Current passports:</v-subheader>
+           <v-list-item-group v-model="selectedPassport" color="primary">
+            <v-list-item v-for="passport in currentUser.passports" :key="passport">
+              <v-list-item-content>
+                <v-list-item-title v-text="passport"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+           </v-list-item-group>
+        </v-list>
+        <v-btn @click="deletePassportCountry" small>Delete selected passport</v-btn>
+        <br>
         <br>
         <label for="fitnessDropdown">Select a Fitness Level:</label>
         <select id="fitnessDropdown" v-model="selectedFitnessLevel">
@@ -179,7 +188,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User'
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
+  import { logoutCurrentUser, updatePassword, addPassportCountry, deletePassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller'
   import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -195,6 +204,7 @@ const Homepage =  Vue.extend({
         currentUser: {} as UserApiFormat,
         passportCountries: [],
         selectedCountry: "" as any,
+        selectedPassport: 0,
         selectedFitnessLevel: -1,
         newEmail: "",
         email: "",
@@ -278,12 +288,26 @@ const Homepage =  Vue.extend({
           addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
             .then(() => {
               console.log('passport country added')
+              history.go(0);
             })
             .catch((err: any) => {
               console.log(err)
             })
             // refresh page after adding passport
-        //history.go(0);
+        }
+      },
+
+      deletePassportCountry: function () {
+        if (this.currentUser && this.currentUser.primary_email && this.currentUser.passports && this.currentUser.passports[this.selectedPassport]) {
+          deletePassportCountry(this.currentUser.passports[this.selectedPassport], this.currentUser.primary_email)
+            .then(() => {
+              console.log('passport country deleted')
+            // refresh page after removing passport
+              history.go(0);
+            })
+            .catch((err: any) => {
+              console.log(err)
+            })
         }
       },
 
