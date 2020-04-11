@@ -200,7 +200,10 @@ export async function addEmail(email: string) {
   }
 }
 
-
+/**
+ * Sets an email as the user's primary email. This email must already be registered to the user as an additional email.
+ * @param primaryEmail email address to be set as the user's primary email.
+ */
 export async function updatePrimaryEmail(primaryEmail: string) {
   try {
     let user = await getCurrentUser();
@@ -208,6 +211,9 @@ export async function updatePrimaryEmail(primaryEmail: string) {
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {
       emails = [];
+    }
+    if (emails.indexOf(primaryEmail) == -1) {
+      throw new Error("Email is not registered to user.");
     }
     if (oldPrimaryEmail !== undefined) {
       emails.splice(emails.indexOf(primaryEmail), 1, oldPrimaryEmail);

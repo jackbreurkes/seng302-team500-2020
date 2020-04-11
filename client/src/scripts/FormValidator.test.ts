@@ -1,4 +1,4 @@
-import { checkPasswordValidity, checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity } from './FormValidator'
+import { checkPasswordValidity, checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, MIN_DATE } from './FormValidator'
 
 // password 8 or more characters
 test.each(["password", "securepassword", "m0r3s3cur3P455w@rd", "eggs and bacon"])(
@@ -19,34 +19,62 @@ test.each(["test", "e", "wowitsareallylongnamethatscool"])(
     }
 )
 
+// valid first name as above and has a space character.
+test.each(["Leigh Anne", "Bobby John"])(
+    'expect %s to be a valid first name', (name) => {
+        expect(checkFirstnameValidity(name)).toBe(true)
+    }
+)
+
+// valid first name as above and has a "-" character.
+test.each(["Leigh-Anne", "Bobby-John"])(
+    'expect %s to be a valid first name', (name) => {
+        expect(checkFirstnameValidity(name)).toBe(true)
+    }
+)
+
 // first name more than 30 characters
 test.each(["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "wowitsareallylongnamethatsreallycool"])(
-    'expect %s to be a valid first name', (name) => {
+    'expect %s to be an invalid first name', (name) => {
         expect(checkFirstnameValidity(name)).toBe(false)
     }
 )
 
 // first name more than 1 character, 30 characters at most. Contains number(s).
 test.each(["H4rry", "Brianna42", "8"])(
-    'expect %s to be a valid first name', (name) => {
+    'expect %s to be an invalid first name', (name) => {
         expect(checkFirstnameValidity(name)).toBe(false)
     }
 )
 
 // first name empty string.
-test('expect %s to be a valid first name', () => {
+test('expect "" to be an invalid first name', () => {
         expect(checkFirstnameValidity("")).toBe(false)
     }
 )
 
 // first name is undefined.
-test('expect %s to be a valid first name', () => {
+test('expect undefined to be an invalid first name', () => {
     expect(checkFirstnameValidity(undefined)).toBe(false)
 }
 )
 
 // Last name is at least 1 character and less than or equal to 30 characters. Contains no numbers.
 test.each(["Williams", "E", "Smith", "Lee", "Wowitsareallylongnamethatscool"])(
+    'expect %s to be a valid last name', (name) => {
+        expect(checkLastnameValidity(name)).toBe(true)
+    }
+)
+
+// Last name is valid as above and contains a space character.
+test.each(["Pevensie Smith", "ALastnameA LastnameB LastnameC"])(
+    'expect %s to be a valid last name', (name) => {
+        expect(checkLastnameValidity(name)).toBe(true)
+    }
+)
+
+// Last name is valid as above and contains a "-" character.
+test.each(["Smith-Lee", "Hyphen-Hyphen-Hyphen"])(
     'expect %s to be a valid last name', (name) => {
         expect(checkLastnameValidity(name)).toBe(true)
     }
@@ -67,19 +95,33 @@ test.each(["William5", "1", "Chan09"])(
 )
 
 // Last name is the empty string.
-test('expect %s to be an invalid last name', () => {
+test('expect "" to be an invalid last name', () => {
         expect(checkLastnameValidity("")).toBe(false)
     }
 )
 
 // Last name is undefined.
-test('expect %s to be an invalid last name', () => {
+test('expect undefined to be an invalid last name', () => {
     expect(checkLastnameValidity(undefined)).toBe(false)
 }
 )
 
 // Middle name is at least 1 character and less than or equal to 30 characters. Contains no numbers.
 test.each(["Robin", "A", "John", "Anna", "Wowitsareallylongnamethatscool"])(
+    'expect %s to be a valid middle name', (name) => {
+        expect(checkMiddlenameValidity(name)).toBe(true)
+    }
+)
+
+// Middle name is valid as above and contains a space character.
+test.each(["Anna Lee", "Robert John"])(
+    'expect %s to be a valid middle name', (name) => {
+        expect(checkMiddlenameValidity(name)).toBe(true)
+    }
+)
+
+// Middle name is valid as above and contains a "-" character.
+test.each(["Anna-Lee", "Robert-John"])(
     'expect %s to be a valid middle name', (name) => {
         expect(checkMiddlenameValidity(name)).toBe(true)
     }
@@ -100,13 +142,13 @@ test.each(["William5", "1", "Chan09"])(
 )
 
 // Middle name is the empty string.
-test('expect %s to be a valid middle name', () => {
+test('expect "" to be a valid middle name', () => {
         expect(checkMiddlenameValidity("")).toBe(true)
     }
 )
 
 // Middle name is undefined.
-test('expect %s to be a valid middle name', () => {
+test('expect undefined to be a valid middle name', () => {
     expect(checkMiddlenameValidity(undefined)).toBe(true)
 }
 )
@@ -140,13 +182,13 @@ test.each(["I am a new user", " Whitespace", "Whitespace ", "\tTabbyTabTab", "\n
 )
 
 // Nickname is the empty string.
-test('expect %s to be a valid nickname', () => {
+test('expect "" to be a valid nickname', () => {
         expect(checkNicknameValidity("")).toBe(true)
     }
 )
 
 // Nickname is undefined.
-test('expect %s to be a valid nickname', () => {
+test('expect undefined to be a valid nickname', () => {
     expect(checkNicknameValidity(undefined)).toBe(true)
 }
 )
@@ -166,53 +208,39 @@ test.each(["Short!", "A", "TinyBio", "A bio."])(
 )
 
 // Bio is the empty string.
-test('expect %s to be a valid bio', () => {
+test('expect "" to be a valid bio', () => {
         expect(checkBioValidity("")).toBe(true)
     }
 )
 
 // Bio is undefined.
-test('expect %s to be a valid bio', () => {
+test('expect undefined to be a valid bio', () => {
     expect(checkBioValidity(undefined)).toBe(true)
 }
 )
 
-// Get today's date in local time
-const today = new Date();
-let month = (today.getMonth() + 1).toString();
-if (month.length == 1) {
-    month = "0" + month;
-}
-let date = today.getDate().toString();
-if (date.length == 1) {
-    date = "0" + date;
-}
-// Date of birth is in valid format and is in the past but after or on 1900-01-01.
-test.each(["2000-12-29", "1900-01-01", "2000/01/01", "01-02-2003", today.getFullYear() + "-" + month + "-" + date])(
+var today = new Date().toISOString().slice(0, 10);
+
+// Date of birth is in valid format and is in the past and after or on 1900-01-01.
+test.each(["2000-12-29", MIN_DATE, today])(
     'expect %s to be a valid date of birth', (dob) => {
         expect(checkDobValidity(dob)).toBe(true)
     }
 )
 
 // Date of birth is in valid format but does not exist.
-test.each(["2000-12-32", "2001-02-31", "2000/04/31", "2000/01/00"])(
+test.each(["2000-12-32", "2001-02-31"])(
     'expect %s to be an invalid date of birth', (dob) => {
         expect(checkDobValidity(dob)).toBe(false)
     }
 )
-// Get tomorrow's date
-const tomorrow = new Date();
+
+var tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
-let month_tomorrow = (tomorrow.getMonth() + 1).toString();
-if (month_tomorrow.length == 1) {
-    month_tomorrow = "0" + month_tomorrow;
-}
-let date_tomorrow = tomorrow.getDate().toString();
-if (date_tomorrow.length == 1) {
-    date_tomorrow = "0" + date_tomorrow;
-}
+var tomorrow_string = tomorrow.toISOString().slice(0, 10);
+
 // Date of birth is in valid format and is in future.
-test.each(["3000-12-32", "2021-02-28", tomorrow.getFullYear() + "-" + month_tomorrow + "-" + date_tomorrow])(
+test.each(["3000-12-32", "2021-02-28", tomorrow_string])(
     'expect %s to be an invalid date of birth', (dob) => {
         expect(checkDobValidity(dob)).toBe(false)
     }
@@ -226,25 +254,25 @@ test.each(["1000-12-30", "1899-12-31", "0000-01-01"])(
 )
 
 // Date given is in invalid format
-test.each(["Today", "Wednesday 24th June, 2000"])(
+test.each(["Today", "Wednesday 24th June, 2000", "2000/01/01", "01-02-2003", "00-04-31", "2000-1-1"])(
     'expect %s to be an invalid date of birth', (dob) => {
         expect(checkDobValidity(dob)).toBe(false)
     }
 )
 
 // Date given is the empty string
-test('expect %s to be an invalid date of birth', () => {
+test('expect "" to be an invalid date of birth', () => {
         expect(checkDobValidity("")).toBe(false)
     }
 )
 
 // Date given is undefined
-test('expect %s to be an invalid date of birth', () => {
+test('expect undefined to be an invalid date of birth', () => {
         expect(checkDobValidity(undefined)).toBe(false)
     }
 )
 
-// must be one of “Male”, “Female”, “Non-binary”. casing should be ignored.
+// must be one of “male”, “female”, “non-binary”. casing should be ignored.
 // Gender is one of three valid options (male, female, non-binary) with any casing.
 test.each(["Male", "female", "non-BINARY", "FeMaLe"])(
     'expect %s to be a valid gender', (gender) => {
@@ -260,13 +288,13 @@ test.each(["n/a", "M", "woman", "nothing"])(
 )
 
 // Gender given is the empty string.
-test('expect %s to be an invalid gender', () => {
+test('expect "" to be an invalid gender', () => {
         expect(checkGenderValidity("")).toBe(false)
     }
 )
 
 // Gender given is undefined.
-test('expect %s to be an invalid gender', () => {
+test('expect undefined to be an invalid gender', () => {
     expect(checkGenderValidity(undefined)).toBe(false)
 }
 )

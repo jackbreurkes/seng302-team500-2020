@@ -183,13 +183,13 @@ const Homepage =  Vue.extend({
         editing: false,
         editedUser: {} as UserApiFormat,
         inputRules: {
-          "lastnameRules": [(v: string) => FormValidator.checkLastnameValidity(v) || FormValidator.lastnameErrorString],
-          "firstnameRules": [(v: string) => FormValidator.checkFirstnameValidity(v) || FormValidator.firstnameErrorString],
-          "middlenameRules": [(v: string) => FormValidator.checkMiddlenameValidity(v) || FormValidator.middlenameErrorString],
-          "nicknameRules": [(v: string) => FormValidator.checkNicknameValidity(v) || FormValidator.nicknameErrorString],
-          "bioRules": [(v: string) => FormValidator.checkBioValidity(v) || FormValidator.bioErrorString],
-          "dobRules": [(v: string) => FormValidator.checkDobValidity(v) || FormValidator.dobErrorString],
-          "genderRules": [(v: string) => FormValidator.checkGenderValidity(v) || FormValidator.genderErrorString]
+          "lastnameRules": [(v: string) => FormValidator.checkLastnameValidity(v) || FormValidator.LAST_NAME_ERROR_STRING],
+          "firstnameRules": [(v: string) => FormValidator.checkFirstnameValidity(v) || FormValidator.FIRST_NAME_ERROR_STRING],
+          "middlenameRules": [(v: string) => FormValidator.checkMiddlenameValidity(v) || FormValidator.MIDDLE_NAME_ERROR_STRING],
+          "nicknameRules": [(v: string) => FormValidator.checkNicknameValidity(v) || FormValidator.NICKNAME_ERROR_STRING],
+          "bioRules": [(v: string) => FormValidator.checkBioValidity(v) || FormValidator.BIO_ERROR_STRING],
+          "dobRules": [(v: string) => FormValidator.checkDobValidity(v) || FormValidator.DOB_ERROR_STRING],
+          "genderRules": [(v: string) => FormValidator.checkGenderValidity(v) || FormValidator.GENDER_ERROR_STRING]
         },
       }
     },
@@ -276,19 +276,15 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        if(FormValidator.isValidEmail(this.newEmail)) {
-          addNewEmail(this.newEmail)
-          .then(() => {
-            console.log("Email address added");
-            // refresh page after adding emails
-            history.go(0);
-          })
-          .catch((err) => {
-            console.log(err);
-          })
-        } else {
-          alert("Not valid email")
-        }
+        addNewEmail(this.newEmail)
+        .then(() => {
+          console.log("Email address added");
+          // refresh page after adding emails
+          history.go(0);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
       },
 
       deleteEmailAddress: function (email: string) {
