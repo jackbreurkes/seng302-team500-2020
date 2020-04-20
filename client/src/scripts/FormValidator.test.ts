@@ -1,5 +1,10 @@
 import { checkPasswordValidity, checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, MIN_DATE } from './FormValidator'
 
+var today = new Date().toISOString().slice(0, 10);
+var tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+var tomorrow_string = tomorrow.toISOString().slice(0, 10);
+
 // password 8 or more characters
 test.each(["password", "securepassword", "m0r3s3cur3P455w@rd", "eggs and bacon"])(
     'expect "%s" to be a valid password', (password) => {
@@ -219,14 +224,12 @@ test('expect undefined to be a valid bio', () => {
 }
 )
 
-var today = new Date().toISOString().slice(0, 10);
-
 // Date of birth is in valid format and is in the past and after or on 1900-01-01.
 test.each(["2000-12-29", MIN_DATE, today])(
     'expect %s to be a valid date of birth', (dob) => {
         expect(checkDobValidity(dob)).toBe(true)
     }
-)
+);
 
 // Date of birth is in valid format but does not exist.
 test.each(["2000-12-32", "2001-02-31"])(
@@ -234,10 +237,6 @@ test.each(["2000-12-32", "2001-02-31"])(
         expect(checkDobValidity(dob)).toBe(false)
     }
 )
-
-var tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-var tomorrow_string = tomorrow.toISOString().slice(0, 10);
 
 // Date of birth is in valid format and is in future.
 test.each(["3000-12-32", "2021-02-28", tomorrow_string])(

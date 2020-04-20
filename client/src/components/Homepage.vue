@@ -290,7 +290,6 @@ const Homepage =  Vue.extend({
       deleteEmailAddress: function (email: string) {
         deleteEmail(email)
         .then(() => {
-          console.log("Email address deleted");
           // refresh page after deleting emails
           history.go(0);
         })
@@ -300,9 +299,8 @@ const Homepage =  Vue.extend({
       },
 
       setPrimaryEmail: function(email: string) {
-        setPrimary(email)
+        setPrimary(email) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
         .then(() => {
-          console.log("primary email changed");
           // refresh page after changing primary email
           history.go(0);
         })

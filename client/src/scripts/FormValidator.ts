@@ -100,7 +100,6 @@ export function checkDobValidity(date_of_birth: string | undefined) {
             return false;
         }
 
-        console.log(date_of_birth.slice(0, 4))
         const date = Date.parse(date_of_birth);
             if (isNaN(date)) {
                 return false;

@@ -68,6 +68,11 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     await saveUser(user);
 }
 
+/**
+ * Register supplied email to the user by adding it to their additional emails list and communicating this to the database (via user.model method).
+ * Throws error if is no current user or the user has five emails registered already (including their primary email).
+ * @param newEmail String of email to be registered under user's profile.
+ */
 export async function addNewEmail(newEmail: string) {
     if(FormValidator.isValidEmail(newEmail)) {
         let user = await getCurrentUser();
@@ -85,6 +90,9 @@ export async function addNewEmail(newEmail: string) {
     }
 }
 
+/**
+ * Remove the specified email from the user's list of additional emails.
+ */
 export async function deleteEmail(email: string) {
     let user = await getCurrentUser();
     if (user === null) {
@@ -98,29 +106,38 @@ export async function deleteEmail(email: string) {
     }
 }
 
+/**
+ * Email must be registered to user before it can be set as their primary email
+ * @param primaryEmail 
+ */
 export async function setPrimary(primaryEmail: string) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("No active user found");
     }
-    if (user.additional_email !== undefined && user.additional_email.length > 0) {
+    if (user.additional_email !== undefined && user.additional_email.length > 0) {  // Need additional emails available to be set as primary
         await updatePrimaryEmail(primaryEmail);
     } else {
         throw new Error("Must have additional emails to update it with.");
     }
 }
 
+/**
+ * Update the profile information of the user supplied.
+ * @param user user to update information of
+ */
 export async function editProfile(user: UserApiFormat) {
     if (await checkProfileValidity(user)) {
         await saveUser(user);
-        return true;
     } else {
-        return false;
+        throw new Error("Profile is not valid.");
     }
 }
 
-
-
+/**
+ * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.
+ * @param formData profile information to validate, supplied in the form of a user's profile
+ */
 function checkProfileValidity(formData: UserApiFormat) {
     
     return checkFirstnameValidity(formData["firstname"]) &&
