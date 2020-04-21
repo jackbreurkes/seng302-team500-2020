@@ -1,5 +1,5 @@
 import { UserApiFormat } from './User';
-export class FormValidator {
+export default class FormValidator {
     MIN_DATE = '1900-01-01';
     FIRST_NAME_ERROR_STRING = "First name must be between 1 and 30 characters (inclusive) and contain no numbers.";
     LAST_NAME_ERROR_STRING = "Last name must be between 1 and 30 characters (inclusive) and contain no numbers.";

@@ -1,6 +1,6 @@
 // import User, { UserBuilder } from '@/scripts/User';
 import { create, login, getCurrentUser } from '@/models/user.model';
-import { FormValidator } from '@/scripts/FormValidator';
+import FormValidator from '@/scripts/FormValidator';
 import { UserApiFormat } from '@/scripts/User';
 
 let formValidator = new FormValidator();

@@ -1,6 +1,6 @@
 import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
-import { FormValidator } from '../scripts/FormValidator';
+import FormValidator from '../scripts/FormValidator';
 
 let formValidator = new FormValidator();
 

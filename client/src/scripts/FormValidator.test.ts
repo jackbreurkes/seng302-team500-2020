@@ -1,4 +1,4 @@
-import { FormValidator } from './FormValidator'
+import FormValidator from './FormValidator'
 
 let formValidator = new FormValidator();
 var today = new Date().toISOString().slice(0, 10);
