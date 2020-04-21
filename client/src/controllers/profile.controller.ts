@@ -1,7 +1,8 @@
 import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
-import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '../scripts/FormValidator';
+import FormValidator from '../scripts/FormValidator';
 
+let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
     await logout();
@@ -44,7 +45,7 @@ export async function fetchCurrentUser(force = false) {
 
 
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
-    if (!checkPasswordValidity(newPassword)) {
+    if (!formValidator.checkPasswordValidity(newPassword)) {
         throw new Error("new password must be at least 8 characters")
     }
     if (newPassword !== repeatPassword){
@@ -68,21 +69,31 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
     await saveUser(user);
 }
 
+/**
+ * Register supplied email to the user by adding it to their additional emails list and communicating this to the database (via user.model method).
+ * Throws error if is no current user or the user has five emails registered already (including their primary email).
+ * @param newEmail String of email to be registered under user's profile.
+ */
 export async function addNewEmail(newEmail: string) {
-    let user = await getCurrentUser();
-    console.log(user)
-    if (user === null) {
-        throw new Error("no active user found");
+    if(formValidator.isValidEmail(newEmail)) {
+        let user = await getCurrentUser();
+        console.log(user)
+        if (user === null) {
+            throw new Error("no active user found");
+        }
+        if (user.additional_email === undefined) {
+            user.additional_email = []
+        } else if (user.additional_email.length >= 4) {
+            throw new Error("Maximum number of emails reached (5).");
+        }
+        console.log(user.additional_email)
+        await addEmail(newEmail); 
     }
-    if (user.additional_email === undefined) {
-        user.additional_email = []
-    } else if (user.additional_email.length >= 4) {
-        throw new Error("Maximum number of emails reached (5).");
-    }
-    console.log(user.additional_email)
-    await addEmail(newEmail); 
 }
 
+/**
+ * Remove the specified email from the user's list of additional emails.
+ */
 export async function deleteEmail(email: string) {
     let user = await getCurrentUser();
     if (user === null) {
@@ -90,38 +101,52 @@ export async function deleteEmail(email: string) {
     }
 
     if (user.additional_email !== undefined) {
-        deleteUserEmail(email);
+        await deleteUserEmail(email);
     } else {
         throw new Error("No additional emails to delete.");
     }
 }
 
+/**
+ * Email must be registered to user before it can be set as their primary email
+ * @param primaryEmail 
+ */
 export async function setPrimary(primaryEmail: string) {
     let user = await getCurrentUser();
     if (user === null) {
         throw new Error("No active user found");
     }
-    if (user.additional_email !== undefined && user.additional_email.length > 0) {
-        updatePrimaryEmail(primaryEmail);
+    if (user.additional_email !== undefined && user.additional_email.length > 0) {  // Need additional emails available to be set as primary
+        await updatePrimaryEmail(primaryEmail);
     } else {
         throw new Error("Must have additional emails to update it with.");
     }
 }
 
+/**
+ * Update the profile information of the user supplied.
+ * @param user user to update information of
+ */
 export async function editProfile(user: UserApiFormat) {
-    await checkProfileValidity(user);
-    await saveUser(user);
+    if (await checkProfileValidity(user)) {
+        await saveUser(user);
+    } else {
+        throw new Error("Profile is not valid.");
+    }
 }
 
-
-
+/**
+ * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.
+ * @param formData profile information to validate, supplied in the form of a user's profile
+ */
 function checkProfileValidity(formData: UserApiFormat) {
-    checkFirstnameValidity(formData["firstname"]);
-    checkLastnameValidity(formData["lastname"]);
-    checkMiddlenameValidity(formData["middlename"]);
-    checkNicknameValidity(formData["nickname"]);
-    checkBioValidity(formData["bio"]);
-    checkDobValidity(formData["date_of_birth"]);
-    checkGenderValidity(formData["gender"]);
-
+    
+    return formValidator.checkFirstnameValidity(formData["firstname"]) &&
+    formValidator.checkLastnameValidity(formData["lastname"]) &&
+    formValidator.checkMiddlenameValidity(formData["middlename"]) &&
+    formValidator.checkNicknameValidity(formData["nickname"]) &&
+    formValidator.checkBioValidity(formData["bio"]) &&
+    formValidator.checkDobValidity(formData["date_of_birth"]) &&
+    formValidator.checkGenderValidity(formData["gender"]);
   }
+
