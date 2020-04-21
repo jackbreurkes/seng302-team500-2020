@@ -155,8 +155,7 @@
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User';
   import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
-  //import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, isValidEmail } from '../scripts/FormValidator'
-  import * as FormValidator from '../scripts/FormValidator';
+  import { FormValidator } from '../scripts/FormValidator';
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
 
@@ -167,6 +166,7 @@ const Homepage =  Vue.extend({
 
     // app initial state
     data: function() {
+      let formValidator = new FormValidator();
       return {
         currentUser: {} as UserApiFormat,
         passportCountries: [],
@@ -182,14 +182,15 @@ const Homepage =  Vue.extend({
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
         editedUser: {} as UserApiFormat,
+        formValidator: new FormValidator,
         inputRules: {
-          "lastnameRules": [(v: string) => FormValidator.checkLastnameValidity(v) || FormValidator.LAST_NAME_ERROR_STRING],
-          "firstnameRules": [(v: string) => FormValidator.checkFirstnameValidity(v) || FormValidator.FIRST_NAME_ERROR_STRING],
-          "middlenameRules": [(v: string) => FormValidator.checkMiddlenameValidity(v) || FormValidator.MIDDLE_NAME_ERROR_STRING],
-          "nicknameRules": [(v: string) => FormValidator.checkNicknameValidity(v) || FormValidator.NICKNAME_ERROR_STRING],
-          "bioRules": [(v: string) => FormValidator.checkBioValidity(v) || FormValidator.BIO_ERROR_STRING],
-          "dobRules": [(v: string) => FormValidator.checkDobValidity(v) || FormValidator.DOB_ERROR_STRING],
-          "genderRules": [(v: string) => FormValidator.checkGenderValidity(v) || FormValidator.GENDER_ERROR_STRING]
+          "lastnameRules": [(v: string) => formValidator.checkLastnameValidity(v) || formValidator.LAST_NAME_ERROR_STRING],
+          "firstnameRules": [(v: string) => formValidator.checkFirstnameValidity(v) || formValidator.FIRST_NAME_ERROR_STRING],
+          "middlenameRules": [(v: string) => formValidator.checkMiddlenameValidity(v) || formValidator.MIDDLE_NAME_ERROR_STRING],
+          "nicknameRules": [(v: string) => formValidator.checkNicknameValidity(v) || formValidator.NICKNAME_ERROR_STRING],
+          "bioRules": [(v: string) => formValidator.checkBioValidity(v) || formValidator.BIO_ERROR_STRING],
+          "dobRules": [(v: string) => formValidator.checkDobValidity(v) || formValidator.DOB_ERROR_STRING],
+          "genderRules": [(v: string) => formValidator.checkGenderValidity(v) || formValidator.GENDER_ERROR_STRING]
         },
       }
     },

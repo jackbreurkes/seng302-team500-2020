@@ -1,7 +1,9 @@
 // import User, { UserBuilder } from '@/scripts/User';
 import { create, login, getCurrentUser } from '@/models/user.model';
-import { isValidEmail, hasNumber, hasWhiteSpace } from '@/scripts/FormValidator';
+import { FormValidator } from '@/scripts/FormValidator';
 import { UserApiFormat } from '@/scripts/User';
+
+let formValidator = new FormValidator();
 
 export interface RegisterFormData {
     firstName?: string;
@@ -26,7 +28,7 @@ export async function registerUser(formData: RegisterFormData) {
         throw new Error("Last name must be less than 30 characters")
     }
 
-    if (hasNumber(formData.lastName)) {
+    if (formValidator.hasNumber(formData.lastName)) {
         throw new Error("Last name cannot contain numbers")
     }
 
@@ -38,7 +40,7 @@ export async function registerUser(formData: RegisterFormData) {
         throw new Error("First name must be less than 30 characters")
     }
 
-    if (hasNumber(formData.firstName)) {
+    if (formValidator.hasNumber(formData.firstName)) {
         throw new Error("First name cannot contain numbers")
     }
 
@@ -46,7 +48,7 @@ export async function registerUser(formData: RegisterFormData) {
         throw new Error("Middle name must be less than 30 characters")
     }
 
-    if (formData.middleName && hasNumber(formData.middleName)) {
+    if (formData.middleName && formValidator.hasNumber(formData.middleName)) {
         throw new Error("Middle name cannot contain numbers")
     }
 
@@ -54,11 +56,11 @@ export async function registerUser(formData: RegisterFormData) {
         throw new Error("Nick name must be at least 6 characters long")
     }
 
-    if (formData.nickname && hasWhiteSpace(formData.nickname)) {
+    if (formData.nickname && formValidator.hasWhiteSpace(formData.nickname)) {
         throw new Error("Nickname cannot contain white space")
     }
 
-    if (!formData.email || !isValidEmail(formData.email)) {
+    if (!formData.email || !formValidator.isValidEmail(formData.email)) {
         throw new Error("Invalid email address")
     }
 

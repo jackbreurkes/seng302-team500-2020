@@ -1,73 +1,71 @@
 import { UserApiFormat } from './User';
+export class FormValidator {
+    MIN_DATE = '1900-01-01';
+    FIRST_NAME_ERROR_STRING = "First name must be between 1 and 30 characters (inclusive) and contain no numbers.";
+    LAST_NAME_ERROR_STRING = "Last name must be between 1 and 30 characters (inclusive) and contain no numbers.";
+    MIDDLE_NAME_ERROR_STRING = "Middle name must be between 1 and 30 characters (inclusive) and contain no numbers.";
+    NICKNAME_ERROR_STRING = "Nickname must be at least 6 characters and contain no whitespace characters.";
+    BIO_ERROR_STRING = "Bio must be at least 8 characters.";
+    DOB_ERROR_STRING = "Date of birth must be before the current date, after " + this.MIN_DATE + "and given in the format yyyy-mm-dd";
+    GENDER_ERROR_STRING = "Gender must be one of: male, female, or non-binary.";
 
-export const MIN_DATE = '1900-01-01';
-
-export const FIRST_NAME_ERROR_STRING = "First name must be between 1 and 30 characters (inclusive) and contain no numbers.";
-export const LAST_NAME_ERROR_STRING = "Last name must be between 1 and 30 characters (inclusive) and contain no numbers.";
-export const MIDDLE_NAME_ERROR_STRING = "Middle name must be between 1 and 30 characters (inclusive) and contain no numbers.";
-export const NICKNAME_ERROR_STRING = "Nickname must be at least 6 characters and contain no whitespace characters.";
-export const BIO_ERROR_STRING = "Bio must be at least 8 characters.";
-export const DOB_ERROR_STRING = "Date of birth must be before the current date, after " + MIN_DATE + "and given in the format yyyy-mm-dd";
-export const GENDER_ERROR_STRING = "Gender must be one of: male, female, or non-binary.";
-
-export function isValidEmail(email: string) {
-    // RegEx taken from https://emailregex.com/
-    // eslint-disable-next-line no-useless-escape
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
-  
-  export function hasNumber(myString: string) {
-    return /\d/.test(myString);
-  }
-  
-  export function hasWhiteSpace(myString: string) {
-    return /\s/g.test(myString);
-  }
-
-function checkNameValidity(name: string) {
-    if (name.length < 1) {
-        return false;
+    isValidEmail(email: string) {
+        // RegEx taken from https://emailregex.com/
+        // eslint-disable-next-line no-useless-escape
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
     }
-
-    if (name.length > 30) {
-        return false;
+      
+    hasNumber(myString: string) {
+        return /\d/.test(myString);
     }
-
-    if (hasNumber(name)) {
-        return false;
+      
+    hasWhiteSpace(myString: string) {
+        return /\s/g.test(myString);
     }
-
-    return true;
-}
-
-
-export function checkFirstnameValidity(firstname: string | undefined) {
-    if (!firstname) {
-        return false;
-    } else {
-        return checkNameValidity(firstname);
+    
+    checkNameValidity(name: string) {
+        if (name.length < 1) {
+            return false;
+        }
+    
+        if (name.length > 30) {
+            return false;
+        }
+    
+        if (this.hasNumber(name)) {
+            return false;
+        }
+    
+        return true;
     }
-}
-
-export function checkLastnameValidity(lastname: string | undefined) {
-    if (!lastname) {
-        return false;
-    } else {
-        return checkNameValidity(lastname);
+    
+    checkFirstnameValidity(firstname: string | undefined) {
+        if (!firstname) {
+            return false;
+        } else {
+            return this.checkNameValidity(firstname);
+        }
     }
-
+    
+    checkLastnameValidity(lastname: string | undefined) {
+        if (!lastname) {
+            return false;
+        } else {
+            return this.checkNameValidity(lastname);
+        }
+    
     }
-
-export function checkMiddlenameValidity(middlename: string | undefined) {
+    
+    checkMiddlenameValidity(middlename: string | undefined) {
         if (!middlename) {
             return true;
         } else {
-            return checkNameValidity(middlename);
+            return this.checkNameValidity(middlename);
         }
     }
-
-export function checkNicknameValidity(nickname: string | undefined) {
+    
+    checkNicknameValidity(nickname: string | undefined) {
         if (nickname && nickname.length < 6) {
             return false;
         }
@@ -76,22 +74,22 @@ export function checkNicknameValidity(nickname: string | undefined) {
             return false;
         }
     
-        if (nickname && hasWhiteSpace(nickname)) {
+        if (nickname && this.hasWhiteSpace(nickname)) {
             return false;
         }
     
         return true;
     }
-
-export function checkBioValidity(bio: string | undefined) {
+    
+    checkBioValidity(bio: string | undefined) {
         if (bio && bio.length < 8) {
             return false;
         }
     
         return true;
     }
-
-export function checkDobValidity(date_of_birth: string | undefined) {
+    
+    checkDobValidity(date_of_birth: string | undefined) {
         if (!date_of_birth) {
             return false;
         }
@@ -114,35 +112,36 @@ export function checkDobValidity(date_of_birth: string | undefined) {
             return false;
         }
 
-        if (date < Date.parse(MIN_DATE)) {
+        if (date < Date.parse(this.MIN_DATE)) {
             return false;
         }
     
         return true;
     }
-
-export function checkGenderValidity(gender: string | undefined) {
-    if (!gender) {
-        return false;
-    }
-
-    let genders = ["male", "female", "non-binary"];
-    if (!genders.includes(gender.toLowerCase())) {
-        return false;
+    
+    checkGenderValidity(gender: string | undefined) {
+        if (!gender) {
+            return false;
+        }
+    
+        let genders = ["male", "female", "non-binary"];
+        if (!genders.includes(gender.toLowerCase())) {
+            return false;
+        }
+        
+        return true;
     }
     
-    return true;
-}
-
-/**
- * checks if a password is valid.
- * @param password the password to test as a string
- * @returns true if valid, else false
- */
-export function checkPasswordValidity(password: string): boolean {
-    if (password.length < 8) {
-        return false;
+    /**
+     * checks if a password is valid.
+     * @param password the password to test as a string
+     * @returns true if valid, else false
+     */
+    checkPasswordValidity(password: string): boolean {
+        if (password.length < 8) {
+            return false;
+        }
+    
+        return true;
     }
-
-    return true;
 }

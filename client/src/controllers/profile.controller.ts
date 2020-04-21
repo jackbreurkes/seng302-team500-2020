@@ -1,7 +1,8 @@
 import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
-import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '../scripts/FormValidator';
-import * as FormValidator from '../scripts/FormValidator';
+import { FormValidator } from '../scripts/FormValidator';
+
+let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
     await logout();
@@ -44,7 +45,7 @@ export async function fetchCurrentUser(force = false) {
 
 
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
-    if (!checkPasswordValidity(newPassword)) {
+    if (!formValidator.checkPasswordValidity(newPassword)) {
         throw new Error("new password must be at least 8 characters")
     }
     if (newPassword !== repeatPassword){
@@ -74,7 +75,7 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
  * @param newEmail String of email to be registered under user's profile.
  */
 export async function addNewEmail(newEmail: string) {
-    if(FormValidator.isValidEmail(newEmail)) {
+    if(formValidator.isValidEmail(newEmail)) {
         let user = await getCurrentUser();
         console.log(user)
         if (user === null) {
@@ -140,12 +141,12 @@ export async function editProfile(user: UserApiFormat) {
  */
 function checkProfileValidity(formData: UserApiFormat) {
     
-    return checkFirstnameValidity(formData["firstname"]) &&
-    checkLastnameValidity(formData["lastname"]) &&
-    checkMiddlenameValidity(formData["middlename"]) &&
-    checkNicknameValidity(formData["nickname"]) &&
-    checkBioValidity(formData["bio"]) &&
-    checkDobValidity(formData["date_of_birth"]) &&
-    checkGenderValidity(formData["gender"]);
+    return formValidator.checkFirstnameValidity(formData["firstname"]) &&
+    formValidator.checkLastnameValidity(formData["lastname"]) &&
+    formValidator.checkMiddlenameValidity(formData["middlename"]) &&
+    formValidator.checkNicknameValidity(formData["nickname"]) &&
+    formValidator.checkBioValidity(formData["bio"]) &&
+    formValidator.checkDobValidity(formData["date_of_birth"]) &&
+    formValidator.checkGenderValidity(formData["gender"]);
   }
 
