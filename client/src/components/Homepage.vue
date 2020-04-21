@@ -45,17 +45,19 @@
           <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
         </select>
         <button id="selectCountry" @click="selectCountry">Select</button>
-        <v-list id="passports" dense>
-           <v-subheader>Current passports:</v-subheader>
-           <v-list-item-group v-model="selectedPassport" color="primary">
-            <v-list-item v-for="passport in currentUser.passports" :key="passport">
-              <v-list-item-content>
-                <v-list-item-title v-text="passport"></v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-           </v-list-item-group>
-        </v-list>
-        <v-btn @click="deletePassportCountry" small>Delete selected passport</v-btn>
+        <div v-if="passportsNotEmpty">
+          <v-list id="passports" dense>
+            <v-subheader>Current passports:</v-subheader>
+            <v-list-item-group v-model="selectedPassport" color="primary">
+              <v-list-item v-for="passport in currentUser.passports" :key="passport">
+                <v-list-item-content>
+                  <v-list-item-title v-text="passport"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+          <v-btn @click="deletePassportCountry" small>Delete selected passport</v-btn>
+        </div>
         <br>
         <br>
         <label for="fitnessDropdown">Select a Fitness Level:</label>
@@ -215,6 +217,7 @@ const Homepage =  Vue.extend({
         passwordSuccessMessage: '',
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
+        passportsNotEmpty: true,
         editedUser: {} as UserApiFormat,
         inputRules: {
           "lastnameRules": [(v: string) => checkLastnameValidity(v)],
@@ -234,6 +237,11 @@ const Homepage =  Vue.extend({
           this.currentUser = user;
           if (this.currentUser) {
             this.selectedFitnessLevel = this.currentUser.fitness || -1;
+            if (this.currentUser.passports && this.currentUser.passports.length != 0) {
+              this.passportsNotEmpty = true;
+            } else {
+              this.passportsNotEmpty = false;
+            }
           }
         })
         .catch((err) => {
@@ -288,6 +296,7 @@ const Homepage =  Vue.extend({
           addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
             .then(() => {
               console.log('passport country added')
+              this.passportsNotEmpty = true;
               history.go(0);
             })
             .catch((err: any) => {
@@ -298,11 +307,14 @@ const Homepage =  Vue.extend({
       },
 
       deletePassportCountry: function () {
-        if (this.currentUser && this.currentUser.primary_email && this.currentUser.passports && this.currentUser.passports[this.selectedPassport]) {
-          deletePassportCountry(this.currentUser.passports[this.selectedPassport], this.currentUser.primary_email)
+        if (this.currentUser && this.currentUser.passports) {
+          deletePassportCountry(this.currentUser.passports[this.selectedPassport])
             .then(() => {
               console.log('passport country deleted')
             // refresh page after removing passport
+              if (this.currentUser.passports && this.currentUser.passports.length == 0) {
+                this.passportsNotEmpty = false;
+              }
               history.go(0);
             })
             .catch((err: any) => {

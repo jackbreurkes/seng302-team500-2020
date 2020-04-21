@@ -30,9 +30,8 @@ export async function addPassportCountry(country: any, userEmail: string) {
 
 }
 
-export async function deletePassportCountry(countryName: string, userEmail: string) {
-    //const countryName = country.name || null
-    if (countryName === null) {
+export async function deletePassportCountry(countryName: string | undefined) {
+    if (countryName == null) {
         throw new Error("country not found");
     }
 
@@ -45,9 +44,7 @@ export async function deletePassportCountry(countryName: string, userEmail: stri
         throw new Error("You do not have this passport added to your profile.")
     }
 
-    console.log(user.passports)
     user.passports.splice(user.passports.indexOf(countryName), 1);
-    console.log(user.passports)
     await saveUser(user);
 
 }
