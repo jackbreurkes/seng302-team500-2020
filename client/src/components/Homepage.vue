@@ -307,18 +307,19 @@ const Homepage =  Vue.extend({
       },
 
       deletePassportCountry: function () {
-        if (this.currentUser && this.currentUser.passports) {
+        if (this.currentUser && this.currentUser.passports && this.selectedPassport !== undefined) {
           deletePassportCountry(this.currentUser.passports[this.selectedPassport])
             .then(() => {
-              console.log('passport country deleted')
-            // refresh page after removing passport
               if (this.currentUser.passports && this.currentUser.passports.length == 0) {
                 this.passportsNotEmpty = false;
               }
+              // refresh page after removing passport
               history.go(0);
             })
             .catch((err: any) => {
               console.log(err)
+              // refresh page in hopes it will resolve error (e.g. user has removed passport in duplicate tab)
+              history.go(0);
             })
         }
       },
@@ -340,12 +341,14 @@ const Homepage =  Vue.extend({
           addNewEmail(this.newEmail)
           .then(() => {
             console.log("Email address added");
+            // refresh page after adding emails
+            history.go(0);
           })
           .catch((err) => {
             console.log(err);
+            // refresh page to hopefully fix issue(s)
+            history.go(0);
           })
-          // refresh page after adding emails
-          //history.go(0);
         } else {
           alert("Not valid email")
         }
@@ -355,24 +358,29 @@ const Homepage =  Vue.extend({
         deleteEmail(email)
         .then(() => {
           console.log("Email address deleted");
+          // refresh page after deleting emails
+          history.go(0);
         })
         .catch((err: any) => {
           console.log(err);
+          // refresh page hopefully fixing issues
+          history.go(0);
         })
-        // refresh page after deleting emails
-        //history.go(0);
+        
       },
 
       setPrimaryEmail: function(email: string) {
         setPrimary(email)
         .then(() => {
           console.log("primary email changed");
+          // refresh page after changing primary email
+          history.go(0);
         })
         .catch((err) => {
           console.log(err);
+          // refresh page to hopefully fix issues
+          history.go(0);
         })
-        // refresh page after changing primary email
-        //history.go(0);
       },
 
       editProfile: function() {
