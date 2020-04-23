@@ -86,7 +86,6 @@
         <v-btn id="addEmailAddress"  @click="addEmailAddress" >Add Email</v-btn>
         </v-card-actions>
         <br>
-        <br>
         <v-btn @click="editProfile">Edit Profile</v-btn>
         <v-btn @click="logoutButtonClicked">Logout</v-btn>
       </div>
@@ -107,10 +106,7 @@
           <v-select dense filled  label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
         </v-form>
 
-        <v-btn @click="saveButtonClicked">Save</v-btn>
-        <v-btn @click="cancelButtonClicked">Cancel</v-btn>
-      </div>
-
+      <br>
       <br>
       <v-form>
       <v-text-field
@@ -141,6 +137,11 @@
 
       <br>
       <br>
+      
+      <v-btn @click="saveButtonClicked">Save</v-btn>
+      <v-btn @click="cancelButtonClicked">Cancel</v-btn>
+      </div>
+
 
        </v-card-text>
         </v-card>
