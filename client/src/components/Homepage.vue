@@ -99,11 +99,11 @@
           <v-text-field dense filled id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
           <v-menu>
             <template v-slot:activator="{ on }">
-            <v-text-field dense filled  v-model="editedUser.dateOfBirth" :value="editedUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            <v-text-field dense filled :value="editedUser.date_of_birth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
             </template>
-            <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
+            <v-date-picker v-model="editedUser.date_of_birth"></v-date-picker>
           </v-menu>
-          <v-select dense filled  label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+          <v-select dense filled label="Gender" v-model="editedUser.gender" :items="genders" item-value="value" item-text="text" :rules="inputRules.genderRules"></v-select>
         </v-form>
 
       <br>
@@ -180,7 +180,7 @@ const Homepage =  Vue.extend({
         repeatPassword: '',
         passwordErrorMessage: '',
         passwordSuccessMessage: '',
-        genders: ["Male", "Female", "Non-binary"],
+        genders: [{"text": "Male", "value": "male"}, {"text": "Female", "value": "female"}, {"text": "Non-binary", "value": "non-binary"}],
         editing: false,
         editedUser: {} as UserApiFormat,
         formValidator: new FormValidator,
