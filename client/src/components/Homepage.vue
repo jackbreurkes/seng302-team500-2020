@@ -64,7 +64,7 @@
         <p>Primary email: {{ currentUser.primary_email }}</p>
         <!-- New Email input field and button -->
         <br>
-        <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
+        <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
         <ul>
           <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
           <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
