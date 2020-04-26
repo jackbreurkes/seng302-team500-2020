@@ -2,6 +2,7 @@ package com.springvuegradle.model.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -10,24 +11,25 @@ import java.util.List;
 public class PutActivityTypesRequest {
 
     @JsonProperty("activities")
+    @NotNull(message = "missing activities field")
     private List<String> activityTypes;
 
     /**
      * no arg constructor required by Spring
      */
-    protected PutActivityTypesRequest() {};
-
-    /**
-     * @param activityTypes list of activity type names corresponding to existing activity types in the database
-     */
-    public PutActivityTypesRequest(List<String> activityTypes) {
-        this.activityTypes = activityTypes;
-    }
+    public PutActivityTypesRequest() {};
 
     /**
      * @return the list of activity type names given in the request
      */
     public List<String> getActivityTypes() {
         return activityTypes;
+    }
+
+    /**
+     * @param activityTypes list of activity type names corresponding to existing activity types in the database
+     */
+    public void setActivityTypes(List<String> activityTypes) {
+        this.activityTypes = activityTypes;
     }
 }
