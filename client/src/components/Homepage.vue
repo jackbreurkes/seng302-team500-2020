@@ -93,11 +93,32 @@
 
       <div v-if="editing">
         <v-form ref="editForm">
+          <p>About Me</p>
+          <v-text-field dense filled id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
+          <v-text-field dense filled id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
+          <template>
+            <v-container-fluid>
+              <p>Fitness Level</p>
+              <v-radio-group :mandatory="false">
+                <v-radio label="Muffin (no fitness)" value="muffin"></v-radio>
+                <v-radio label="Potato (little fitness)" value="potato"></v-radio>
+                <v-radio label="Carrot (moderate fitness)" value="carrot"></v-radio>
+                <v-radio label="Blueberry (outdoors enthusiast)" value="blueberry"></v-radio>
+                <v-radio label="Kale (fitness fanatic)" value="kale"></v-radio>
+              </v-radio-group>
+            </v-container-fluid>
+          </template>
+
+          <template>
+            <v-divider></v-divider>
+          </template>
+          <br>
+
           <v-text-field dense filled id="firstname" label="First name" v-model="editedUser.firstname" :rules="inputRules.firstnameRules"></v-text-field>
           <v-text-field dense filled id="middlename" label="Middle name" v-model="editedUser.middlename" :rules="inputRules.middlenameRules"></v-text-field>
           <v-text-field dense filled id="lastname" label="Last name" v-model="editedUser.lastname" :rules="inputRules.lastnameRules"></v-text-field>
-          <v-text-field dense filled id="nickname" label="Nickname" v-model="editedUser.nickname" :rules="inputRules.nicknameRules"></v-text-field>
-          <v-text-field dense filled id="bio" label="Bio" v-model="editedUser.bio" :rules="inputRules.bioRules"></v-text-field>
+
+
           <v-menu>
             <template v-slot:activator="{ on }">
             <v-text-field dense filled  v-model="editedUser.dateOfBirth" :value="editedUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
