@@ -18,7 +18,10 @@ public class Activity {
     @GeneratedValue
     private long id;
 
-    @NotNull  // will automatically set column to not null if hibernate.validator.apply_to_ddl = true
+    // the @NotNull annotation will automatically set the column to not null
+    // if hibernate.validator.apply_to_ddl = true (true by default)
+
+    @NotNull
     @Column(columnDefinition = "varchar(30)")
     private String activityName;
 
@@ -59,10 +62,10 @@ public class Activity {
 
     /**
      * Create an activity with required and optional fields
-     * @param activityName
-     * @param isDuration
-     * @param location
-     * @param creator
+     * @param activityName the name of the activity
+     * @param isDuration true if the activity has a start and end date, false if it is continuous
+     * @param location the location of the activity
+     * @param creator the profile who created the activity
      */
     public Activity(String activityName, boolean isDuration, String location, Profile creator)
     {
@@ -72,74 +75,130 @@ public class Activity {
         this.creator = creator;
     }
 
+    /**
+     * @return the id associated with the activity in the database
+     */
     public long getId() {
         return id;
     }
 
+    /**
+     * @return the name of the activity
+     */
     public String getActivityName() {
         return activityName;
     }
 
+    /**
+     * @param activityName the name to give to the activity
+     */
     public void setActivityName(String activityName) {
         this.activityName = activityName;
     }
 
+    /**
+     * @return true if the activity should have a non-null start and end date,
+     * false if the activity is continuous
+     */
     public boolean isDuration() {
         return isDuration;
     }
 
+    /**
+     * @param isDuration true of the activity should have a non-null start and end date,
+     * false if the activity is continuous
+     */
     public void setIsDuration(boolean isDuration) {
         this.isDuration = isDuration;
     }
 
+    /**
+     * @return the start date of the activity or null if the activity is not a duration activity
+     */
     public LocalDate getStartDate() {
         return startDate;
     }
 
+    /**
+     * @param startDate the start date of the activity required for duration activities
+     */
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
+    /**
+     * @return gets the end date of the activity or null if the activity is not a duration activity
+     */
     public LocalDate getEndDate() {
         return endDate;
     }
 
+    /**
+     * @param endDate the end date of the activity required for duration activities
+     */
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 
+    /**
+     * @return the start time of the activity or null if the activity does not have a start time set
+     */
     public LocalTime getStartTime() {
         return startTime;
     }
 
+    /**
+     * @param startTime the start time which is optionally used by duration activities
+     */
     public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
+    /**
+     * @return the end time of the activity or null if the activity does not have an end time set
+     */
     public LocalTime getEndTime() {
         return endTime;
     }
 
+    /**
+     * @param endTime the end time which is optionally used by duration activities
+     */
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
+    /**
+     * @return a text description of the activity
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * @param description the text description of the activity
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * @return the location at which the activity will commence
+     */
     public String getLocation() {
         return location;
     }
 
+    /**
+     * @param location the location at which the activity will commence
+     */
     public void setLocation(String location) {
         this.location = location;
     }
 
+    /**
+     * @return the profile of the user who created the activity
+     */
     public Profile getCreator() {
         return creator;
     }
