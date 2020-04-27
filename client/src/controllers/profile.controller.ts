@@ -30,10 +30,7 @@ export async function addPassportCountry(country: any, userEmail: string) {
 
 }
 
-export async function deletePassportCountry(countryName: string | undefined) {
-    if (countryName == null) {
-        throw new Error("country not found");
-    }
+export async function deletePassportCountry(countryName: string) {
 
     let user = await getCurrentUser();
     if (user === null) {
