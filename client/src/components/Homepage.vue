@@ -45,9 +45,20 @@
           <option v-for="country in passportCountries" :key="country.numericCode" :value="country">{{ country.name }}</option>
         </select>
         <button id="selectCountry" @click="selectCountry">Select</button>
-        <ul id="passports">
-          <li v-for="passport in currentUser.passports" :key="passport">{{ passport }}</li>
-        </ul>
+        <div v-if="passportsNotEmpty">
+          <v-list id="passports" dense>
+            <v-subheader>Current passports:</v-subheader>
+            <v-list-item-group v-model="selectedPassport" color="primary">
+              <v-list-item v-for="passport in currentUser.passports" :key="passport">
+                <v-list-item-content>
+                  <v-list-item-title v-text="passport"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+          <v-btn @click="deletePassportCountry" small>Delete selected passport</v-btn>
+        </div>
+        <br>
         <br>
         <label for="fitnessDropdown">Select a Fitness Level:</label>
         <select id="fitnessDropdown" v-model="selectedFitnessLevel">
@@ -154,7 +165,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User';
-  import { logoutCurrentUser, updatePassword, addPassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
+  import { logoutCurrentUser, updatePassword, addPassportCountry, deletePassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
   import FormValidator from '../scripts/FormValidator';
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -171,6 +182,7 @@ const Homepage =  Vue.extend({
         currentUser: {} as UserApiFormat,
         passportCountries: [],
         selectedCountry: "" as any,
+        selectedPassport: 0,
         selectedFitnessLevel: -1,
         newEmail: "",
         email: "",
@@ -181,6 +193,7 @@ const Homepage =  Vue.extend({
         passwordSuccessMessage: '',
         genders: ["Male", "Female", "Non-binary"],
         editing: false,
+        passportsNotEmpty: true,
         editedUser: {} as UserApiFormat,
         formValidator: new FormValidator,
         inputRules: {
@@ -201,6 +214,11 @@ const Homepage =  Vue.extend({
           this.currentUser = user;
           if (this.currentUser) {
             this.selectedFitnessLevel = this.currentUser.fitness || -1;
+            if (this.currentUser.passports && this.currentUser.passports.length != 0) {
+              this.passportsNotEmpty = true;
+            } else {
+              this.passportsNotEmpty = false;
+            }
           }
         })
         .catch((err) => {
@@ -255,13 +273,31 @@ const Homepage =  Vue.extend({
           addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
             .then(() => {
               console.log('passport country added')
-            // refresh page after adding passport
-            history.go(0);
+              this.passportsNotEmpty = true;
+              history.go(0);
             })
             .catch((err: any) => {
               console.log(err)
             })
           }
+      },
+
+      deletePassportCountry: function () {
+        if (this.currentUser && this.currentUser.passports && this.selectedPassport !== undefined) {
+          deletePassportCountry(this.currentUser.passports[this.selectedPassport])
+            .then(() => {
+              if (this.currentUser.passports && this.currentUser.passports.length == 0) {
+                this.passportsNotEmpty = false;
+              }
+              // refresh page after removing passport
+              history.go(0);
+            })
+            .catch((err: any) => {
+              console.log(err)
+              // refresh page in hopes it will resolve error (e.g. user has removed passport in duplicate tab)
+              history.go(0);
+            })
+        }
       },
 
       selectFitnessLevel: function () {
@@ -296,6 +332,8 @@ const Homepage =  Vue.extend({
         })
         .catch((err: any) => {
           console.log(err);
+          // refresh page hopefully fixing issues
+          history.go(0);
         })
       },
 
@@ -307,6 +345,8 @@ const Homepage =  Vue.extend({
         })
         .catch((err) => {
           console.log(err);
+          // refresh page to hopefully fix issues
+          history.go(0);
         })
       },
 

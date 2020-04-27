@@ -31,6 +31,22 @@ export async function addPassportCountry(country: any, userEmail: string) {
 
 }
 
+export async function deletePassportCountry(countryName: string) {
+
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("current user not found")
+    }
+
+    if (!user.passports || !(user.passports.includes(countryName))) {
+        throw new Error("You do not have this passport added to your profile.")
+    }
+
+    user.passports.splice(user.passports.indexOf(countryName), 1);
+    await saveUser(user);
+
+}
+
 let loggedInUser: UserApiFormat = {};
 
 export async function fetchCurrentUser(force = false) {
