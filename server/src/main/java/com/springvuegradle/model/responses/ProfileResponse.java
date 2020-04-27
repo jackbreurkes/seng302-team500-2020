@@ -1,5 +1,6 @@
 package com.springvuegradle.model.responses;
 
+import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Country;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Profile;
@@ -25,7 +26,12 @@ public class ProfileResponse {
     private final int fitness;
     private final List<String> passports = new ArrayList<>();
     private final String[] additional_email;
+    private final List<String> activities = new ArrayList<>();
 
+    /**
+     * @param profile the profile whose information should populate the response fields
+     * @param emailRepository an email repository to use when getting the user's primary email
+     */
     public ProfileResponse(Profile profile, EmailRepository emailRepository) {
         profile_id = profile.getUser().getUserId();
         lastname = profile.getLastName();
@@ -44,8 +50,10 @@ public class ProfileResponse {
         	emailArray.add(email.getEmail());
         }
         additional_email = emailArray.toArray(new String[emailArray.size()]);
-
         date_of_birth = profile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        for (ActivityType activityType : profile.getActivityTypes()) {
+            activities.add(activityType.getActivityTypeName());
+        }
     }
 
     public long getProfile_id() {
@@ -94,5 +102,12 @@ public class ProfileResponse {
 
     public String[] getAdditional_email() {
         return additional_email;
+    }
+
+    /**
+     * @return the list of activity type names the user is interested in
+     */
+    public List<String> getActivities() {
+        return activities;
     }
 }
