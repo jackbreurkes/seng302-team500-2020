@@ -174,7 +174,10 @@ export async function saveUser(user: UserApiFormat) {
   }
 }
 
-
+/**
+ * Register the specified email to the current user by adding it list of additional emails.
+ * @param email email to register to user
+ */
 export async function addEmail(email: string) {
   try {
     let user = await getCurrentUser();
@@ -185,22 +188,20 @@ export async function addEmail(email: string) {
       emails.push(email);
     }
     let emailDict = {"additional_email": emails, "email": email}
-    console.log(JSON.stringify(emailDict));
     let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }, data: emailDict
     });
-    console.log(JSON.stringify(res))
   } catch (e) {
-    console.log(e)
-    console.log(e.response.data)
-    console.log(e.response.data.error)
     throw new Error(e.response.data.error)
   }
 }
 
-
+/**
+ * Sets an email as the user's primary email. This email must already be registered to the user as an additional email.
+ * @param primaryEmail email address to be set as the user's primary email.
+ */
 export async function updatePrimaryEmail(primaryEmail: string) {
   try {
     let user = await getCurrentUser();
@@ -208,6 +209,9 @@ export async function updatePrimaryEmail(primaryEmail: string) {
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {
       emails = [];
+    }
+    if (emails.indexOf(primaryEmail) == -1) {
+      throw new Error("Email is not registered to user.");
     }
     if (oldPrimaryEmail !== undefined) {
       emails.splice(emails.indexOf(primaryEmail), 1, oldPrimaryEmail);
@@ -232,6 +236,10 @@ export async function updatePrimaryEmail(primaryEmail: string) {
   }
 }
 
+/**
+ * Unassociate the specified email from the account of the current user. Email must be an additional email in order to be removed.
+ * @param email email address to unassociate from the user's account (removes it from their list of additional emails).
+ */
 export async function deleteUserEmail(email: string) {
   try {
     let user = await getCurrentUser();
@@ -241,7 +249,7 @@ export async function deleteUserEmail(email: string) {
     } else {
       let index = emails.indexOf(email);
       if (index == -1) {
-        throw new Error("Email is not registered to user.");
+        throw new Error("Email is not registered as an additional email of the user.");
       } else {
         emails.splice(index, 1);
       }
