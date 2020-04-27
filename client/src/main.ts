@@ -3,6 +3,7 @@ import App from './App.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Homepage from './components/Homepage.vue'
+import CreateActivity from './components/CreateActivity.vue'
 
 Vue.config.productionTip = false
 
@@ -16,6 +17,7 @@ const routes = [
   {path: '/', name: 'login', component: Login},
   {path: '/login', name: 'login', component: Login},
   {path: '/register', name: 'register', component: Register},
+  {path: '/createActivity', name: 'createActivity', component: CreateActivity},
   {
     path: '/myprofile',
     name: 'profilePage',

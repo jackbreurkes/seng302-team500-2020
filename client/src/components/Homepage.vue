@@ -89,6 +89,7 @@
         <br>
         <v-btn @click="editProfile">Edit Profile</v-btn>
         <v-btn @click="logoutButtonClicked">Logout</v-btn>
+        <v-btn @click="createActivityClicked">Create Activity</v-btn>
       </div>
 
       <div v-if="editing">
@@ -329,6 +330,10 @@ const Homepage =  Vue.extend({
 
       cancelButtonClicked: function() {
         this.editing = false;
+      },
+
+      createActivityClicked: function() {
+        this.$router.push({ name: "createActivity" });
       }
     }
   })
