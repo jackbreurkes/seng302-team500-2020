@@ -270,6 +270,58 @@ export async function deleteUserEmail(email: string) {
   }
 }
 
+/**
+ * Update the list of activity types which the user is interested in.
+ * @param activityType activity type which user is registering interest in
+ */
+export async function addUserActivityType(activityType: string) {
+  try {
+    let user = await getCurrentUser();
+    if (user.activities === undefined) {
+      user.activities = [activityType];
+    } else {
+      user.activities.push(activityType);
+    }
+    let body = {"activities": user.activities}
+    // PUT /profiles/{profileId}/activity-types
+    let res = await instance.put("profiles/" + localStorage.userId + "/activity-types", body, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
+
+/**
+ * Remove an activity type from the user's profile
+ * @param activityType activity type to remove from the user's profile
+ */
+export async function removeUserActivityType(activityType: string) {
+  try {
+    let user = await getCurrentUser();
+    if (user.activities === undefined) {
+      throw new Error("User has no activity types added to their profile.");
+    } else {
+      let index = user.activities.indexOf(activityType);
+      if (user.activities.indexOf(activityType) == -1) {
+        throw new Error("Activity is not associated with user's profile.");
+      } else {
+        user.activities.splice(index, 1);
+      }
+    }
+    let body = {"activities": user.activities}
+    // PUT /profiles/{profileId}/activity-types
+    let res = await instance.put("profiles/" + localStorage.userId + "/activity-types", body, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
 
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
   let res;
