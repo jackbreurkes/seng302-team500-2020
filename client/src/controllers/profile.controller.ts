@@ -132,7 +132,7 @@ export async function addActivityType(activityType: string) {
     if (user === null) {
         throw new Error("No active user found.");
     }
-    await addActivityType(activityType);
+    await addUserActivityType(activityType);
 }
 
 /**
@@ -147,7 +147,7 @@ export async function removeActivityType(activityType: string) {
     if (!user.activities || user.activities.length === 0) {
         throw new Error("User has no activity types associated with their profile.");
     }
-    await removeActivityType(activityType);
+    await removeUserActivityType(activityType);
 }
 
 /**
