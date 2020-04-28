@@ -49,7 +49,7 @@ export async function verifyUserId() {
     || res.data.profile_id == -1) {
       return true;
   } else {
-    throw new Error("userId does not match")
+    throw new Error("userId in localStorage does not match")
   }
 }
 
@@ -85,7 +85,7 @@ export async function login(email: string, password: string): Promise<boolean> {
 }
 
 /**
- * Attempts to retrieve a user's info using their ID via GET /{{SERVER_URL}}/profiles/<their ID>
+ * Attempts to retrieve a user's info using the saved ID via GET /{{SERVER_URL}}/profiles/<their ID>
  * For more endpoint information see file team-500/*.yaml
  */
 export async function getCurrentUser() {
@@ -99,6 +99,23 @@ export async function getCurrentUser() {
   let user: UserApiFormat = res.data;
   return user;
 }
+
+/**
+ * Attempts to retrieve a profile's info using the given ID via GET /{{SERVER_URL}}/profiles/<their ID>
+ * For more endpoint information see file team-500/*.yaml
+ */
+export async function getProfileById(profileId: number) {
+  let res;
+  try {
+    res = await instance.get("profiles/" + profileId);
+  } catch (e) {
+    console.error(e.response);
+    throw new Error(e.response.data.error);
+  }
+  let user: UserApiFormat = res.data;
+  return user;
+}
+
 
 /**
  * Logs out the currently logged in user.
@@ -154,7 +171,10 @@ export async function create(formData: RegisterFormData) {
  * Takes a user and then saves their profile information under the user id in local storage.
  * For more endpoint information see file team-500/*.yaml
  */
-export async function saveUser(user: UserApiFormat) {
+export async function saveUser(user: UserApiFormat, profileId: number) {
+  if (profileId !== user.profile_id) {
+    throw new Error("cannot save a profile to an id different from that which appears in the user object")
+  }
   try {
     let notNullUser = user as any;
     for (let key in notNullUser) {
@@ -162,7 +182,7 @@ export async function saveUser(user: UserApiFormat) {
         delete notNullUser[key];
       }
     }
-    let res = await instance.put("profiles/" + localStorage.userId, notNullUser, {
+    let res = await instance.put("profiles/" + profileId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
@@ -175,12 +195,12 @@ export async function saveUser(user: UserApiFormat) {
 }
 
 /**
- * Register the specified email to the current user by adding it list of additional emails.
+ * Register the specified email to the target profile by adding it to the list of additional emails.
  * @param email email to register to user
  */
-export async function addEmail(email: string) {
-  try {
-    let user = await getCurrentUser();
+export async function addEmail(email: string, profileId: number) {
+  try { // TODO there should be no business logic in the model class
+    let user = await getProfileById(profileId);
     let emails = user.additional_email;
     if (emails === undefined) {
       emails = [email];
@@ -188,7 +208,7 @@ export async function addEmail(email: string) {
       emails.push(email);
     }
     let emailDict = {"additional_email": emails, "email": email}
-    let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
+    let res = await instance.post("profiles/" + profileId + "/emails", emailDict, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }, data: emailDict
@@ -202,9 +222,9 @@ export async function addEmail(email: string) {
  * Sets an email as the user's primary email. This email must already be registered to the user as an additional email.
  * @param primaryEmail email address to be set as the user's primary email.
  */
-export async function updatePrimaryEmail(primaryEmail: string) {
-  try {
-    let user = await getCurrentUser();
+export async function updatePrimaryEmail(primaryEmail: string, profileId: number) {
+  try { // TODO lots of busines logic in here
+    let user = await getProfileById(profileId);
     let emails = user.additional_email;
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {
@@ -221,17 +241,13 @@ export async function updatePrimaryEmail(primaryEmail: string) {
     
     let emailDict = {"additional_email": emails, "primary_email": primaryEmail}
     console.log(JSON.stringify(emailDict));
-    let res = await instance.put("profiles/" + localStorage.userId + "/emails", emailDict, {
+    let res = await instance.put("profiles/" + profileId + "/emails", emailDict, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       },
       data: emailDict
     });
-    console.log(JSON.stringify(res))
   } catch (e) {
-    console.log(e)
-    console.log(e.response.data)
-    console.log(e.response.data.error)
     throw new Error(e.response.data.error)
   }
 }
@@ -240,9 +256,9 @@ export async function updatePrimaryEmail(primaryEmail: string) {
  * Unassociate the specified email from the account of the current user. Email must be an additional email in order to be removed.
  * @param email email address to unassociate from the user's account (removes it from their list of additional emails).
  */
-export async function deleteUserEmail(email: string) {
-  try {
-    let user = await getCurrentUser();
+export async function deleteUserEmail(email: string, profileId: number) {
+  try { // TODO lots of business logic
+    let user = await getProfileById(profileId);
     let emails = user.additional_email;
     if (emails === undefined) {
       throw new Error("No additional emails to delete.");
@@ -255,26 +271,21 @@ export async function deleteUserEmail(email: string) {
       }
     }
     let emailDict = {"additional_email": emails}
-    console.log(JSON.stringify(emailDict));
-    let res = await instance.post("profiles/" + localStorage.userId + "/emails", emailDict, {
+    await instance.post("profiles/" + profileId + "/emails", emailDict, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }, data: emailDict
     });
-    console.log(JSON.stringify(res))
   } catch (e) {
-    console.log(e)
-    console.log(e.response.data)
-    console.log(e.response.data.error)
     throw new Error(e.response.data.error)
   }
 }
 
 
-export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string) {
+export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string, profileId: number) {
   let res;
   try {
-    res = await instance.post("profiles/" + getMyUserId() + "/password",
+    res = await instance.post("profiles/" + profileId + "/password",
     {old_password, new_password, repeat_password},
     {
       headers: {
