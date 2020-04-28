@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 
@@ -8,47 +8,51 @@ export async function logoutCurrentUser() {
     await logout();
 }
 
-export async function addPassportCountry(country: any, userEmail: string) {
+export async function addPassportCountry(country: any, profileId: number) {
     const countryName = country.name || null
     if (countryName === null) {
         throw new Error("country not found");
     }
 
-    let user = await getCurrentUser();
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("current user not found")
+        throw new Error("user not found")
     }
 
     if (!user.passports) {
         user.passports = []
     }
     if (user.passports.includes(countryName)) {
-        throw new Error("you already have this as a passport country")
+        throw new Error("the target user already has desired passport country")
     }
 
     user.passports.push(countryName);
-    await saveUser(user);
+    await saveUser(user, profileId);
 
 }
 
-export async function deletePassportCountry(countryName: string) {
+export async function deletePassportCountry(countryName: string, profileId: number) {
 
-    let user = await getCurrentUser();
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("current user not found")
+        throw new Error("user not found")
     }
 
     if (!user.passports || !(user.passports.includes(countryName))) {
-        throw new Error("You do not have this passport added to your profile.")
+        throw new Error("User does not have this passport added to their profile.")
     }
 
     user.passports.splice(user.passports.indexOf(countryName), 1);
-    await saveUser(user);
+    await saveUser(user, profileId);
 
 }
 
 let loggedInUser: UserApiFormat = {};
 
+/**
+ * implemented by Alex Hobson, seems to cache the current user and save it to a class variable
+ * @param force force a cache update
+ */
 export async function fetchCurrentUser(force = false) {
     if (force || !loggedInUser.primary_email) {
         loggedInUser = await getCurrentUser();
@@ -60,29 +64,36 @@ export async function fetchCurrentUser(force = false) {
 }
 
 
-export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
+/**
+ * fetches a profile for a user with the given ID
+ */
+export async function fetchProfileWithId(profileId: number) {
+    return await getProfileById(profileId);
+}
+
+
+export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string, profileId: number) {
     if (!formValidator.checkPasswordValidity(newPassword)) {
         throw new Error("new password must be at least 8 characters")
     }
     if (newPassword !== repeatPassword){
         throw new Error("new password and repeat password do not match");
     }
-    await updateCurrentPassword(oldPassword, newPassword, repeatPassword);
+    await updateCurrentPassword(oldPassword, newPassword, repeatPassword, profileId);
 }
 
 
 
 export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
-    let user = await getCurrentUser();
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("no active user found");
+        throw new Error("user not found");
     }
     if (user.fitness !== fitnessLevel) {
-        console.log("User fitness level changed");
         user.fitness = fitnessLevel;
     }
 
-    await saveUser(user);
+    await saveUser(user, profileId);
 }
 
 /**
@@ -90,34 +101,32 @@ export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
  * Throws error if is no current user or the user has five emails registered already (including their primary email).
  * @param newEmail String of email to be registered under user's profile.
  */
-export async function addNewEmail(newEmail: string) {
+export async function addNewEmail(newEmail: string, profileId: number) {
     if(formValidator.isValidEmail(newEmail)) {
-        let user = await getCurrentUser();
-        console.log(user)
+        let user = await getProfileById(profileId);
         if (user === null) {
-            throw new Error("no active user found");
+            throw new Error("user not found");
         }
         if (user.additional_email === undefined) {
             user.additional_email = []
         } else if (user.additional_email.length >= 4) {
             throw new Error("Maximum number of emails reached (5).");
         }
-        console.log(user.additional_email)
-        await addEmail(newEmail); 
+        await addEmail(newEmail, profileId); 
     }
 }
 
 /**
  * Remove the specified email from the user's list of additional emails.
  */
-export async function deleteEmail(email: string) {
-    let user = await getCurrentUser();
+export async function deleteEmail(email: string, profileId: number) {
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("no active user found");
+        throw new Error("user not found");
     }
 
     if (user.additional_email !== undefined) {
-        await deleteUserEmail(email);
+        await deleteUserEmail(email, profileId);
     } else {
         throw new Error("No additional emails to delete.");
     }
@@ -125,15 +134,15 @@ export async function deleteEmail(email: string) {
 
 /**
  * Email must be registered to user before it can be set as their primary email
- * @param primaryEmail 
+ * @param primaryEmail the email to be set as the primary email
  */
-export async function setPrimary(primaryEmail: string) {
-    let user = await getCurrentUser();
+export async function setPrimary(primaryEmail: string, profileId: number) {
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("No active user found");
+        throw new Error("user not found");
     }
     if (user.additional_email !== undefined && user.additional_email.length > 0) {  // Need additional emails available to be set as primary
-        await updatePrimaryEmail(primaryEmail);
+        await updatePrimaryEmail(primaryEmail, profileId);
     } else {
         throw new Error("Must have additional emails to update it with.");
     }
@@ -143,9 +152,9 @@ export async function setPrimary(primaryEmail: string) {
  * Update the profile information of the user supplied.
  * @param user user to update information of
  */
-export async function editProfile(user: UserApiFormat) {
+export async function editProfile(user: UserApiFormat, profileId: number) {
     if (await checkProfileValidity(user)) {
-        await saveUser(user);
+        await saveUser(user, profileId);
     } else {
         throw new Error("Profile is not valid.");
     }

@@ -165,7 +165,7 @@
   import Vue from 'vue';
   // eslint-disable-next-line no-unused-vars
   import { UserApiFormat} from '../scripts/User';
-  import { logoutCurrentUser, updatePassword, addPassportCountry, deletePassportCountry, fetchCurrentUser, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
+  import { logoutCurrentUser, updatePassword, addPassportCountry, deletePassportCountry, fetchProfileWithId, setFitnessLevel, editProfile, addNewEmail, deleteEmail, setPrimary } from '../controllers/profile.controller';
   import FormValidator from '../scripts/FormValidator';
   // eslint-disable-next-line no-unused-vars
   import { RegisterFormData } from '../controllers/register.controller';
@@ -179,6 +179,7 @@ const Homepage =  Vue.extend({
     data: function() {
       let formValidator = new FormValidator();
       return {
+        currentProfileId: NaN as number,
         currentUser: {} as UserApiFormat,
         passportCountries: [],
         selectedCountry: "" as any,
@@ -209,7 +210,13 @@ const Homepage =  Vue.extend({
     },
 
     created() {
-      fetchCurrentUser()
+      const profileId: number = parseInt(this.$route.params.profileId);
+      if (isNaN(profileId)) {
+        this.$router.push({name: "login"})
+      }
+      this.currentProfileId = profileId;
+
+      fetchProfileWithId(profileId)
         .then((user) => {
           this.currentUser = user;
           if (this.currentUser) {
@@ -244,7 +251,7 @@ const Homepage =  Vue.extend({
       updatePasswordButtonClicked: function(){
         this.passwordSuccessMessage = "";
         this.passwordErrorMessage = "";
-        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword)
+        updatePassword(this.oldPassword,this.newPassword,this.repeatPassword, this.currentProfileId)
           .then(() => {
             this.passwordSuccessMessage = "password changed successfully";
           })
@@ -270,7 +277,7 @@ const Homepage =  Vue.extend({
       selectCountry: function () {
 
         if (this.currentUser && this.currentUser.primary_email) {
-          addPassportCountry(this.selectedCountry, this.currentUser.primary_email)
+          addPassportCountry(this.selectedCountry, this.currentProfileId)
             .then(() => {
               console.log('passport country added')
               this.passportsNotEmpty = true;
@@ -284,7 +291,7 @@ const Homepage =  Vue.extend({
 
       deletePassportCountry: function () {
         if (this.currentUser && this.currentUser.passports && this.selectedPassport !== undefined) {
-          deletePassportCountry(this.currentUser.passports[this.selectedPassport])
+          deletePassportCountry(this.currentUser.passports[this.selectedPassport], this.currentProfileId)
             .then(() => {
               if (this.currentUser.passports && this.currentUser.passports.length == 0) {
                 this.passportsNotEmpty = false;
@@ -301,8 +308,8 @@ const Homepage =  Vue.extend({
       },
 
       selectFitnessLevel: function () {
-        if (this.currentUser && this.currentUser.profile_id) {
-          setFitnessLevel(this.selectedFitnessLevel, this.currentUser.profile_id)
+        if (this.currentUser && this.currentProfileId) {
+          setFitnessLevel(this.selectedFitnessLevel, this.currentProfileId)
           .then(() => {
             console.log("Fitness level set");
           })
@@ -313,7 +320,7 @@ const Homepage =  Vue.extend({
       },
 
       addEmailAddress: function() {
-        addNewEmail(this.newEmail)
+        addNewEmail(this.newEmail, this.currentProfileId)
         .then(() => {
           console.log("Email address added");
           // refresh page after adding emails
@@ -325,7 +332,7 @@ const Homepage =  Vue.extend({
       },
 
       deleteEmailAddress: function (email: string) {
-        deleteEmail(email)
+        deleteEmail(email, this.currentProfileId)
         .then(() => {
           // refresh page after deleting emails
           history.go(0);
@@ -338,7 +345,7 @@ const Homepage =  Vue.extend({
       },
 
       setPrimaryEmail: function(email: string) {
-        setPrimary(email) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
+        setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
         .then(() => {
           // refresh page after changing primary email
           history.go(0);
@@ -358,7 +365,7 @@ const Homepage =  Vue.extend({
       saveButtonClicked: async function() {
         if ((this.$refs.editForm as Vue & { validate: () => boolean }).validate()) {
           try {
-            await editProfile(this.editedUser);
+            await editProfile(this.editedUser, this.currentProfileId);
             Object.assign(this.currentUser, this.editedUser);
             this.editing = false;
           } catch {

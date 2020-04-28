@@ -17,7 +17,7 @@ const routes = [
   {path: '/login', name: 'login', component: Login},
   {path: '/register', name: 'register', component: Register},
   {
-    path: '/myprofile',
+    path: '/profiles/:profileId',
     name: 'profilePage',
     component: Homepage,
     beforeEnter(to: Route, from: Route, next: any) {
