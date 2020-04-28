@@ -14,7 +14,7 @@ formValidator.checkPasswordValidity = jest.fn(password => {
 
 test('expect updatePassword to throw an error if newPassword is different from repeatPassword',
     async () => {
-        await expect(updatePassword("password", "newpassword", "wrongrepeat")).rejects.toThrow(
+        await expect(updatePassword("password", "newpassword", "wrongrepeat", 1)).rejects.toThrow(
             new Error("new password and repeat password do not match")
             );
     }
@@ -22,7 +22,7 @@ test('expect updatePassword to throw an error if newPassword is different from r
 
 test('expect updatePassword to throw an error if newPassword is an invalid password',
     async () => {
-        await expect(updatePassword("password", "INVALID", "INVALID")).rejects.toThrow(
+        await expect(updatePassword("password", "INVALID", "INVALID", 1)).rejects.toThrow(
             new Error("new password must be at least 8 characters")
         );
     }
@@ -32,7 +32,7 @@ test('expect updatePassword to send update password request if newPassword is va
     async () => {
         userModel.updateCurrentPassword = jest.fn(); // mocks updateCurrentPassword function
 
-        await expect(updatePassword("password", "newpassword", "newpassword")).resolves.toBe(undefined);
+        await expect(updatePassword("password", "newpassword", "newpassword", 1)).resolves.toBe(undefined);
         expect(userModel.updateCurrentPassword.mock.calls.length).toBe(1);
     }
 )
@@ -42,7 +42,7 @@ test('expect updatePassword send update password request even if old password do
     async () => {
         userModel.updateCurrentPassword = jest.fn();
 
-        await expect(updatePassword("INVALID", "newpassword", "newpassword")).resolves.toBe(undefined);
+        await expect(updatePassword("INVALID", "newpassword", "newpassword", 1)).resolves.toBe(undefined);
         expect(userModel.updateCurrentPassword.mock.calls.length).toBe(1);
     }
 )

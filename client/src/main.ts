@@ -3,6 +3,8 @@ import App from './App.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Homepage from './components/Homepage.vue'
+import EditProfile from './components/EditProfile.vue'
+import CreateActivity from './components/CreateActivity.vue'
 
 Vue.config.productionTip = false
 
@@ -16,8 +18,9 @@ const routes = [
   {path: '/', name: 'login', component: Login},
   {path: '/login', name: 'login', component: Login},
   {path: '/register', name: 'register', component: Register},
+  {path: '/createActivity', name: 'createActivity', component: CreateActivity},
   {
-    path: '/myprofile',
+    path: '/profiles/:profileId',
     name: 'profilePage',
     component: Homepage,
     beforeEnter(to: Route, from: Route, next: any) {
@@ -29,6 +32,11 @@ const routes = [
         next({ name: 'login' });
       })
     }
+  },
+  {
+    path: '/profiles/:profileId/edit',
+    name: 'editProfile',
+    component: EditProfile
   },
 ];
 
