@@ -2,7 +2,7 @@
   <div>
     <v-container class="fill-height" fluid>
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="4">
+        <v-col cols="12" sm="8" md="6">
           <v-card class="elevation-12" width="100%">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
@@ -21,27 +21,29 @@
                   v-model="editedUser.nickname"
                   :rules="inputRules.nicknameRules"
                 ></v-text-field>
-                <v-text-field
+                <v-textarea
                   dense
                   filled
                   id="bio"
                   label="Bio"
                   v-model="editedUser.bio"
                   :rules="inputRules.bioRules"
-                ></v-text-field>
-      
-          <template>
-            <v-container-fluid>
-              <p>Fitness Level</p>
-              <v-radio-group :mandatory="false">
-                <v-radio label="Muffin (no fitness)" value="muffin"></v-radio>
-                <v-radio label="Potato (little fitness)" value="potato"></v-radio>
-                <v-radio label="Carrot (moderate fitness)" value="carrot"></v-radio>
-                <v-radio label="Blueberry (outdoors enthusiast)" value="blueberry"></v-radio>
-                <v-radio label="Kale (fitness fanatic)" value="kale"></v-radio>
-              </v-radio-group>
-            </v-container-fluid>
-          </template>
+                >Something in here</v-textarea>
+                <template>
+                  <v-container-fluid>
+                    <v-radio-group label="Fitness Level" :mandatory="false">
+                      <v-radio label="Muffin (no fitness)" value="muffin"></v-radio>
+                      <v-radio label="Potato (little fitness)" value="potato"></v-radio>
+                      <v-radio label="Carrot (moderate fitness)" value="carrot"></v-radio>
+                      <v-radio label="Blueberry (outdoors enthusiast)" value="blueberry"></v-radio>
+                      <v-radio label="Kale (fitness fanatic)" value="kale"></v-radio>
+                    </v-radio-group>
+                  </v-container-fluid>
+                </template>
+
+                <v-divider></v-divider>
+
+                <v-card-title>Personal Details</v-card-title>
 
                 <v-text-field
                   dense
@@ -68,20 +70,6 @@
                   :rules="inputRules.lastnameRules"
                 ></v-text-field>
 
-                <v-menu>
-                  <template v-slot:activator="{ on }">
-                    <v-text-field
-                      dense
-                      filled
-                      v-model="editedUser.dateOfBirth"
-                      :value="editedUser.dateOfBirth"
-                      v-on="on"
-                      label="Date of Birth"
-                      :rules="inputRules.dobRules"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
-                </v-menu>
                 <v-select
                   dense
                   filled
@@ -90,6 +78,49 @@
                   :items="genders"
                   :rules="inputRules.genderRules"
                 ></v-select>
+
+                <v-menu
+                  ref="dobMenu"
+                  v-model="dobMenu"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290px"
+                  min-width="290px"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field
+                      dense
+                      filled
+                      v-model="editedUser.dateOfBirth"
+                      :value="editedUser.dateOfBirth"
+                      v-on="on"
+                      readonly
+                      label="Date of Birth"
+                      :rules="inputRules.dobRules"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker no-title v-model="editedUser.dateOfBirth" @input="dobMenu = false"></v-date-picker>
+                </v-menu>
+
+                <div id="passport-chips" v-if="passportsNotEmpty">
+                  <v-chip
+                    v-for="passport in currentUser.passports"
+                    :key="passport"
+                    close
+                    class="ma-2"
+                    @click="console.log('delete country')"
+                  >{{ passport }}</v-chip>
+                </div>
+
+                <v-autocomplete
+                  :items="passportCountries"
+                  :filter="customFilter"
+                  color="white"
+                  item-text="name"
+                  label="Countries"
+                ></v-autocomplete>
+
               </v-form>
 
               <v-btn @click="saveButtonClicked">Save</v-btn>
@@ -104,36 +135,7 @@
           <v-card>
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
-              <br />
-              <v-form>
-                <v-text-field
-                  v-model="oldPassword"
-                  label="old password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model="newPassword"
-                  label="new password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model="repeatPassword"
-                  label="repeat password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-              </v-form>
-              <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
-              <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-              <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+              <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
         </v-col>
@@ -406,7 +408,7 @@ const Homepage = Vue.extend({
       }
     },
 
-    cancelButtonClicked: function() {}
+    cancelButtonClicked: function() {},
   }
 });
 
@@ -416,5 +418,9 @@ export default Homepage;
 <style>
 [v-cloak] {
   display: none;
+}
+
+passport-chip {
+  margin-right: 20px;
 }
 </style>
