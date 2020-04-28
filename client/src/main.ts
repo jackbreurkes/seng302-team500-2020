@@ -3,6 +3,7 @@ import App from './App.vue'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Homepage from './components/Homepage.vue'
+import EditProfile from './components/EditProfile.vue'
 import CreateActivity from './components/CreateActivity.vue'
 
 Vue.config.productionTip = false
@@ -31,6 +32,11 @@ const routes = [
         next({ name: 'login' });
       })
     }
+  },
+  {
+    path: '/profiles/:profileId/edit',
+    name: 'editProfile',
+    component: EditProfile
   },
 ];
 
