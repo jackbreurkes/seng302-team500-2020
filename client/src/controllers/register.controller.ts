@@ -98,7 +98,7 @@ export async function registerUser(formData: RegisterFormData) {
     }
 
     await create(formData);
-    let isLoggedIn = await login(formData.email, formData.password);
+    await login(formData.email, formData.password);
     let user = await getCurrentUser();
     return user;
   }

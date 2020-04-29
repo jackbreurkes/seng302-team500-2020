@@ -119,8 +119,11 @@ const Register = Vue.extend({
         gender: this.gender
       }
       registerUser(formData)
-        .then(() => {
-          this.$router.push({ name: "profilePage" });
+        .then((user) => {
+          if (user.profile_id === undefined) {
+            throw new Error("created profile not returned with an id");
+          }
+          this.$router.push({ name: "profilePage", params: { profileId: user.profile_id.toString() } });
         })
         .catch(err => {
           this.errorMessage = err.message;
