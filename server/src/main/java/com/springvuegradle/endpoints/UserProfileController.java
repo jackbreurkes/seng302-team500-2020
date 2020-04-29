@@ -86,9 +86,11 @@ public class UserProfileController {
             @RequestBody ProfileObjectMapper request,
             @PathVariable("id") long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
+        int permissionLevel = (Integer) httpRequest.getAttribute("permissionLevel");
         if (authId == null) {
-        	throw new UserNotAuthenticatedException("You are not logged in");
-        } else if (!authId.equals((long)-1) && !authId.equals(id)) {
+        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
+
+        } else if (permissionLevel < 126 && !authId.equals(id)) {
             return ResponseEntity.status(403).body(new ErrorResponse("Insufficient permission"));
         }
 
