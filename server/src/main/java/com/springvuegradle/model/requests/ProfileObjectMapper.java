@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.CountryRepository;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
@@ -61,6 +62,9 @@ public class ProfileObjectMapper {
 
     @JsonProperty(value = "passports", required = false)
     private String[] passports;
+    
+    @JsonProperty(value = "activities", required = false)
+    private String[] activities;
     
     private List<String> parseErrors = new ArrayList<>();
 
@@ -188,6 +192,14 @@ public class ProfileObjectMapper {
         }
         this.passports = passports;
     }
+    
+    public void setActivities(String[] activities) {
+    	this.activities = activities;
+    }
+    
+    public String[] getActivities() {
+        return activities;
+    }
 
     private void checkParseErrors() throws InvalidRequestFieldException {
         if (parseErrors.size() > 0) {
@@ -245,7 +257,8 @@ public class ProfileObjectMapper {
     public User createNewProfile(UserRepository userRepository,
                                  EmailRepository emailRepository,
                                  ProfileRepository profileRepository,
-                                 CountryRepository countryRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
+                                 CountryRepository countryRepository,
+                                 ActivityTypeRepository activityTypeRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
@@ -262,7 +275,25 @@ public class ProfileObjectMapper {
         if (this.passports != null) {
             profile.setCountries(countries(this.passports, countryRepository));
         }
-
+        
+        List<ActivityType> activityTypes = new ArrayList<>();
+        if (this.activities != null) {
+	        // validate activity types
+	        for (String activityTypeName : getActivities()) {
+	            Optional<ActivityType> optionalActivityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeName);
+	            System.out.println(activityTypeName);
+	            if (optionalActivityType.isPresent()) {
+	                activityTypes.add(optionalActivityType.get());
+	            } else {
+	                throw new RecordNotFoundException("no activity type with name " + activityTypeName + " found");
+	            }
+	        }
+        }
+        // if no activity types are to be associated with the profile
+        if (activityTypes.size() == 0) {
+        	activityTypes = null;
+        }
+                
         // workaround since userid is not known until saved to the DB
         userRepository.save(user);
         user.setPassword(password);
@@ -270,6 +301,8 @@ public class ProfileObjectMapper {
 
         Email dbemail = new Email(user, getPrimaryEmail(), true);
         emailRepository.save(dbemail);
+        
+        profile.setActivityTypes(activityTypes);
 
         profileRepository.save(profile);
 

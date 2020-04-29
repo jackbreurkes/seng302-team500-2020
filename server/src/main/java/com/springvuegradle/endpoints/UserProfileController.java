@@ -94,7 +94,6 @@ public class UserProfileController {
 
         Optional<Profile> optionalProfile = profileRepository.findById(id);
         if (optionalProfile.isPresent()) {
-            System.out.println("you exist!");
 
             try {
                 Profile profile = optionalProfile.get();
@@ -117,7 +116,7 @@ public class UserProfileController {
 
         User user = null;
         try {
-            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository);
+            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository, activityTypeRepository);
         } catch (ParseException ex) {
             return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
         }
