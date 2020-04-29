@@ -109,8 +109,16 @@ export async function getProfileById(profileId: number) {
   try {
     res = await instance.get("profiles/" + profileId);
   } catch (e) {
-    console.error(e.response);
-    throw new Error(e.response.data.error);
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
   }
   let user: UserApiFormat = res.data;
   return user;
