@@ -75,7 +75,7 @@
         <p>Primary email: {{ currentUser.primary_email }}</p>
         <!-- New Email input field and button -->
         <br>
-        <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
+        <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
         <ul>
           <li v-for="email in currentUser.additional_email" :key="email">{{ email }}
           <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
@@ -96,7 +96,6 @@
         
         <v-btn id="addEmailAddress"  @click="addEmailAddress" >Add Email</v-btn>
         </v-card-actions>
-        <br>
         <br>
         <v-btn @click="editProfile">Edit Profile</v-btn>
         <v-btn @click="logoutButtonClicked">Logout</v-btn>
@@ -133,17 +132,14 @@
 
           <v-menu>
             <template v-slot:activator="{ on }">
-            <v-text-field dense filled  v-model="editedUser.dateOfBirth" :value="editedUser.dateOfBirth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
+            <v-text-field dense filled :value="editedUser.date_of_birth" v-on="on" label="Date of Birth" :rules="inputRules.dobRules"></v-text-field>
             </template>
-            <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
+            <v-date-picker v-model="editedUser.date_of_birth"></v-date-picker>
           </v-menu>
-          <v-select dense filled  label="Gender" v-model="editedUser.gender" :items="genders" :rules="inputRules.genderRules"></v-select>
+          <v-select dense filled label="Gender" v-model="editedUser.gender" :items="genders" item-value="value" item-text="text" :rules="inputRules.genderRules"></v-select>
         </v-form>
 
-        <v-btn @click="saveButtonClicked">Save</v-btn>
-        <v-btn @click="cancelButtonClicked">Cancel</v-btn>
-      </div>
-
+      <br>
       <br>
       <v-form>
       <v-text-field
@@ -174,6 +170,11 @@
 
       <br>
       <br>
+      
+      <v-btn @click="saveButtonClicked">Save</v-btn>
+      <v-btn @click="cancelButtonClicked">Cancel</v-btn>
+      </div>
+
 
        </v-card-text>
         </v-card>
@@ -214,7 +215,7 @@ const Homepage =  Vue.extend({
         repeatPassword: '',
         passwordErrorMessage: '',
         passwordSuccessMessage: '',
-        genders: ["Male", "Female", "Non-binary"],
+        genders: [{"text": "Male", "value": "male"}, {"text": "Female", "value": "female"}, {"text": "Non-binary", "value": "non-binary"}],
         editing: false,
         passportsNotEmpty: true,
         editedUser: {} as UserApiFormat,

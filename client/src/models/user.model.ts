@@ -285,13 +285,15 @@ export async function deleteUserEmail(email: string, profileId: number) {
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string, profileId: number) {
   let res;
   try {
-    res = await instance.post("profiles/" + profileId + "/password",
+    res = await instance.put("profiles/" + profileId + "/password",
     {old_password, new_password, repeat_password},
     {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
-    });
+    },
+    
+    );
   } catch (e) {
     throw new Error(e.response.data.error);
   }
