@@ -46,7 +46,20 @@ public class EditPasswordController {
     {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
-        if (authId == null || !(authId == profileId || authId == -1)) {
+
+        // checks if target user exists
+        Optional<User> optionalUser = userRepository.findById(profileId);
+        if (optionalUser.isEmpty()) {
+            throw new RecordNotFoundException("profile not found");
+        }
+
+        //get the user if they exist
+        User user = optionalUser.get();
+
+
+        if ((authId == null || !(authId == profileId))) {
+            //here we check permission level and update the password accordingly
+            //need merge request passed
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
@@ -71,15 +84,7 @@ public class EditPasswordController {
             throw new InvalidRequestFieldException("new_password and repeat_password are not the same");
         }
 
-        // checks if target user exists
-        Optional<User> optionalUser = userRepository.findById(profileId);
-        if (optionalUser.isEmpty()) {
-            throw new RecordNotFoundException("profile not found");
-        }
-
         // checks if old_password matches user's current password
-        User user = optionalUser.get();
-
         if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){
             throw new InvalidPasswordException("old_password does not match user's current password");
         }
