@@ -8,12 +8,12 @@ export async function logoutCurrentUser() {
     await logout();
 }
 
-export async function addPassportCountry(country: any, profileId: number) {
-    const countryName = country.name || null
-    if (countryName === null) {
-        throw new Error("country not found");
-    }
-
+/**
+ * 
+ * @param countryName the name of the country to add to the user
+ * @param profileId the profile to add the passport country to
+ */
+export async function addPassportCountry(countryName: string, profileId: number) {
     let user = await getProfileById(profileId);
     if (user === null) {
         throw new Error("user not found")
@@ -150,11 +150,11 @@ export async function setPrimary(primaryEmail: string, profileId: number) {
 
 /**
  * Update the profile information of the user supplied.
- * @param user user to update information of
+ * @param user user to update the information of
  */
-export async function editProfile(user: UserApiFormat, profileId: number) {
-    if (await checkProfileValidity(user)) {
-        await saveUser(user, profileId);
+export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
+    if (await checkProfileValidity(updatedProfile)) {
+        await saveUser(updatedProfile, profileId);
     } else {
         throw new Error("Profile is not valid.");
     }
