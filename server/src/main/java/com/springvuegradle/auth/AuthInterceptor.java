@@ -12,7 +12,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.springvuegradle.model.data.Session;
 import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.AdminRepository;
 import com.springvuegradle.model.repository.SessionRepository;
 
 /**
@@ -29,12 +28,6 @@ public class AuthInterceptor implements HandlerInterceptor {
 	 */
 	@Autowired
 	private SessionRepository sessionRepo;
-
-	/**
-	 * JPA Admin Repository
-	 */
-	@Autowired
-	private AdminRepository adminRepo;
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -56,11 +49,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 				} else {
 					User user = session.getUser();
 					long profileId = user.getUserId();
-					if (adminRepo.existsById(user.getUserId())) {
-						profileId = -1;
-					}
 					request.setAttribute("authenticateduser", user);
 					request.setAttribute("authenticatedid", profileId);
+					request.setAttribute("permissionLevel", user.getPermissionLevel());
 				}
 			}
 		}
