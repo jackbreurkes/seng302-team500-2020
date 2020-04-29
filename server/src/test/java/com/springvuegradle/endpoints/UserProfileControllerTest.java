@@ -69,7 +69,7 @@ class UserProfileControllerTest {
 
 
     @Test
-    public void testValidCreateUser() throws Exception {
+    public void testCreateUserWithNonexistentActivities() throws Exception {
         String createUserJson = "{\n" +
                 "  \"lastname\": \"Benson\",\n" +
                 "  \"firstname\": \"Maurice\",\n" +
@@ -90,7 +90,6 @@ class UserProfileControllerTest {
 //                "    \"Thailand\"\n" +
                 "  ],\n" +
                 "  \"activities\": [\n" +
-                "    \"Walking\",\n" +
                 "    \"Running\"\n" +
                 "  ]  \n" +
                 "}";
@@ -101,7 +100,7 @@ class UserProfileControllerTest {
                 .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
 
 //        User user = new User();
@@ -131,6 +130,42 @@ class UserProfileControllerTest {
 ////                .accept(MediaType.APPLICATION_JSON))
 ////                .andDo(print())
 ////                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void testValidCreateUser() throws Exception {
+    	String createUserJson = "{\n" +
+                "  \"lastname\": \"Benson\",\n" +
+                "  \"firstname\": \"Maurice\",\n" +
+                "  \"middlename\": \"Jack\",\n" +
+                "  \"nickname\": \"JackyTest\",\n" +
+                "  \"primary_email\": \"111@google.com\",\n" +
+                "  \"additional_email\": [\n" +
+                "    \"jacky@xtra.co.nz\",\n" +
+                "    \"jacky@msn.com\"\n" +
+                "    ],\n" +
+                "  \"bio\": \"Jacky loves to ride his bike on crazy mountains.\",\n" +
+                "  \"date_of_birth\": \"1985-12-20\",\n" +
+                "  \"gender\": \"male\",\n" +
+                "  \"password\": \"aaaaaaaa\",\n" +
+                "  \"fitness\": 4,\n" +
+                "  \"passports\": [\n" +
+//                "    \"United States of America\",\n" +
+//                "    \"Thailand\"\n" +
+                "  ],\n" +
+                "  \"activities\": [\n" +
+                "    \"Running\"\n" +
+                "  ]  \n" +
+                "}";
+
+
+        mvc.perform(MockMvcRequestBuilders
+                .post("/profiles")
+                .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
     }
 
     @Test
