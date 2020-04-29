@@ -151,4 +151,9 @@ class EditPasswordControllerTest {
             );
         });
     }
+
+    /**
+     * Have split the tests into two files because the mocking of userRepository was not working
+     * in this file. The rest of the tests for EditPasswordController are in EditPasswordControllerMockTest.java**/
+
 }
