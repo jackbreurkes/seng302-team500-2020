@@ -151,28 +151,4 @@ class EditPasswordControllerTest {
             );
         });
     }
-
-    @Test
-    public void testOldPasswordIncorrect() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        User tempUser = new User();
-        try{
-            tempUser.setPassword("goodOldPassword");
-        }catch (Exception e){
-            return;
-        }
-
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
-        //is authenticated
-        request.setAttribute("authenticatedid", 1L);
-        assertThrows(InvalidPasswordException.class, () -> {
-           editPasswordController.editPassword(1L, new UpdatePasswordRequest("badOldPassword", "newPassValid", "newPassValid"),
-                   request);
-        });
-    }
-    // TODO once we know how to mock userRepository, implement tests for:
-    //  TODO incorrect old password field
-    //  TODO correct info (blue sky scenario)
-    //  TODO changing password as admin
-    //  TODO profile_id for nonexistent user (record not found)
 }
