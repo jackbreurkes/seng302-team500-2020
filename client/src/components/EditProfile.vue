@@ -2,13 +2,11 @@
   <div>
     <v-container class="fill-height" fluid>
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="4">
+        <v-col cols="12" sm="8" md="6">
           <v-card class="elevation-12" width="100%">
             <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
+              <v-toolbar-title>Profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
-
-            <!-- as per U3 AC3, user knows the limit of additional emails -->
 
             <v-card-text>
               <v-card-title>About Me</v-card-title>
@@ -21,27 +19,29 @@
                   v-model="editedUser.nickname"
                   :rules="inputRules.nicknameRules"
                 ></v-text-field>
-                <v-text-field
+                <v-textarea
                   dense
                   filled
                   id="bio"
                   label="Bio"
                   v-model="editedUser.bio"
                   :rules="inputRules.bioRules"
-                ></v-text-field>
-      
-          <template>
-            <v-container-fluid>
-              <p>Fitness Level</p>
-              <v-radio-group :mandatory="false">
-                <v-radio label="Muffin (no fitness)" value="muffin"></v-radio>
-                <v-radio label="Potato (little fitness)" value="potato"></v-radio>
-                <v-radio label="Carrot (moderate fitness)" value="carrot"></v-radio>
-                <v-radio label="Blueberry (outdoors enthusiast)" value="blueberry"></v-radio>
-                <v-radio label="Kale (fitness fanatic)" value="kale"></v-radio>
-              </v-radio-group>
-            </v-container-fluid>
-          </template>
+                >Something in here</v-textarea>
+                <template>
+                  <v-container-fluid>
+                    <v-radio-group v-model="userFitnessLevel" label="Fitness Level" :mandatory="false">
+                      <v-radio label="Muffin (no fitness)" value="0"></v-radio>
+                      <v-radio label="Potato (little fitness)" value="1"></v-radio>
+                      <v-radio label="Carrot (moderate fitness)" value="2"></v-radio>
+                      <v-radio label="Blueberry (outdoors enthusiast)" value="3"></v-radio>
+                      <v-radio label="Kale (fitness fanatic)" value="4"></v-radio>
+                    </v-radio-group>
+                  </v-container-fluid>
+                </template>
+
+                <v-divider></v-divider>
+
+                <v-card-title>Personal Details</v-card-title>
 
                 <v-text-field
                   dense
@@ -68,28 +68,58 @@
                   :rules="inputRules.lastnameRules"
                 ></v-text-field>
 
-                <v-menu>
-                  <template v-slot:activator="{ on }">
-                    <v-text-field
-                      dense
-                      filled
-                      v-model="editedUser.dateOfBirth"
-                      :value="editedUser.dateOfBirth"
-                      v-on="on"
-                      label="Date of Birth"
-                      :rules="inputRules.dobRules"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker v-model="editedUser.dateOfBirth"></v-date-picker>
-                </v-menu>
                 <v-select
                   dense
                   filled
                   label="Gender"
                   v-model="editedUser.gender"
-                  :items="genders"
+                  :items="availableGenders"
                   :rules="inputRules.genderRules"
                 ></v-select>
+
+                <v-menu
+                  ref="dobMenu"
+                  v-model="dobMenu"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290px"
+                  min-width="290px"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field
+                      dense
+                      filled
+                      v-model="editedUser.date_of_birth"
+                      :value="editedUser.date_of_birth"
+                      v-on="on"
+                      readonly
+                      label="Date of Birth"
+                      :rules="inputRules.dobRules"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker no-title v-model="editedUser.date_of_birth" @input="dobMenu = false"></v-date-picker>
+                </v-menu>
+
+                <div id="passport-chips" v-if="editedUser.passports && editedUser.passports.length > 0">
+                  <v-chip
+                    v-for="passport in editedUser.passports"
+                    :key="passport"
+                    close
+                    class="ma-2"
+                    @click:close="deletePassportCountry(passport)"
+                  >{{ passport }}</v-chip>
+                </div>
+
+                <v-autocomplete
+                  :items="passportCountries"
+                  color="white"
+                  item-text="name"
+                  label="Countries"
+                  v-model="selectedCountry"
+                  @input="addSelectedPassportCountry()"
+                ></v-autocomplete>
+
               </v-form>
 
               <v-btn @click="saveButtonClicked">Save</v-btn>
@@ -104,36 +134,7 @@
           <v-card>
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
-              <br />
-              <v-form>
-                <v-text-field
-                  v-model="oldPassword"
-                  label="old password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model="newPassword"
-                  label="new password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model="repeatPassword"
-                  label="repeat password"
-                  type="password"
-                  dense
-                  filled
-                  required
-                ></v-text-field>
-              </v-form>
-              <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
-              <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-              <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+              <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
         </v-col>
@@ -147,16 +148,8 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
 import {
-  logoutCurrentUser,
-  updatePassword,
-  addPassportCountry,
-  deletePassportCountry,
   fetchProfileWithId,
-  setFitnessLevel,
-  editProfile,
-  addNewEmail,
-  deleteEmail,
-  setPrimary
+  persistChangesToProfile
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -170,23 +163,9 @@ const Homepage = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
+      titleBarUserName: "",
       currentProfileId: NaN as number,
-      currentUser: {} as UserApiFormat,
-      passportCountries: [],
-      selectedCountry: "" as any,
-      selectedPassport: 0,
-      selectedFitnessLevel: -1,
-      newEmail: "",
-      email: "",
-      oldPassword: "",
-      newPassword: "",
-      repeatPassword: "",
-      passwordErrorMessage: "",
-      passwordSuccessMessage: "",
-      genders: ["Male", "Female", "Non-binary"],
-      passportsNotEmpty: true,
       editedUser: {} as UserApiFormat,
-      formValidator: new FormValidator(),
       inputRules: {
         lastnameRules: [
           (v: string) =>
@@ -221,41 +200,44 @@ const Homepage = Vue.extend({
             formValidator.checkGenderValidity(v) ||
             formValidator.GENDER_ERROR_STRING
         ]
-      }
+      },
+
+      // values pertaining Personal Details section
+      passportCountries: [],
+      selectedCountry: "" as string,
+      availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
+      dobMenu: false,
+      userFitnessLevel: ""
     };
   },
 
+  /**
+   * runs when the page is created
+   */
   created() {
+    // load profile info
     const profileId: number = parseInt(this.$route.params.profileId);
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
-
     fetchProfileWithId(profileId)
       .then(user => {
-        this.currentUser = user;
-        if (this.currentUser) {
-          this.selectedFitnessLevel = this.currentUser.fitness || -1;
-          if (
-            this.currentUser.passports &&
-            this.currentUser.passports.length != 0
-          ) {
-            this.passportsNotEmpty = true;
-          } else {
-            this.passportsNotEmpty = false;
-          }
+        this.titleBarUserName = `${user.firstname} ${user.lastname}`;
+        this.editedUser = user;
+        if (this.editedUser.fitness) {
+          this.userFitnessLevel = this.editedUser.fitness.toString();
         }
       })
       .catch(err => {
         console.error(err);
       });
 
+    // load country names
     const Http = new XMLHttpRequest();
     const url = "https://restcountries.eu/rest/v2/all";
     Http.open("GET", url, true);
     Http.send();
-
     Http.onreadystatechange = () => {
       try {
         const countries = JSON.parse(Http.responseText);
@@ -267,146 +249,55 @@ const Homepage = Vue.extend({
   },
 
   methods: {
-    updatePasswordButtonClicked: function() {
-      this.passwordSuccessMessage = "";
-      this.passwordErrorMessage = "";
-      updatePassword(
-        this.oldPassword,
-        this.newPassword,
-        this.repeatPassword,
-        this.currentProfileId
-      )
-        .then(() => {
-          this.passwordSuccessMessage = "password changed successfully";
-        })
-        .catch((err: any) => {
-          this.passwordErrorMessage = err.message;
-        });
-    },
-
-    //click login button
-    logoutButtonClicked: function() {
-      logoutCurrentUser()
-        .then(() => {
-          this.$router.push({ name: "login" });
-        })
-        .catch((err: any) => {
-          console.error(err);
-          this.$router.push({ name: "login" });
-        });
-    },
-
-    //add passport country
-    selectCountry: function() {
-      if (this.currentUser && this.currentUser.primary_email) {
-        addPassportCountry(this.selectedCountry, this.currentProfileId)
-          .then(() => {
-            console.log("passport country added");
-            this.passportsNotEmpty = true;
-            history.go(0);
-          })
-          .catch((err: any) => {
-            console.log(err);
-          });
+    /**
+     * adds the passport country selected in the dropdown to the current user's passport countries
+     */
+    addSelectedPassportCountry: function() {
+      if (!this.selectedCountry) {
+        return
       }
-    },
-
-    deletePassportCountry: function() {
-      if (
-        this.currentUser &&
-        this.currentUser.passports &&
-        this.selectedPassport !== undefined
-      ) {
-        deletePassportCountry(
-          this.currentUser.passports[this.selectedPassport],
-          this.currentProfileId
-        )
-          .then(() => {
-            if (
-              this.currentUser.passports &&
-              this.currentUser.passports.length == 0
-            ) {
-              this.passportsNotEmpty = false;
-            }
-            // refresh page after removing passport
-            history.go(0);
-          })
-          .catch((err: any) => {
-            console.log(err);
-            // refresh page in hopes it will resolve error (e.g. user has removed passport in duplicate tab)
-            history.go(0);
-          });
+      if (!this.editedUser.passports) {
+        this.editedUser.passports = []
       }
+      this.editedUser.passports.push(this.selectedCountry);
     },
 
-    selectFitnessLevel: function() {
-      if (this.currentUser && this.currentProfileId) {
-        setFitnessLevel(this.selectedFitnessLevel, this.currentProfileId)
-          .then(() => {
-            console.log("Fitness level set");
-          })
-          .catch((err: any) => {
-            console.log(err);
-          });
+    /**
+     * removes the given country from the passport countries of the user being edited
+     */
+    deletePassportCountry: function(country: string) {
+      if (!this.editedUser.passports) {
+        this.editedUser.passports = []
       }
-    },
-
-    addEmailAddress: function() {
-      addNewEmail(this.newEmail, this.currentProfileId)
-        .then(() => {
-          console.log("Email address added");
-          // refresh page after adding emails
-          history.go(0);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    },
-
-    deleteEmailAddress: function(email: string) {
-      deleteEmail(email, this.currentProfileId)
-        .then(() => {
-          // refresh page after deleting emails
-          history.go(0);
-        })
-        .catch((err: any) => {
-          console.log(err);
-          // refresh page hopefully fixing issues
-          history.go(0);
-        });
-    },
-
-    setPrimaryEmail: function(email: string) {
-      setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
-        .then(() => {
-          // refresh page after changing primary email
-          history.go(0);
-        })
-        .catch(err => {
-          console.log(err);
-          // refresh page to hopefully fix issues
-          history.go(0);
-        });
-    },
-
-    editProfile: function() {
-      Object.assign(this.editedUser, this.currentUser);
-    },
-
-    saveButtonClicked: async function() {
-      if (
-        (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
-      ) {
-        try {
-          await editProfile(this.editedUser, this.currentProfileId);
-          Object.assign(this.currentUser, this.editedUser);
-        } catch {
-          alert("Unable to update user.");
+      for (let i = 0; i < this.editedUser.passports.length; i++) {
+        if (this.editedUser.passports[i] === country) {
+          this.editedUser.passports.splice(i, 1);
         }
       }
     },
 
-    cancelButtonClicked: function() {}
+    /**
+     * persists the changes made on the edit page by the user
+     */
+    saveButtonClicked: async function() {
+      if (this.userFitnessLevel !== "") { // converts the fitness level v-model string into an integer
+        this.editedUser.fitness = parseInt(this.userFitnessLevel);
+      }
+      if (
+        (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
+      ) {
+        persistChangesToProfile(this.editedUser, this.currentProfileId)
+        .then(() => {history.go(0)})
+        .catch(() => {alert("Unable to update user.");});
+      }
+    },
+
+    /**
+     * returns the user to the profile page of the profile they are editing
+     */
+    cancelButtonClicked: function() {
+      this.$router.push("/profiles/" + this.currentProfileId)
+    },
   }
 });
 
