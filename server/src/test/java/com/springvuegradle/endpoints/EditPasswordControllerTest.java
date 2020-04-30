@@ -63,31 +63,6 @@ class EditPasswordControllerTest {
     }
 
     @Test
-    public void testNoAuthId() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        assertThrows(UserNotAuthenticatedException.class, () -> {
-            editPasswordController.editPassword(
-                    1L,
-                    new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
-                    request
-            );
-        });
-    }
-
-    @Test
-    public void testDifferentUsersAuthId() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 2L);
-        assertThrows(UserNotAuthenticatedException.class, () -> {
-            editPasswordController.editPassword(
-                    1L,
-                    new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
-                    request
-            );
-        });
-    }
-
-    @Test
     public void testMissingOldPassword() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);

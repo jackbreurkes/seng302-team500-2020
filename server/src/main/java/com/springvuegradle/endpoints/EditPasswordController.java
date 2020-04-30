@@ -47,19 +47,34 @@ public class EditPasswordController {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
-        // checks if target user exists
-        Optional<User> optionalUser = userRepository.findById(profileId);
-        if (optionalUser.isEmpty()) {
-            throw new RecordNotFoundException("profile not found");
-        }
-
-        //get the user if they exist
-        User user = optionalUser.get();
-
-
-        if ((authId == null || !(authId == profileId))) {
+        if (authId == null || !(authId == profileId)) {
             //here we check permission level and update the password accordingly
             //need merge request passed
+            Optional<User> adminUser = userRepository.findById(authId);
+            if(adminUser.isPresent() && adminUser.get().getPermissionLevel() > 120){
+                //the user changing the password is admin and can change the password with one field
+                // check for missing field
+                if (updatePasswordRequest.getNewPassword() == null) {
+                    throw new InvalidRequestFieldException("no new_password field found");
+                }
+
+
+                // checks if target user exists
+                Optional<User> optionalUser = userRepository.findById(profileId);
+                if (optionalUser.isEmpty()) {
+                    throw new RecordNotFoundException("profile not found");
+                }
+
+                //get the user if they exist
+                User user = optionalUser.get();
+
+                //now we know the user exists and the admin is trying to change their password
+                // updates the user's password
+
+                user.setPassword(updatePasswordRequest.getNewPassword());
+                userRepository.save(user);
+                return ResponseEntity.status(HttpStatus.CREATED).build();
+            }
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
@@ -83,6 +98,16 @@ public class EditPasswordController {
         if (!updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getRepeatPassword())){
             throw new InvalidRequestFieldException("new_password and repeat_password are not the same");
         }
+
+        // checks if target user exists
+        Optional<User> optionalUser = userRepository.findById(profileId);
+        if (optionalUser.isEmpty()) {
+            throw new RecordNotFoundException("profile not found");
+        }
+
+        //get the user if they exist
+        User user = optionalUser.get();
+
 
         // checks if old_password matches user's current password
         if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){

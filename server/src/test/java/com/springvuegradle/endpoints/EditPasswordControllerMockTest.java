@@ -1,7 +1,9 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
@@ -56,8 +58,33 @@ public class EditPasswordControllerMockTest {
         }catch (Exception e){
             return;
         }
+    }
 
+    @Test
+    public void testNoAuthId() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        assertThrows(UserNotAuthenticatedException.class, () -> {
+            editPasswordController.editPassword(
+                    1L,
+                    new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
+                    request
+            );
+        });
+    }
 
+    @Test
+    public void testDifferentUsersAuthId() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 2L);
+
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
+        assertThrows(UserNotAuthenticatedException.class, () -> {
+            editPasswordController.editPassword(
+                    1L,
+                    new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
+                    request
+            );
+        });
     }
 
     @Test
@@ -101,12 +128,40 @@ public class EditPasswordControllerMockTest {
         });
     }
 
+    @Test
+    public void adminBadRequestTest(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
 
+        User tempAdminUser = new User(2L);
+        tempAdminUser.setPermissionLevel(127);
 
-    // TODO Implment Tests for
-    //  TODO changing password as admin
-    // TODO Needs to be merged with dev so this ^ test can be written
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempAdminUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 2L);
+        assertThrows(InvalidRequestFieldException.class,() -> {
+            editPasswordController.editPassword(1L, new UpdatePasswordRequest(null, null, null), request);
+        });
+    }
 
+    @Test
+    public void adminChangePassword(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        User tempAdminUser = new User(2L);
+        tempAdminUser.setPermissionLevel(127);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempAdminUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 2L);
+        try {
+            ResponseEntity<Object> response = editPasswordController.editPassword(1L, new UpdatePasswordRequest(null, "newValidPass", null), request);
+            assertEquals(response.getStatusCode(), HttpStatus.CREATED);
+        }catch (Exception e){
+            return;
+        }
+    }
 
 
 }
