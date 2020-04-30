@@ -171,6 +171,7 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
     }
 }
 
+
 /**
  * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.
  * @param formData profile information to validate, supplied in the form of a user's profile

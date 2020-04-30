@@ -146,7 +146,7 @@
                 </ul>
                 <br />
                 <p>Add a new email:</p>
-                <v-card-actions>
+                <v-card-actions v-if="editedUser.additional_email.length !== 5">
                   <v-text-field
                     v-model="newEmail"
                     label="enter new email here"
@@ -158,8 +158,9 @@
                   ></v-text-field>
 
                   <v-btn id="addEmailAddress"  @click="addTempEmail(newEmail)">Add Email</v-btn>
-                  <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
+                  
                 </v-card-actions>
+                <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
               <v-form>
                   <v-text-field
                     v-model="oldPassword"
@@ -206,10 +207,9 @@ import {
   fetchProfileWithId,
   persistChangesToProfile,
   updatePassword,
-  // addNewEmail,
-  deleteEmail,
   setPrimary,
   updateNewEmailList,
+  // isValidEmail
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -273,9 +273,7 @@ const Homepage = Vue.extend({
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
       userFitnessLevel: "",
-// tempEmails: [] as any,
       newEmail: "" as string,
-      // email: "",
       oldPassword: "",
       newPassword: "",
       repeatPassword: "",
@@ -377,9 +375,13 @@ const Homepage = Vue.extend({
      * Copies the current editedusers secondary emails to current user
      */
     updateEmail: function() {
+      if (this.editedUser.primary_email === undefined) {
+        this.editedUser.primary_email = ""
+      }
       if (this.editedUser.additional_email === undefined) {
         this.editedUser.additional_email = []
-    }
+      }
+      setPrimary(this.editedUser.primary_email, this.currentProfileId)
       updateNewEmailList(this.editedUser.additional_email, this.currentProfileId)
         .then(() => {
           console.log("Email address added");
@@ -392,37 +394,36 @@ const Homepage = Vue.extend({
     },
 
     deleteEmailAddress: function(email: string) {
-      deleteEmail(email, this.currentProfileId)
-        .then(() => {
-          // refresh page after deleting emails
-          history.go(0);
-        })
-        .catch((err: any) => {
-          console.log(err);
-          // refresh page hopefully fixing issues
-          history.go(0);
-        });
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+      }
+      let index = this.editedUser.additional_email.indexOf(email);
+      this.editedUser.additional_email.splice(index, 1);
     },
 
+    
     setPrimaryEmail: function(email: string) {
-      setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
-        .then(() => {
-          // refresh page after changing primary email
-          history.go(0);
-        })
-        .catch(err => {
-          console.log(err);
-          // refresh page to hopefully fix issues
-          history.go(0);
-        });
+      let oldPrimaryEmail = this.editedUser.primary_email;
+      this.editedUser.primary_email = email;
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+      }
+      if (oldPrimaryEmail !== undefined) {
+        this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1, oldPrimaryEmail);
+      } else {
+       this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1);
+      }
     },
 
     addTempEmail: function(email: string) {
-      if (this.editedUser.additional_email === undefined) {
-            this.editedUser.additional_email = []
-      }
-      else {
-        this.editedUser.additional_email.push(email);
+
+      if(new FormValidator().isValidEmail(email)){
+        if (this.editedUser.additional_email === undefined) {
+              this.editedUser.additional_email = []
+        }
+        else {
+          this.editedUser.additional_email.push(email);
+        }
       }
     },
 
