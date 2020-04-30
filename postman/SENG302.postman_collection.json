@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ec3c1f7c-4526-4f57-9518-12ff8d141366",
+		"_postman_id": "e87ba0bc-ba3e-411f-a0df-4f7248687e9d",
 		"name": "SENG302",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -14,7 +14,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c2b520d9-3971-4ce8-ace4-db29453206bb",
+								"id": "9cccea6f-33a4-484e-affe-be2446e67423",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -30,7 +30,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "e431708c-709d-4e74-a756-23841a31deee",
+								"id": "900c94b5-8ea5-423a-b6cf-fb2bda6c9e9f",
 								"exec": [
 									""
 								],
@@ -76,7 +76,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "a097ede0-f8da-4ba9-b15e-45e6abfe73f4",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -88,7 +88,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "0e890091-ef7d-476c-8c05-4a56b1a37bc7",
 								"exec": [
 									""
 								],
@@ -133,7 +133,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"id": "3bbfbb8b-b718-4739-83a2-8a2ce91e7ef1",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -185,7 +185,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "357b5e04-1279-46ab-a93d-45be508a7705",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -197,7 +197,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "338fe3bd-bf7d-4b2d-a6fe-4297935b70b0",
 								"exec": [
 									""
 								],
@@ -241,6 +241,384 @@
 			"protocolProfileBehavior": {}
 		},
 		{
+			"name": "Create User with Passport Countries Test",
+			"item": [
+				{
+					"name": "/profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ded05a18-e143-49bc-96d9-90c4d9240f71",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "00c4840c-b627-4fe5-a8cf-b91bd8e6c7f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "56696df1-9c40-4a1c-a2bb-036dd064bbd8",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b50fc94c-8f31-4f08-9900-1c7c33efda84",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "test that creating a new user with passport countries works",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1d9b3903-2c7a-4251-b0cd-bb0b6a794089",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "77610b2c-055c-457e-ade9-2ab6d7400bd1",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Update Profile Activity Types Test",
+			"item": [
+				{
+					"name": "/profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d567f5a7-c9f8-4312-828d-0322117a6af9",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "bc9d00ae-5bfe-44cf-bad4-19120490a198",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2d726fa3-cc8b-49c5-af80-724405895a65",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "053685a4-81db-44fe-9609-c945b6da73fb",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile activity types",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"activities\": [\"Walking\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activity-types",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activity-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "tests that the endpoint for PUT profile activity types is functioning correctly\ncreates a user with no activity interests, logs in, adds an interest then fetches the user.\nthe fetched user should have a field \"activities\" containing the added activity type.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "69bdfebc-2e9e-4445-8ba3-8c63e0118f36",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "971b44b1-2a75-4061-80c4-b0df8a6c61cf",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
 			"name": "Sprint 2 Acceptance Tests",
 			"item": [
 				{
@@ -249,7 +627,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e2ee46d6-698b-4a50-aa78-d5084d9f06f8",
+								"id": "4686d214-f6e6-45d5-baa9-f9584eea5fec",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -301,7 +679,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "75481cbb-cece-4523-bbc2-0822615b7eb6",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -313,7 +691,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "065d2fa2-1d97-4609-b245-2e9ce9aa173b",
 								"exec": [
 									""
 								],
@@ -391,7 +769,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"id": "42a112a8-1489-4fbb-9add-9321615d2e22",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -609,6 +987,28 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "c9a91ab6-0d68-47d4-9ebf-16b88a6a08cb",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "efb39cdc-f37f-4c46-8945-b8f36979e221",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	],
 	"protocolProfileBehavior": {}
