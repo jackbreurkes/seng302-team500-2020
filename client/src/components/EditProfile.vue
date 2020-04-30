@@ -134,6 +134,32 @@
           <v-card>
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
+              <p>Primary email: {{ editedUser.primary_email }}</p>
+                <br />
+                <p>Secondary Emails {{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }} / 5:</p>
+                <ul>
+                  <li v-for="email in editedUser.additional_email" :key="email">
+                    {{ email }}
+                    <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
+                    <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
+                  </li>
+                </ul>
+                <br />
+                <p>Add a new email:</p>
+                <v-card-actions>
+                  <v-text-field
+                    v-model="newEmail"
+                    label="enter new email here"
+                    type="email"
+                    dense
+                    filled
+                    required
+                    :rules="inputRules.emailRules"
+                  ></v-text-field>
+
+                  <v-btn id="addEmailAddress"  @click="addTempEmail(newEmail)">Add Email</v-btn>
+                  <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
+                </v-card-actions>
               <v-form>
                   <v-text-field
                     v-model="oldPassword"
@@ -181,8 +207,9 @@ import {
   persistChangesToProfile,
   updatePassword,
   // addNewEmail,
-  // deleteEmail,
-  // setPrimary
+  deleteEmail,
+  setPrimary,
+  updateNewEmailList,
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -232,6 +259,11 @@ const Homepage = Vue.extend({
           (v: string) =>
             formValidator.checkGenderValidity(v) ||
             formValidator.GENDER_ERROR_STRING
+        ],
+        emailRules: [
+          (v: string) =>
+          formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
+
         ]
       },
 
@@ -241,11 +273,15 @@ const Homepage = Vue.extend({
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
       userFitnessLevel: "",
+// tempEmails: [] as any,
+      newEmail: "" as string,
+      // email: "",
       oldPassword: "",
       newPassword: "",
       repeatPassword: "",
       passwordErrorMessage: "",
       passwordSuccessMessage: "",
+      
     };
   },
 
@@ -337,6 +373,59 @@ const Homepage = Vue.extend({
       this.$router.push("/profiles/" + this.currentProfileId)
     },
 
+    /**
+     * Copies the current editedusers secondary emails to current user
+     */
+    updateEmail: function() {
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+    }
+      updateNewEmailList(this.editedUser.additional_email, this.currentProfileId)
+        .then(() => {
+          console.log("Email address added");
+           // refresh page after adding emails
+          history.go(0);
+        })
+        .catch(err => {
+          console.log(err);
+        })
+    },
+
+    deleteEmailAddress: function(email: string) {
+      deleteEmail(email, this.currentProfileId)
+        .then(() => {
+          // refresh page after deleting emails
+          history.go(0);
+        })
+        .catch((err: any) => {
+          console.log(err);
+          // refresh page hopefully fixing issues
+          history.go(0);
+        });
+    },
+
+    setPrimaryEmail: function(email: string) {
+      setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
+        .then(() => {
+          // refresh page after changing primary email
+          history.go(0);
+        })
+        .catch(err => {
+          console.log(err);
+          // refresh page to hopefully fix issues
+          history.go(0);
+        });
+    },
+
+    addTempEmail: function(email: string) {
+      if (this.editedUser.additional_email === undefined) {
+            this.editedUser.additional_email = []
+      }
+      else {
+        this.editedUser.additional_email.push(email);
+      }
+    },
+
     updatePasswordButtonClicked: function() {
       this.passwordSuccessMessage = "";
       this.passwordErrorMessage = "";
@@ -356,8 +445,10 @@ const Homepage = Vue.extend({
 
       this.oldPassword = "";
       this.newPassword = "";
-      this.repeatPassword = "";
+      this.repeatPassword = ""; 
     },
+
+
 
     
   }

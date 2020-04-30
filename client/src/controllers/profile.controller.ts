@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById } from '../models/user.model'
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 
@@ -114,6 +114,17 @@ export async function addNewEmail(newEmail: string, profileId: number) {
         }
         await addEmail(newEmail, profileId); 
     }
+}
+
+export async function updateNewEmailList(newEmails: string[], profileId: number) {
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("user not found");
+    }
+    if (user.additional_email === undefined) {
+        user.additional_email = []
+    }
+    await updateEmailList(newEmails, profileId);
 }
 
 /**
