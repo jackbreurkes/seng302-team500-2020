@@ -134,6 +134,35 @@
           <v-card>
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
+              <v-form>
+                  <v-text-field
+                    v-model="oldPassword"
+                    label="old password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="newPassword"
+                    label="new password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="repeatPassword"
+                    label="repeat password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
+                  <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
+                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+                </v-form>
               <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
@@ -149,7 +178,11 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   fetchProfileWithId,
-  persistChangesToProfile
+  persistChangesToProfile,
+  updatePassword,
+  // addNewEmail,
+  // deleteEmail,
+  // setPrimary
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -207,7 +240,12 @@ const Homepage = Vue.extend({
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
-      userFitnessLevel: ""
+      userFitnessLevel: "",
+      oldPassword: "",
+      newPassword: "",
+      repeatPassword: "",
+      passwordErrorMessage: "",
+      passwordSuccessMessage: "",
     };
   },
 
@@ -298,6 +336,30 @@ const Homepage = Vue.extend({
     cancelButtonClicked: function() {
       this.$router.push("/profiles/" + this.currentProfileId)
     },
+
+    updatePasswordButtonClicked: function() {
+      this.passwordSuccessMessage = "";
+      this.passwordErrorMessage = "";
+      
+      updatePassword(
+        this.oldPassword,
+        this.newPassword,
+        this.repeatPassword,
+        this.currentProfileId
+      )
+        .then(() => {
+          this.passwordSuccessMessage = "password changed successfully";
+        })
+        .catch((err: any) => {
+          this.passwordErrorMessage = err.message;
+        });
+
+      this.oldPassword = "";
+      this.newPassword = "";
+      this.repeatPassword = "";
+    },
+
+    
   }
 });
 

@@ -7,9 +7,6 @@
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
             </v-toolbar>
-
-            <!-- as per U3 AC3, user knows the limit of additional emails -->
-
             <v-card-text>
               <div v-if="!editing">
                 <p>First Name: {{ currentUser.firstname }}</p>
@@ -29,7 +26,6 @@
                 <br />
 
                 <p>Primary email: {{ currentUser.primary_email }}</p>
-                <!-- New Email input field and button -->
                 <br />
                 <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
                 <ul>
@@ -41,7 +37,6 @@
                 </ul>
                 <br />
                 <p>Add a new email:</p>
-                <!-- <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" /> -->
                 <v-card-actions>
                   <v-text-field
                     v-model="newEmail"
@@ -59,44 +54,6 @@
                 <v-btn @click="logoutButtonClicked">Logout</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
               </div>
-
-                <br />
-                <br />
-                <v-form>
-                  <v-text-field
-                    v-model="oldPassword"
-                    label="old password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="newPassword"
-                    label="new password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="repeatPassword"
-                    label="repeat password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                </v-form>
-                <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
-                <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-                <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
-
-                <br />
-                <br />
-
-                <v-btn @click="saveButtonClicked">Save</v-btn>
-                <v-btn @click="cancelButtonClicked">Cancel</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
@@ -111,7 +68,6 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
-  updatePassword,
   fetchProfileWithId,
   addNewEmail,
   deleteEmail,
@@ -133,11 +89,6 @@ const Homepage = Vue.extend({
       currentUser: {} as UserApiFormat,
       newEmail: "",
       email: "",
-      oldPassword: "",
-      newPassword: "",
-      repeatPassword: "",
-      passwordErrorMessage: "",
-      passwordSuccessMessage: "",
       editing: false,
       editedUser: {} as UserApiFormat,
       formValidator: new FormValidator(),
@@ -196,22 +147,6 @@ const Homepage = Vue.extend({
   },
 
   methods: {
-    updatePasswordButtonClicked: function() {
-      this.passwordSuccessMessage = "";
-      this.passwordErrorMessage = "";
-      updatePassword(
-        this.oldPassword,
-        this.newPassword,
-        this.repeatPassword,
-        this.currentProfileId
-      )
-        .then(() => {
-          this.passwordSuccessMessage = "password changed successfully";
-        })
-        .catch((err: any) => {
-          this.passwordErrorMessage = err.message;
-        });
-    },
 
     //click login button
     logoutButtonClicked: function() {
