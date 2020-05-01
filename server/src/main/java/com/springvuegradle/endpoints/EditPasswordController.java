@@ -22,6 +22,8 @@ import java.util.Optional;
 @RestController
 public class EditPasswordController {
 
+    int ADMIN_USER_MINIMUM_PERMISSION = 120;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -47,44 +49,20 @@ public class EditPasswordController {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
-        if (authId == null || !(authId == profileId)) {
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
             //here we check permission level and update the password accordingly
-            //need merge request passed
-            Optional<User> adminUser = userRepository.findById(authId);
-            if(adminUser.isPresent() && adminUser.get().getPermissionLevel() > 120){
-                //the user changing the password is admin and can change the password with one field
-                // check for missing field
-                if (updatePasswordRequest.getNewPassword() == null) {
-                    throw new InvalidRequestFieldException("no new_password field found");
-                }
-
-
-                // checks if target user exists
-                Optional<User> optionalUser = userRepository.findById(profileId);
-                if (optionalUser.isEmpty()) {
-                    throw new RecordNotFoundException("profile not found");
-                }
-
-                //get the user if they exist
-                User user = optionalUser.get();
-
-                //now we know the user exists and the admin is trying to change their password
-                // updates the user's password
-
-                user.setPassword(updatePasswordRequest.getNewPassword());
-                userRepository.save(user);
-                return ResponseEntity.status(HttpStatus.CREATED).build();
-            }
+            //assuming failure without admin
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
+
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {
             throw new InvalidRequestFieldException("no new_password field found");
         }
-        if (updatePasswordRequest.getOldPassword() == null) {
-            throw new InvalidRequestFieldException("no old_password field found");
-        }
+
         if (updatePasswordRequest.getRepeatPassword() == null) {
             throw new InvalidRequestFieldException("no repeat_password field found");
         }
@@ -108,10 +86,19 @@ public class EditPasswordController {
         //get the user if they exist
         User user = optionalUser.get();
 
+        //all completed checks apply to both admin user and normal user
 
-        // checks if old_password matches user's current password
-        if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){
-            throw new InvalidPasswordException("old_password does not match user's current password");
+        if(!(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)){
+            //admin can edit
+            //assuming user does not have the correct permission levels but is editing their own profile
+            if (updatePasswordRequest.getOldPassword() == null) {
+                throw new InvalidRequestFieldException("no old_password field found");
+            }
+
+            // checks if old_password matches user's current password
+            if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){
+                throw new InvalidPasswordException("old_password does not match user's current password");
+            }
         }
 
         // updates the user's password
