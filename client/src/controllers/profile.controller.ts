@@ -1,3 +1,4 @@
+import { loadPassportCountries } from '../models/countries.model';
 import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, addUserActivityType, removeUserActivityType } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
@@ -8,43 +9,57 @@ export async function logoutCurrentUser() {
     await logout();
 }
 
+let _passportCountryNames: Array<string>;  // cache for passport country names
 /**
- * 
- * @param countryName the name of the country to add to the user
- * @param profileId the profile to add the passport country to
+ * loads the list of valid passport country names from the cache
+ * if the cache is empty, polls the rest countries API
+ * @param force whether the cache should be forced to update, default false
  */
-export async function addPassportCountry(countryName: string, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found")
+export async function getAvailablePassportCountries(force = false): Promise<Array<string>> {
+    if (_passportCountryNames === undefined || force) {
+        let passportCountries: Array<{name: string}> = await loadPassportCountries();
+        _passportCountryNames = passportCountries.map(country => country.name);
     }
-
-    if (!user.passports) {
-        user.passports = []
-    }
-    if (user.passports.includes(countryName)) {
-        throw new Error("the target user already has desired passport country")
-    }
-
-    user.passports.push(countryName);
-    await saveUser(user, profileId);
-
+    return _passportCountryNames;
 }
 
-export async function deletePassportCountry(countryName: string, profileId: number) {
-
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found")
+/**
+ * adds a passport country to a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to add to the profile
+ * @param profile the profile to add the passport country to
+ */
+export async function addPassportCountry(countryName: string, profile: UserApiFormat) {
+    if (!profile.passports) {
+        profile.passports = []
+    }
+    if (!(await getAvailablePassportCountries()).includes(countryName)) {
+        throw new Error(`${countryName} is not recognised as a country`)
+    }
+    if (profile.passports.includes(countryName)) {
+        throw new Error(`the target profile already has ${countryName} as a passport country`)
     }
 
-    if (!user.passports || !(user.passports.includes(countryName))) {
-        throw new Error("User does not have this passport added to their profile.")
+    profile.passports.push(countryName);
+}
+
+/**
+ * adds a passport country to a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to remove from the profile
+ * @param profileId the profile to remove the passport country from
+ */
+export function deletePassportCountry(countryName: string, profile: UserApiFormat) {
+
+    if (!profile.passports) {
+        profile.passports = []
     }
 
-    user.passports.splice(user.passports.indexOf(countryName), 1);
-    await saveUser(user, profileId);
+    if (!profile.passports.includes(countryName)) {
+        throw `the target user does not have ${countryName} as a passport country`;
+    }
 
+    profile.passports.splice(profile.passports.indexOf(countryName), 1);
 }
 
 let loggedInUser: UserApiFormat = {};
@@ -65,7 +80,7 @@ export async function fetchCurrentUser(force = false) {
 
 
 /**
- * fetches a profile for a user with the given ID
+ * fetches the profile of the user with the given ID
  */
 export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
@@ -82,19 +97,6 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
     await updateCurrentPassword(oldPassword, newPassword, repeatPassword, profileId);
 }
 
-
-
-export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found");
-    }
-    if (user.fitness !== fitnessLevel) {
-        user.fitness = fitnessLevel;
-    }
-
-    await saveUser(user, profileId);
-}
 
 /**
  * Register supplied email to the user by adding it to their additional emails list and communicating this to the database (via user.model method).
