@@ -149,7 +149,10 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   fetchProfileWithId,
-  persistChangesToProfile
+  persistChangesToProfile,
+  getAvailablePassportCountries,
+  addPassportCountry,
+  deletePassportCountry
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -203,7 +206,7 @@ const Homepage = Vue.extend({
       },
 
       // values pertaining Personal Details section
-      passportCountries: [],
+      passportCountries: [] as string[],
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
@@ -217,7 +220,7 @@ const Homepage = Vue.extend({
   created() {
     // load profile info
     const profileId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(profileId)) {
+    if (isNaN(profileId)) {  // profile id in route not a number
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
@@ -233,47 +236,29 @@ const Homepage = Vue.extend({
         console.error(err);
       });
 
-    // load country names
-    const Http = new XMLHttpRequest();
-    const url = "https://restcountries.eu/rest/v2/all";
-    Http.open("GET", url, true);
-    Http.send();
-    Http.onreadystatechange = () => {
-      try {
-        const countries = JSON.parse(Http.responseText);
-        this.passportCountries = countries;
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    getAvailablePassportCountries()
+      .then(countries => {
+        this.passportCountries = countries})
+      .catch(err => {console.error("unable to load passport countries");
+      console.error(err)});
   },
 
   methods: {
     /**
      * adds the passport country selected in the dropdown to the current user's passport countries
      */
-    addSelectedPassportCountry: function() {
+    addSelectedPassportCountry: async function() {
       if (!this.selectedCountry) {
         return
       }
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
-      }
-      this.editedUser.passports.push(this.selectedCountry);
+      await addPassportCountry(this.selectedCountry, this.editedUser);
     },
 
     /**
      * removes the given country from the passport countries of the user being edited
      */
     deletePassportCountry: function(country: string) {
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
-      }
-      for (let i = 0; i < this.editedUser.passports.length; i++) {
-        if (this.editedUser.passports[i] === country) {
-          this.editedUser.passports.splice(i, 1);
-        }
-      }
+      deletePassportCountry(country, this.editedUser);
     },
 
     /**

@@ -180,6 +180,7 @@ export async function create(formData: RegisterFormData) {
  * For more endpoint information see file team-500/*.yaml
  */
 export async function saveUser(user: UserApiFormat, profileId: number) {
+  console.log("saving user")
   if (profileId !== user.profile_id) {
     throw new Error("cannot save a profile to an id different from that which appears in the user object")
   }
@@ -195,10 +196,17 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
-    console.log(res)
   } catch (e) {
-    console.log(e.response.data.error)
-    throw new Error(e.response.data.error);
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
   }
 }
 
