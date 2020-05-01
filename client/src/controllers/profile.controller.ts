@@ -1,5 +1,5 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById } from '../models/user.model'
 import { loadPassportCountries } from '../models/countries.model';
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, addUserActivityType, removeUserActivityType } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 
@@ -148,6 +148,33 @@ export async function setPrimary(primaryEmail: string, profileId: number) {
     } else {
         throw new Error("Must have additional emails to update it with.");
     }
+}
+
+/**
+ * Add the given activity type to the user's profile.
+ * @param activityType activity type to add to the user's profile
+ */
+export async function addActivityType(activityType: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("No active user found.");
+    }
+    await addUserActivityType(activityType);
+}
+
+/**
+ * Remove the supplied activity type from the user's profile.
+ * @param activityType activity type to remove from user's profile
+ */
+export async function removeActivityType(activityType: string) {
+    let user = await getCurrentUser();
+    if (user === null) {
+        throw new Error("No active user found.");
+    }
+    if (!user.activities || user.activities.length === 0) {
+        throw new Error("User has no activity types associated with their profile.");
+    }
+    await removeUserActivityType(activityType);
 }
 
 /**
