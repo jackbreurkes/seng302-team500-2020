@@ -12,21 +12,36 @@
 
             <v-card-text>
               <div v-if="!editing">
-                <p>First Name: {{ currentUser.firstname }}</p>
+                <h3>Name</h3>
+                <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
+                
+                <h3>Bio</h3>
+                <p>{{ currentUser.bio }}</p>
                 <br />
-                <p>Middle name: {{currentUser.middlename}}</p>
+
+                <h3>Info</h3>
+                <p>Born on {{ currentUser.date_of_birth }}</p>
                 <br />
-                <p>Last Name: {{ currentUser.lastname }}</p>
+                <p>Identifies as {{ currentUser.gender }}</p>
                 <br />
-                <p>Nickname: {{ currentUser.nickname }}</p>
+
+                <div v-if="currentUser.fitness">
+                  <p>Fitness level {{ currentUser.fitness }}</p>
+                  <br />
+                </div>
+                <p>Email: {{ currentUser.primary_email }}</p>
                 <br />
-                <p>Date of Birth: {{ currentUser.date_of_birth }}</p>
+
+                <div v-if="currentUser.passports">
+                  <h3>Passport Countries</h3>
+                  <v-chip class="ma-1" v-for="country of currentUser.passports" v-bind:key="country">{{ country }}</v-chip>
+                </div>
+
                 <br />
-                <p>Bio: {{ currentUser.bio }}</p>
-                <br />
-                <p>Gender: {{ currentUser.gender }}</p>
-                <br />
-                <br />
+                  <v-btn @click="editProfile">Edit Profile</v-btn>
+                  <v-btn @click="createActivityClicked">Create Activity</v-btn>
+                </div>
+                
 
                 <!--<p>Primary email: {{ currentUser.primary_email }}</p>
                 <!- New Email input field and button ->
@@ -54,12 +69,8 @@
 
                   <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
                 </v-card-actions>-->
-                <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="createActivityClicked">Create Activity</v-btn>
-              </div>
 
-                <br />
+                <!-- <br />
                 <br />
                 <v-form>
                   <v-text-field
@@ -95,7 +106,7 @@
                 <br />
 
                 <v-btn @click="saveButtonClicked">Save</v-btn>
-                <v-btn @click="cancelButtonClicked">Cancel</v-btn>
+                <v-btn @click="cancelButtonClicked">Cancel</v-btn> -->
             </v-card-text>
           </v-card>
         </v-col>
@@ -104,7 +115,16 @@
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Activities</v-toolbar-title>
             </v-toolbar>
-            Hello, World!
+
+            <v-card-text>
+              <div v-if="currentUser.activities">
+                <h3>Interests</h3>
+                <v-chip class="ma-1" v-for="activityType of currentUser.activities" v-bind:key="activityType">{{ activityType }}</v-chip>
+              </div>
+
+              insert activities here
+            </v-card-text>
+
           </v-card>
         </v-col>
       </v-row>

@@ -106,7 +106,7 @@
                     v-for="passport in editedUser.passports"
                     :key="passport"
                     close
-                    class="ma-2"
+                    class="ma-1"
                     @click:close="deletePassportCountry(passport)"
                   >{{ passport }}</v-chip>
                 </div>
@@ -123,7 +123,7 @@
               </v-form>
 
               <v-btn @click="saveButtonClicked">Save</v-btn>
-              <v-btn @click="cancelButtonClicked">Cancel</v-btn>
+              <v-btn @click="returnToProfile">Cancel</v-btn>
 
               <br />
               <br />
@@ -272,7 +272,7 @@ const Homepage = Vue.extend({
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
         persistChangesToProfile(this.editedUser, this.currentProfileId)
-        .then(() => {history.go(0)})
+        .then(() => {this.returnToProfile()})
         .catch(() => {alert("Unable to update user.");});
       }
     },
@@ -280,7 +280,7 @@ const Homepage = Vue.extend({
     /**
      * returns the user to the profile page of the profile they are editing
      */
-    cancelButtonClicked: function() {
+    returnToProfile: function() {
       this.$router.push("/profiles/" + this.currentProfileId)
     },
   }
