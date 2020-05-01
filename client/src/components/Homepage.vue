@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-container class="fill-height" fluid>
-      <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="4">
-          <v-card class="elevation-12" width="100%">
+      <v-row align="top" justify="center">
+        <v-col sm="12" md="8" lg="4">
+          <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
             </v-toolbar>
@@ -28,8 +28,8 @@
                 <br />
                 <br />
 
-                <p>Primary email: {{ currentUser.primary_email }}</p>
-                <!-- New Email input field and button -->
+                <!--<p>Primary email: {{ currentUser.primary_email }}</p>
+                <!- New Email input field and button ->
                 <br />
                 <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
                 <ul>
@@ -41,7 +41,7 @@
                 </ul>
                 <br />
                 <p>Add a new email:</p>
-                <!-- <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" /> -->
+                <!- <input ref="newEmail" id="newEmail" type="email" v-model="newEmail" /> ->
                 <v-card-actions>
                   <v-text-field
                     v-model="newEmail"
@@ -53,10 +53,9 @@
                   ></v-text-field>
 
                   <v-btn id="addEmailAddress" @click="addEmailAddress">Add Email</v-btn>
-                </v-card-actions>
+                </v-card-actions>-->
                 <br />
                 <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="logoutButtonClicked">Logout</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
               </div>
 
@@ -98,6 +97,14 @@
                 <v-btn @click="saveButtonClicked">Save</v-btn>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
             </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col sm="12" md="8" lg="8">
+          <v-card class="elevation-12">
+            <v-toolbar color="primary" dark flat>
+              <v-toolbar-title>Activities</v-toolbar-title>
+            </v-toolbar>
+            Hello, World!
           </v-card>
         </v-col>
       </v-row>
