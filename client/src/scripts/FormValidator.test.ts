@@ -240,7 +240,7 @@ test.each(["2000-12-32", "2001-02-31"])(
 )
 
 // Date of birth is in valid format and is in future.
-test.each(["3000-12-32", "2021-02-28", tomorrow_string])(
+test.each(["3000-12-25", "2021-02-28", tomorrow_string])(
     'expect %s to be an invalid date of birth', (dob) => {
         expect(formValidator.checkDobValidity(dob)).toBe(false)
     }

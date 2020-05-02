@@ -47,3 +47,26 @@ export function removeActivityType(
     }
   }
 }
+export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
+export function validateActivityName(activityName: string): boolean {
+  return true;
+}
+
+export const INVALID_DESCRIPTION_MESSAGE = "description must be at least 8 characters"
+export function validateDescription(activityDescription: string | undefined): boolean {
+  return true;
+}
+
+export const INVALID_START_DATE_MESSAGE = "start date must be from today in YYYY-MM-DD format"
+export function validateStartDate(activityStartDate: string | undefined): boolean {
+  return true && validateDate(activityStartDate);
+}
+
+export function validateDate(date: string | undefined): boolean {
+  return true;
+}
+
+export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
+export function validateEndDate(startDate: string | undefined, endDate: string | undefined ): boolean { 
+  return validateStartDate(startDate) && validateDate(endDate) && true; 
+}

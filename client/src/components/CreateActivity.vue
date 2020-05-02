@@ -106,7 +106,7 @@
                   :rules="inputRules.locationRules"
                 ></v-text-field>
 
-                <div id="passport-chips" v-if="createActivityRequest.activity_type && createActivityRequest.activity_type.length > 0">
+                <div id="activity-type-chips" v-if="createActivityRequest.activity_type && createActivityRequest.activity_type.length > 0">
                   <v-chip
                     v-for="activityType in createActivityRequest.activity_type"
                     :key="activityType"
@@ -117,12 +117,12 @@
                 </div>
 
                 <v-autocomplete
-                  :items="passportCountries"
+                  :items="activityTypes"
                   color="white"
                   item-text="name"
-                  label="Countries"
-                  v-model="selectedCountry"
-                  @input="addSelectedPassportCountry()"
+                  label="Activity Types"
+                  v-model="selectedActivityType"
+                  @input="addSelectedActivityType()"
                 ></v-autocomplete>
 
               </v-card-text>
@@ -145,8 +145,7 @@
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from '../scripts/Activity'
-import { removeActivityType, addActivityType } from '../controllers/activity.controller'
-
+import * as activityController from '../controllers/activity.controller'
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
@@ -163,12 +162,14 @@ const CreateActivity = Vue.extend({
       startTime: "",
       endDate: "",
       endTime: "",
+      activityTypes: [],
+      selectedActivityType: "",
 
       startDateMenu: false,
       errorMessage: "",
       inputRules: {
         activityNameRules: [
-          (v: string) => true || v
+          (v: string) => activityController.validateActivityName(v) || activityController.INVALID_ACTIVITY_NAME_MESSAGE
         ],
         startDateRules: [
           (v: string) => {
@@ -191,7 +192,7 @@ const CreateActivity = Vue.extend({
           }
         ],
         descriptionRules: [
-          (v: string) => true || v
+          (v: string) => activityController.validateDescription(v) || activityController.INVALID_DESCRIPTION_MESSAGE
         ],
         locationRules: [
           (v: string) => true || v
@@ -209,12 +210,16 @@ const CreateActivity = Vue.extend({
 
   methods: {
 
-    addActivityType(activityType: string) {
-      addActivityType(activityType, this.createActivityRequest);
+    addSelectedActivityType() {
+      if (!this.selectedActivityType) {
+        return
+      }
+      activityController.addActivityType(this.selectedActivityType, this.createActivityRequest);
+      this.selectedActivityType = "";
     },
 
     removeActivityType(activityType: string) {
-      removeActivityType(activityType, this.createActivityRequest);
+      activityController.removeActivityType(activityType, this.createActivityRequest);
     },
 
     cancelButtonClicked() {
