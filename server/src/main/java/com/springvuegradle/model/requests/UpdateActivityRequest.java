@@ -1,7 +1,9 @@
 package com.springvuegradle.model.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -23,13 +25,13 @@ public class UpdateActivityRequest {
     @JsonProperty("continous")
     private boolean continous;
 
-    //TODO
     @JsonProperty("start_time")
-    private String startTime;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime startTime;
 
-    //TODO
     @JsonProperty("end_time")
-    private String endTime;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime endTime;
 
     @JsonProperty("location")
     private String location;
@@ -74,5 +76,21 @@ public class UpdateActivityRequest {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 }
