@@ -215,11 +215,10 @@ export async function addEmail(email: string, profileId: number) {
     } else {
       emails.push(email);
     }
-    let emailDict = {"additional_email": emails, "email": email}
-    let res = await instance.post("profiles/" + profileId + "/emails", emailDict, {
+    let res = await instance.post("profiles/" + profileId + "/emails", null, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
-      }, data: emailDict
+      }, data: {"additional_email": emails}
     });
   } catch (e) {
     throw new Error(e.response.data.error)
@@ -279,10 +278,10 @@ export async function deleteUserEmail(email: string, profileId: number) {
       }
     }
     let emailDict = {"additional_email": emails}
-    await instance.post("profiles/" + profileId + "/emails", emailDict, {
+    let res = await instance.post("profiles/" + profileId + "/emails", null, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
-      }, data: emailDict
+      }, data: {"additional_email": emails}
     });
   } catch (e) {
     throw new Error(e.response.data.error)

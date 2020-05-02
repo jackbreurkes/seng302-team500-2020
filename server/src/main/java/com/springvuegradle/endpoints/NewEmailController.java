@@ -22,9 +22,11 @@ import org.springframework.boot.json.JsonParser;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Session;
 import com.springvuegradle.model.data.User;
@@ -51,36 +53,52 @@ public class NewEmailController {
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException {
 		User user = userRepo.getOne(profileId);
 		
-		System.out.println("Updating emails through post");
+        // check correct authentication
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        System.out.println("This is the authenticated id: " + authId);
+        if (authId == null) {
+            throw new UserNotAuthenticatedException("You must be an authenticated user.");
+        }
+        
+        Optional<User> userRequesting = userRepo.findById(authId);
+        if (userRequesting.isPresent() && (userRequesting.get().getPermissionLevel() > 120 || authId == profileId)) {
 		
-		LinkedHashMap<String, Object> json = null;
-		try {
-			json = getJson(raw);
-		} catch (org.apache.tomcat.util.json.ParseException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
-		}
-		
-		if (json.containsKey("additional_email")) {
+			System.out.println("Updating emails through post");
+			
+			LinkedHashMap<String, Object> json = null;
 			try {
-				LinkedHashMap<String, String> emails = (LinkedHashMap<String, String>) json.get("additional_email");
-				Collection<String> newEmails = emails.values();
-				
-				if (emails.size() >= 5) {					// As this list does not include the primary email
-					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
-				} else {
-					updateAdditionalEmails(user, newEmails);					
-					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
-					}
-			} catch (Error e) {
-				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to update additional user emails.");
+				json = getJson(raw);
+			} catch (org.apache.tomcat.util.json.ParseException e) {
+				e.printStackTrace();
+				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
 			}
-		} else {
-			return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
-		}
+			
+			System.out.println(raw);
+			
+			if (json.containsKey("additional_email")) {
+				try {
+					ArrayList<String> newEmails = (ArrayList<String>) json.get("additional_email");
+					System.out.println("The additional emails JSON is:");
+					System.out.println(newEmails);
+					
+					if (newEmails.size() >= 5) {					// As this list does not include the primary email
+						return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
+					} else {
+						updateAdditionalEmails(user, newEmails);					
+						return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
+						}
+				} catch (Error e) {
+					return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to update additional user emails.");
+				}
+			} else {
+				return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
+			}
+        } else {
+        	throw new AccessDeniedException("must be logged in as user or as admin to edit emails");
+        }
 	}
 	
 	@PutMapping("/profiles/{profileId}/emails")
