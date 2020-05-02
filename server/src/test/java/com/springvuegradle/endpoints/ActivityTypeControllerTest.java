@@ -51,7 +51,7 @@ public class ActivityTypeControllerTest {
     	Mockito.when(repo.findAll()).thenReturn(mockActivities);
     	
         mvc.perform(MockMvcRequestBuilders
-                .get("/activities")
+                .get("/activity-types")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").isArray());
@@ -64,7 +64,7 @@ public class ActivityTypeControllerTest {
     	Mockito.when(repo.findAll()).thenReturn(mockActivities);
     	
         mvc.perform(MockMvcRequestBuilders
-                .get("/activities")
+                .get("/activity-types")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").isArray())
@@ -80,7 +80,7 @@ public class ActivityTypeControllerTest {
     	Mockito.when(repo.findAll()).thenReturn(mockActivities);
     	
         mvc.perform(MockMvcRequestBuilders
-                .get("/activities")
+                .get("/activity-types")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").isArray())

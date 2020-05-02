@@ -32,18 +32,14 @@ public class ActivityTypeController {
 	 * 
 	 * @return Response entity containing list of all activity types in database
 	 */
-	@GetMapping("/activities")
+	@GetMapping("/activity-types")
 	@CrossOrigin
-	public ResponseEntity<?> getActivities() {
+	public String[] getActivities() {
 		List<ActivityType> allActivityTypes = activityRepo.findAll();
 		
-		String[] activityTypeString = new String[allActivityTypes.size()];
+		String[] activityTypeStrings = allActivityTypes.stream().map(ActivityType::getActivityTypeName).toArray(String[]::new);
 		
-		for (int i = 0; i < activityTypeString.length; i++) {
-			activityTypeString[i] = allActivityTypes.get(i).getActivityTypeName();
-		}
-		
-		return ResponseEntity.ok(activityTypeString);
+		return activityTypeStrings;
 	}
 
 }
