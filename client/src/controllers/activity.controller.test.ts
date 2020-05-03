@@ -62,7 +62,7 @@ test.each(mockActivityTypes)(
   );
 
   test.each(["test", "walking", "hiking"])(
-    "expect to throw an error if activity type is not associated to the activity",
+    "expect throw an error if activity type has not been added to the activity",
     (missingActivityType) => {
       let activityData: CreateActivityRequest = {};
       expect(() => {activityController.removeActivityType(missingActivityType, activityData)}).toThrow(new Error(`${missingActivityType} has not been added to the activity`));

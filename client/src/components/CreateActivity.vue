@@ -1,6 +1,6 @@
 <template>
   <div id="CreateActivity">
-    <v-form submit="false">
+    <v-form ref="createActivityForm">
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="4">
@@ -15,7 +15,7 @@
                   id="activityName"
                   type="text"
                   v-model="createActivityRequest.activity_name"
-                  :rules="inputRules.activityName"
+                  :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
                 <v-radio-group v-model="timeMode" row>
@@ -120,8 +120,7 @@
                   :items="activityTypes"
                   color="white"
                   item-text="name"
-                  label="Activity Types"
-                  outlined
+                  label="Activity Types"  
                   v-model="selectedActivityType"
                   @input="addSelectedActivityType()"
                 ></v-autocomplete>
@@ -150,21 +149,19 @@ import * as activityController from '../controllers/activity.controller'
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
-  el: "#CreateActivity",
 
   // app initial state
   data: function() {
     return {
       createActivityRequest: {} as CreateActivityRequest,
-      activityName: "",
+      currentProfileId: NaN as number,
       timeMode: "",
       startDate: "",
       startTime: "",
       endDate: "",
       endTime: "",
-      activityTypes: [] as any,
-      selectedActivityType: "",
-
+      activityTypes: [] as string[],
+      selectedActivityType: "" as string,
       startDateMenu: false,
       errorMessage: "",
       inputRules: {
@@ -195,16 +192,19 @@ const CreateActivity = Vue.extend({
           (v: string) => activityController.validateDescription(v) || activityController.INVALID_DESCRIPTION_MESSAGE
         ],
         locationRules: [
-          (v: string) => true || v
+          (v: string) => true || v //TODO location not implemented
         ],
         activityTypes: [
-          (v: string) => true || v
+          (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
+          // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
         ],
       }
     };
   },
 
   created() {
+    const profileId: number = parseInt(this.$route.params.profileId);
+    this.currentProfileId = profileId;
     this.createActivityRequest = {}
     activityController.getAvailableActivityTypes()
       .then(activity => {
@@ -220,9 +220,10 @@ const CreateActivity = Vue.extend({
         return
       }
       await activityController.addActivityType(this.selectedActivityType, this.createActivityRequest);
+      this.selectedActivityType = ""
     },
 
-    removeActivityType(activityType: string) {
+    removeActivityType: function(activityType: string) {
       activityController.removeActivityType(activityType, this.createActivityRequest);
     },
 
@@ -231,10 +232,13 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked() {
-      //validate inputs
-      //add all to data to createActivityRequest
-      //send through to backend
-
+      activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
+          .then(() => {
+            history.go(0);
+          })
+          .catch(() => {
+            alert(`${this.createActivityRequest.activity_type}`);
+          });
     }
   }
 });

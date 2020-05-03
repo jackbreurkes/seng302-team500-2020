@@ -1,13 +1,13 @@
 import { CreateActivityRequest } from '../scripts/Activity';
-import { loadAvailableActivityTypes } from '../models/activity.model'
+import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
 
 
 let _availableActivityTypes: string[] | null = null;
 export async function getAvailableActivityTypes(force = false) {
-    if (_availableActivityTypes === null || force) {
-        _availableActivityTypes = await loadAvailableActivityTypes();
-    }
-    return _availableActivityTypes;
+  if (_availableActivityTypes === null || force) {
+    _availableActivityTypes = await loadAvailableActivityTypes();
+  }
+  return _availableActivityTypes;
 }
 
 
@@ -17,16 +17,16 @@ export async function getAvailableActivityTypes(force = false) {
  * @param createActivityRequest the create activity request to add the activity type to
  */
 export async function addActivityType(activityType: string, createActivityRequest: CreateActivityRequest) {
-    if (!createActivityRequest.activity_type) {
-        createActivityRequest.activity_type = []
-    }
-    if (!(await getAvailableActivityTypes()).includes(activityType)) {
-      throw new Error(`activity type ${activityType} does not exist`)
+  if (!createActivityRequest.activity_type) {
+    createActivityRequest.activity_type = []
   }
-    if (createActivityRequest.activity_type.includes(activityType)) {
-        throw new Error(`${activityType} is already added to the activity`)
-    }
-    createActivityRequest.activity_type.push(activityType);
+  if (createActivityRequest.activity_type.includes(activityType)) {
+    throw new Error(`${activityType} is already added to the activity`)
+  }
+  if (!(await getAvailableActivityTypes()).includes(activityType)) {
+    throw new Error(`activity type ${activityType} does not exist`)
+  }
+  createActivityRequest.activity_type.push(activityType);
 }
 
 /**
@@ -41,21 +41,21 @@ export function removeActivityType(activityType: string, createActivityRequest: 
   }
 
   if (!createActivityRequest.activity_type.includes(activityType)) {
-    throw`${activityType} has not been added to the activity`;
+    throw `${activityType} has not been added to the activity`;
   }
-  // for (let i = 0; i < createActivityRequest.activity_type.length; i++) {
-  //   if (createActivityRequest.activity_type[i] === activityType) {
-  //     createActivityRequest.activity_type.splice(i, 1);
-  //   }
-  // }
-  createActivityRequest.activity_type.splice(createActivityRequest.activity_type.indexOf(activityType), 1);
-  
+  for (let i = 0; i < createActivityRequest.activity_type.length; i++) {
+    if (createActivityRequest.activity_type[i] === activityType) {
+      createActivityRequest.activity_type.splice(i, 1);
+    }
+  }
+  // createActivityRequest.activity_type.splice(createActivityRequest.activity_type.indexOf(activityType), 1);
+
 }
 
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
 export function validateActivityName(activityName: string): boolean {
   if (activityName.length >= 4 && activityName.length <= 30) {
-      return true;
+    return true;
   } else {
     return false;
   }
@@ -70,6 +70,14 @@ export function validateDescription(activityDescription: string | undefined): bo
   }
 }
 
+export const INVALID_ACTIVITY_TYPE = "activity type already added"
+export function validateActivityType(activityType: string, createActivityRequest: CreateActivityRequest): boolean { 
+  if(createActivityRequest.activity_type == undefined) {
+    createActivityRequest.activity_type = [];
+  }
+  return createActivityRequest.activity_type.includes(activityType)
+}
+
 export const INVALID_START_DATE_MESSAGE = "start date must be from today in YYYY-MM-DD format"
 export function validateStartDate(activityStartDate: string | undefined): boolean {
   return true && validateDate(activityStartDate);
@@ -80,6 +88,12 @@ export function validateDate(date: string | undefined): boolean {
 }
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
-export function validateEndDate(startDate: string | undefined, endDate: string | undefined ): boolean { 
-  return validateStartDate(startDate) && validateDate(endDate) && true; 
+export function validateEndDate(startDate: string | undefined, endDate: string | undefined): boolean {
+  return validateStartDate(startDate) && validateDate(endDate) && true;
 }
+
+export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
+  await createActivity(createActivityRequest, profileId);
+}
+
+
