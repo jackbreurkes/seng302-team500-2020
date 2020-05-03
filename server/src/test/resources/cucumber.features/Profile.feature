@@ -1,3 +1,4 @@
+@U9-my-location
 Feature: Editing an entire profile with location data included
 
   Scenario Outline: Create a user with location information
@@ -20,8 +21,8 @@ Feature: Editing an entire profile with location data included
     Given there is a user with the email "existing.user@test.com" in the database
     And I am logged in as the user with the email "existing.user@test.com"
     And I have set my location where I am normally based as <city> <state> <country>
-    And I am updating my profile information
-    And I am not changing my location where I am normally based
+    And I am updating my profile's "firstname" information to "Andrew"
+    And I am not changing my "location" information
     When I update my profile information
     Then my profile should show my location info as <city> <state> <country>
 

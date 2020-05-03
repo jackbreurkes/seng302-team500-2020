@@ -1,3 +1,4 @@
+@U9-my-location
 Feature: Create, read, update and delete my location
 
   Background:
@@ -23,12 +24,12 @@ Feature: Create, read, update and delete my location
     When I view my profile
     Then my profile should show my location info as <city> <state> <country>
 
-  Examples:
-    | city         | state           | country     |
-    | Christchurch | Canterbury      | New Zealand |
-    | Sydney       | New South Wales | Australia   |
-    | Oslo         | null            | Norway      |
-    | The Hague    | null            | Netherlands |
+    Examples:
+      | city         | state           | country     |
+      | Christchurch | Canterbury      | New Zealand |
+      | Sydney       | New South Wales | Australia   |
+      | Oslo         | null            | Norway      |
+      | The Hague    | null            | Netherlands |
 
 
   Scenario: Check my location when it is not set
@@ -62,7 +63,7 @@ Feature: Create, read, update and delete my location
       | Christchurch | Canterbury      | New Zealand |
 
 
-  Scenario: Update my location
+  Scenario: Delete my location
     Given I have set my location where I am normally based as "Christchurch" "Canterbury" "New Zealand"
     When I set my location where I am normally based as "null" "null" "null"
     Then my location info should be empty
