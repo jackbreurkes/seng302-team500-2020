@@ -248,7 +248,7 @@ export async function updatePrimaryEmail(primaryEmail: string, profileId: number
     
     let emailDict = {"additional_email": emails, "primary_email": primaryEmail}
     console.log(JSON.stringify(emailDict));
-    let res = await instance.put("profiles/" + profileId + "/emails", emailDict, {
+    let res = await instance.put("profiles/" + profileId + "/emails", null, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       },

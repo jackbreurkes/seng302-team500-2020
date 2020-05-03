@@ -20,12 +20,16 @@ import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.exceptions.EmailAlreadyRegisteredException;
+import com.springvuegradle.exceptions.MaximumEmailsException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Session;
@@ -53,7 +57,7 @@ public class NewEmailController {
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, MaximumEmailsException, EmailAlreadyRegisteredException {
 		User user = userRepo.getOne(profileId);
 		
         // check correct authentication
@@ -66,8 +70,6 @@ public class NewEmailController {
         Optional<User> userRequesting = userRepo.findById(authId);
         if (userRequesting.isPresent() && (userRequesting.get().getPermissionLevel() > 120 || authId == profileId)) {
 		
-			System.out.println("Updating emails through post");
-			
 			LinkedHashMap<String, Object> json = null;
 			try {
 				json = getJson(raw);
@@ -75,23 +77,24 @@ public class NewEmailController {
 				e.printStackTrace();
 				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
 			}
-			
-			System.out.println(raw);
-			
+						
 			if (json.containsKey("additional_email")) {
+				ArrayList<String> newEmails;
 				try {
-					ArrayList<String> newEmails = (ArrayList<String>) json.get("additional_email");
-					System.out.println("The additional emails JSON is:");
-					System.out.println(newEmails);
-					
-					if (newEmails.size() >= 5) {					// As this list does not include the primary email
-						return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
-					} else {
-						updateAdditionalEmails(user, newEmails);					
-						return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
+					newEmails = (ArrayList<String>) json.get("additional_email");
+				} catch (Error err) {
+					throw new HttpMessageNotReadableException("Invalid format for additional email list.", (HttpInputMessage)request);
+				}
+				if (newEmails.size() >= 5) {					// As this list does not include the primary email
+					throw new MaximumEmailsException("Maximum email addresses is (5)");
+				} else {
+					for (String email: newEmails) {
+						if (emailAlreadyRegisteredToOtherUser(email, user)) {
+							throw new EmailAlreadyRegisteredException("Email " + email + " is already registered to another user.");
 						}
-				} catch (Error e) {
-					return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to update additional user emails.");
+					}
+					updateAdditionalEmails(user, newEmails);					
+					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
 				}
 			} else {
 				return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
@@ -116,10 +119,9 @@ public class NewEmailController {
 		
 		if (json.containsKey("additional_email")) {
 			try {
-				LinkedHashMap<String, String> emails = (LinkedHashMap<String, String>) json.get("additional_email");
-				Collection<String> newEmails = emails.values();
+				ArrayList<String> newEmails = (ArrayList<String>) json.get("additional_email");
 				
-				if (emails.size() >= 5) {					// As this list does not include the primary email
+				if (newEmails.size() >= 5) {					// As this list does not include the primary email
 					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
 				} else {
 					
@@ -136,10 +138,10 @@ public class NewEmailController {
 						}
 						emailRepo.save(new Email(user, newPrimaryEmailString, true));
 						updateAdditionalEmails(user, newEmails);
-						return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
+						return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated account emails.");					
 
 					} else {
-						return ResponseEntity.status(HttpStatus.resolve(403)).body("Incorrect method for updating additional emails. Use POST.");					
+						return ResponseEntity.status(HttpStatus.resolve(400)).body("Incorrect method for updating primary email. Use POST.");					
 					}
 				}
 			} catch (Error e) {
@@ -156,28 +158,30 @@ public class NewEmailController {
 		json = (LinkedHashMap<String, Object>) parser.parse();
 		return json;
 	}
-	
-	
+
 	private void updateAdditionalEmails(User user, Collection<String> newEmails) {
-		System.out.println("Updateadditionalemaisl");
-		System.out.println(newEmails);
 		List<Email> nonPrimaryEmails = emailRepo.getNonPrimaryEmails(user);
-		System.out.println(nonPrimaryEmails);
 		List<Email> deletedEmails = new ArrayList<Email>();
 		for (Email oldEmail: nonPrimaryEmails) {
 			if (newEmails.contains(oldEmail.getEmail())) {
 				newEmails.remove(oldEmail);
-				System.out.println("Kept in:" + oldEmail.getEmail());
 			} else {
 				emailRepo.delete(oldEmail);
 				deletedEmails.add(oldEmail);
-				System.out.println("Removed:" + oldEmail.getEmail());
 			}
 		}
 		for (String newEmailString: newEmails) {
 			emailRepo.save(new Email(user, newEmailString, false));
-			System.out.println("Added:" + newEmailString);
 		}
+	}
+	
+	private boolean emailAlreadyRegisteredToOtherUser(String email, User user) {
+		boolean registered = false;
+		Email emailFound = emailRepo.findByEmail(email);
+		if (emailFound != null && emailFound.getUser().getUserId() != user.getUserId()) {
+			registered = true;
+		}
+		return registered;
 	}
 
 }
