@@ -108,19 +108,20 @@
 
                 <div id="activity-type-chips" v-if="createActivityRequest.activity_type && createActivityRequest.activity_type.length > 0">
                   <v-chip
-                    v-for="activityType in createActivityRequest.activity_type"
-                    :key="activityType"
+                    v-for="type in createActivityRequest.activity_type"
+                    :key="type"
                     close
-                    class="ma-1"
-                    @click:close="removeActivityType(activityType)"
-                  >{{ passport }}</v-chip>
+                    class="ma-2"
+                    @click:close="removeActivityType(type)"
+                  >{{ type }}</v-chip>
                 </div>
-
+    
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
                   item-text="name"
                   label="Activity Types"
+                  outlined
                   v-model="selectedActivityType"
                   @input="addSelectedActivityType()"
                 ></v-autocomplete>
@@ -130,7 +131,7 @@
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer />
-                <v-btn @click="saveButtonClicked" color="primary">Create</v-btn>
+                <v-btn @click="createButtonClicked" color="primary">Create</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -157,12 +158,11 @@ const CreateActivity = Vue.extend({
       createActivityRequest: {} as CreateActivityRequest,
       activityName: "",
       timeMode: "",
-      activityType: "",
       startDate: "",
       startTime: "",
       endDate: "",
       endTime: "",
-      activityTypes: [],
+      activityTypes: [] as any,
       selectedActivityType: "",
 
       startDateMenu: false,
@@ -206,16 +206,20 @@ const CreateActivity = Vue.extend({
 
   created() {
     this.createActivityRequest = {}
+    activityController.getAvailableActivityTypes()
+      .then(activity => {
+        this.activityTypes = activity})
+      .catch(err => {console.error("unable to load activity types");
+      console.error(err)});
   },
 
   methods: {
 
-    addSelectedActivityType() {
+    addSelectedActivityType: async function() {
       if (!this.selectedActivityType) {
         return
       }
-      activityController.addActivityType(this.selectedActivityType, this.createActivityRequest);
-      this.selectedActivityType = "";
+      await activityController.addActivityType(this.selectedActivityType, this.createActivityRequest);
     },
 
     removeActivityType(activityType: string) {
@@ -226,7 +230,12 @@ const CreateActivity = Vue.extend({
       this.$router.push({ name: "profilePage" });
     },
 
-    saveButtonClicked() {}
+    createButtonClicked() {
+      //validate inputs
+      //add all to data to createActivityRequest
+      //send through to backend
+
+    }
   }
 });
 

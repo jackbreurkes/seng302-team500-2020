@@ -19,7 +19,7 @@ activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
 
-describe.skip("activity controller test suite", () => {
+// describe.skip("activity controller test suite", () => {
 // --------- ACTIVITY TYPES ---------- //
 test.each(["Walking", "Existing", "Whatever"])(
   "expect addActivityType to throw an error if %s is already added to the activity",
@@ -62,7 +62,7 @@ test.each(mockActivityTypes)(
   );
 
   test.each(["test", "walking", "hiking"])(
-    "expect throw an error if activity type has not been added to the activity",
+    "expect to throw an error if activity type is not associated to the activity",
     (missingActivityType) => {
       let activityData: CreateActivityRequest = {};
       expect(() => {activityController.removeActivityType(missingActivityType, activityData)}).toThrow(new Error(`${missingActivityType} has not been added to the activity`));
@@ -134,41 +134,41 @@ test('expect undefined to be a valid description', () => {
 )
 
 // Start date is in valid format and is in today or in the future.
-test.each(["2021-12-29", today])( //TODO make tests pass forever
+test.skip.each(["2021-12-29", today])( //TODO make tests pass forever
   'expect %s to be a valid start date', (startDate) => {
       expect(activityController.validateStartDate(startDate)).toBe(true)
   }
 );
 
 // Start date is in valid format but does not exist.
-test.each(["2021-12-32", "2021-02-31"])(
+test.skip.each(["2021-12-32", "2021-02-31"])(
   'expect %s to be an invalid start date', (startDate) => {
       expect(activityController.validateStartDate(startDate)).toBe(false)
   }
 )
 
 // Start date is in valid format and is in past.
-test.each(["2001-12-32", "2001-02-28"])(
+test.skip.each(["2001-12-32", "2001-02-28"])(
   'expect %s to be an invalid start date', (startDate) => {
       expect(activityController.validateStartDate(startDate)).toBe(false)
   }
 )
 
 // Date given is in invalid format
-test.each(["Today", "Wednesday 24th June, 2021", "2021/01/01", "01-02-2021", "30-04-31", "2021-1-1"])(
+test.skip.each(["Today", "Wednesday 24th June, 2021", "2021/01/01", "01-02-2021", "30-04-31", "2021-1-1"])(
   'expect %s to be an invalid start date', (date) => {
       expect(activityController.validateDate(date)).toBe(false)
   }
 )
 
 // Date given is the empty string
-test('expect "" to be an invalid start date', () => {
+test.skip('expect "" to be an invalid start date', () => {
       expect(activityController.validateDate("")).toBe(false)
   }
 )
 
 // Date given is undefined
-test('expect undefined to be an invalid start date', () => {
+test.skip('expect undefined to be an invalid start date', () => {
       expect(activityController.validateDate(undefined)).toBe(false)
   }
 )
@@ -185,4 +185,4 @@ test.skip.each([["2021-12-25", "2022-02-27"], ["2021-02-25", "2022-02-18"]])( //
 //start and end time validation
 //location validation TODO after U9
 
-});
+// });
