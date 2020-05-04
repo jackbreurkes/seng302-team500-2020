@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * JPA POJO representing an Activity.
@@ -16,7 +17,7 @@ public class Activity {
 
     @Id
     @GeneratedValue
-    private long id;
+    private long activity_id;
 
     // the @NotNull annotation will automatically set the column to not null
     // if hibernate.validator.apply_to_ddl = true (true by default)
@@ -53,7 +54,13 @@ public class Activity {
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
-    //TODO activity types once they have been added
+    @ManyToMany
+    @JoinTable(
+            name = "activity_activity_type",
+            joinColumns = {@JoinColumn(name = "activity_id")},
+            inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
+    )
+    private List<ActivityType> activityTypes;
 
     /**
      * no arg constructor required by JPA
@@ -79,7 +86,7 @@ public class Activity {
      * @return the id associated with the activity in the database
      */
     public long getId() {
-        return id;
+        return activity_id;
     }
 
     /**
@@ -201,6 +208,20 @@ public class Activity {
      */
     public Profile getCreator() {
         return creator;
+    }
+
+    /**
+     * @return the activity types associated with this activity
+     */
+    public List<ActivityType> getActivityTypes() {
+        return activityTypes;
+    }
+
+    /**
+     * @param activityTypes the activity types to associate with this activity
+     */
+    public void setActivityTypes(List<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
     }
 
 }
