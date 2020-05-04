@@ -22,8 +22,8 @@ public class UpdateActivityRequest {
     @JsonProperty("activity_type")
     private List<String> activityTypes;
 
-    @JsonProperty("continous")
-    private boolean continous;
+    @JsonProperty("continuous")
+    private boolean continuous;
 
     @JsonProperty("start_time")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -62,12 +62,12 @@ public class UpdateActivityRequest {
         this.activityTypes = activityTypes;
     }
 
-    public boolean isContinous() {
-        return continous;
+    public boolean isContinuous() {
+        return continuous;
     }
 
-    public void setContinous(boolean continous) {
-        this.continous = continous;
+    public void setContinuous(boolean continuous) {
+        this.continuous = continuous;
     }
 
     public String getLocation() {

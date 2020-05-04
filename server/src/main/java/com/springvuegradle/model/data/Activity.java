@@ -66,7 +66,7 @@ public class Activity {
     /**
      * no arg constructor required by JPA
      */
-    protected Activity() {}
+    public Activity() {}
 
     /**
      * Create an activity with required and optional fields

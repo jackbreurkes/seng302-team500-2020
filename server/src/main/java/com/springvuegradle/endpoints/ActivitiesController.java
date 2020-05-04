@@ -79,6 +79,32 @@ public class ActivitiesController {
         //then update fields
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
+        //Validate request
+        // validate request body
+        if (updateActivityRequest.getActivityName() == null) {
+            throw new InvalidRequestFieldException("missing activity_name field");
+        }
+        if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
+            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
+        }
+        if (updateActivityRequest.getActivityTypes() == null) {
+            throw new InvalidRequestFieldException("missing activity_type field");
+        }
+        if (updateActivityRequest.getActivityTypes().size() == 0) {
+            throw new InvalidRequestFieldException("must have at least one activity_type");
+        }
+        if (updateActivityRequest.getDescription() != null && updateActivityRequest.getDescription().length() < 8) {
+            throw new InvalidRequestFieldException("activity description must be at least 8 characters");
+        }
+        if (updateActivityRequest.getLocation() == null) {
+            throw new InvalidRequestFieldException("missing location field");
+        }
+        if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
+            //checking if the continuous field is there
+            throw new InvalidRequestFieldException("Missing continuous field");
+        }
+
+
         if(!activityToEdit.isPresent()){
             throw new RecordNotFoundException("Activity does not exist");
         }else{
@@ -86,17 +112,22 @@ public class ActivitiesController {
             try{
                 activity.setActivityName(updateActivityRequest.getActivityName());
                 activity.setDescription(updateActivityRequest.getDescription());
-                activity.setIsDuration(updateActivityRequest.isContinous());
+                activity.setIsDuration(updateActivityRequest.isContinuous());
                 activity.setLocation(updateActivityRequest.getLocation());
 
-                for(String activityType : updateActivityRequest.getActivityTypes()){
-                    if(activityTypeRepository.getActivityTypeByActivityTypeName(activityType).isPresent()){
-                        //todo
+                for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+                    Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+                    if(!activityType.isPresent()){
+                        //the activity type does not exist
+                        throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+                    }else{
+                        //it does exist
+                        activity.getActivityTypes().add(activityType.get());
                     }
                 }
 
                 //check if it is continuous and if not then add date and time
-                if(!updateActivityRequest.isContinous()){
+                if(!updateActivityRequest.isContinuous()){
                     activity.setStartDate(updateActivityRequest.getStartTime().toLocalDate());
                     activity.setEndDate(updateActivityRequest.getEndTime().toLocalDate());
 
@@ -106,7 +137,6 @@ public class ActivitiesController {
             }catch (Exception e){
                 throw new InvalidRequestFieldException("Invalid request");
             }
-            //need to do datetime, checking and activity types
 
             return ResponseEntity.status(HttpStatus.OK).build();
         }
