@@ -7,6 +7,7 @@ let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
     await logout();
+    loggedInUser = null;
 }
 
 let _passportCountryNames: Array<string>;  // cache for passport country names
@@ -62,14 +63,14 @@ export function deletePassportCountry(countryName: string, profile: UserApiForma
     profile.passports.splice(profile.passports.indexOf(countryName), 1);
 }
 
-let loggedInUser: UserApiFormat = {};
+let loggedInUser: UserApiFormat|null = null;
 
 /**
  * implemented by Alex Hobson, seems to cache the current user and save it to a class variable
  * @param force force a cache update
  */
 export async function fetchCurrentUser(force = false) {
-    if (force || !loggedInUser.primary_email) {
+    if (force || !loggedInUser) {
         loggedInUser = await getCurrentUser();
         if (loggedInUser === null) {
             throw new Error("no active user found");
