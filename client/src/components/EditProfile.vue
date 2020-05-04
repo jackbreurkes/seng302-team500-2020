@@ -39,14 +39,14 @@
                   </v-container-fluid>
                 </template>
 
-                <div id="passport-chips" v-if="editedUser.passports && editedUser.passports.length > 0">
+                <div id="passport-chips" v-if="editedUser.activities">
                   <v-chip
-                    v-for="passport in editedUser.passports"
-                    :key="passport"
+                    v-for="activity in editedUser.activities"
+                    :key="activity"
                     close
                     class="ma-2"
-                    @click:close="deletePassportCountry(passport)"
-                  >{{ passport }}</v-chip>
+                    @click:close="removeActivityType(activity)"
+                  >{{ activity }}</v-chip>
                 </div>
 
                 <v-autocomplete
@@ -55,8 +55,10 @@
                   item-text="name"
                   label="Activities"
                   v-model="selectedActivity"
-                  @input="addSelectedPassportCountry()"
+                  @input="addActivityType()"
                 ></v-autocomplete>
+
+                <v-btn @click="loadActivityTypes"></v-btn>
 
 
                 <v-divider></v-divider>
@@ -232,6 +234,7 @@ import {
   updateNewEmailList,
   // isValidEmail
 } from "../controllers/profile.controller";
+import { getActivityTypes } from "../models/activityTypes.model";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
@@ -291,6 +294,8 @@ const Homepage = Vue.extend({
       // values pertaining Personal Details section
       passportCountries: [],
       selectedCountry: "" as string,
+      activityTypes: [],
+      selectedActivity: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
       userFitnessLevel: "",
@@ -339,6 +344,9 @@ const Homepage = Vue.extend({
         console.error(err);
       }
     };
+
+    this.getActivityTypes();
+
   },
 
   methods: {
@@ -354,6 +362,10 @@ const Homepage = Vue.extend({
       }
       this.editedUser.passports.push(this.selectedCountry);
     },
+
+    loadActivityTypes: async function() {
+      this.activityTypes = await getActivityTypes()
+    }, 
 
     /**
      * removes the given country from the passport countries of the user being edited
