@@ -214,6 +214,26 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
  * Register the specified email to the target profile by adding it to the list of additional emails.
  * @param email email to register to user
  */
+export async function updateEmailList(newEmails: string[], profileId: number) {
+  try { // TODO there should be no business logic in the model class
+    let user = await getProfileById(profileId);
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      emails = newEmails;
+    } else {
+      emails = newEmails;
+    }
+    let emailDict = {"additional_email": emails}
+    let res = await instance.post("profiles/" + profileId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: emailDict
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
+
 export async function addEmail(email: string, profileId: number) {
   try { // TODO there should be no business logic in the model class
     let user = await getProfileById(profileId);
@@ -359,7 +379,9 @@ export async function updateCurrentPassword(old_password: string, new_password: 
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
+
     },
+
     
     );
   } catch (e) {
