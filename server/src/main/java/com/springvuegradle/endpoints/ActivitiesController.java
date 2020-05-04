@@ -40,6 +40,9 @@ import java.util.Optional;
 public class ActivitiesController {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ProfileRepository profileRepository;
 
     @Autowired
@@ -48,19 +51,31 @@ public class ActivitiesController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
+    private static final int ADMIN_USER_MINIMUM_PERMISSION = 120;
+
+    /**
+     * endpoint function for POST /profiles/{profileId}/activities
+     * @param profileId the path variable to match to the creator's profile id
+     * @param createActivityRequest request body information
+     * @param httpRequest the HttpRequest object associated with this request
+     * @return a response containing information about the newly created activity
+     * @throws InvalidRequestFieldException if a request field is invalid
+     * @throws RecordNotFoundException if a required object is not found in the database
+     * @throws UserNotAuthenticatedException if the user is not correctly authenticated
+     */
     @PostMapping("/profiles/{profileId}/activities")
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
             @RequestBody CreateActivityRequest createActivityRequest,
                                    HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
-        // authentication
+        // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        if (authId == null) {
-            throw new UserNotAuthenticatedException("you are not logged in");
-        } else if (!authId.equals((long)-1) && !authId.equals(profileId)) {
-            throw new AccessDeniedException("Insufficient permission");
+        Optional<User> editingUser = userRepository.findById(authId);
+        if (!(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
+        // validate request body
         if (createActivityRequest.getActivityName() == null) {
             throw new InvalidRequestFieldException("missing activity_name field");
         }
@@ -117,6 +132,7 @@ public class ActivitiesController {
             throw new RecordNotFoundException("profile with id " + profileId + " not found");
         }
 
+        // save activity
         Activity activity = new Activity(
                 createActivityRequest.getActivityName(),
                 !createActivityRequest.isContinuous(),
@@ -131,7 +147,6 @@ public class ActivitiesController {
         activity.setLocation(createActivityRequest.getLocation());
 
         return new ActivityResponse(activityRepository.save(activity));
-
     }
 
 }
