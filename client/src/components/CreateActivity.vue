@@ -17,7 +17,7 @@
                 dark
                 flat
               >
-              <v-toolbar-title>CreateActivity:</v-toolbar-title>   
+              <v-toolbar-title>Create Activity:</v-toolbar-title>   
               </v-toolbar>
               <v-card-text>
                 <v-text-field label="Activity Name" ref="activityname" id="activityname" type="text" v-model="activityname" ></v-text-field>
