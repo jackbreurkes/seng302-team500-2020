@@ -39,6 +39,26 @@
                   </v-container-fluid>
                 </template>
 
+                <div id="passport-chips" v-if="editedUser.passports && editedUser.passports.length > 0">
+                  <v-chip
+                    v-for="passport in editedUser.passports"
+                    :key="passport"
+                    close
+                    class="ma-2"
+                    @click:close="deletePassportCountry(passport)"
+                  >{{ passport }}</v-chip>
+                </div>
+
+                <v-autocomplete
+                  :items="activityTypes"
+                  color="white"
+                  item-text="name"
+                  label="Activities"
+                  v-model="selectedActivity"
+                  @input="addSelectedPassportCountry()"
+                ></v-autocomplete>
+
+
                 <v-divider></v-divider>
 
                 <v-card-title>Personal Details</v-card-title>
@@ -206,13 +226,11 @@ import { UserApiFormat } from "../scripts/User";
 import {
   fetchProfileWithId,
   persistChangesToProfile,
+  
   updatePassword,
   setPrimary,
   updateNewEmailList,
   // isValidEmail
-  getAvailablePassportCountries,
-  addPassportCountry,
-  deletePassportCountry
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -271,7 +289,7 @@ const Homepage = Vue.extend({
       },
 
       // values pertaining Personal Details section
-      passportCountries: [] as string[],
+      passportCountries: [],
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
@@ -292,7 +310,7 @@ const Homepage = Vue.extend({
   created() {
     // load profile info
     const profileId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(profileId)) {  // profile id in route not a number
+    if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
@@ -308,29 +326,47 @@ const Homepage = Vue.extend({
         console.error(err);
       });
 
-    getAvailablePassportCountries()
-      .then(countries => {
-        this.passportCountries = countries})
-      .catch(err => {console.error("unable to load passport countries");
-      console.error(err)});
+    // load country names
+    const Http = new XMLHttpRequest();
+    const url = "https://restcountries.eu/rest/v2/all";
+    Http.open("GET", url, true);
+    Http.send();
+    Http.onreadystatechange = () => {
+      try {
+        const countries = JSON.parse(Http.responseText);
+        this.passportCountries = countries;
+      } catch (err) {
+        console.error(err);
+      }
+    };
   },
 
   methods: {
     /**
      * adds the passport country selected in the dropdown to the current user's passport countries
      */
-    addSelectedPassportCountry: async function() {
+    addSelectedPassportCountry: function() {
       if (!this.selectedCountry) {
         return
       }
-      await addPassportCountry(this.selectedCountry, this.editedUser);
+      if (!this.editedUser.passports) {
+        this.editedUser.passports = []
+      }
+      this.editedUser.passports.push(this.selectedCountry);
     },
 
     /**
      * removes the given country from the passport countries of the user being edited
      */
     deletePassportCountry: function(country: string) {
-      deletePassportCountry(country, this.editedUser);
+      if (!this.editedUser.passports) {
+        this.editedUser.passports = []
+      }
+      for (let i = 0; i < this.editedUser.passports.length; i++) {
+        if (this.editedUser.passports[i] === country) {
+          this.editedUser.passports.splice(i, 1);
+        }
+      }
     },
 
     /**
