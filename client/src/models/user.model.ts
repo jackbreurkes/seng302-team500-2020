@@ -191,6 +191,7 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
         delete notNullUser[key];
       }
     }
+    console.log(JSON.stringify(notNullUser))
     let res = await instance.put("profiles/" + profileId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")

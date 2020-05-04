@@ -39,7 +39,7 @@
                   </v-container-fluid>
                 </template>
 
-                <div id="passport-chips" v-if="editedUser.activities">
+                <div id="activity-chips" v-if="editedUser.activities && editedUser.activities.length > 0">
                   <v-chip
                     v-for="activity in editedUser.activities"
                     :key="activity"
@@ -53,12 +53,10 @@
                   :items="activityTypes"
                   color="white"
                   item-text="name"
-                  label="Activities"
+                  label="Activity types interested in"
                   v-model="selectedActivity"
                   @input="addActivityType()"
                 ></v-autocomplete>
-
-                <v-btn @click="loadActivityTypes"></v-btn>
 
 
                 <v-divider></v-divider>
@@ -234,11 +232,10 @@ import {
   updateNewEmailList,
   // isValidEmail
 } from "../controllers/profile.controller";
-import { getActivityTypes } from "../models/activityTypes.model";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-
+import {getActivityTypes} from "../models/activityTypes.model"
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -294,9 +291,8 @@ const Homepage = Vue.extend({
       // values pertaining Personal Details section
       passportCountries: [],
       activityTypes: [],
-      selectedCountry: "" as string,
-      activityTypes: [],
       selectedActivity: "" as string,
+      selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
       userFitnessLevel: "",
@@ -327,6 +323,9 @@ const Homepage = Vue.extend({
         if (this.editedUser.fitness) {
           this.userFitnessLevel = this.editedUser.fitness.toString();
         }
+        console.log("WADAWDADWDAWDWADD")
+        console.log(this.editedUser)
+        console.log(JSON.stringify(this.editedUser))
       })
       .catch(err => {
         console.error(err);
@@ -345,8 +344,13 @@ const Homepage = Vue.extend({
         console.error(err);
       }
     };
-    this.getActivityTypes();
-
+    getActivityTypes()
+    .then((types)=>{
+      this.activityTypes = types;
+    })
+    .catch(err=>{
+      console.log(err)
+    })
 
   },
 
@@ -364,10 +368,27 @@ const Homepage = Vue.extend({
       this.editedUser.passports.push(this.selectedCountry);
     },
 
-    loadActivityTypes: async function() {
-      this.activityTypes = await getActivityTypes()
-    }, 
+    addActivityType: function() {
+      if (!this.selectedActivity) {
+        return
+      }
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      this.editedUser.activities.push(this.selectedActivity);
+    },
 
+    removeActivityType:function(activitySelected: string){
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      for (let i = 0; i < this.editedUser.activities.length; i++) {
+        if (this.editedUser.activities[i] === activitySelected) {
+          this.editedUser.activities.splice(i, 1);
+        }
+      }
+
+    },
     /**
      * removes the given country from the passport countries of the user being edited
      */
