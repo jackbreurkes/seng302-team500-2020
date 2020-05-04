@@ -1,11 +1,13 @@
 package com.springvuegradle.model.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityType;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +20,9 @@ public class ActivityResponse {
     private Long activityId;
     private String activityName;
     private boolean continuous;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String startTime;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String endTime;
     private String description;
     private String location;
@@ -37,8 +41,11 @@ public class ActivityResponse {
         this.continuous = !activity.isDuration();
         this.description = activity.getDescription();
         this.location = activity.getLocation();
-        this.startTime = activity.getStartDate().toString() + "T" + activity.getStartTime().toString() + "+0000";
-        this.endTime = activity.getEndDate().toString() + "T" + activity.getEndTime().toString() + "+0000";
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        if (activity.isDuration()) {
+            this.startTime = activity.getStartDate().toString() + "T" + activity.getStartTime().format(timeFormatter) + "+1300";
+            this.endTime = activity.getEndDate().toString() + "T" + activity.getEndTime().format(timeFormatter) + "+1300";
+        }
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.activityTypes = activity.getActivityTypes()
                 .stream()

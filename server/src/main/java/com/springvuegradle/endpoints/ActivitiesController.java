@@ -64,6 +64,7 @@ public class ActivitiesController {
      * @throws UserNotAuthenticatedException if the user is not correctly authenticated
      */
     @PostMapping("/profiles/{profileId}/activities")
+    @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
             @RequestBody CreateActivityRequest createActivityRequest,
@@ -93,6 +94,9 @@ public class ActivitiesController {
         }
         if (createActivityRequest.getDescription() != null && createActivityRequest.getDescription().length() < 8) {
             throw new InvalidRequestFieldException("activity description must be at least 8 characters");
+        }
+        if (createActivityRequest.getLocation() == null) {
+            throw new InvalidRequestFieldException("missing location field");
         }
 
         List<ActivityType> activityTypeList = new ArrayList<>();
