@@ -75,8 +75,16 @@ export async function login(email: string, password: string): Promise<boolean> {
   try {
     res = await instance.post("login", {email, password});
   } catch (e) {
-    console.error(e.name);
-    throw new Error(e.response.data.error);
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
