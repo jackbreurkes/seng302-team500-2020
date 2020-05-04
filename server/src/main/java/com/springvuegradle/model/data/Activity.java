@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * JPA POJO representing an Activity.
@@ -53,7 +54,14 @@ public class Activity {
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
-    //TODO activity types once they have been added
+    @NotNull
+    @ManyToMany
+    @JoinTable(
+            name = "activity_activity_type",
+            joinColumns = {@JoinColumn(name = "activity_id")},
+            inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
+    )
+    private List<ActivityType> activityTypes;
 
     /**
      * no arg constructor required by JPA
@@ -67,12 +75,13 @@ public class Activity {
      * @param location the location of the activity
      * @param creator the profile who created the activity
      */
-    public Activity(String activityName, boolean isDuration, String location, Profile creator)
+    public Activity(String activityName, boolean isDuration, String location, Profile creator, List<ActivityType> activityTypes)
     {
         this.activityName = activityName;
         this.isDuration = isDuration;
         this.location = location;
         this.creator = creator;
+        this.activityTypes = activityTypes;
     }
 
     /**
@@ -203,4 +212,10 @@ public class Activity {
         return creator;
     }
 
+    /**
+     * @return the list of activity types associated with the activity
+     */
+    public List<ActivityType> getActivityTypes() {
+        return activityTypes;
+    }
 }

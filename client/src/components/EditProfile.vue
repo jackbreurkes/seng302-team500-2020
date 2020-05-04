@@ -106,7 +106,7 @@
                     v-for="passport in editedUser.passports"
                     :key="passport"
                     close
-                    class="ma-2"
+                    class="ma-1"
                     @click:close="deletePassportCountry(passport)"
                   >{{ passport }}</v-chip>
                 </div>
@@ -123,7 +123,7 @@
               </v-form>
 
               <v-btn @click="saveButtonClicked">Save</v-btn>
-              <v-btn @click="cancelButtonClicked">Cancel</v-btn>
+              <v-btn @click="returnToProfile">Cancel</v-btn>
 
               <br />
               <br />
@@ -134,6 +134,62 @@
           <v-card>
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
+              <p>Primary email: {{ editedUser.primary_email }}</p>
+                <br />
+                <p>Secondary Emails {{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }} / 5:</p>
+                <ul>
+                  <li v-for="email in editedUser.additional_email" :key="email">
+                    {{ email }}
+                    <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
+                    <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
+                  </li>
+                </ul>
+                <br />
+                <p>Add a new email:</p>
+                <v-card-actions v-if="editedUser.additional_email.length !== 5">
+                  <v-text-field
+                    v-model="newEmail"
+                    label="enter new email here"
+                    type="email"
+                    dense
+                    filled
+                    required
+                    :rules="inputRules.emailRules"
+                  ></v-text-field>
+
+                  <v-btn id="addEmailAddress"  @click="addTempEmail(newEmail)">Add Email</v-btn>
+                  
+                </v-card-actions>
+                <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
+              <v-form>
+                  <v-text-field
+                    v-model="oldPassword"
+                    label="old password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="newPassword"
+                    label="new password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="repeatPassword"
+                    label="repeat password"
+                    type="password"
+                    dense
+                    filled
+                    required
+                  ></v-text-field>
+                  <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
+                  <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
+                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+                </v-form>
               <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
@@ -149,7 +205,14 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   fetchProfileWithId,
-  persistChangesToProfile
+  persistChangesToProfile,
+  updatePassword,
+  setPrimary,
+  updateNewEmailList,
+  // isValidEmail
+  getAvailablePassportCountries,
+  addPassportCountry,
+  deletePassportCountry
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -199,15 +262,27 @@ const Homepage = Vue.extend({
           (v: string) =>
             formValidator.checkGenderValidity(v) ||
             formValidator.GENDER_ERROR_STRING
+        ],
+        emailRules: [
+          (v: string) =>
+          formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
+
         ]
       },
 
       // values pertaining Personal Details section
-      passportCountries: [],
+      passportCountries: [] as string[],
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       dobMenu: false,
-      userFitnessLevel: ""
+      userFitnessLevel: "",
+      newEmail: "" as string,
+      oldPassword: "",
+      newPassword: "",
+      repeatPassword: "",
+      passwordErrorMessage: "",
+      passwordSuccessMessage: "",
+      
     };
   },
 
@@ -217,7 +292,7 @@ const Homepage = Vue.extend({
   created() {
     // load profile info
     const profileId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(profileId)) {
+    if (isNaN(profileId)) {  // profile id in route not a number
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
@@ -233,47 +308,29 @@ const Homepage = Vue.extend({
         console.error(err);
       });
 
-    // load country names
-    const Http = new XMLHttpRequest();
-    const url = "https://restcountries.eu/rest/v2/all";
-    Http.open("GET", url, true);
-    Http.send();
-    Http.onreadystatechange = () => {
-      try {
-        const countries = JSON.parse(Http.responseText);
-        this.passportCountries = countries;
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    getAvailablePassportCountries()
+      .then(countries => {
+        this.passportCountries = countries})
+      .catch(err => {console.error("unable to load passport countries");
+      console.error(err)});
   },
 
   methods: {
     /**
      * adds the passport country selected in the dropdown to the current user's passport countries
      */
-    addSelectedPassportCountry: function() {
+    addSelectedPassportCountry: async function() {
       if (!this.selectedCountry) {
         return
       }
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
-      }
-      this.editedUser.passports.push(this.selectedCountry);
+      await addPassportCountry(this.selectedCountry, this.editedUser);
     },
 
     /**
      * removes the given country from the passport countries of the user being edited
      */
     deletePassportCountry: function(country: string) {
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
-      }
-      for (let i = 0; i < this.editedUser.passports.length; i++) {
-        if (this.editedUser.passports[i] === country) {
-          this.editedUser.passports.splice(i, 1);
-        }
-      }
+      deletePassportCountry(country, this.editedUser);
     },
 
     /**
@@ -287,7 +344,7 @@ const Homepage = Vue.extend({
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
         persistChangesToProfile(this.editedUser, this.currentProfileId)
-        .then(() => {history.go(0)})
+        .then(() => {this.returnToProfile()})
         .catch(() => {alert("Unable to update user.");});
       }
     },
@@ -295,9 +352,91 @@ const Homepage = Vue.extend({
     /**
      * returns the user to the profile page of the profile they are editing
      */
-    cancelButtonClicked: function() {
+    returnToProfile: function() {
       this.$router.push("/profiles/" + this.currentProfileId)
     },
+
+    /**
+     * Copies the current editedusers secondary emails to current user
+     */
+    updateEmail: function() {
+      if (this.editedUser.primary_email === undefined) {
+        this.editedUser.primary_email = ""
+      }
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+      }
+      setPrimary(this.editedUser.primary_email, this.currentProfileId)
+      updateNewEmailList(this.editedUser.additional_email, this.currentProfileId)
+        .then(() => {
+          console.log("Email address added");
+           // refresh page after adding emails
+          history.go(0);
+        })
+        .catch(err => {
+          console.log(err);
+        })
+    },
+
+    deleteEmailAddress: function(email: string) {
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+      }
+      let index = this.editedUser.additional_email.indexOf(email);
+      this.editedUser.additional_email.splice(index, 1);
+    },
+
+    
+    setPrimaryEmail: function(email: string) {
+      let oldPrimaryEmail = this.editedUser.primary_email;
+      this.editedUser.primary_email = email;
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = []
+      }
+      if (oldPrimaryEmail !== undefined) {
+        this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1, oldPrimaryEmail);
+      } else {
+       this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1);
+      }
+    },
+
+    addTempEmail: function(email: string) {
+
+      if(new FormValidator().isValidEmail(email)){
+        if (this.editedUser.additional_email === undefined) {
+              this.editedUser.additional_email = []
+        }
+        else {
+          this.editedUser.additional_email.push(email);
+        }
+      }
+    },
+
+    updatePasswordButtonClicked: function() {
+      this.passwordSuccessMessage = "";
+      this.passwordErrorMessage = "";
+      
+      updatePassword(
+        this.oldPassword,
+        this.newPassword,
+        this.repeatPassword,
+        this.currentProfileId
+      )
+        .then(() => {
+          this.passwordSuccessMessage = "password changed successfully";
+        })
+        .catch((err: any) => {
+          this.passwordErrorMessage = err.message;
+        });
+
+      this.oldPassword = "";
+      this.newPassword = "";
+      this.repeatPassword = ""; 
+    },
+
+
+
+    
   }
 });
 
