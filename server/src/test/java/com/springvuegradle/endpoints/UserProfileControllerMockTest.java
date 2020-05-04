@@ -1,43 +1,41 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.InvalidPasswordException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.repository.*;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import org.aspectj.lang.annotation.Before;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Optional;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@Configuration
-@ComponentScan("repository")
+//@Configuration
+//@ComponentScan("repository")
+@EnableAutoConfiguration
+@AutoConfigureMockMvc(addFilters = false)
+@ContextConfiguration(classes = {UserProfileController.class})
+@WebMvcTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class UserProfileControllerMockTest {
 	
@@ -56,14 +54,14 @@ public class UserProfileControllerMockTest {
     @MockBean
     private CountryRepository countryRepository;
 
+    @Autowired
     @MockBean
     private ActivityTypeRepository activityTypeRepository;
     
-
+    @Autowired
     private MockMvc mvc;
 
-    
-    public ActivityType tempActivityType;
+    private ActivityType tempActivityType;
 
     @BeforeAll
     public void setUp(){
@@ -83,13 +81,14 @@ public class UserProfileControllerMockTest {
     	System.out.println("Printed");
     	System.out.println(this.tempActivityType);
     	System.out.println(Optional.of(tempActivityType));
+    	System.out.println("HERHE");
     	System.out.println(this.activityTypeRepository);
     	//System.out.println(activityTypeRepository.getActivityTypeByActivityTypeName("Running"));
     	System.out.println(userRepository);
     	System.out.println("Printed");
     	
     	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
-        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Walking")).thenReturn(Optional.of(null));
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Walking")).thenReturn(Optional.empty());
     	
         String createUserJson = "{\n" +
                 "  \"lastname\": \"Benson\",\n" +
@@ -124,8 +123,7 @@ public class UserProfileControllerMockTest {
                 .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
+                .andExpect(status().isNotFound());
     }
    
 
