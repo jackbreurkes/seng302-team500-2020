@@ -62,7 +62,7 @@ public class ActivitiesController {
 
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
-    public ResponseEntity<Object> putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
+    public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                               @RequestBody UpdateActivityRequest updateActivityRequest,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         // check correct authentication
@@ -109,36 +109,40 @@ public class ActivitiesController {
             throw new RecordNotFoundException("Activity does not exist");
         }else{
             Activity activity = activityToEdit.get();
-            try{
-                activity.setActivityName(updateActivityRequest.getActivityName());
-                activity.setDescription(updateActivityRequest.getDescription());
-                activity.setIsDuration(updateActivityRequest.isContinuous());
-                activity.setLocation(updateActivityRequest.getLocation());
 
-                for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-                    Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-                    if(!activityType.isPresent()){
-                        //the activity type does not exist
-                        throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-                    }else{
-                        //it does exist
-                        activity.getActivityTypes().add(activityType.get());
-                    }
+            activity.setActivityName(updateActivityRequest.getActivityName());
+            activity.setDescription(updateActivityRequest.getDescription());
+            activity.setIsDuration(updateActivityRequest.isContinuous());
+            activity.setLocation(updateActivityRequest.getLocation());
+            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+                if(!activityType.isPresent()){
+                    //the activity type does not exist
+                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+                }else{
+                    //it does exist
+                    activity.getActivityTypes().add(activityType.get());
                 }
-
-                //check if it is continuous and if not then add date and time
-                if(!updateActivityRequest.isContinuous()){
-                    activity.setStartDate(updateActivityRequest.getStartTime().toLocalDate());
-                    activity.setEndDate(updateActivityRequest.getEndTime().toLocalDate());
-
-                    activity.setStartTime(updateActivityRequest.getStartTime().toLocalTime());
-                    activity.setEndTime(updateActivityRequest.getEndTime().toLocalTime());
-                }
-            }catch (Exception e){
-                throw new InvalidRequestFieldException("Invalid request");
             }
 
-            return ResponseEntity.status(HttpStatus.OK).build();
+            //check if it is continuous and if not then add date and time
+            if(!updateActivityRequest.isContinuous()){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+                LocalDateTime startDateTime, endDateTime;
+                try{
+                    startDateTime = LocalDateTime.parse(updateActivityRequest.getStartTime(), formatter);
+                    endDateTime = LocalDateTime.parse(updateActivityRequest.getEndTime(), formatter);
+                }catch (Exception e){
+                    throw new InvalidRequestFieldException("Time format is invalid");
+                }
+
+                activity.setStartDate(startDateTime.toLocalDate());
+                activity.setEndDate(endDateTime.toLocalDate());
+
+                activity.setStartTime(startDateTime.toLocalTime());
+                activity.setEndTime(startDateTime.toLocalTime());
+            }
+            return new ActivityResponse(activityRepository.save(activity));
         }
     }
 

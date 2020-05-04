@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ActivitiesControllerTest {
+public class DeleteActivitiesControllerTest {
 
     @InjectMocks
     private ActivitiesController activitiesController;
@@ -46,9 +46,6 @@ public class ActivitiesControllerTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private ProfileRepository profileRepository;
 
     @BeforeAll
     void beforeAll(){

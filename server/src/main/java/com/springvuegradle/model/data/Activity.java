@@ -85,6 +85,14 @@ public class Activity {
     }
 
     /**
+     * Setter for activity types
+     * @param activityTypes
+     */
+    public void setActivityTypes(List<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
+    }
+
+    /**
      * @return the id associated with the activity in the database
      */
     public long getId() {
