@@ -1,5 +1,5 @@
+import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, addUserActivityType, removeUserActivityType } from '../models/user.model'
 import { loadPassportCountries } from '../models/countries.model';
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, addUserActivityType, removeUserActivityType } from '../models/user.model'
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 
@@ -118,6 +118,17 @@ export async function addNewEmail(newEmail: string, profileId: number) {
     }
 }
 
+export async function updateNewEmailList(newEmails: string[], profileId: number) {
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("user not found");
+    }
+    if (user.additional_email === undefined) {
+        user.additional_email = []
+    }
+    await updateEmailList(newEmails, profileId);
+}
+
 /**
  * Remove the specified email from the user's list of additional emails.
  */
@@ -188,6 +199,7 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
         throw new Error("Profile is not valid.");
     }
 }
+
 
 /**
  * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.

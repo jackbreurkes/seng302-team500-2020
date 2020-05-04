@@ -8,6 +8,7 @@ export default class FormValidator {
     BIO_ERROR_STRING = "Bio must be at least 8 characters.";
     DOB_ERROR_STRING = "Date of birth must be before the current date, after " + this.MIN_DATE + "and given in the format yyyy-mm-dd";
     GENDER_ERROR_STRING = "Gender must be one of: male, female, or non-binary.";
+    EMAIL_ERROR_STRING = "Email is not valid";
 
     isValidEmail(email: string) {
         // RegEx taken from https://emailregex.com/
