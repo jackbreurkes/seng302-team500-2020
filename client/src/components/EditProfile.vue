@@ -4,7 +4,7 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8" md="6">
           <v-card class="elevation-12" width="100%">
-            <v-toolbar color="primary" dark flat>
+            <v-toolbar color="primary" dark flat> 
               <v-toolbar-title>Profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
 
@@ -293,6 +293,7 @@ const Homepage = Vue.extend({
 
       // values pertaining Personal Details section
       passportCountries: [],
+      activityTypes: [],
       selectedCountry: "" as string,
       activityTypes: [],
       selectedActivity: "" as string,
@@ -344,8 +345,8 @@ const Homepage = Vue.extend({
         console.error(err);
       }
     };
-
     this.getActivityTypes();
+
 
   },
 
