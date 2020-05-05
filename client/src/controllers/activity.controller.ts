@@ -52,6 +52,31 @@ export function removeActivityType(activityType: string, createActivityRequest: 
 
 }
 
+/**
+ * combines start date, time and timezone to a string as per API spec
+ * @param createActivityRequest the activity to remove the activity type from
+ * @param dateString start date in string format
+ * @param time start time in string format
+ */
+export async function setStartDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
+  let date = new Date(dateString)
+  let offset = date.getTimezoneOffset();
+  createActivityRequest.start_time = dateString + "T" + time + ":00" + offset;
+}
+
+/**
+ * combines start date, time and timezone to a string as per API spec
+ * @param createActivityRequest the activity to remove the activity type from
+ * @param dateString end date in string format
+ * @param time end time in string format
+ */
+export async function setEndDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
+  let date = new Date(dateString)
+  let offset = date.getTimezoneOffset();
+  createActivityRequest.end_time = dateString + "T" + time + ":00" + offset;
+}
+
+
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
 export function validateActivityName(activityName: string): boolean {
   if (activityName.length >= 4 && activityName.length <= 30) {
@@ -78,22 +103,42 @@ export function validateActivityType(activityType: string, createActivityRequest
   return createActivityRequest.activity_type.includes(activityType)
 }
 
-export const INVALID_START_DATE_MESSAGE = "start date must be from today in YYYY-MM-DD format"
-export function validateStartDate(activityStartDate: string | undefined): boolean {
-  return true && validateDate(activityStartDate);
-}
-
-export function validateDate(date: string | undefined): boolean {
-  return true;
-}
-
-export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
-export function validateEndDate(startDate: string | undefined, endDate: string | undefined): boolean {
-  return validateStartDate(startDate) && validateDate(endDate) && true;
-}
-
 export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
   await createActivity(createActivityRequest, profileId);
 }
 
+export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
+export function isFutureDate(dateString: string): boolean {
+  let today = new Date().getTime()
+  let date = new Date(dateString).getTime()
+  if ((today - date) < 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
+export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
+export function isValidEndDate(startDateString: string, endDateString: string): boolean 
+{
+  if (isFutureDate(endDateString)) {
+    let endDate = new Date(endDateString).getTime();
+    let startDate = new Date(startDateString).getTime();
+    if ((startDate - endDate) < 0) {
+      return true;
+    } else {
+      return false
+    }
+  } else {
+    return false;
+  }
+}
+
+export const INVALID_TIME_MESSAGE = "please fill out completely"
+export function isValidTime(time: string): boolean {
+  if (time == "") {
+    return false;
+  } else {
+    return true;
+  } 
+}
