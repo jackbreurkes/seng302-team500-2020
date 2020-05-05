@@ -17,7 +17,7 @@ public class Activity {
 
     @Id
     @GeneratedValue
-    private long id;
+    private long activity_id;
 
     // the @NotNull annotation will automatically set the column to not null
     // if hibernate.validator.apply_to_ddl = true (true by default)
@@ -96,7 +96,7 @@ public class Activity {
      * @return the id associated with the activity in the database
      */
     public long getId() {
-        return id;
+        return activity_id;
     }
 
     /**
