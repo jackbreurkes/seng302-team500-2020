@@ -54,6 +54,7 @@ public class Activity {
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
+    @NotNull
     @ManyToMany
     @JoinTable(
             name = "activity_activity_type",
@@ -74,12 +75,13 @@ public class Activity {
      * @param location the location of the activity
      * @param creator the profile who created the activity
      */
-    public Activity(String activityName, boolean isDuration, String location, Profile creator)
+    public Activity(String activityName, boolean isDuration, String location, Profile creator, List<ActivityType> activityTypes)
     {
         this.activityName = activityName;
         this.isDuration = isDuration;
         this.location = location;
         this.creator = creator;
+        this.activityTypes = activityTypes;
     }
 
     /**
@@ -211,17 +213,9 @@ public class Activity {
     }
 
     /**
-     * @return the activity types associated with this activity
+     * @return the list of activity types associated with the activity
      */
     public List<ActivityType> getActivityTypes() {
         return activityTypes;
     }
-
-    /**
-     * @param activityTypes the activity types to associate with this activity
-     */
-    public void setActivityTypes(List<ActivityType> activityTypes) {
-        this.activityTypes = activityTypes;
-    }
-
 }
