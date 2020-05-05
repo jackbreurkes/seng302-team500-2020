@@ -68,7 +68,8 @@
                   v-for="activityType of currentUser.activities"
                   v-bind:key="activityType"
                 >{{ activityType }}</v-chip>
-              </div>insert activities here
+              </div>
+              <ActivitiesList :profileId="currentProfileId"></ActivitiesList>
             </v-card-text>
           </v-card>
         </v-col>
@@ -79,14 +80,12 @@
 
 <script lang="ts">
 import Vue from "vue";
+import ActivitiesList from "./ActivitiesList.vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId
-  // addNewEmail,
-  // deleteEmail,
-  // setPrimary
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -95,6 +94,7 @@ import { RegisterFormData } from "../controllers/register.controller";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
+  components: { ActivitiesList },
 
   // app initial state
   data: function() {
@@ -172,44 +172,6 @@ const Homepage = Vue.extend({
           this.$router.push({ name: "login" });
         });
     },
-
-    // addEmailAddress: function() {
-    //   addNewEmail(this.newEmail, this.currentProfileId)
-    //     .then(() => {
-    //       console.log("Email address added");
-    //       // refresh page after adding emails
-    //       history.go(0);
-    //     })
-    //     .catch(err => {
-    //       console.log(err);
-    //     });
-    // },
-
-    // deleteEmailAddress: function(email: string) {
-    //   deleteEmail(email, this.currentProfileId)
-    //     .then(() => {
-    //       // refresh page after deleting emails
-    //       history.go(0);
-    //     })
-    //     .catch((err: any) => {
-    //       console.log(err);
-    //       // refresh page hopefully fixing issues
-    //       history.go(0);
-    //     });
-    // },
-
-    // setPrimaryEmail: function(email: string) {
-    //   setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
-    //     .then(() => {
-    //       // refresh page after changing primary email
-    //       history.go(0);
-    //     })
-    //     .catch(err => {
-    //       console.log(err);
-    //       // refresh page to hopefully fix issues
-    //       history.go(0);
-    //     });
-    // },
 
     editProfile: function() {
       this.$router.push(`/profiles/${this.currentProfileId}/edit`);
