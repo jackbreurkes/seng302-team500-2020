@@ -116,10 +116,7 @@ class UserProfileControllerTest {
                 "  \"passports\": [\n" +
 //                "    \"United States of America\",\n" +
 //                "    \"Thailand\"\n" +
-                "  ],\n" +
-                "  \"activities\": [\n" +
-                "    \"Running\"\n" +
-                "  ]  \n" +
+                "  ]\n" +
                 "}";
 
 

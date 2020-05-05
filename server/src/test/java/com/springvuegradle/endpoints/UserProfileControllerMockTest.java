@@ -78,17 +78,44 @@ public class UserProfileControllerMockTest {
 
     @Test
     public void testCreateUserWithNonexistentActivities() throws Exception {
-    	System.out.println("Printed");
-    	System.out.println(this.tempActivityType);
-    	System.out.println(Optional.of(tempActivityType));
-    	System.out.println("HERHE");
-    	System.out.println(this.activityTypeRepository);
-    	//System.out.println(activityTypeRepository.getActivityTypeByActivityTypeName("Running"));
-    	System.out.println(userRepository);
-    	System.out.println("Printed");
     	
     	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
         Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Walking")).thenReturn(Optional.empty());
+    	
+        String createUserJson = "{\n" +
+            "  \"lastname\": \"Benson\",\n" +
+            "  \"firstname\": \"Maurice\",\n" +
+            "  \"middlename\": \"Jack\",\n" +
+            "  \"nickname\": \"JackyTest\",\n" +
+            "  \"primary_email\": \"111@google.com\",\n" +
+            "  \"additional_email\": [\n" +
+            "    \"jacky@xtra.co.nz\",\n" +
+            "    \"jacky@msn.com\"\n" +
+            "    ],\n" +
+            "  \"bio\": \"Jacky loves to ride his bike on crazy mountains.\",\n" +
+            "  \"date_of_birth\": \"1985-12-20\",\n" +
+            "  \"gender\": \"male\",\n" +
+            "  \"password\": \"aaaaaaaa\",\n" +
+            "  \"fitness\": 4,\n" +
+            "  \"activities\": [\n" +
+            "    \"Running\"\n" +
+            "  ]  \n" +
+            "}";
+        
+        mvc.perform(MockMvcRequestBuilders
+                .post("/profiles")
+                .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+   
+    @Test
+    public void testCreateUserWithOneActivity() throws Exception {
+
+    	ActivityType running = new ActivityType("Running");
+    	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
     	
         String createUserJson = "{\n" +
                 "  \"lastname\": \"Benson\",\n" +
@@ -105,19 +132,95 @@ public class UserProfileControllerMockTest {
                 "  \"gender\": \"male\",\n" +
                 "  \"password\": \"aaaaaaaa\",\n" +
                 "  \"fitness\": 4,\n" +
-                "  \"passports\": [\n" +
-//                "    \"United States of America\",\n" +
-//                "    \"Thailand\"\n" +
-                "  ],\n" +
                 "  \"activities\": [\n" +
-                "    \"Walking\"\n" +
+                "    \"Running\"\n" +
+                "]  \n" +
+                "}";
+        
+        System.out.println("Here...");
+        System.out.println(activityTypeRepository.getActivityTypeByActivityTypeName("Running"));
+        
+        mvc.perform(MockMvcRequestBuilders
+                .post("/profiles")
+                .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void testCreateUserWithMultipleActivities() throws Exception {
+
+    	ActivityType running = new ActivityType("Running");
+    	ActivityType cycling = new ActivityType("Cycling");
+    	ActivityType swimming = new ActivityType("Swimming");
+    	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Cycling")).thenReturn(Optional.of(cycling));
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Swimming")).thenReturn(Optional.of(swimming));
+    	
+        String createUserJson = "{\n" +
+                "  \"lastname\": \"Benson\",\n" +
+                "  \"firstname\": \"Maurice\",\n" +
+                "  \"middlename\": \"Jack\",\n" +
+                "  \"nickname\": \"JackyTest\",\n" +
+                "  \"primary_email\": \"111@google.com\",\n" +
+                "  \"additional_email\": [\n" +
+                "    \"jacky@xtra.co.nz\",\n" +
+                "    \"jacky@msn.com\"\n" +
+                "    ],\n" +
+                "  \"bio\": \"Jacky loves to ride his bike on crazy mountains.\",\n" +
+                "  \"date_of_birth\": \"1985-12-20\",\n" +
+                "  \"gender\": \"male\",\n" +
+                "  \"password\": \"aaaaaaaa\",\n" +
+                "  \"fitness\": 4,\n" +
+                "  \"activities\": [\n" +
+                "    \"Running\",\n" +
+                "    \"Cycling\",\n" +
+                "    \"Swimming\"\n" +
                 "  ]  \n" +
                 "}";
         
+        mvc.perform(MockMvcRequestBuilders
+                .post("/profiles")
+                .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void testCreateUserWithMultipleActivitiesAndOneNonExistent() throws Exception {
+
+    	ActivityType running = new ActivityType("Running");
+    	ActivityType cycling = new ActivityType("Cycling");
+    	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Cycling")).thenReturn(Optional.of(cycling));
+        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Swimming")).thenReturn(Optional.empty());
+    	
+        String createUserJson = "{\n" +
+                "  \"lastname\": \"Benson\",\n" +
+                "  \"firstname\": \"Maurice\",\n" +
+                "  \"middlename\": \"Jack\",\n" +
+                "  \"nickname\": \"JackyTest\",\n" +
+                "  \"primary_email\": \"111@google.com\",\n" +
+                "  \"additional_email\": [\n" +
+                "    \"jacky@xtra.co.nz\",\n" +
+                "    \"jacky@msn.com\"\n" +
+                "    ],\n" +
+                "  \"bio\": \"Jacky loves to ride his bike on crazy mountains.\",\n" +
+                "  \"date_of_birth\": \"1985-12-20\",\n" +
+                "  \"gender\": \"male\",\n" +
+                "  \"password\": \"aaaaaaaa\",\n" +
+                "  \"fitness\": 4,\n" +
+                "  \"activities\": [\n" +
+                "    \"Running\",\n" +
+                "    \"Cycling\",\n" +
+                "    \"Swimming\"\n" +
+                "  ]  \n" +
+                "}";
         
-        System.out.println(activityTypeRepository.getActivityTypeByActivityTypeName("Running"));
-
-
         mvc.perform(MockMvcRequestBuilders
                 .post("/profiles")
                 .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +228,6 @@ public class UserProfileControllerMockTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
-   
 
 
 }
