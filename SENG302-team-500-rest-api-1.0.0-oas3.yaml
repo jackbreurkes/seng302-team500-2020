@@ -122,6 +122,24 @@ components:
       description: A field required by the request was not found
 
 paths:
+  '/activity-types':
+    get:
+      tags:
+        - activities
+      summary: get all activity types
+      responses:
+        '200':
+          description: list of activity types (unordered)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["running", "biking", "walking", "swimming"]
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      
   /login:
     post:
       tags:
