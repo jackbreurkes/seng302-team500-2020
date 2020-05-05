@@ -37,10 +37,6 @@
                   >{{ country }}</v-chip>
                 </div>
 
-                <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="createActivityClicked">Create Activity</v-btn>
-
                 <p>Primary email: {{ currentUser.primary_email }}</p>
                 <br />
                 <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
@@ -48,8 +44,7 @@
                   <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
                 </ul>
                 <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="logoutButtonClicked">Logout</v-btn>
+                <v-btn v-if="currentProfileId == currentSessionUser" @click="editProfile">Edit Profile</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
             </v-card-text>
           </v-card>
@@ -82,11 +77,11 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
 import {
-  logoutCurrentUser,
-  fetchProfileWithId
-  // addNewEmail,
-  // deleteEmail,
-  // setPrimary
+    logoutCurrentUser,
+    fetchProfileWithId, fetchCurrentUser
+    // addNewEmail,
+    // deleteEmail,
+    // setPrimary
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -102,6 +97,7 @@ const Homepage = Vue.extend({
     return {
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
+      currentSessionUser: NaN as number,
       // newEmail: "",
       // email: "",
       editedUser: {} as UserApiFormat,
@@ -150,7 +146,10 @@ const Homepage = Vue.extend({
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
-
+    fetchCurrentUser().then((user) => {
+        this.currentSessionUser = user.profile_id!;
+        }
+    );
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;

@@ -55,6 +55,7 @@
         fetchCurrentUser().then((user) => {
           this.isLoggedIn = true;
           this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+
         })
         .catch(() => {
           this.isLoggedIn = false;
