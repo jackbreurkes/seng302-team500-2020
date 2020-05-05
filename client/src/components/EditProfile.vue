@@ -384,7 +384,9 @@ const Homepage = Vue.extend({
       if (!this.editedUser.activities) {
         this.editedUser.activities = []
       }
-      updateActivityTypes(this.editedUser.activities, this.currentProfileId);
+      updateActivityTypes(this.editedUser.activities, this.currentProfileId)
+      .then(() => {this.returnToProfile()})
+      .catch(() => {alert("Unable to update user.");});
     },
 
     removeActivityType:function(activitySelected: string){

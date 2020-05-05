@@ -229,10 +229,11 @@ export async function updateActivityTypes(selectedActivities: string[], profileI
     let res = await instance.put("profiles/" + profileId + "/activity-types", activityDict, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
-      }, data: activityDict
+      }//, data: activityDict
     });
   } catch (e) {
     throw new Error(e.response.data.error)
+    
   }
 }
 
@@ -288,7 +289,7 @@ export async function addEmail(email: string, profileId: number) {
  */
 export async function updatePrimaryEmail(primaryEmail: string, profileId: number) {
   try { // TODO lots of busines logic in here
-    let user = await getProfileById(profileId);
+    let user = await getProfileById(profileId); 
     let emails = user.additional_email;
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {

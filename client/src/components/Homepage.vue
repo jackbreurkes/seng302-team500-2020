@@ -38,9 +38,8 @@
                 </div>
 
                 <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
-
+                <br />
                 <p>Primary email: {{ currentUser.primary_email }}</p>
                 <br />
                 <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
