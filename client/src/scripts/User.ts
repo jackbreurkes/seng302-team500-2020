@@ -12,5 +12,6 @@ export interface UserApiFormat {
     passports?: string[],
     additional_email?: string[],
     activities?: string[],
-    password?: string
+    password?: string,
+    permission_level?: number
 }
