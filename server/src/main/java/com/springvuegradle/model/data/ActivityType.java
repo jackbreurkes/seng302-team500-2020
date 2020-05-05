@@ -22,7 +22,7 @@ public class ActivityType {
     /**
      * no arg constructor required by JPA
      */
-    protected ActivityType() {}
+    public ActivityType() {}
 
     /**
      * creates a new activity type with the given name.

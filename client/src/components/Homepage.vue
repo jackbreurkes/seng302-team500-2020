@@ -1,41 +1,74 @@
 <template>
   <div>
     <v-container class="fill-height" fluid>
-      <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="4">
-          <v-card class="elevation-12" width="100%">
+      <v-row align="top" justify="center">
+        <v-col sm="12" md="8" lg="4">
+          <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-              <div v-if="!editing">
-                <p>First Name: {{ currentUser.firstname }}</p>
+                <h3>Name</h3>
+                <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
+
+                <h3>Bio</h3>
+                <p>{{ currentUser.bio }}</p>
                 <br />
-                <p>Middle name: {{currentUser.middlename}}</p>
+
+                <h3>Info</h3>
+                <p>Born on {{ currentUser.date_of_birth }}</p>
                 <br />
-                <p>Last Name: {{ currentUser.lastname }}</p>
+                <p>Identifies as {{ currentUser.gender }}</p>
                 <br />
-                <p>Nickname: {{ currentUser.nickname }}</p>
+
+                <div v-if="currentUser.fitness">
+                  <p>Fitness level {{ currentUser.fitness }}</p>
+                  <br />
+                </div>
+                <p>Email: {{ currentUser.primary_email }}</p>
                 <br />
-                <p>Date of Birth: {{ currentUser.date_of_birth }}</p>
+
+                <div v-if="currentUser.passports">
+                  <h3>Passport Countries</h3>
+                  <v-chip
+                    class="mr-2 mb-2"
+                    v-for="country of currentUser.passports"
+                    v-bind:key="country"
+                  >{{ country }}</v-chip>
+                </div>
+
                 <br />
-                <p>Bio: {{ currentUser.bio }}</p>
-                <br />
-                <p>Gender: {{ currentUser.gender }}</p>
-                <br />
-                <br />
+                <v-btn @click="editProfile">Edit Profile</v-btn>
+                <v-btn @click="createActivityClicked">Create Activity</v-btn>
 
                 <p>Primary email: {{ currentUser.primary_email }}</p>
                 <br />
                 <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
                 <ul>
-                  <li v-for="email in currentUser.additional_email" :key="email"> {{ email }}</li>
+                  <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
                 </ul>
                 <br />
                 <v-btn @click="editProfile">Edit Profile</v-btn>
                 <v-btn @click="logoutButtonClicked">Logout</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
-              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col sm="12" md="8" lg="8">
+          <v-card class="elevation-12">
+            <v-toolbar color="primary" dark flat>
+              <v-toolbar-title>Activities</v-toolbar-title>
+            </v-toolbar>
+
+            <v-card-text>
+              <div v-if="currentUser.activities">
+                <h3>Interests</h3>
+                <v-chip
+                  class="mr-2 mb-2"
+                  v-for="activityType of currentUser.activities"
+                  v-bind:key="activityType"
+                >{{ activityType }}</v-chip>
+              </div>insert activities here
             </v-card-text>
           </v-card>
         </v-col>
@@ -50,7 +83,7 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
-  fetchProfileWithId,
+  fetchProfileWithId
   // addNewEmail,
   // deleteEmail,
   // setPrimary
@@ -71,7 +104,6 @@ const Homepage = Vue.extend({
       currentUser: {} as UserApiFormat,
       // newEmail: "",
       // email: "",
-      editing: false,
       editedUser: {} as UserApiFormat,
       formValidator: new FormValidator(),
       inputRules: {
@@ -129,7 +161,6 @@ const Homepage = Vue.extend({
   },
 
   methods: {
-
     //click login button
     logoutButtonClicked: function() {
       logoutCurrentUser()
