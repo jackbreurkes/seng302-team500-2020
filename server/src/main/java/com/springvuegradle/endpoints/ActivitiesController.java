@@ -293,4 +293,37 @@ public class ActivitiesController {
         return new ActivityResponse(optionalActivity.get());
     }
 
+    /**
+     * returns the list of all activities created by a given creator
+     * @param profileId path variable for the creator's id
+     * @param request the http servlet request associated with this request
+     * @return a list of activity types
+     * @throws UserNotAuthenticatedException if the user is not authenticated
+     * @throws RecordNotFoundException if the creator is not found
+     */
+    @GetMapping("/profiles/{profileId}/activities")
+    @CrossOrigin
+    public List<ActivityResponse> getActivity(@PathVariable("profileId") long profileId,
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+        //check auth
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        if(authId == null){
+            //not authenticated
+            throw new UserNotAuthenticatedException("User is not authenticated");
+        }
+
+        Optional<Profile> optionalCreator = profileRepository.findById(profileId);
+        if (optionalCreator.isEmpty()) {
+            throw new RecordNotFoundException("target creator does not exist");
+        }
+
+        List<Activity> activities = activityRepository.findActivitiesByCreator(optionalCreator.get());
+        List<ActivityResponse> responseActivities = new ArrayList<>();
+        for (Activity activity : activities) {
+            responseActivities.add(new ActivityResponse(activity));
+        }
+
+        return responseActivities;
+    }
+
 }
