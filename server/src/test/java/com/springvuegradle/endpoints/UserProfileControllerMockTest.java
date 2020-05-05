@@ -72,7 +72,6 @@ public class UserProfileControllerMockTest {
 
     @BeforeEach
     public void beforeEach(){
-        //Create a new activity type called "Running"
     	this.userProfileController = new UserProfileController();
     }
 
@@ -98,7 +97,7 @@ public class UserProfileControllerMockTest {
             "  \"password\": \"aaaaaaaa\",\n" +
             "  \"fitness\": 4,\n" +
             "  \"activities\": [\n" +
-            "    \"Running\"\n" +
+            "    \"Walking\"\n" +
             "  ]  \n" +
             "}";
         
@@ -111,8 +110,9 @@ public class UserProfileControllerMockTest {
     }
    
     @Test
-    public void testCreateUserWithOneActivity() throws Exception {
+    public void testCreateUserWithOneActivity() throws Exception {	// Test works when adding activity type in database to user's profile
 
+    	// Create an activity to be "stored in the database"
     	ActivityType running = new ActivityType("Running");
     	//mock the return of activityTypeRepository.getActivityTypeByActivityTypeName
         Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
@@ -137,9 +137,6 @@ public class UserProfileControllerMockTest {
                 "]  \n" +
                 "}";
         
-        System.out.println("Here...");
-        System.out.println(activityTypeRepository.getActivityTypeByActivityTypeName("Running"));
-        
         mvc.perform(MockMvcRequestBuilders
                 .post("/profiles")
                 .content(createUserJson).contentType(MediaType.APPLICATION_JSON)
@@ -149,7 +146,7 @@ public class UserProfileControllerMockTest {
     }
     
     @Test
-    public void testCreateUserWithMultipleActivities() throws Exception {
+    public void testCreateUserWithMultipleActivities() throws Exception {	// Test works for multiple activities being adding, all of which exist in the database
 
     	ActivityType running = new ActivityType("Running");
     	ActivityType cycling = new ActivityType("Cycling");
@@ -190,7 +187,7 @@ public class UserProfileControllerMockTest {
     }
     
     @Test
-    public void testCreateUserWithMultipleActivitiesAndOneNonExistent() throws Exception {
+    public void testCreateUserWithMultipleActivitiesAndOneNonExistent() throws Exception {	// Test with multiple activity types where only one does not exist in database
 
     	ActivityType running = new ActivityType("Running");
     	ActivityType cycling = new ActivityType("Cycling");
