@@ -57,6 +57,7 @@
                   v-model="selectedActivity"
                   @input="addActivityType()"
                 ></v-autocomplete>
+                <v-btn id="updateActivities"  @click="updateActivityType()">Save activity choices</v-btn>
 
 
                 <v-divider></v-divider>
@@ -236,6 +237,7 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import {getActivityTypes} from "../models/activityTypes.model"
+import {updateActivityTypes} from "../models/user.model"
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -375,7 +377,14 @@ const Homepage = Vue.extend({
       if (!this.editedUser.activities) {
         this.editedUser.activities = []
       }
+      
       this.editedUser.activities.push(this.selectedActivity);
+    },
+    updateActivityType: function(){
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      updateActivityTypes(this.editedUser.activities, this.currentProfileId);
     },
 
     removeActivityType:function(activitySelected: string){
@@ -413,6 +422,7 @@ const Homepage = Vue.extend({
       if (
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
+        
         persistChangesToProfile(this.editedUser, this.currentProfileId)
         .then(() => {this.returnToProfile()})
         .catch(() => {alert("Unable to update user.");});

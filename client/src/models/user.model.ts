@@ -223,6 +223,25 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
  * Register the specified email to the target profile by adding it to the list of additional emails.
  * @param email email to register to user
  */
+export async function updateActivityTypes(selectedActivities: string[], profileId: any) {
+  try {
+    let activityDict = {"activities": selectedActivities}
+    let res = await instance.put("profiles/" + profileId + "/activity-types", activityDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: activityDict
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
+
+
+
+/**
+ * Register the specified email to the target profile by adding it to the list of additional emails.
+ * @param email email to register to user
+ */
 export async function updateEmailList(newEmails: string[], profileId: number) {
   try { // TODO there should be no business logic in the model class
     let user = await getProfileById(profileId);
