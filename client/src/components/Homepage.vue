@@ -211,7 +211,7 @@ const Homepage = Vue.extend({
     // },
 
     editProfile: function() {
-      this.$router.push(`/profiles/${this.currentProfileId}/edit`);
+        this.$router.push(`/profiles/${this.currentProfileId}/edit`);
     },
 
     createActivityClicked: function() {
