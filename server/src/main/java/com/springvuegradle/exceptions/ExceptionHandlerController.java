@@ -1,4 +1,4 @@
-package com.springvuegradle.endpoints;
+package com.springvuegradle.exceptions;
 
 import com.springvuegradle.exceptions.InvalidPasswordException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
