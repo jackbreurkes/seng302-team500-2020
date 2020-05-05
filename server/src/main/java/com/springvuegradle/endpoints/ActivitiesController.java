@@ -273,4 +273,24 @@ public class ActivitiesController {
         return new ActivityResponse(activityRepository.save(activity));
     }
 
+    @GetMapping("/profiles/{profileId}/activities/{activityId}")
+    @CrossOrigin
+    public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+        //No body needed as it is just a get
+        //check auth
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        if(authId == null){
+            //not authenticated
+            throw new UserNotAuthenticatedException("User is not authenticated");
+        }
+
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if(!optionalActivity.isPresent()){
+            throw new RecordNotFoundException("Activity doesnt exist");
+        }
+
+        return new ActivityResponse(optionalActivity.get());
+    }
+
 }
