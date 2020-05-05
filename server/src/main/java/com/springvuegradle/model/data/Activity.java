@@ -66,7 +66,7 @@ public class Activity {
     /**
      * no arg constructor required by JPA
      */
-    protected Activity() {}
+    public Activity() {}
 
     /**
      * Create an activity with required and optional fields
@@ -81,6 +81,14 @@ public class Activity {
         this.isDuration = isDuration;
         this.location = location;
         this.creator = creator;
+        this.activityTypes = activityTypes;
+    }
+
+    /**
+     * Setter for activity types
+     * @param activityTypes
+     */
+    public void setActivityTypes(List<ActivityType> activityTypes) {
         this.activityTypes = activityTypes;
     }
 

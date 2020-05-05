@@ -11,6 +11,13 @@ import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.UpdateActivityRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +47,10 @@ import java.util.Optional;
 public class ActivitiesController {
 
     @Autowired
-    private UserRepository userRepository;
+    private ProfileRepository profileRepository;
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private ActivityRepository activityRepository;
@@ -51,7 +58,120 @@ public class ActivitiesController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
-    private static final int ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private int ADMIN_USER_MINIMUM_PERMISSION = 120;
+
+    @PutMapping("/profiles/{profileId}/activities/{activityId}")
+    @CrossOrigin
+    public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
+                                              @RequestBody UpdateActivityRequest updateActivityRequest,
+                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+        // check correct authentication
+        Long authId = (Long) request.getAttribute("authenticatedid");
+
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        }
+        //now user is either correct or an admin
+        //then update fields
+        Optional<Activity> activityToEdit = activityRepository.findById(activityId);
+
+        //Validate request
+        // validate request body
+        if (updateActivityRequest.getActivityName() == null) {
+            throw new InvalidRequestFieldException("missing activity_name field");
+        }
+        if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
+            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
+        }
+        if (updateActivityRequest.getActivityTypes() == null) {
+            throw new InvalidRequestFieldException("missing activity_type field");
+        }
+        if (updateActivityRequest.getActivityTypes().size() == 0) {
+            throw new InvalidRequestFieldException("must have at least one activity_type");
+        }
+        if (updateActivityRequest.getDescription() != null && updateActivityRequest.getDescription().length() < 8) {
+            throw new InvalidRequestFieldException("activity description must be at least 8 characters");
+        }
+        if (updateActivityRequest.getLocation() == null) {
+            throw new InvalidRequestFieldException("missing location field");
+        }
+        if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
+            //checking if the continuous field is there
+            throw new InvalidRequestFieldException("Missing continuous field");
+        }
+
+
+        if(!activityToEdit.isPresent()){
+            throw new RecordNotFoundException("Activity does not exist");
+        }else{
+            Activity activity = activityToEdit.get();
+
+            activity.setActivityName(updateActivityRequest.getActivityName());
+            activity.setDescription(updateActivityRequest.getDescription());
+            activity.setIsDuration(updateActivityRequest.isContinuous());
+            activity.setLocation(updateActivityRequest.getLocation());
+            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+                if(!activityType.isPresent()){
+                    //the activity type does not exist
+                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+                }else{
+                    //it does exist
+                    activity.getActivityTypes().add(activityType.get());
+                }
+            }
+
+            //check if it is continuous and if not then add date and time
+            if(!updateActivityRequest.isContinuous()){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+                LocalDateTime startDateTime, endDateTime;
+                try{
+                    startDateTime = LocalDateTime.parse(updateActivityRequest.getStartTime(), formatter);
+                    endDateTime = LocalDateTime.parse(updateActivityRequest.getEndTime(), formatter);
+                }catch (Exception e){
+                    throw new InvalidRequestFieldException("Time format is invalid");
+                }
+
+                activity.setStartDate(startDateTime.toLocalDate());
+                activity.setEndDate(endDateTime.toLocalDate());
+
+                activity.setStartTime(startDateTime.toLocalTime());
+                activity.setEndTime(startDateTime.toLocalTime());
+            }
+            return new ActivityResponse(activityRepository.save(activity));
+        }
+    }
+
+
+    @DeleteMapping("/profiles/{profileId}/activities/{activityId}")
+    @CrossOrigin
+    public ResponseEntity<Object> deleteActivity(@PathVariable("profileId") long profileId,
+                                                 @PathVariable("activityId") long activityId,
+                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+        //authenticate
+        Long authId = (Long) request.getAttribute("authenticatedid");
+
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        }
+
+        Optional<Activity> activityToDelete = activityRepository.findById(activityId);
+        //check if activity exists
+        if(!activityToDelete.isPresent()){
+            throw new RecordNotFoundException("Activity Does not exist");
+        }
+
+        activityRepository.delete(activityToDelete.get());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
     /**
      * endpoint function for POST /profiles/{profileId}/activities
