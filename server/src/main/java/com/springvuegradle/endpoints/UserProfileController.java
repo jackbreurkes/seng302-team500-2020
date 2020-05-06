@@ -12,7 +12,9 @@ import javax.validation.Valid;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Location;
 import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.requests.LocationRequest;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -76,30 +78,37 @@ public class UserProfileController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
+    @Autowired
+    private LocationRepository locationRepository;
+
+    private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
+
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{profileId}")
     @CrossOrigin
     public Object updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("id") long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException {
+        // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        int permissionLevel = (Integer) httpRequest.getAttribute("permissionLevel");
-        if (authId == null) {
-        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
 
-        } else if (permissionLevel < 126 && !authId.equals(id)) {
-            return ResponseEntity.status(403).body(new ErrorResponse("Insufficient permission"));
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
-        Optional<Profile> optionalProfile = profileRepository.findById(id);
+        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
         if (optionalProfile.isPresent()) {
 
             try {
                 Profile profile = optionalProfile.get();
-                request.updateExistingProfile(profile, profileRepository, countryRepository);
+                request.updateExistingProfile(profile, profileRepository, countryRepository, locationRepository);
                 return ResponseEntity.status(HttpStatus.OK).body(new ProfileResponse(profile, emailRepository));
             } catch (InvalidRequestFieldException ex) {
                 return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
@@ -118,13 +127,58 @@ public class UserProfileController {
 
         User user = null;
         try {
-            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository, activityTypeRepository);
+            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository, activityTypeRepository, locationRepository);
         } catch (ParseException ex) {
             return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
         }
         // an InvalidRequestFieldException will be caught by ExceptionHandlerController
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ProfileCreatedResponse(user.getUserId()));
+    }
+
+
+//    @PutMapping("/profiles/{profileId}/location")
+//    @CrossOrigin
+//    public void updateLocation(@PathVariable("profileId") Long profileId, @RequestBody LocationRequest locationRequest, HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+//        // check correct authentication
+//        Long authId = (Long) request.getAttribute("authenticatedid");
+//
+//        Optional<User> editingUser = userRepository.findById(authId);
+//
+//        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+//            //here we check permission level and update the password accordingly
+//            //assuming failure without admin
+//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+//        }
+//
+//        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
+//            throw new InvalidRequestFieldException("location must have a city and a country");
+//        }
+//
+//        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+//        if (optionalProfile.isEmpty()) {
+//            throw new RecordNotFoundException("no profile with given ID found");
+//        }
+//        Profile profile = optionalProfile.get();
+//
+//        Location location = addLocationIfNotExisting(locationRequest.getLocation());
+//        profile.setLocation(location);
+//        profileRepository.save(profile);
+//    }
+
+
+    /**
+     * adds a location to the database if it doesn't exist, otherwise returns the existing value.
+     * @param location the location to find a match for
+     * @return a location from the database
+     */
+    private Location addLocationIfNotExisting(Location location) {
+        Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        return locationRepository.save(location);
     }
 
 
