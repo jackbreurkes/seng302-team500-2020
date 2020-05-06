@@ -44,7 +44,7 @@
                   <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
                 </ul>
                 <br />
-                <v-btn v-if="currentProfileId == currentSessionUser" @click="editProfile">Edit Profile</v-btn>
+                <v-btn v-if="currentProfileId === currentSessionUser.profile_id || currentSessionUser.permission_level >= 126" @click="editProfile">Edit Profile</v-btn>
                 <v-btn @click="createActivityClicked">Create Activity</v-btn>
             </v-card-text>
           </v-card>
@@ -97,7 +97,7 @@ const Homepage = Vue.extend({
     return {
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
-      currentSessionUser: NaN as number,
+      currentSessionUser: {} as UserApiFormat,
       // newEmail: "",
       // email: "",
       editedUser: {} as UserApiFormat,
@@ -147,7 +147,7 @@ const Homepage = Vue.extend({
     }
     this.currentProfileId = profileId;
     fetchCurrentUser().then((user) => {
-        this.currentSessionUser = user.profile_id!;
+        this.currentSessionUser = user!;
         }
     );
     fetchProfileWithId(profileId)

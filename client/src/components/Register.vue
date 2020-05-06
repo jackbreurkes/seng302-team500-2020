@@ -117,6 +117,7 @@ const Register = Vue.extend({
         bio: this.bio,
         dateOfBirth: this.dateOfBirth,
         gender: this.gender
+
       }
       registerUser(formData)
         .then((user) => {

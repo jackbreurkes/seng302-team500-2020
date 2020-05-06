@@ -162,6 +162,8 @@
                 </v-card-actions>
                 <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
               <v-form>
+                <br/>
+                <p>Change your password:</p>
                   <v-text-field
                     v-model="oldPassword"
                     label="old password"
@@ -212,7 +214,7 @@ import {
   // isValidEmail
   getAvailablePassportCountries,
   addPassportCountry,
-  deletePassportCountry
+  deletePassportCountry, fetchCurrentUser
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -229,6 +231,7 @@ const Homepage = Vue.extend({
       titleBarUserName: "",
       currentProfileId: NaN as number,
       editedUser: {} as UserApiFormat,
+      currentSessionUser: {} as UserApiFormat,
       inputRules: {
         lastnameRules: [
           (v: string) =>
@@ -291,9 +294,17 @@ const Homepage = Vue.extend({
    */
   created() {
     // load profile info
+
+    // Fetches the current user
+    fetchCurrentUser().then(user => {
+      this.currentSessionUser = user!;
+    })
     const profileId: number = parseInt(this.$route.params.profileId);
     if (isNaN(profileId)) {  // profile id in route not a number
       this.$router.push({ name: "login" });
+    } else if (this.currentSessionUser.permission_level! < 126 && profileId != this.currentSessionUser.profile_id) {
+      // Checking to see if current session user has the right permission_level or is the original profile
+      this.$router.push(`/profiles/${profileId}`);
     }
     this.currentProfileId = profileId;
     fetchProfileWithId(profileId)
