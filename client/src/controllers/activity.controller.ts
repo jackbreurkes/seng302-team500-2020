@@ -96,6 +96,24 @@ export async function createNewActivity(createActivityRequest: CreateActivityReq
   await activityModel.createActivity(createActivityRequest, profileId);
 }
 
+/**
+ * returns the activities created by a given creator.
+ * @param creatorId the profileId of the creator of the activities
+ */
 export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
+}
+
+/**
+ * returns a reader-friendly description of the duration of a duration activity.
+ * @param startTime the ISO datetime string representing the start time
+ * @param endTime the ISO datetime string representing the end time
+ */
+export function descripeDurationTimeFrame(startTime: string, endTime: string) {
+  let start = new Date(startTime);
+  let end = new Date(endTime);
+  const dtf = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
+  });
+  return "from " + dtf.format(start) + " to " + dtf.format(end);
 }
