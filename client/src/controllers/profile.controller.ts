@@ -1,4 +1,4 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes } from '../models/user.model'
+import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes } from '../models/user.model'
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
@@ -85,6 +85,10 @@ export async function fetchCurrentUser(force = false) {
  */
 export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
+}
+
+export function getPermissionLevel(): number {
+    return getMyPermissionLevel();
 }
 
 
