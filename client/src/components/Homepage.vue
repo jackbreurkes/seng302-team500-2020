@@ -92,7 +92,6 @@ import {
   logoutCurrentUser,
   fetchProfileWithId,
   getPermissionLevel,
-    fetchCurrentUser
   // addNewEmail,
   // deleteEmail,
   // setPrimary
@@ -112,7 +111,6 @@ const Homepage = Vue.extend({
     return {
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
-      currentSessionUser: {} as UserApiFormat,
       currentlyHasAuthority: false as boolean,
       // newEmail: "",
       // email: "",
@@ -176,10 +174,6 @@ const Homepage = Vue.extend({
       this.currentlyHasAuthority = true;
     }
 
-    fetchCurrentUser().then((user) => {
-        this.currentSessionUser = user!;
-        }
-    );
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;
