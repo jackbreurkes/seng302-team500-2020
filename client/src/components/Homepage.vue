@@ -91,7 +91,8 @@ import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId,
-  getPermissionLevel
+  getPermissionLevel,
+    fetchCurrentUser
   // addNewEmail,
   // deleteEmail,
   // setPrimary
