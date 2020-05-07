@@ -6,7 +6,7 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>CreateActivity:</v-toolbar-title>
+                <v-toolbar-title>Create Activity</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-text-field
@@ -234,12 +234,12 @@ const CreateActivity = Vue.extend({
       this.$router.push({ name: "profilePage" });
     },
 
-    createButtonClicked() {
-      activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
-      activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
+    createButtonClicked: async function() {
+      await activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
+      await activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
       activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
           .then(() => {
-            history.go(0);
+            this.$router.push({ name: "profilePage" });
           })
           .catch(() => {
             alert(`
