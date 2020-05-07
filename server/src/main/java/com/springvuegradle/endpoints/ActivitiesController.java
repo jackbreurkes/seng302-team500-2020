@@ -303,7 +303,7 @@ public class ActivitiesController {
      */
     @GetMapping("/profiles/{profileId}/activities")
     @CrossOrigin
-    public List<ActivityResponse> getActivity(@PathVariable("profileId") long profileId,
+    public List<ActivityResponse> getActivitiesByCreator(@PathVariable("profileId") long profileId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         //check auth
         Long authId = (Long) request.getAttribute("authenticatedid");
