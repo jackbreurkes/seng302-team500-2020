@@ -177,41 +177,42 @@ test.skip("expect persistChangesToProfile to persist changes when given a valid 
 // --------- ACTIVITY TYPES ---------- //
 test('expect activity type list to be updated',
     async () => {
-        userModel.addUserActivityType = jest.fn();
-        userModel.getCurrentUser = jest.fn(() => {
-            var user = {"activities": []} as UserApiFormat;
+        var user = {"profile_id": 0, "activities": []} as UserApiFormat;
+        userModel.saveActivityTypes = jest.fn();
+        userModel.getProfileById = jest.fn(() => {
             return user;
         });
 
-        await addActivityType("running");
-        expect(userModel.addUserActivityType.mock.calls[0][0]).toBe("running");
+        await addActivityType("running", 0);
+        expect(userModel.saveActivityTypes.mock.calls[0][0]).toBe(user);
     }
 )
 
-test('expect no user found when updating activity types with null user',
+test.skip('expect no user found when updating activity types with null user',
     async () => {
-        userModel.addUserActivityType = jest.fn();
-        userModel.getCurrentUser = jest.fn(() => {return null});
-
-        //expect(await addActivityType("running")).toThrowError("No active user found.");
+        userModel.saveActivityTypes = jest.fn();
+        userModel.getProfileById = jest.fn(() => {
+            return null;
+        });
 
         try {
-            await addActivityType("running")
+            await addActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("No active user found.");
         }
     })
 
-    test('expect no user found when deleting activity types from null user',
+// TODO Look into whether or not to test with null user as equivalent in practice would result in an error thrown off a 404 response (?)
+test.skip('expect no user found when deleting activity types from null user',
     async () => {
-        userModel.removeUserActivityType = jest.fn();
-        userModel.getCurrentUser = jest.fn(() => {return null});
-
-        //expect(await addActivityType("running")).toThrowError("No active user found.");
+        userModel.saveActivityTypes = jest.fn();
+        userModel.getProfileById = jest.fn(() => {
+            return null;
+        });
 
         try {
-            await removeActivityType("running")
+            await removeActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("No active user found.");
@@ -219,45 +220,61 @@ test('expect no user found when updating activity types with null user',
     })
 
 test('expect no activity type error when user has no activity type property',
-async () => {
-    userModel.removeUserActivityType = jest.fn();
-    userModel.getCurrentUser = jest.fn(() => {
-        var user = {} as UserApiFormat;
-        return user;
-    });
+    async () => {
+        userModel.saveActivityTypes = jest.fn();
+        userModel.getProfileById = jest.fn(() => {
+            var user = {"profile_id": 0} as UserApiFormat;
+            return user;
+        });
 
-    try {
-        await removeActivityType("running")
-        expect(1).toEqual(2);
-    } catch (error) {
-        expect(error.message).toEqual("User has no activity types associated with their profile.");
-    }
-})
+        try {
+            await removeActivityType("running", 0)
+            expect(1).toEqual(2);
+        } catch (error) {
+            expect(error.message).toEqual("User has no activity types associated with their profile.");
+        }
+    })
 
 test('expect no activity type error when user has activity type list empty',
-async () => {
-    userModel.removeUserActivityType = jest.fn();
-    userModel.getCurrentUser = jest.fn(() => {
-        var user = {"activities": []} as UserApiFormat;
-        return user;
-    });
+    async () => {
+        userModel.saveActivityTypes = jest.fn();
+        userModel.getProfileById = jest.fn(() => {
+            var user = {"profile_id": 0, "activities": []} as UserApiFormat;
+            return user;
+        });
 
-    try {
-        await removeActivityType("running")
-        expect(1).toEqual(2);
-    } catch (error) {
-        expect(error.message).toEqual("User has no activity types associated with their profile.");
-    }
-})
+        try {
+            await removeActivityType("running", 0)
+            expect(1).toEqual(2);
+        } catch (error) {
+            expect(error.message).toEqual("User has no activity types associated with their profile.");
+        }
+    })
+		
+test('expect activity type to be removed from user when exists in list',	
+    async () => {	
+        var user = {"profile_id": 0, "activities": ["running"]} as UserApiFormat;	
+        userModel.saveActivityTypes = jest.fn();	
+        userModel.getProfileById = jest.fn(() => {	
+            return user;	
+        });	
+        
+        await removeActivityType("running", 0);	
+        await expect(userModel.saveActivityTypes.mock.calls[0][0]).toBe(user);	
+    })	
 
-test('expect activity type to be removed from user when exists in list',
-async () => {
-    userModel.removeUserActivityType = jest.fn();
-    userModel.getCurrentUser = jest.fn(() => {
-        var user = {"activities": ["running"]} as UserApiFormat;
-        return user;
-    });
+test('expect error when trying to remove activity not in list',	
+    async () => {	
+        userModel.saveActivityTypes = jest.fn();	
+        userModel.getProfileById = jest.fn(() => {	
+            var user = {"profile_id": 0, "activities": ["running"]} as UserApiFormat;	
+            return user;	
+        });	
 
-    await removeActivityType("running");
-    await expect(userModel.removeUserActivityType.mock.calls[0][0]).toBe("running");
-})
+        try {	
+            await removeActivityType("walking", 0)	
+            expect(1).toEqual(2);	
+        } catch (error) {	
+            expect(error.message).toEqual("Activity is not associated with user's profile.");	
+        }	
+    })
