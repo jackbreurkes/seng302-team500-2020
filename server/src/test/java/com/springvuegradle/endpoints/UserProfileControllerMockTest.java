@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Optional;
 
+import com.springvuegradle.model.repository.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,11 +25,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.CountryRepository;
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
 
 //@Configuration
 //@ComponentScan("repository")
@@ -57,7 +53,11 @@ public class UserProfileControllerMockTest {
     @Autowired
     @MockBean
     private ActivityTypeRepository activityTypeRepository;
-    
+
+    @MockBean
+    private LocationRepository locationRepository;
+
+
     @Autowired
     private MockMvc mvc;
 

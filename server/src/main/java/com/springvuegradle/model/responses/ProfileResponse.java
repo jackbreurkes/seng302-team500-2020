@@ -1,9 +1,7 @@
 package com.springvuegradle.model.responses;
 
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Country;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Profile;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.EmailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,6 +25,9 @@ public class ProfileResponse {
     private final List<String> passports = new ArrayList<>();
     private final String[] additional_email;
     private final List<String> activities = new ArrayList<>();
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final Location location;
 
     /**
      * @param profile the profile whose information should populate the response fields
@@ -54,6 +55,7 @@ public class ProfileResponse {
         for (ActivityType activityType : profile.getActivityTypes()) {
             activities.add(activityType.getActivityTypeName());
         }
+        location = profile.getLocation();
     }
 
     public long getProfile_id() {
@@ -109,5 +111,12 @@ public class ProfileResponse {
      */
     public List<String> getActivities() {
         return activities;
+    }
+
+    /**
+     * @return the location in which the user is normally based
+     */
+    public Location getLocation() {
+        return location;
     }
 }
