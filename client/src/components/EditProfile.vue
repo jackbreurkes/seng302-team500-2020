@@ -214,7 +214,7 @@ import {
   // isValidEmail
   getAvailablePassportCountries,
   addPassportCountry,
-  deletePassportCountry, fetchCurrentUser
+  deletePassportCountry, getPermissionLevel
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -295,14 +295,11 @@ const Homepage = Vue.extend({
   created() {
     // load profile info
 
-    // Fetches the current user
-    fetchCurrentUser().then(user => {
-      this.currentSessionUser = user!;
-    })
     const profileId: number = parseInt(this.$route.params.profileId);
+    const permissionLevel: number = getPermissionLevel();
     if (isNaN(profileId)) {  // profile id in route not a number
       this.$router.push({ name: "login" });
-    } else if (this.currentSessionUser.permission_level! < 126 && profileId != this.currentSessionUser.profile_id) {
+    } else if (permissionLevel < 120 && profileId != this.currentSessionUser.profile_id) {
       // Checking to see if current session user has the right permission_level or is the original profile
       this.$router.push(`/profiles/${profileId}`);
     }
