@@ -81,6 +81,7 @@ public class UserProfileController {
     @Autowired
     private LocationRepository locationRepository;
 
+
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
 
 
@@ -89,9 +90,9 @@ public class UserProfileController {
      */
     @PutMapping("/{profileId}")
     @CrossOrigin
-    public Object updateProfile(
+    public ProfileResponse updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
@@ -109,12 +110,13 @@ public class UserProfileController {
             try {
                 Profile profile = optionalProfile.get();
                 request.updateExistingProfile(profile, profileRepository, countryRepository, locationRepository);
-                return ResponseEntity.status(HttpStatus.OK).body(new ProfileResponse(profile, emailRepository));
+                return new ProfileResponse(profile, emailRepository);
             } catch (InvalidRequestFieldException ex) {
-                return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
+                throw ex;
             }
+        }else{
+            throw new RecordNotFoundException("Profile not found");
         }
-        return ResponseEntity.notFound();
     }
 
 
