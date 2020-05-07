@@ -5,7 +5,7 @@
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
-          Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" color="secondary">Logout</v-btn>
+          Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined="true">Logout</v-btn>
         </div>  
       </v-app-bar>
       <v-content>
