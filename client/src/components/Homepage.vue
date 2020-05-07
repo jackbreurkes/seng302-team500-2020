@@ -5,7 +5,12 @@
         <v-col sm="12" md="8" lg="4">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Profile: {{ currentUser.firstname }} {{ currentUser.lastname }}</v-toolbar-title>
+              <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <div v-if="currentlyHasAuthority">
+                <v-btn @click="editProfile" outlined="true" class="mr-1">Edit</v-btn>
+                <v-btn @click="createActivityClicked" outlined="true">Create Activity</v-btn>
+              </div>  
             </v-toolbar>
             <v-card-text>
                 <h3>Name</h3>
@@ -31,26 +36,28 @@
                 <div v-if="currentUser.passports">
                   <h3>Passport Countries</h3>
                   <v-chip
-                    class="mr-2 mb-2"
+                    class="mr-1 mb-2"
                     v-for="country of currentUser.passports"
                     v-bind:key="country"
+                    outlined="true"
                   >{{ country }}</v-chip>
+                  <v-chip
+                    class="mr-1 mb-2"
+                    v-if="currentUser.passports.length == 0"
+                    outlined="true"
+                  >None</v-chip>
                 </div>
 
                 <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="createActivityClicked">Create Activity</v-btn>
-
-                <p>Primary email: {{ currentUser.primary_email }}</p>
+                <div v-if="currentlyHasAuthority">
+                  <p>Primary email: {{ currentUser.primary_email }}</p>
+                  <br />
+                  <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
+                  <ul>
+                    <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
+                  </ul>
+                </div>
                 <br />
-                <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
-                <ul>
-                  <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
-                </ul>
-                <br />
-                <v-btn @click="editProfile">Edit Profile</v-btn>
-                <v-btn @click="logoutButtonClicked">Logout</v-btn>
-                <v-btn @click="createActivityClicked">Create Activity</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
@@ -83,7 +90,8 @@ import Vue from "vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
-  fetchProfileWithId
+  fetchProfileWithId,
+  getPermissionLevel
   // addNewEmail,
   // deleteEmail,
   // setPrimary
@@ -91,6 +99,7 @@ import {
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
+import { getCurrentUser } from '../models/user.model';
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -102,6 +111,7 @@ const Homepage = Vue.extend({
     return {
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
+      currentlyHasAuthority: false as boolean,
       // newEmail: "",
       // email: "",
       editedUser: {} as UserApiFormat,
@@ -146,10 +156,23 @@ const Homepage = Vue.extend({
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
+    const permissionLevel: number = getPermissionLevel();
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
+    
+    if (permissionLevel < 120) {
+      getCurrentUser()
+        .then(user => {
+          if (user.profile_id == profileId) {
+            //if we're editing ourself
+            this.currentlyHasAuthority = true;
+          }
+        })
+    } else {
+      this.currentlyHasAuthority = true;
+    }
 
     fetchProfileWithId(profileId)
       .then(user => {
