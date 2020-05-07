@@ -60,7 +60,7 @@ public class ProfileObjectMapper {
     private String[] passports;
     
     @JsonProperty(value = "activities", required = false)
-    private String[] activities;
+    private List<String> activities;
 
     @JsonProperty(required = false)
     private Location location;
@@ -192,11 +192,11 @@ public class ProfileObjectMapper {
         this.passports = passports;
     }
     
-    public void setActivities(String[] activities) {
+    public void setActivities(List<String> activities) {
     	this.activities = activities;
     }
     
-    public String[] getActivities() {
+    public List<String> getActivities() {
         return activities;
     }
 
@@ -218,50 +218,10 @@ public class ProfileObjectMapper {
     }
 
 
-    private void checkParseErrors() throws InvalidRequestFieldException {
+    public void checkParseErrors() throws InvalidRequestFieldException {
         if (parseErrors.size() > 0) {
             throw new InvalidRequestFieldException(parseErrors.get(0));
         }
-    }
-
-
-    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository, LocationRepository locationRepository) throws InvalidRequestFieldException, RecordNotFoundException {
-        checkParseErrors();
-        System.out.println("setting things");
-        if (this.fname != null) {
-            profile.setFirstName(this.fname);
-        }
-        if (this.lname != null) {
-            profile.setLastName(this.lname);
-        }
-
-        profile.setMiddleName(this.mname);
-        profile.setNickName(this.nickname);
-        profile.setBio(this.bio);
-        
-        if (this.dob != null) {
-            LocalDate validDob = FormValidator.getValidDateOfBirth(this.dob);
-            if (validDob != null) {
-                profile.setDob(validDob);
-            }
-        }
-        if (this.gender != null) {
-            Gender gender = Gender.matchGender(this.gender);
-            if (gender != null) {
-                profile.setGender(gender);
-            }
-        }
-        if (this.fitness != null) {
-            profile.setFitness(this.fitness);
-        }
-        if (this.passports != null) {
-            profile.setCountries(countries(this.passports, countryRepository));
-        }
-        if (this.location != null) {
-            this.location = addLocationIfNotExisting(this.location, locationRepository);
-        }
-        profile.setLocation(this.location);
-        profileRepository.save(profile);
     }
 
     private List<Country> countries(String[] countryNames, CountryRepository countryRepository) throws RecordNotFoundException {

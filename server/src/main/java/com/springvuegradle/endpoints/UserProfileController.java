@@ -2,8 +2,8 @@ package com.springvuegradle.endpoints;
 
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,11 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
-import com.springvuegradle.model.requests.LocationRequest;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
@@ -104,19 +101,83 @@ public class UserProfileController {
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
-        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
-        if (optionalProfile.isPresent()) {
+        request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
-            try {
-                Profile profile = optionalProfile.get();
-                request.updateExistingProfile(profile, profileRepository, countryRepository, locationRepository);
-                return new ProfileResponse(profile, emailRepository);
-            } catch (InvalidRequestFieldException ex) {
-                throw ex;
-            }
-        }else{
+        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+        if (optionalProfile.isEmpty()) {
             throw new RecordNotFoundException("Profile not found");
         }
+
+        Profile profile = optionalProfile.get();
+
+        if (request.getFirstname() != null) {
+            profile.setFirstName(request.getFirstname());
+        }
+        if (request.getLastname() != null) {
+            profile.setLastName(request.getLastname());
+        }
+
+        profile.setMiddleName(request.getMiddlename());
+        profile.setNickName(request.getNickname());
+        profile.setBio(request.getBio());
+
+        if (request.getDateOfBirth() != null) {
+            LocalDate validDob = FormValidator.getValidDateOfBirth(request.getDateOfBirth());
+            if (validDob != null) {
+                profile.setDob(validDob);
+            }
+        }
+        if (request.getGender() != null) {
+            Gender gender = Gender.matchGender(request.getGender());
+            if (gender != null) {
+                profile.setGender(gender);
+            }
+        }
+        if (request.getFitness() != null) {
+            profile.setFitness(request.getFitness());
+        }
+        if (request.getPassports() != null) {
+            List<Country> countries = getCountriesByNames(request.getPassports()); // throws a RecordNotFoundException if country doesn't exist
+            profile.setCountries(countries);
+        }
+        if (request.getActivities() != null) {
+            List<ActivityType> activityTypes = getActivityTypesByNames(request.getActivities()); // throws a RecordNotFoundException if activity type doesn't exist
+            profile.setActivityTypes(activityTypes);
+        }
+        Location location = null;
+        if (request.getLocation() != null) {
+            location = addLocationIfNotExisting(request.getLocation());
+        }
+        profile.setLocation(location); // setting location to null will remove it
+
+        Profile savedProfile = profileRepository.save(profile);
+        return new ProfileResponse(savedProfile, emailRepository);
+    }
+
+    private List<Country> getCountriesByNames(String[] countryNames) throws RecordNotFoundException {
+        List<Country> countries = new ArrayList<>();
+        for (String countryName : countryNames) {
+            Optional<Country> country = countryRepository.findByName(countryName);
+            if (country.isEmpty()) {
+                throw new RecordNotFoundException("country " + countryName + " not found");
+            }
+            countries.add(country.get());
+        }
+        return countries;
+    }
+
+    private List<ActivityType> getActivityTypesByNames(List<String> activityTypeNames) throws RecordNotFoundException {
+        List<ActivityType> activityTypes = new ArrayList<>();
+        for (String activityTypeName : activityTypeNames) {
+            Optional<ActivityType> optionalActivityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeName);
+            System.out.println(activityTypeName);
+            if (optionalActivityType.isPresent()) {
+                activityTypes.add(optionalActivityType.get());
+            } else {
+                throw new RecordNotFoundException("no activity type with name " + activityTypeName + " found");
+            }
+        }
+        return activityTypes;
     }
 
 
@@ -232,16 +293,8 @@ public class UserProfileController {
         Profile profile = optionalProfile.get();
 
         // validate activity types
-        List<ActivityType> activityTypes = new ArrayList<>();
-        for (String activityTypeName : putActivityTypesRequest.getActivityTypes()) {
-            Optional<ActivityType> optionalActivityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeName);
-            System.out.println(activityTypeName);
-            if (optionalActivityType.isPresent()) {
-                activityTypes.add(optionalActivityType.get());
-            } else {
-                throw new RecordNotFoundException("no activity type with name " + activityTypeName + " found");
-            }
-        }
+        List<ActivityType> activityTypes = getActivityTypesByNames(putActivityTypesRequest.getActivityTypes());
+
 
         // save profile with newly added activity types and return
         profile.setActivityTypes(activityTypes);
