@@ -82,14 +82,19 @@ public class UserProfileController {
      */
     @PutMapping("/{id}")
     @CrossOrigin
-    public Object updateProfile(
+    public ResponseEntity<Object> updateProfile(
             @RequestBody ProfileObjectMapper request,
             @PathVariable("id") long id, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         //int permissionLevel = (Integer) httpRequest.getAttribute("permissionLevel");
-        int permissionLevel = userRepository.findById(authId).get().getPermissionLevel();
+        Optional<User> tempUser = userRepository.findById(authId);
+        int permissionLevel = 0;
+        if(tempUser.isPresent()){
+            permissionLevel = tempUser.get().getPermissionLevel();
+        }
+
         if (authId == null) {
-        	return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
+        	throw new UserNotAuthenticatedException("You are not logged in");
 
         } else if (permissionLevel < 126 && !authId.equals(id)) {
             throw new UserNotAuthenticatedException("User not authenticated");
@@ -105,8 +110,9 @@ public class UserProfileController {
             } catch (InvalidRequestFieldException ex) {
                 return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
             }
+        }else{
+            throw new RecordNotFoundException("Record not found");
         }
-        return ResponseEntity.notFound();
     }
 
 
@@ -137,9 +143,12 @@ public class UserProfileController {
      */
     @GetMapping("/{profileId}")
     @CrossOrigin
-    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId) {
-
-        return view(profileId);
+    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException {
+        if (request.getAttribute("authenticatedid") != null){
+            return view(profileId);
+        } else{
+            throw new UserNotAuthenticatedException("User not authenticated");
+        }
     }
 
     /**

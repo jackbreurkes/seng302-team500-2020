@@ -1,24 +1,26 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
 import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.text.ParseException;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -50,11 +52,6 @@ public class ViewProfilePermissionsTest {
     }
 
     @Test
-    void testUpdateOwnProfile(){
-        MockHttpServletRequest request = new MockHttpServletRequest();
-    }
-
-    @Test
     void testUpdateOtherProfile(){
         //auth as other
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -69,16 +66,20 @@ public class ViewProfilePermissionsTest {
 
     @Test
     void testUpdateProfileNoAuth(){
-
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", null);
+        assertThrows(UserNotAuthenticatedException.class, () -> {
+           userProfileController.updateProfile(new ProfileObjectMapper(), 2L, request);
+        });
     }
 
     @Test
     void viewProfilesNoAuth(){
-
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("athenticatedid", null);
+        assertThrows(UserNotAuthenticatedException.class, () ->{
+            userProfileController.viewProfile(1L, request);
+        });
     }
 
-    @Test
-    void viewProfilesAuth(){
-
-    }
 }
