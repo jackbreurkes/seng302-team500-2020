@@ -16,11 +16,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.CountryRepository;
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.util.FormValidator;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -64,7 +60,10 @@ public class ProfileObjectMapper {
     private String[] passports;
     
     @JsonProperty(value = "activities", required = false)
-    private String[] activities;
+    private List<String> activities;
+
+    @JsonProperty(required = false)
+    private Location location;
     
     private List<String> parseErrors = new ArrayList<>();
 
@@ -193,53 +192,36 @@ public class ProfileObjectMapper {
         this.passports = passports;
     }
     
-    public void setActivities(String[] activities) {
+    public void setActivities(List<String> activities) {
     	this.activities = activities;
     }
     
-    public String[] getActivities() {
+    public List<String> getActivities() {
         return activities;
     }
 
-    private void checkParseErrors() throws InvalidRequestFieldException {
+    /**
+     * @return the location the user is normally based in
+     */
+    public Location getLocation() {
+        return location;
+    }
+
+    /**
+     * @param location the location the user is normally based in
+     */
+    public void setLocation(Location location) {
+        if (location.getCity() == null || location.getCountry() == null) {
+            this.parseErrors.add("location must have a city and country");
+        }
+        this.location = location;
+    }
+
+
+    public void checkParseErrors() throws InvalidRequestFieldException {
         if (parseErrors.size() > 0) {
             throw new InvalidRequestFieldException(parseErrors.get(0));
         }
-    }
-
-    public void updateExistingProfile(Profile profile, ProfileRepository profileRepository, CountryRepository countryRepository) throws InvalidRequestFieldException, RecordNotFoundException {
-        checkParseErrors();
-        System.out.println("setting things");
-        if (this.fname != null) {
-            profile.setFirstName(this.fname);
-        }
-        if (this.lname != null) {
-            profile.setLastName(this.lname);
-        }
-
-        profile.setMiddleName(this.mname);
-        profile.setNickName(this.nickname);
-        profile.setBio(this.bio);
-        
-        if (this.dob != null) {
-            LocalDate validDob = FormValidator.getValidDateOfBirth(this.dob);
-            if (validDob != null) {
-                profile.setDob(validDob);
-            }
-        }
-        if (this.gender != null) {
-            Gender gender = Gender.matchGender(this.gender);
-            if (gender != null) {
-                profile.setGender(gender);
-            }
-        }
-        if (this.fitness != null) {
-            profile.setFitness(this.fitness);
-        }
-        if (this.passports != null) {
-            profile.setCountries(countries(this.passports, countryRepository));
-        }
-        profileRepository.save(profile);
     }
 
     private List<Country> countries(String[] countryNames, CountryRepository countryRepository) throws RecordNotFoundException {
@@ -258,7 +240,8 @@ public class ProfileObjectMapper {
                                  EmailRepository emailRepository,
                                  ProfileRepository profileRepository,
                                  CountryRepository countryRepository,
-                                 ActivityTypeRepository activityTypeRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
+                                 ActivityTypeRepository activityTypeRepository,
+                                 LocationRepository locationRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
@@ -274,6 +257,11 @@ public class ProfileObjectMapper {
         profile.setNickName(getNickname());
         if (this.passports != null) {
             profile.setCountries(countries(this.passports, countryRepository));
+        }
+
+        if (this.location != null) {
+            this.location = addLocationIfNotExisting(this.location, locationRepository);
+            profile.setLocation(this.location);
         }
         
         List<ActivityType> activityTypes = new ArrayList<>();
@@ -331,5 +319,19 @@ public class ProfileObjectMapper {
         if (getPrimaryEmail() == null) {
             throw new InvalidRequestFieldException("No primary email");
         }
+    }
+
+    /**
+     * adds a location to the database if it doesn't exist, otherwise returns the existing value.
+     * @param location the location to find a match for
+     * @return a location from the database
+     */
+    private Location addLocationIfNotExisting(Location location, LocationRepository locationRepository) {
+        Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        return locationRepository.save(location);
     }
 }
