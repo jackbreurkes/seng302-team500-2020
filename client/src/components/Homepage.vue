@@ -51,11 +51,6 @@
                   v-bind:key="country"
                   outlined="true"
                 >{{ country }}</v-chip>
-                <v-chip
-                  class="mr-1 mb-2"
-                  v-if="currentUser.passports.length == 0"
-                  outlined="true"
-                >None</v-chip>
               </div>
 
             </v-card-text>
@@ -64,7 +59,7 @@
         <v-col sm="12" md="8" lg="8">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Activities</v-toolbar-title>
+              <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
               <v-spacer></v-spacer>
               <div v-if="currentlyHasAuthority">
                 <v-btn @click="createActivityClicked" outlined="true">Create Activity</v-btn>

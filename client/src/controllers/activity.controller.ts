@@ -109,7 +109,7 @@ export async function getActivitiesByCreator(creatorId: number) {
  * @param startTime the ISO datetime string representing the start time
  * @param endTime the ISO datetime string representing the end time
  */
-export function descripeDurationTimeFrame(startTime: string, endTime: string) {
+export function describeDurationTimeFrame(startTime: string, endTime: string) {
   let start = new Date(startTime);
   let end = new Date(endTime);
   const dtf = new Intl.DateTimeFormat(undefined, {
