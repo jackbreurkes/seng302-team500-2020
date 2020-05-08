@@ -134,7 +134,7 @@
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer />
-                <v-btn @click="createButtonClicked" color="primary">Create</v-btn>
+                <v-btn @click="createButtonClicked" color="primary">{{this.isEditing ? "Save" : "Create"}}</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -159,6 +159,7 @@ const CreateActivity = Vue.extend({
     return {
       createActivityRequest: {} as CreateActivityRequest,
       isEditing: false as boolean,
+      editingId: NaN as number,
       currentProfileId: NaN as number,
       startDate: "",
       startTime: "",
@@ -216,10 +217,10 @@ const CreateActivity = Vue.extend({
       .catch(err => {console.error("unable to load activity types");
       console.error(err)});
 
-    const editingId: number|null = parseInt(this.$route.params.activityId);
-    if (editingId) {
+    if (this.$route.params.activityId) {
+      this.editingId = parseInt(this.$route.params.activityId);
       this.isEditing = true;
-      this.populateFields(editingId);
+      this.populateFields(this.editingId);
     }
   },
 
@@ -244,19 +245,30 @@ const CreateActivity = Vue.extend({
     createButtonClicked: async function() {
       await activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
       await activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
-      activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
+      if (this.isEditing) {
+        activityController.editActivity(this.createActivityRequest, this.currentProfileId, this.editingId)
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
           .catch(() => {
-            alert(`
-            ${this.createActivityRequest}`);
+            alert(`An error occured while saving this activity`);
           });
+      } else {
+        activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
+          .then(() => {
+            this.$router.push({ name: "profilePage" });
+          })
+          .catch(() => {
+            alert(`An error occured while saving this activity`);
+          });
+      }
     },
 
     populateFields: async function(editingId: number) {
       let activityData: CreateActivityRequest = await activityController.getActivityById(this.currentProfileId, editingId);
       this.createActivityRequest = activityData;
+
+      //TODO populate date fields
     }
   }
 });

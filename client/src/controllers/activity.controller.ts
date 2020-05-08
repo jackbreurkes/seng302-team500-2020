@@ -108,6 +108,16 @@ export async function createNewActivity(createActivityRequest: CreateActivityReq
 }
 
 /**
+ * Edit an activity
+ * @param createActivityRequest Data related to the activity to edit
+ * @param profileId Profile ID this activity belongs to
+ * @param activityId Activity ID to edit
+ */
+export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
+  await activityModel.editActivity(createActivityRequest, profileId, activityId);
+}
+
+/**
  * returns the activities created by a given creator.
  * @param creatorId the profileId of the creator of the activities
  */

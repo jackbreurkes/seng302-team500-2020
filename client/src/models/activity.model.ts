@@ -41,6 +41,32 @@ export async function createActivity(
   // TODO handle response
 }
 
+export async function editActivity(data: CreateActivityRequest, profileId: number,
+  activityId: number) {
+  let res;
+  try {
+    res = await instance.put(`/profiles/${profileId}/activities/${activityId}`, data, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      },
+    });
+  } catch (e) {
+    if (e.response) {
+      // request made and server responded
+      console.error(e.response);
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else {
+      // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
+  }
+  // TODO handle response
+}
+
 export async function loadAvailableActivityTypes(): Promise<string[]> {
   let res;
   try {
