@@ -1,11 +1,11 @@
 import { CreateActivityRequest } from '../scripts/Activity';
-import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
+import * as activityModel from '../models/activity.model'
 
 
 let _availableActivityTypes: string[] | null = null;
 export async function getAvailableActivityTypes(force = false) {
   if (_availableActivityTypes === null || force) {
-    _availableActivityTypes = await loadAvailableActivityTypes();
+    _availableActivityTypes = await activityModel.loadAvailableActivityTypes();
   }
   return _availableActivityTypes;
 }
@@ -93,7 +93,27 @@ export function validateEndDate(startDate: string | undefined, endDate: string |
 }
 
 export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
-  await createActivity(createActivityRequest, profileId);
+  await activityModel.createActivity(createActivityRequest, profileId);
 }
 
+/**
+ * returns the activities created by a given creator.
+ * @param creatorId the profileId of the creator of the activities
+ */
+export async function getActivitiesByCreator(creatorId: number) {
+  return activityModel.getActivitiesByCreator(creatorId);
+}
 
+/**
+ * returns a reader-friendly description of the duration of a duration activity.
+ * @param startTime the ISO datetime string representing the start time
+ * @param endTime the ISO datetime string representing the end time
+ */
+export function describeDurationTimeFrame(startTime: string, endTime: string) {
+  let start = new Date(startTime);
+  let end = new Date(endTime);
+  const dtf = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
+  });
+  return "from " + dtf.format(start) + " to " + dtf.format(end);
+}
