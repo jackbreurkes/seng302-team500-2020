@@ -31,7 +31,7 @@
                 <p>Primary email: {{ currentUser.primary_email }}</p>
                 <br />
                 <div v-if="currentUser.additional_email && currentUser.additional_email.length > 0">
-                  <p>Secondary Emails {{ currentUser.additional_email ? currentUser.additional_email.length : 0 }} / 5:</p>
+                  <p>Secondary Emails {{ currentUser.additional_email.length }} / 5:</p>
                   <ul>
                     <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
                   </ul>
@@ -60,8 +60,8 @@
             </v-toolbar>
 
             <v-card-text>
-              <div v-if="currentUser.activities">
-                <h3 v-if="currentUser.activities && currentUser.activities.length > 0">Interests</h3>
+              <div v-if="currentUser.activities && currentUser.activities.length > 0">
+                <h3>Interests</h3>
                 <v-chip
                   class="mr-2 mb-2"
                   v-for="activityType of currentUser.activities"
