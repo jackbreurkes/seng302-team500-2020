@@ -18,12 +18,11 @@
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
-                <v-radio-group v-model="timeMode" row>
-                <v-radio label="Continuous" value="continuous"></v-radio>
-                <v-radio label="Duration" value="duration"></v-radio>
+              <v-radio-group v-model="createActivityRequest.continuous" row>
+                <v-radio label="Continuous" value="true"></v-radio>
+                <v-radio label="Duration" value="false"></v-radio>
               </v-radio-group>
-
-                <div v-if="timeMode === 'duration'">
+                <div v-if="createActivityRequest.continuous == 'false'">
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -75,9 +74,14 @@
                         label="End Date"
                         :rules="inputRules.endDateRules"
                       ></v-text-field>
+                      
+
                     </template>
+                    
                     <v-date-picker no-title v-model="endDate" @input="endDateMenu = false"></v-date-picker>
+                    
                   </v-menu>
+                  
 
                   <v-text-field
                     label="End Time"
@@ -156,7 +160,6 @@ const CreateActivity = Vue.extend({
       createActivityRequest: {} as CreateActivityRequest,
       isEditing: false as boolean,
       currentProfileId: NaN as number,
-      timeMode: "",
       startDate: "",
       startTime: "",
       endDate: "",
@@ -171,7 +174,7 @@ const CreateActivity = Vue.extend({
         ],
         startDateRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isFutureDate(v) || activityController.INVALID_DATE_MESSAGE
           }
         ],
         endDateRules: [
@@ -181,12 +184,12 @@ const CreateActivity = Vue.extend({
         ],
         startTimeRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
           }
         ],
         endTimeRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
           }
         ],
         descriptionRules: [
@@ -239,12 +242,15 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked: async function() {
+      await activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
+      await activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
       activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
           .catch(() => {
-            alert(`${this.createActivityRequest.activity_type}`);
+            alert(`
+            ${this.createActivityRequest}`);
           });
     },
 
