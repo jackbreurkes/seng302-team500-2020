@@ -3,11 +3,14 @@ import {
   addPassportCountry,
   deletePassportCountry,
   persistChangesToProfile,
+  addAndSaveActivityType,
+  removeAndSaveActivityType,
   addActivityType,
-  removeActivityType,
+  deleteActivityType,
 } from "./profile.controller";
 import { UserApiFormat } from "@/scripts/User";
 import axios from "axios";
+import { getAvailableActivityTypes } from './activity.controller';
 
 jest.mock("axios");
 
@@ -36,6 +39,17 @@ const validPassportCountries: Array<{ name: string }> = [
 ];
 countriesModel.loadPassportCountries = jest.fn(async () => {
   return validPassportCountries;
+});
+
+const activityModel = require("../models/activity.model");
+const mockActivityTypes: string[] = [
+  "Walking",
+  "Running",
+  "Swimming",
+  "Dancing",
+];
+activityModel.loadAvailableActivityTypes = jest.fn(async () => {
+  return mockActivityTypes;
 });
 
 function getValidCountryNames() {
@@ -142,10 +156,88 @@ test.each(["Westeros", "Greendale", "Anywhere"])("expect deletePassportCountry t
     passports: [country],
   };
   expect(deletePassportCountry(country, profile)).toBe(undefined);
+  expect(profile.passports).toBeDefined();
+  expect(profile.passports).toHaveLength(0);
 
   // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
   expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
 });
+
+// --------- ADD ACTIVITY TYPE ---------- //
+test("expect addActivityType to throw an error if an activity type does not exist", async () => {
+  let profile: UserApiFormat = {};
+  const invalidActivityType = "invalid activity type";
+  await expect(addActivityType(invalidActivityType, profile)).rejects.toThrow(
+    new Error(`${invalidActivityType} is not recognised as an activity type`)
+  );
+});
+
+test.each(mockActivityTypes)(
+  "expect addActivityType to throw an error if %s is already added to the given profile",
+  async (activityType) => {
+    let profile: UserApiFormat = {
+      activities: [activityType],
+    };
+    await expect(addActivityType(activityType, profile)).rejects.toThrow(
+      new Error(
+        `the target profile already has ${activityType} as an interest`
+      )
+    );
+  }
+);
+
+test.each(mockActivityTypes)(
+  "expect addActivityType to add %s to a profile without persisting changes",
+  async (activityType) => {
+    let profile: UserApiFormat = {
+      activities: [],
+    };
+    await addActivityType(activityType, profile);
+    expect(profile.activities).toHaveLength(1);
+    expect(profile.activities).toContain(activityType);
+
+    // this expect doesn't work, but will only throw an error if axios.put is called, meaning it does what we need it to. ¯\_(ツ)_/¯
+    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+  }
+);
+
+test.each(mockActivityTypes)(
+  "expect addActivityType to initialise the profile's activities list if nonexistent",
+  async (activityType) => {
+    let profile: UserApiFormat = {};
+    await addActivityType(activityType, profile);
+    expect(profile.activities).not.toBeUndefined();
+    expect(profile.activities).toHaveLength(1);
+    expect(profile.activities).toContain(activityType);
+
+    // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
+    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+  }
+);
+
+// --------- DELETE ACTIVITY TYPE ---------- //
+test.each(["Spinning", "No Validation", "Just Removal"])("expect deleteActivityType to throw an error if given a profile not containing %s", (activityType) => {
+  let profile: UserApiFormat = {
+    activities: [],
+  };
+  expect(() => {
+    deleteActivityType(activityType, profile);
+  }).toThrow(`the target user does not have ${activityType} as an interest`);
+});
+
+test.each(["Cooking", "Moonwalking", "Speaking Russian"])("expect deleteActivityType to remove an activity type from a profile without persisting changes", async (activityType) => {
+  let profile: UserApiFormat = {
+    activities: [activityType],
+  };
+  expect(deleteActivityType(activityType, profile)).toBe(undefined);
+  expect(profile.activities).not.toBeUndefined();
+  expect(profile.activities).toHaveLength(0);
+
+  // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
+  expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+});
+
+
 
 // --------- PERSIST CHANGES TO PROFILE ---------- //
 test("expect persistChangesToProfile to throw an error when a required field is missing", async () => {
@@ -170,7 +262,7 @@ test.skip("expect persistChangesToProfile to persist changes when given a valid 
     // TODO this does not work
     persistChangesToProfile(profile, 1)
   ).resolves.toBe(undefined);
-  expect(axios.put).toHaveBeenCalledTimes(1);
+  expect(axios.put).toHaveBeenCalled();
 });
 
 
@@ -183,7 +275,7 @@ test('expect activity type list to be updated',
             return user;
         });
 
-        await addActivityType("running", 0);
+        await addAndSaveActivityType("running", 0);
         expect(userModel.saveActivityTypes.mock.calls[0][0]).toBe(user);
     }
 )
@@ -196,7 +288,7 @@ test.skip('expect no user found when updating activity types with null user',
         });
 
         try {
-            await addActivityType("running", 0)
+            await addAndSaveActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("No active user found.");
@@ -212,7 +304,7 @@ test.skip('expect no user found when deleting activity types from null user',
         });
 
         try {
-            await removeActivityType("running", 0)
+            await removeAndSaveActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("No active user found.");
@@ -228,7 +320,7 @@ test('expect no activity type error when user has no activity type property',
         });
 
         try {
-            await removeActivityType("running", 0)
+            await removeAndSaveActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("User has no activity types associated with their profile.");
@@ -244,7 +336,7 @@ test('expect no activity type error when user has activity type list empty',
         });
 
         try {
-            await removeActivityType("running", 0)
+            await removeAndSaveActivityType("running", 0)
             expect(1).toEqual(2);
         } catch (error) {
             expect(error.message).toEqual("User has no activity types associated with their profile.");
@@ -259,7 +351,7 @@ test('expect activity type to be removed from user when exists in list',
             return user;	
         });	
         
-        await removeActivityType("running", 0);	
+        await removeAndSaveActivityType("running", 0);	
         await expect(userModel.saveActivityTypes.mock.calls[0][0]).toBe(user);	
     })	
 
@@ -272,7 +364,7 @@ test('expect error when trying to remove activity not in list',
         });	
 
         try {	
-            await removeActivityType("walking", 0)	
+            await removeAndSaveActivityType("walking", 0)	
             expect(1).toEqual(2);	
         } catch (error) {	
             expect(error.message).toEqual("Activity is not associated with user's profile.");	

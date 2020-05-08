@@ -207,6 +207,7 @@ public class UserProfileController {
      * @throws UserNotAuthenticatedException if the user is not logged in
      */
     @PutMapping("/{profileId}/activity-types")
+    @CrossOrigin
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
