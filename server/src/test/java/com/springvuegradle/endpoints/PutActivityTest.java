@@ -1,5 +1,24 @@
 package com.springvuegradle.endpoints;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletRequest;
+
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -9,22 +28,7 @@ import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.UpdateActivityRequest;
-import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.springvuegradle.model.requests.CreateActivityRequest;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PutActivityTest {
@@ -65,11 +69,11 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = new UpdateActivityRequest();
-        updateActivityRequest.setActivityName("222");
+        CreateActivityRequest CreateActivityRequest = new CreateActivityRequest();
+        CreateActivityRequest.setActivityName("222");
 
         assertThrows(InvalidRequestFieldException.class, () -> {
-           activitiesController.putActivity(1L, 2L, updateActivityRequest, request);
+           activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
         });
     }
 
@@ -79,11 +83,11 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = new UpdateActivityRequest();
-        updateActivityRequest.setActivityName("Activity Name");
+        CreateActivityRequest CreateActivityRequest = new CreateActivityRequest();
+        CreateActivityRequest.setActivityName("Activity Name");
 
         assertThrows(InvalidRequestFieldException.class, () -> {
-           activitiesController.putActivity(1L, 2L, updateActivityRequest, request);
+           activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
         });
     }
 
@@ -93,11 +97,11 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = createValidUpdateRequest();
+        CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.empty());
 
         assertThrows(RecordNotFoundException.class, () -> {
-           activitiesController.putActivity(1L, 2L, updateActivityRequest, request);
+           activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
         });
     }
 
@@ -106,14 +110,14 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = createValidUpdateRequest();
-        updateActivityRequest.setActivityTypes(new ArrayList<>(Arrays.asList("Invalid")));
+        CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
+        CreateActivityRequest.setActivityTypes(new ArrayList<>(Arrays.asList("Invalid")));
 
         Activity activity = new Activity();
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         assertThrows(RecordNotFoundException.class, () -> {
-           activitiesController.putActivity(1L, 2L, updateActivityRequest, request);
+           activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
         });
     }
 
@@ -123,11 +127,11 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = createValidUpdateRequest();
+        CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         Mockito.when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
         assertThrows(UserNotAuthenticatedException.class, () -> {
-            activitiesController.putActivity(2L, 3L, updateActivityRequest, request);
+            activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
     }
 
@@ -139,13 +143,13 @@ public class PutActivityTest {
         //need to set as admin
         user.setPermissionLevel(126);
 
-        UpdateActivityRequest updateActivityRequest = createValidUpdateRequest();
+        CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         activity.setActivityTypes(new ArrayList<>());
 
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
-        assertEquals(activitiesController.putActivity(3L, 2L, updateActivityRequest, request), HttpStatus.OK);
+        assertEquals(activitiesController.putActivity(3L, 2L, CreateActivityRequest, request), HttpStatus.OK);
     }
 
     @Test
@@ -154,20 +158,20 @@ public class PutActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        UpdateActivityRequest updateActivityRequest = createValidUpdateRequest();
+        CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         activity.setActivityTypes(new ArrayList<>());
 
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
-        assertEquals(activitiesController.putActivity(1L, 2L, updateActivityRequest, request), HttpStatus.OK);
+        assertEquals(activitiesController.putActivity(1L, 2L, CreateActivityRequest, request), HttpStatus.OK);
     }
 
     /**
      * Helper function for creating valid update request
      */
-    UpdateActivityRequest createValidUpdateRequest(){
-        UpdateActivityRequest ret = new UpdateActivityRequest();
+    CreateActivityRequest createValidUpdateRequest(){
+        CreateActivityRequest ret = new CreateActivityRequest();
 
         ret.setActivityName("Activity Name");
         ret.setActivityTypes(new ArrayList<String>(Arrays.asList("Running", "Swimming")));
