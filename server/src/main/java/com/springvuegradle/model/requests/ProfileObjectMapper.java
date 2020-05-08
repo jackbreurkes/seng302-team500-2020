@@ -68,7 +68,7 @@ public class ProfileObjectMapper {
     
     private List<String> parseErrors = new ArrayList<>();
 
-    protected ProfileObjectMapper() {}
+    public ProfileObjectMapper() {}
 
     public String getPrimaryEmail() {
         return primaryEmail;

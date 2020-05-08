@@ -5,7 +5,9 @@ import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
@@ -36,11 +38,15 @@ public class ViewProfilePermissionsTest {
 
     @BeforeAll
     void setup() {
-        userProfileController = new UserProfileController();
-        pom = new ProfileObjectMapper();
-        MockitoAnnotations.initMocks(userProfileController);
+        this.userProfileController = new UserProfileController();
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @BeforeEach
+    void beforeEach(){
+        this.pom = new ProfileObjectMapper();
         this.tempUser = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(this.tempUser));
     }
 
     @Test
@@ -52,6 +58,9 @@ public class ViewProfilePermissionsTest {
     void testUpdateOtherProfile(){
         //auth as other
         MockHttpServletRequest request = new MockHttpServletRequest();
+        User tempUser = new User(2L);
+        tempUser.setPermissionLevel(0);
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempUser));
         request.setAttribute("authenticatedid", 2L);
         assertThrows(UserNotAuthenticatedException.class, () -> {
             userProfileController.updateProfile(new ProfileObjectMapper(),1L, request);
