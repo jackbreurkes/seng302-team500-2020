@@ -105,6 +105,17 @@ export async function getActivitiesByCreator(creatorId: number) {
 }
 
 /**
+ * Gets an activity by a user's ID and the activity ID
+ * 
+ * @param {number} creatorId User the activity belongs to
+ * @param {number} activityId Activity ID
+ * @return {CreateActivityRequest} Retrieved activity data
+ */
+export async function getActivityById(creatorId: number, activityId: number) {
+  return activityModel.getActivityById(creatorId, activityId);
+}
+
+/**
  * returns a reader-friendly description of the duration of a duration activity.
  * @param startTime the ISO datetime string representing the start time
  * @param endTime the ISO datetime string representing the end time

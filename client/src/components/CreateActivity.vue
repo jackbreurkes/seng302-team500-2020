@@ -6,7 +6,7 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>Create Activity</v-toolbar-title>
+                <v-toolbar-title>{{this.isEditing ? "Edit Activity" : "Create Activity"}}</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-text-field
@@ -154,6 +154,7 @@ const CreateActivity = Vue.extend({
   data: function() {
     return {
       createActivityRequest: {} as CreateActivityRequest,
+      isEditing: false as boolean,
       currentProfileId: NaN as number,
       timeMode: "",
       startDate: "",
@@ -214,7 +215,8 @@ const CreateActivity = Vue.extend({
 
     const editingId: number|null = parseInt(this.$route.params.activityId);
     if (editingId) {
-      
+      this.isEditing = true;
+      this.populateFields(editingId);
     }
   },
 
@@ -244,6 +246,11 @@ const CreateActivity = Vue.extend({
           .catch(() => {
             alert(`${this.createActivityRequest.activity_type}`);
           });
+    },
+
+    populateFields: async function(editingId: number) {
+      let activityData: CreateActivityRequest = await activityController.getActivityById(this.currentProfileId, editingId);
+      this.createActivityRequest = activityData;
     }
   }
 });

@@ -10,7 +10,7 @@
               <v-chip class="ml-2" v-if="activity.creator_id === profileId">Creator</v-chip>
             </div>
             <div v-if="authority">
-              <v-chip class="ml-2" @click="editActivity()">Edit</v-chip>
+              <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)">Edit</v-chip>
             </div>
           </template>
           <span>Your role</span>
@@ -28,7 +28,7 @@
           class="mr-2 mb-2"
           v-for="activityType of activity.activity_type"
           v-bind:key="activityType"
-          outlined="true"
+          outlined
         >{{ activityType }}</v-chip>
       </v-card-text>
     </v-card>
@@ -73,6 +73,9 @@ const ActivitiesList = Vue.extend({
   methods: {
     getDurationDescription(startTime: string, endTime: string): string {
       return activityController.descripeDurationTimeFrame(startTime, endTime);
+    },
+    editActivity(activityId: number) {
+      this.$router.push(`/profiles/${this.profileId}/editActivity/${activityId}`);
     }
   }
 });
