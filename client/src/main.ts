@@ -5,6 +5,7 @@ import Register from "./components/Register.vue";
 import Homepage from "./components/Homepage.vue";
 import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
+import EditActivity from "./components/EditActivity.vue";
 
 Vue.config.productionTip = false;
 
@@ -20,6 +21,11 @@ const routes = [
   {
     path: "/profiles/:profileId/createActivity",
     name: "createActivity",
+    component: CreateActivity,
+  },
+  {
+    path: "/profiles/:profileId/editActivity/:activityId",
+    name: "editActivity",
     component: CreateActivity,
   },
   {

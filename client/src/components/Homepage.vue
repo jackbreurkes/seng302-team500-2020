@@ -80,7 +80,7 @@
                   v-bind:key="activityType"
                 >{{ activityType }}</v-chip>
               </div>
-              <ActivitiesList :profileId="currentProfileId"></ActivitiesList>
+              <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority"></ActivitiesList>
             </v-card-text>
           </v-card>
         </v-col>

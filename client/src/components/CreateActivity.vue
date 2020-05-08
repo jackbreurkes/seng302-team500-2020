@@ -211,6 +211,11 @@ const CreateActivity = Vue.extend({
         this.activityTypes = activity})
       .catch(err => {console.error("unable to load activity types");
       console.error(err)});
+
+    const editingId: number|null = parseInt(this.$route.params.activityId);
+    if (editingId) {
+      
+    }
   },
 
   methods: {

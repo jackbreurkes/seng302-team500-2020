@@ -9,8 +9,11 @@
             <div v-on="on">
               <v-chip class="ml-2" v-if="activity.creator_id === profileId">Creator</v-chip>
             </div>
+            <div v-if="authority">
+              <v-chip class="ml-2" @click="editActivity()">Edit</v-chip>
+            </div>
           </template>
-          <span>your role</span>
+          <span>Your role</span>
         </v-tooltip>
       </v-card-title>
 
@@ -25,6 +28,7 @@
           class="mr-2 mb-2"
           v-for="activityType of activity.activity_type"
           v-bind:key="activityType"
+          outlined="true"
         >{{ activityType }}</v-chip>
       </v-card-text>
     </v-card>
@@ -43,7 +47,7 @@ import { CreateActivityRequest } from "../scripts/Activity";
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["profileId"], // props are passed in from the parent component
+  props: ["profileId", "authority"], // props are passed in from the parent component
 
   // app initial state
   data: function() {
