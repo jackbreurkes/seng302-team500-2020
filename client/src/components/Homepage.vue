@@ -27,7 +27,7 @@
               <p>Identifies as {{ currentUser.gender }}</p>
               <br />
 
-              <div v-if="currentUser.fitness">
+              <div v-if="currentUser.fitness !== undefined">
                 <p>Fitness level {{ currentUser.fitness }}</p>
                 <br />
               </div>
