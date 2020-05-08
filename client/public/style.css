@@ -397,5 +397,7 @@ html .clear-checked:active {
 }
 
 #app {
-    background: url('background.jpg') center center, white;
+    background: url('background.jpg');
+    background-attachment: fixed;
+    background-size: cover;
 }

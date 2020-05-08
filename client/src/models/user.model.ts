@@ -9,7 +9,8 @@ import axios from 'axios'
  */
 interface LoginResponse {
   token: string,
-  profile_id: string
+  profile_id: string,
+  permission_level: string
 }
 
 
@@ -28,6 +29,13 @@ const instance = axios.create({
   timeout: 10000
 });
 
+export function getMyPermissionLevel(): number {
+  let level = localStorage.getItem("permissionLevel");
+  if (!level) {
+    return 0;
+  }
+  return parseInt(level);
+}
 
 function getMyUserId() {
   return localStorage.getItem("userId")
@@ -88,6 +96,7 @@ export async function login(email: string, password: string): Promise<boolean> {
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
+  localStorage.setItem("permissionLevel", responseData.permission_level);
   setMyUserId(responseData.profile_id);
   return true;
 }
