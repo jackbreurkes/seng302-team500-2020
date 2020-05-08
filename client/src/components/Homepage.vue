@@ -27,8 +27,11 @@
               <p>Identifies as {{ currentUser.gender }}</p>
               <br />
 
-              <div v-if="currentUser.fitness">
-                <p>Fitness level {{ currentUser.fitness }}</p>
+                <div v-if="currentUser.fitness !== undefined">
+                  <p>Fitness level {{ currentUser.fitness }}</p>
+                  <br />
+                </div>
+                <p>Email: {{ currentUser.primary_email }}</p>
                 <br />
               </div>
 
