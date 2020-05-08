@@ -93,6 +93,18 @@ public class ExceptionHandlerController {
 	public ErrorResponse requestHandlingInvalidField(RecordNotFoundException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
+	
+	/**
+	 * catches all EmailAlreaadyRegisteredExceptions thrown by endpoints and returns an ErrorResponse with code 403.
+	 * @param exception the exception object thrown by a method
+	 * @return ErrorResponse object with message equal to the exception message
+	 */
+	@ExceptionHandler(EmailAlreadyRegisteredException.class)
+	@ResponseStatus(value = HttpStatus.FORBIDDEN)
+	@ResponseBody
+	public ErrorResponse requestHandlingInvalidField(EmailAlreadyRegisteredException exception) {
+		return new ErrorResponse(exception.getMessage());
+	}
 
 	/**
 	 * catches all InvalidPasswordExceptions thrown by endpoints and returns an ErrorResponse with code 403.

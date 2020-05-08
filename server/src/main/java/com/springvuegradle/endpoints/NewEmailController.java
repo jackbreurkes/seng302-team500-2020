@@ -165,59 +165,6 @@ public class NewEmailController {
         } else {	// The user is not an admin or editing their own profile
         	throw new AccessDeniedException("must be logged in as user or as admin to edit emails");
         } 
-		
-		/*Optional<User> userRequesting = userRepo.findById(authId);
-        if (userRequesting.isPresent() && (userRequesting.get().getPermissionLevel() > 120 || authId == profileId)) {
-		
-			LinkedHashMap<String, Object> json = null;
-			try {
-				json = getJson(raw);
-			} catch (org.apache.tomcat.util.json.ParseException e) {
-				e.printStackTrace();
-				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
-			}
-		
-		LinkedHashMap<String, Object> json = null;
-		try {
-			json = getJson(raw);
-		} catch (org.apache.tomcat.util.json.ParseException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
-		}
-		
-		if (json.containsKey("additional_email")) {
-			try {
-				ArrayList<String> newEmails = (ArrayList<String>) json.get("additional_email");
-				
-				if (newEmails.size() >= 5) {					// As this list does not include the primary email
-					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Maximum email addresses is (5)"));
-				} else {
-					
-					if (json.containsKey("primary_email")) {
-						String newPrimaryEmailString = (String) json.get("primary_email");
-						
-						if (emailRepo.existsById(newPrimaryEmailString)) {
-							if (emailRepo.findByEmail(newPrimaryEmailString).getUser() == user) {
-								System.out.println("It IS your email!");
-								emailRepo.deleteById(newPrimaryEmailString);
-							} else {
-								return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Email is already registered to another user!"));
-							}
-						}
-						emailRepo.save(new Email(user, newPrimaryEmailString, true));
-						updateAdditionalEmails(user, newEmails);
-						return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated account emails.");					
-
-					} else {
-						return ResponseEntity.status(HttpStatus.resolve(400)).body("Incorrect method for updating primary email. Use POST.");					
-					}
-				}
-			} catch (Error e) {
-				return ResponseEntity.status(HttpStatus.resolve(400)).body("Illformatted additional email list.");
-			}
-		} else {
-			return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
-		}*/
 	}
 	
 	private LinkedHashMap<String, Object> getJson(String raw) throws org.apache.tomcat.util.json.ParseException {
@@ -252,6 +199,7 @@ public class NewEmailController {
 	private boolean emailAlreadyRegisteredToOtherUser(String email, User user) {
 		boolean registered = false;
 		Email emailFound = emailRepo.findByEmail(email);
+		System.out.println(emailFound);
 		if (emailFound != null && emailFound.getUser().getUserId() != user.getUserId()) {
 			registered = true;
 		}
