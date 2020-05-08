@@ -176,8 +176,6 @@ public class UserProfileController {
             } else {
                 throw new RecordNotFoundException("no activity type with name " + activityTypeName + " found");
             }
-        }else{
-            throw new RecordNotFoundException("Record not found");
         }
         return activityTypes;
     }
