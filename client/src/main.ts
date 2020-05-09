@@ -5,6 +5,7 @@ import Register from "./components/Register.vue";
 import Homepage from "./components/Homepage.vue";
 import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
+import AdminDashboard from "./components/AdminDashboard.vue";
 import EditActivity from "./components/EditActivity.vue";
 
 Vue.config.productionTip = false;
@@ -37,6 +38,11 @@ const routes = [
     path: "/profiles/:profileId/edit",
     name: "editProfile",
     component: EditProfile,
+  },
+  {
+    path: "/admin",
+    name: "adminDashboard",
+    component: AdminDashboard,
   },
 ];
 

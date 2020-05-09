@@ -166,6 +166,7 @@ export async function logout() {
     throw new Error(e.response.data.error);
   }
   localStorage.removeItem("token"); //still remove token if not deleted from backend
+  localStorage.removeItem("permissionLevel"); //remove our permission level too
   setMyUserId(null); // removes userId
 }
 

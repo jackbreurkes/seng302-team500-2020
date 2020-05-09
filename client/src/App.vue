@@ -19,7 +19,8 @@
   import Vue from "vue"
   import {
     logoutCurrentUser,
-    fetchCurrentUser
+    fetchCurrentUser,
+    getPermissionLevel
   } from "./controllers/profile.controller";
   // app Vue instance
   const app = Vue.extend({
@@ -54,10 +55,15 @@
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
           this.isLoggedIn = true;
-          this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          if ((!user || !user.firstname) && getPermissionLevel() >= 120) {
+            this.currentName = "Admin";
+          } else {
+            this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          }
         })
         .catch(() => {
-          this.isLoggedIn = false;
+          this.isLoggedIn = getPermissionLevel() >= 120;
+          this.currentName = getPermissionLevel() >= 120 ? "Admin" : "";
         });
       }
     }
