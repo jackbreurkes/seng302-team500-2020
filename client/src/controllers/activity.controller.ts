@@ -1,7 +1,6 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
 import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
-import { create } from '@/models/user.model';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -12,7 +11,18 @@ export async function getAvailableActivityTypes(force = false) {
   return _availableActivityTypes;
 }
 
-export async function createNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
+/**
+ * Validates create activity request to be in proper syntax and format. Throws descriptive error
+ * upon finding an element of the request not in expected form. Also sets start and end times if 
+ * applicable
+ * @param sDate user inputted start date (if not continuous)
+ * @param sTime user inputted start time (optional)
+ * @param eDate user inputted end date (if not continuous)
+ * @param eTime ser inputted start time (optional)
+ * @param createActivityRequest request form consisting of all other elements of the form
+ * @param profileId user's id 
+ */
+export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
     createActivityRequest: CreateActivityRequest, profileId: number) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
@@ -21,13 +31,13 @@ export async function createNewActivity(sDate: string, sTime: string, eDate: str
     throw new Error("Please select a time frame");
   }
    if (!createActivityRequest.continuous) {
-     if (sDate == "" || sDate == undefined) {
+     if (sDate === "" || sDate === undefined) {
        throw new Error("Duration based activities must have a start date");
      }
      if (!isValidTime(sTime) && sTime != "") {
       throw new Error("Start time is not in valid format");
     }
-     if (eDate == "" || eDate == undefined) {
+     if (eDate === "" || eDate === undefined) {
        throw new Error("Duration based activities must have an end date");
      }
      if (!isValidEndDate(sDate, eDate)) {
@@ -42,10 +52,10 @@ export async function createNewActivity(sDate: string, sTime: string, eDate: str
   if (!validateDescription(createActivityRequest.description)) {
     throw new Error("Description must be at least 8 characters or omitted completely.");
   }
-  if (createActivityRequest.location == undefined) {
+  if (createActivityRequest.location === undefined) {
     throw new Error("Please enter the location of the activity")
   }
-  if (createActivityRequest.activity_type == [] || createActivityRequest.activity_type == undefined) {
+  if (createActivityRequest.activity_type === [] || createActivityRequest.activity_type === undefined) {
     throw new Error("Please select at least one activity type");
   }
   await createActivity(createActivityRequest, profileId);
@@ -100,14 +110,14 @@ export function removeActivityType(activityType: string, createActivityRequest: 
  * @param time start time in string format
  */
 export function setStartDate(dateString: string, time: string) {
-  if (time == "") {
+  if (time === "") {
     time = "00:00"
   }
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
   let offSetString = offset.toString();
   let newOffsetString;
-  if (offSetString.length == 4) {
+  if (offSetString.length === 4) {
     newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
   } else {
     newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
@@ -121,7 +131,7 @@ export function setStartDate(dateString: string, time: string) {
  * @returns only the date as string
  */
 export function getDateFromISO(dateString: string | number): string {
-  if (dateString == undefined) {
+  if (dateString === undefined) {
     dateString = "";
   }
   var date = new Date(dateString);
@@ -135,14 +145,14 @@ export function getDateFromISO(dateString: string | number): string {
  * @param time end time in string format
  */
 export function setEndDate(dateString: string, time: string) {
-  if (time == "") {
+  if (time === "") {
     time = "00:00"
   }
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
   let offSetString = offset.toString();
   let newOffsetString;
-  if (offSetString.length == 4) {
+  if (offSetString.length === 4) {
     newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
   } else {
     newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
@@ -150,10 +160,14 @@ export function setEndDate(dateString: string, time: string) {
   return dateString + "T" + time + ":00" + newOffsetString;
 }
 
-
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
+/**
+ * Validates that activity name is in compliance with our specification of 
+ * having between 4 to 30 characters
+ * @param activityName create activity request's activity name
+ */
 export function validateActivityName(activityName: string | undefined): boolean {
-  if (activityName == undefined) {
+  if (activityName === undefined) {
     return false;
   }
   if (activityName.length >= 4 && activityName.length <= 30) {
@@ -165,7 +179,7 @@ export function validateActivityName(activityName: string | undefined): boolean 
 
 export const INVALID_DESCRIPTION_MESSAGE = "description must be at least 8 characters"
 export function validateDescription(activityDescription: string | undefined): boolean {
-  if (activityDescription == undefined || activityDescription.length >= 8 || activityDescription == "") {
+  if (activityDescription === undefined || activityDescription.length >= 8 || activityDescription === "") {
     return true;
   } else {
     return false;
@@ -174,7 +188,7 @@ export function validateDescription(activityDescription: string | undefined): bo
 
 export const INVALID_ACTIVITY_TYPE = "activity type already added"
 export function validateActivityType(activityType: string, createActivityRequest: CreateActivityRequest): boolean { 
-  if(createActivityRequest.activity_type == undefined) {
+  if(createActivityRequest.activity_type === undefined) {
     createActivityRequest.activity_type = [];
   }
   return createActivityRequest.activity_type.includes(activityType)
@@ -201,11 +215,15 @@ export async function getActivitiesByCreator(creatorId: number) {
 
 export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
 export function isFutureDate(dateString: string): boolean {
-  let today = new Date().getTime()
-  let date = new Date(dateString).getTime()
-  if ((today - date) < 0) {
-    return true;
-  } else {
+  try {
+    let today = new Date().getTime()
+    let date = new Date(dateString).getTime()
+    if ((today - date) < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
     return false;
   }
 }
@@ -236,8 +254,12 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
+/**
+ * Checks if the create activity request field "continuous" exists
+ * @param timeFrame the createActivityRequest.continuous field
+ */
 export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
-  if (timeFrame == undefined) {
+  if (timeFrame === undefined) {
     return false;
   } else {
     return true;
@@ -257,6 +279,10 @@ export function isValidEndDate(startDateString: string, endDateString: string): 
 }
 
 export const INVALID_TIME_MESSAGE = "Please enter a valid time"
+/**
+ * Checks if time string input is in described regex
+ * @param timeString time string to be checked
+ */
 export function isValidTime(timeString: string): boolean {
   let re = /^\d{1,2}:\d{2}([ap]m)?$/;
   if (timeString.match(re)) {

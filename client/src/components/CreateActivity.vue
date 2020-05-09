@@ -22,7 +22,7 @@
                 <v-radio label="Continuous" :value="true"></v-radio>
                 <v-radio label="Duration" :value="false"></v-radio>
               </v-radio-group>
-                <div v-if="!createActivityRequest.continuous & createActivityRequest.continuous != undefined">
+                <div v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined">
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -237,7 +237,7 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked: async function() {
-      activityController.createNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
+      activityController.validateNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
         this.createActivityRequest, this.currentProfileId)
           .then(() => {
             this.$router.push({ name: "profilePage" });
