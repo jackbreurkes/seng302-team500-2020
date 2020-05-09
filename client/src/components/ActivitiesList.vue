@@ -72,7 +72,7 @@ const ActivitiesList = Vue.extend({
 
   methods: {
     getDurationDescription(startTime: string, endTime: string): string {
-      return activityController.descripeDurationTimeFrame(startTime, endTime);
+      return activityController.describeDurationTimeFrame(startTime, endTime);
     },
     editActivity(activityId: number) {
       this.$router.push(`/profiles/${this.profileId}/editActivity/${activityId}`);
