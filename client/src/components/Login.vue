@@ -87,13 +87,19 @@
       goToCurrentUsersPageIfPossible() {
         const currentlyStoredToken = localStorage.getItem("token");
         const currentlyStoredUserId = localStorage.getItem("userId");
+        const currentlyStoredPermissionLevel = localStorage.getItem("permissionLevel");
         if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
-          this.errorMessage = "Automatically logging you in...";
-          this.$router.push({ name: "profilePage", params: {profileId: currentlyStoredUserId} })
-            .catch((err) => {
+          this.errorMessage = "Logging you in...";
+          if (currentlyStoredPermissionLevel == "0") {
+            this.$router.push({ name: "profilePage", params: {profileId: currentlyStoredUserId} })
+              .catch((err) => {
                 console.error(err);
                 this.errorMessage = "failed to load profile page";
               });
+          } else {
+            this.$router.push({ name: "adminDashboard" });
+          }
+          
         }
       }
     }
