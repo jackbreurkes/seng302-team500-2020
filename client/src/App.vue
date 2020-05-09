@@ -53,18 +53,18 @@
           });
       },
       updateUserData: function() {
-        if (getPermissionLevel() >= 120) {
+        fetchCurrentUser().then((user) => {
           this.isLoggedIn = true;
-          this.currentName = "Admin";
-        } else {
-          fetchCurrentUser().then((user) => {
-            this.isLoggedIn = true;
+          if ((!user || !user.firstname) && getPermissionLevel() >= 120) {
+            this.currentName = "Admin";
+          } else {
             this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
-          })
-          .catch(() => {
-            this.isLoggedIn = false;
-          });
-        }
+          }
+        })
+        .catch(() => {
+          this.isLoggedIn = getPermissionLevel() >= 120;
+          this.currentName = getPermissionLevel() >= 120 ? "Admin" : "";
+        });
       }
     }
   });
