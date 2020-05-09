@@ -2,84 +2,75 @@
   <div>
     <v-container class="fill-height" fluid>
       <v-row align="center" justify="center">
-        <v-col cols="12" sm="8" md="6">
+        <v-col cols="12" sm="12" md="6">
           <v-card class="elevation-12" width="100%">
             <v-toolbar color="primary" dark flat> 
-              <v-toolbar-title>Profile: {{ titleBarUserName }}</v-toolbar-title>
+              <v-toolbar-title>Editing profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
 
             <v-card-text>
               <v-card-title>About Me</v-card-title>
               <v-form ref="editForm">
                 <v-text-field
-                  dense
-                  filled
                   id="nickname"
                   label="Nickname"
                   v-model="editedUser.nickname"
                   :rules="inputRules.nicknameRules"
                 ></v-text-field>
                 <v-textarea
-                  dense
-                  filled
                   id="bio"
                   label="Bio"
+                  filled
+                  placeholder="Tell us about yourself..."
                   v-model="editedUser.bio"
-                  :rules="inputRules.bioRules"
-                >Something in here</v-textarea>
+                  :rules="inputRules.bioRules"></v-textarea>
                 <template>
                   <v-container-fluid>
                     <v-radio-group
                       v-model="editedUser.fitness"
                       label="Fitness Level"
-                      :mandatory="false"
-                    >
+                      :mandatory="false">
                       <v-radio label="Muffin (no fitness)" :value="0"></v-radio>
                       <v-radio label="Potato (little fitness)" :value="1"></v-radio>
                       <v-radio label="Carrot (moderate fitness)" :value="2"></v-radio>
                       <v-radio label="Blueberry (outdoors enthusiast)" :value="3"></v-radio>
                       <v-radio label="Kale (fitness fanatic)" :value="4"></v-radio>
+                      <v-radio label="Unspecified" :value="-1"></v-radio>
                     </v-radio-group>
                   </v-container-fluid>
                 </template>
 
                 <v-divider></v-divider>
-
                 <v-card-title>Personal Details</v-card-title>
 
                 <v-text-field
-                  dense
-                  filled
                   id="firstname"
                   label="First name"
                   v-model="editedUser.firstname"
                   :rules="inputRules.firstnameRules"
                 ></v-text-field>
                 <v-text-field
-                  dense
-                  filled
                   id="middlename"
                   label="Middle name"
                   v-model="editedUser.middlename"
                   :rules="inputRules.middlenameRules"
                 ></v-text-field>
                 <v-text-field
-                  dense
-                  filled
                   id="lastname"
                   label="Last name"
                   v-model="editedUser.lastname"
                   :rules="inputRules.lastnameRules"
                 ></v-text-field>
-
-                <v-select
-                  dense
-                  filled
-                  label="Gender"
-                  v-model="editedUser.gender"
-                  :items="availableGenders"
-                  :rules="inputRules.genderRules"
-                ></v-select>
+                <template>
+                  <v-container-fluid>
+                    <v-radio-group
+                      v-model="editedUser.gender"
+                      label="Gender"
+                      :mandatory="false">
+                      <v-radio v-for="gender in availableGenders" :key="gender" :label="gender" :value="gender"></v-radio>
+                    </v-radio-group>
+                  </v-container-fluid>
+                </template>
 
                 <v-menu
                   ref="dobMenu"
@@ -93,7 +84,6 @@
                   <template v-slot:activator="{ on }">
                     <v-text-field
                       dense
-                      filled
                       v-model="editedUser.date_of_birth"
                       :value="editedUser.date_of_birth"
                       v-on="on"
@@ -109,93 +99,98 @@
                   ></v-date-picker>
                 </v-menu>
 
-                <div
-                  id="passport-chips"
-                  v-if="editedUser.passports && editedUser.passports.length > 0"
-                >
-                  <v-chip
-                    v-for="passport in editedUser.passports"
-                    :key="passport"
-                    close
-                    class="ma-1"
-                    @click:close="deletePassportCountry(passport)"
-                  >{{ passport }}</v-chip>
-                </div>
+                <v-card-title>Passport Countries</v-card-title>
 
                 <v-autocomplete
                   :items="passportCountries"
                   color="white"
                   item-text="name"
                   label="Countries"
-                  v-model="selectedCountry"
-                  @input="addSelectedPassportCountry()"
+                  placeholder="Start searching for countries you can visit"
+                  v-model="editedUser.passports"
+                  chips
+                  deletable-chips
+                  multiple
                 ></v-autocomplete>
 
-                <div
-                  id="activity-type-chips"
-                  v-if="editedUser.activities && editedUser.activities.length > 0"
-                >
-                  <v-chip
-                    v-for="activity in editedUser.activities"
-                    :key="activity"
-                    close
-                    class="ma-1"
-                    @click:close="deleteActivityType(activity)"
-                  >{{ activity }}</v-chip>
-                </div>
+                <v-card-title>Interests</v-card-title>
 
                 <v-autocomplete
                   :items="availableActivityTypes"
                   color="white"
                   item-text="name"
                   label="Interests"
-                  v-model="selectedActivityType"
-                  @input="addSelectedActivityType()"
+                  placeholder="What activities are you interested in?"
+                  v-model="editedUser.activities"
+                  chips
+                  deletable-chips
+                  multiple
                 ></v-autocomplete>
               </v-form>
 
-              <v-btn @click="saveButtonClicked">Save</v-btn>
-              <v-btn @click="returnToProfile">Cancel</v-btn>
-
-              <br />
+              <v-btn @click="saveButtonClicked" color="primary">Save profile changes</v-btn>
+              <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
               <br />
             </v-card-text>
           </v-card>
           <br />
-
           <v-card>
-            <v-card-title>Login Details</v-card-title>
+            <v-toolbar color="primary" dark flat> 
+              <v-toolbar-title>Email Addresses</v-toolbar-title>
+            </v-toolbar>
             <v-card-text>
-              <p>Primary email: {{ editedUser.primary_email }}</p>
+              <p>Primary email:</p>
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-chip color="primary" v-on="on" class="ml-2">{{ editedUser.primary_email }}</v-chip>
+                </template>
+                <span>Primary email</span>
+              </v-tooltip>
               <br />
-              <p>Secondary Emails {{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }} / 5:</p>
-              <ul>
-                <li v-for="email in editedUser.additional_email" :key="email">
-                  {{ email }}
-                  <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
-                  <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
-                </li>
-              </ul>
+              <p>Secondary email addresses (click to make primary): <b>{{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }}/5</b></p>
               <br />
-              <p>Add a new email:</p>
-              <v-card-actions v-if="editedUser.additional_email.length !== 5">
-                <v-text-field
-                  v-model="newEmail"
-                  label="enter new email here"
-                  type="email"
-                  dense
-                  filled
-                  required
-                  :rules="inputRules.emailRules"
-                ></v-text-field>
-
-                <v-btn id="addEmailAddress" @click="addTempEmail(newEmail)">Add Email</v-btn>
-              </v-card-actions>
-              <v-btn id="updateEmail" @click="updateEmail()">Update Email</v-btn>
+              <v-tooltip top v-for="email in editedUser.additional_email" :key="email">
+                <template v-slot:activator="{ on }">
+                  <v-chip v-on="on" class="ml-1" close 
+                    @click:close="deleteEmailAddress(email)"
+                    @click="setPrimaryEmail(email)">
+                    {{ email }}
+                  </v-chip>
+                </template>
+                <span>Click to make primary</span>
+              </v-tooltip>
+              <span v-if="editedUser.additional_email.length !== 5">
+                <v-container class="fill-height" fluid>
+                  <v-row align="center" justify="center">
+                    <v-col cols="12" sm="12" md="6">
+                      <v-text-field
+                        v-model="newEmail"
+                        label="New email address"
+                        type="email"
+                        required
+                        :rules="inputRules.emailRules"
+                        @keyup.enter.native="addTempEmail(newEmail)"
+                      ></v-text-field>
+                    </v-col>
+                    <v-btn id="addEmailAddress" @click="addTempEmail(newEmail)" text>Add Email</v-btn>
+                  </v-row>
+                </v-container>
+              </span>
+              <br /><br />
+              <v-btn id="updateEmail" @click="updateEmail()" color="primary">Save email changes</v-btn>
+              <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
+            </v-card-text>
+          </v-card>
+          <br />
+          <v-card>
+            <v-toolbar color="primary" dark flat> 
+              <v-toolbar-title>Change Password</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text>
               <v-form>
                 <v-text-field
                   v-model="oldPassword"
-                  label="old password"
+                  label="Current password"
                   type="password"
                   dense
                   filled
@@ -203,7 +198,7 @@
                 ></v-text-field>
                 <v-text-field
                   v-model="newPassword"
-                  label="new password"
+                  label="New password"
                   type="password"
                   dense
                   filled
@@ -211,15 +206,17 @@
                 ></v-text-field>
                 <v-text-field
                   v-model="repeatPassword"
-                  label="repeat password"
+                  label="Repeat new password"
                   type="password"
+                  :rules="[this.newPassword == this.repeatPassword ? true : 'Passwords do not match']"
                   dense
                   filled
                   required
+                  @keyup.enter.native="updatePasswordButtonClicked"
                 ></v-text-field>
                 <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
                 <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-                <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+                <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary">Update your password</v-btn>
               </v-form>
               <!-- insert edit email and edit password forms here -->
             </v-card-text>
@@ -287,7 +284,7 @@ const Homepage = Vue.extend({
         ],
         emailRules: [
           (v: string) =>
-            formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
+            formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING          
         ]
       },
 
@@ -326,9 +323,9 @@ const Homepage = Vue.extend({
         this.editedUser = user;
         if (user.fitness) {
           this.editedUser.fitness = user.fitness;
+        } else {
+          this.editedUser.fitness = -1;
         }
-        console.log(this.editedUser)
-        console.log(JSON.stringify(this.editedUser))
       })
       .catch(err => {
         console.error(err);
@@ -368,6 +365,7 @@ const Homepage = Vue.extend({
         this.selectedCountry,
         this.editedUser
       );
+      this.selectedCountry = "";
     },
 
     addActivityType: function() {
@@ -386,7 +384,9 @@ const Homepage = Vue.extend({
       }
       updateActivityTypes(this.editedUser.activities, this.currentProfileId)
       .then(() => {this.returnToProfile()})
-      .catch(() => {alert("Unable to update user.");});
+      .catch(() => {
+        alert("Unable to update user. ");
+      });
     },
 
     removeActivityType:function(activitySelected: string){
@@ -440,8 +440,8 @@ const Homepage = Vue.extend({
             this.returnToProfile();
           })
           .catch(() => {
-          });
             alert("Unable to update user.");
+          });
       }
     },
 
@@ -510,7 +510,8 @@ const Homepage = Vue.extend({
     },
 
     addTempEmail: function(email: string) {
-      if (new FormValidator().isValidEmail(email)) {
+      if (new FormValidator().isValidEmail(email) && this.editedUser.primary_email != email &&
+          !(this.editedUser.additional_email && this.editedUser.additional_email.includes(email))) {
         if (this.editedUser.additional_email === undefined) {
           this.editedUser.additional_email = [];
         } else {
@@ -523,6 +524,8 @@ const Homepage = Vue.extend({
       this.passwordSuccessMessage = "";
       this.passwordErrorMessage = "";
 
+      if (this.newPassword != this.repeatPassword) return;
+
       profileController
         .updatePassword(
           this.oldPassword,
@@ -531,7 +534,7 @@ const Homepage = Vue.extend({
           this.currentProfileId
         )
         .then(() => {
-          this.passwordSuccessMessage = "password changed successfully";
+          this.passwordSuccessMessage = "Password changed successfully";
         })
         .catch((err: any) => {
           this.passwordErrorMessage = err.message;

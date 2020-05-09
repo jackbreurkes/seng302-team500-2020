@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-container class="fill-height" fluid>
+    <v-container fill-height align-content-center>
       <v-row align="top" justify="center">
-        <v-col sm="12" md="8" lg="4">
+        <v-col sm="12" md="10" lg="4">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
@@ -11,7 +11,7 @@
                 <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
               </div>
             </v-toolbar>
-            <v-card-text>
+            <v-card-text class="grey lighten-4">
               <h3>Name</h3>
               <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
 
@@ -27,7 +27,7 @@
               <p>Identifies as {{ currentUser.gender }}</p>
               <br />
 
-              <div v-if="currentUser.fitness !== undefined">
+              <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
                 <p>Fitness level {{ currentUser.fitness }}</p>
                 <br />
               </div>
@@ -56,7 +56,7 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col sm="12" md="8" lg="8">
+        <v-col sm="12" md="10" lg="8">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
@@ -66,7 +66,7 @@
               </div>
             </v-toolbar>
 
-            <v-card-text>
+            <v-card-text class="grey lighten-4">
               <div v-if="currentUser.activities && currentUser.activities.length > 0">
                 <h3>Interests</h3>
                 <v-chip
