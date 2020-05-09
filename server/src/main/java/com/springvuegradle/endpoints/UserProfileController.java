@@ -88,47 +88,24 @@ public class UserProfileController {
     @PostConstruct
 	public void findSuperAdmin() {
 		System.out.println("================================================");
-		System.out.println("================================================");
-		System.out.println("================================================");
-		System.out.println("================================================");
 
-		
-		
 		if (userRepository.superAdminExists() == 0) {
 			User superAdmin = new User();
-			System.out.println(superAdmin.getUserId());
 			
 			superAdmin.setPermissionLevel(SUPER_ADMIN_USER_PERMISSION);
-			try {
-				superAdmin.setPassword("password");
-				System.out.println(superAdmin.getPassword());
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
 	        userRepository.save(superAdmin);
 			
 	        superAdmin = userRepository.getSuperAdmin().get(0);
 	        try {
 				superAdmin.setPassword("password");
-				System.out.println(superAdmin.getPassword());
 			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	        System.out.println("Actual id: " + superAdmin.getUserId());
 	        
 	        userRepository.save(superAdmin);
-	        
-	        System.out.println("Saved again!");
 
-	        
 	        Email superAdminEmail = new Email(superAdmin, "super@admin.com", true);
-	        //LocalDate fakeDoB = LocalDate.now();
-	        //Profile superAdminProfile = new Profile(superAdmin, "Super", "Admin", fakeDoB, Gender.NON_BINARY);
-	        
-	        //profileRepository.save(superAdminProfile);
 	        emailRepository.save(superAdminEmail);
 	        emailRepository.findByEmail(superAdminEmail.getEmail()).setIsPrimary(true);
 
@@ -136,13 +113,7 @@ public class UserProfileController {
 		} else {
 			System.out.println("A super admin exists! Yay!");
 		}
-		
-		
-		
-		System.out.println("================================================");
-		System.out.println("================================================");
-		System.out.println("================================================");
-		System.out.println("================================================");
+
 		System.out.println("================================================");
 	}
 
