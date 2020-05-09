@@ -4,13 +4,14 @@
       <v-card-title>
         {{ activity.activity_name }} ({{ activity.location }})
         <v-spacer></v-spacer>
+        <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <div v-on="on">
-              <v-chip class="ml-2" v-if="activity.creator_id === profileId">Creator</v-chip>
+              <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
             </div>
           </template>
-          <span>your role</span>
+          <span>Your role</span>
         </v-tooltip>
       </v-card-title>
 
@@ -25,6 +26,7 @@
           class="mr-2 mb-2"
           v-for="activityType of activity.activity_type"
           v-bind:key="activityType"
+          outlined
         >{{ activityType }}</v-chip>
       </v-card-text>
     </v-card>
@@ -43,11 +45,12 @@ import { CreateActivityRequest } from "../scripts/Activity";
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["profileId"], // props are passed in from the parent component
+  props: ["profileId", "authority"], // props are passed in from the parent component
 
   // app initial state
   data: function() {
     return {
+      hasAuthority: this.authority as boolean,
       isValid: false,
       mandatoryAttributes: ["email", "password"],
       email: "",
@@ -55,6 +58,14 @@ const ActivitiesList = Vue.extend({
       errorMessage: "",
       activities: [] as CreateActivityRequest[]
     };
+  },
+
+  watch: {
+    // eslint-disable-next-line no-unused-vars
+    authority(newValue, oldValue) {
+      this.hasAuthority = newValue;
+      this.$forceUpdate();
+    }
   },
 
   created() {
@@ -69,6 +80,9 @@ const ActivitiesList = Vue.extend({
   methods: {
     getDurationDescription(startTime: string, endTime: string): string {
       return activityController.describeDurationTimeFrame(startTime, endTime);
+    },
+    editActivity(activityId: number) {
+      this.$router.push(`/profiles/${this.profileId}/editActivity/${activityId}`);
     }
   }
 });

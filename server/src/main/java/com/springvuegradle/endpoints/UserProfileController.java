@@ -277,10 +277,12 @@ public class UserProfileController {
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // authentication
+        System.out.println("DWADAWDAWDAD");
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         if (authId == null) {
             throw new UserNotAuthenticatedException("you are not logged in");
-        } else if (!authId.equals((long)-1) && !authId.equals(profileId)) {
+
+        } else if (!authId.equals((long)-1) && !authId.equals(profileId)) { //TODO update to permission level
             throw new AccessDeniedException("Insufficient permission");
         }
 

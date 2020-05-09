@@ -39,6 +39,8 @@ public class ActivityTypeController {
 		
 		String[] activityTypeStrings = allActivityTypes.stream().map(ActivityType::getActivityTypeName).toArray(String[]::new);
 		
+		System.out.println("Hit activity-types");
+		
 		return activityTypeStrings;
 	}
 
