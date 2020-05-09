@@ -35,8 +35,6 @@ import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
-//@Configuration
-//@ComponentScan("repository")
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {NewEmailController.class})
@@ -407,4 +405,437 @@ public class NewEmailControllerTest {
                 .andExpect(status().isBadRequest());
 
     }
+    
+    /*
+     * # PUT /profiles/{profileId}/emails
+		{
+		  "primary_email": "triplej@google.com",
+		  "additional_email": [
+		    "triplej@xtra.co.nz",
+		    "triplej@msn.com"
+		  ]
+		}
+     */
+    
+    @Test
+    public void updateOwnPrimaryEmail() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, true));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(editedUser, newEmail5, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void updatePrimaryEmailToOneNotAlreadyRegistered() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail5, true));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(null);
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void updateSomeoneElsesPrimaryEmail() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(mockUser.getUserId())).thenReturn(Optional.of(mockUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, true));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(editedUser, newEmail5, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", mockUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void updateSomeoneElsesPrimaryEmailAsAdmin() throws Exception {
+    	mockUser.setPermissionLevel(126);
+    	
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(mockUser.getUserId())).thenReturn(Optional.of(mockUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(null);
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, true));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(editedUser, newEmail5, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", mockUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void updateOwnPrimaryEmailButNoChanges() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(new Email(editedUser, newEmail2, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(new Email(editedUser, newEmail3, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(editedUser, newEmail5, true));	// Is the primary email
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void updateOwnPrimaryEmailToOtheerUsersEmail() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(new Email(editedUser, newEmail2, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(new Email(editedUser, newEmail3, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(mockUser, newEmail5, true));	// Is the primary email
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void updateEmailsBadJsonFormat() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(new Email(editedUser, newEmail2, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(new Email(editedUser, newEmail3, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, true));
+    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(new Email(editedUser, newEmail5, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
+    	    	"		  \"additional_email\", [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void putEmailsWithMissingPrimaryEmail() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "def@google.com";
+    	String newEmail3 = "ghi@google.com";
+    	String newEmail4 = "jkl@google.com";
+    	String newEmail5 = "mno@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(new Email(editedUser, newEmail2, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(new Email(editedUser, newEmail3, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail4, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail1 + "\",\r\n" + 
+    	    	"		    \"" + newEmail2 + "\",\r\n" + 
+    	    	"		    \"" + newEmail3 + "\",\r\n" + 
+    	    	"		    \"" + newEmail4 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void updatePrimaryEmailMissingAdditionalEmailsField() throws Exception {
+    	String newEmail1 = "abc@google.com";
+
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail1 + "\"}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void updatePrimaryEmailToNull() throws Exception {
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": null}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void updateAdditionalEmailsToNull() throws Exception {
+    	    	
+    	String newEmail1 = "abc@google.com";
+
+    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail1 + "\"," +
+    	    	"		  \"additional_email\": null}";
+    	
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    public void updateToInvalidPrimaryEmail() throws Exception {
+    	String newEmail1 = "abc.com";
+    	String newEmail2 = "def@google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail1 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail2 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void updateWithInvalidAdditionalEmail() throws Exception {
+    	String newEmail1 = "abc@google.com";
+    	String newEmail2 = "google.com";
+    	    	
+    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
+    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
+    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(new Email(editedUser, newEmail1, false));
+    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
+    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
+    	
+    	
+    	String emailRequestJson = "{\r\n" + 
+    	    	"		  \"primary_email\": \"" + newEmail1 + "\",\r\n" + 
+    	    	"		  \"additional_email\": [\r\n" + 
+    	    	"		    \"" + newEmail2 + "\"\r\n" + 
+    	    	"		    ]\r\n" + 
+    	    	"		}";
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + editedUser.getUserId() + "/emails")
+                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", editedUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
 }

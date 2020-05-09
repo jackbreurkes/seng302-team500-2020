@@ -88,7 +88,7 @@ public class NewEmailController {
 				try {
 					newEmails = (ArrayList<String>) json.get("additional_email");
 				} catch (Exception err) {
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid format for additional email list.");
+					throw new InvalidRequestFieldException("Invalid format for additional email list.");
 				}
 				if (newEmails.size() >= 5) {					// As this list does not include the primary email
 					throw new MaximumEmailsException("Maximum email addresses is (5)");
@@ -98,7 +98,7 @@ public class NewEmailController {
 					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
 				}
 			} else {	// If the "additional_email" field is not present in the json body
-				return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
+				throw new InvalidRequestFieldException("Missing additional email list.");
 			}
         } else {	// The user is not an admin or editing their own profile
         	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("must be logged in as user or as admin to edit emails");
@@ -107,8 +107,11 @@ public class NewEmailController {
 	
 	@PutMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updatePrimaryEmail(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, InvalidRequestFieldException, UserNotAuthenticatedException, EmailAlreadyRegisteredException, MaximumEmailsException {
+	public ResponseEntity<?> updatePrimaryEmail(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, InvalidRequestFieldException, UserNotAuthenticatedException, EmailAlreadyRegisteredException, MaximumEmailsException, UserDoesNotExistException {
 		User user = userRepo.getOne(profileId);
+		if (user == null) {
+			throw new UserDoesNotExistException("No user " + profileId);
+		}
 		
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
@@ -126,7 +129,7 @@ public class NewEmailController {
 				json = getJson(raw);
 			} catch (org.apache.tomcat.util.json.ParseException e) {
 				e.printStackTrace();
-				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid format for JSON body.");
 			}
 				
 			if (!json.containsKey("primary_email")) {
@@ -137,29 +140,38 @@ public class NewEmailController {
 				
 				String newPrimaryEmailString = (String) json.get("primary_email");
 				
-				if (emailAlreadyRegisteredToOtherUser(newPrimaryEmailString, user) || !(emailRepo.findByEmail(newPrimaryEmailString).getUser() == user)) {
+				// Check that the email is registered already but not to a different user
+				if (emailRepo.findByEmail(newPrimaryEmailString) == null || emailAlreadyRegisteredToOtherUser(newPrimaryEmailString, user)) {
 					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("New primary email is not already registered to user."));
 				} else {					
 					ArrayList<String> newEmails;
 					try {
 						newEmails = (ArrayList<String>) json.get("additional_email");
 					} catch (Exception err) {
-						return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid format for additional email list.");
+						throw new InvalidRequestFieldException("Invalid format for additional email list.");
 					}
-					if (newEmails.size() >= 5) {					// As this list does not include the primary email
+					if (newEmails != null && newEmails.size() >= 5) {					// As this list does not include the primary email
 						throw new MaximumEmailsException("Maximum email addresses is (5)");
 					}
 					
-					allEmailsValid(newEmails, user);
-					emailRepo.deleteById(newPrimaryEmailString);
-					emailRepo.save(new Email(user, newPrimaryEmailString, true));
-					updateAdditionalEmails(user, newEmails);
+					if (newEmails != null) {
+						if (!isValidEmail(newPrimaryEmailString)) {
+							throw new InvalidRequestFieldException("Invalid email: " + newPrimaryEmailString);
+						}
+						allEmailsValid(newEmails, user);
+						emailRepo.deleteById(newPrimaryEmailString);
+						emailRepo.save(new Email(user, newPrimaryEmailString, true));
+						updateAdditionalEmails(user, newEmails);
+					} else {
+						emailRepo.deleteById(newPrimaryEmailString);
+						emailRepo.save(new Email(user, newPrimaryEmailString, true));
+					}
 					return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated account emails.");	
 
 				}
 			}
         } else {	// The user is not an admin or editing their own profile
-        	throw new AccessDeniedException("must be logged in as user or as admin to edit emails");
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("must be logged in as user or as admin to edit emails");
         } 
 	}
 	
