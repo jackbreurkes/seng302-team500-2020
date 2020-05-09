@@ -124,7 +124,11 @@ export async function getCurrentUser() {
 export async function getProfileById(profileId: number) {
   let res;
   try {
-    res = await instance.get("profiles/" + profileId);
+    res = await instance.get("profiles/" + profileId, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     if (e.response) { // request made and server responded
       console.error(e.response)

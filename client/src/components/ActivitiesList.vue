@@ -7,7 +7,7 @@
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <div v-on="on">
-              <v-chip class="ml-2" v-if="activity.creator_id === profileId">Creator</v-chip>
+              <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
             </div>
             <div v-if="authority">
               <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)">Edit</v-chip>

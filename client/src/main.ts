@@ -15,7 +15,7 @@ import { verifyUserId } from "./models/user.model";
 import vuetify from "./plugins/vuetify";
 
 const routes = [
-  { path: "/", name: "login", component: Login },
+  { path: "/", name: "landing", component: Login },
   { path: "/login", name: "login", component: Login },
   { path: "/register", name: "register", component: Register },
   {
