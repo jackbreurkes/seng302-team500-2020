@@ -253,9 +253,12 @@ public class UserProfileController {
      */
     @GetMapping("/{profileId}")
     @CrossOrigin
-    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId) {
-
-        return view(profileId);
+    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException {
+        if (request.getAttribute("authenticatedid") != null){
+            return view(profileId);
+        } else{
+            throw new UserNotAuthenticatedException("User not authenticated");
+        }
     }
 
     /**
