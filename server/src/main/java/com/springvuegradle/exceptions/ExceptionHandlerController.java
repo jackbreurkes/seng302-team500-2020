@@ -81,6 +81,18 @@ public class ExceptionHandlerController {
 	public ErrorResponse requestHandlingInvalidField(InvalidRequestFieldException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
+	
+	/**
+	 * catches all UserDoesNotExistExceptions thrown by endpoints and returns an ErrorResponse with code 400.
+	 * @param exception the exception object thrown by a method
+	 * @return ErrorResponse object with message equal to the exception message
+	 */
+	@ExceptionHandler(UserDoesNotExistException.class)
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	@ResponseBody
+	public ErrorResponse requestHandlingUserDoesNotExist(UserDoesNotExistException exception) {
+		return new ErrorResponse(exception.getMessage());
+	}
 
 	/**
 	 * catches all RecordNotFoundExceptions thrown by endpoints and returns an ErrorResponse with code 404.

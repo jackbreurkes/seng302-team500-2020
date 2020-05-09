@@ -32,6 +32,7 @@ import com.springvuegradle.auth.ChecksumUtils;
 import com.springvuegradle.exceptions.EmailAlreadyRegisteredException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.MaximumEmailsException;
+import com.springvuegradle.exceptions.UserDoesNotExistException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Session;
@@ -59,12 +60,14 @@ public class NewEmailController {
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, MaximumEmailsException, EmailAlreadyRegisteredException, InvalidRequestFieldException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, AccessDeniedException, MaximumEmailsException, EmailAlreadyRegisteredException, InvalidRequestFieldException, UserDoesNotExistException {
 		User user = userRepo.getOne(profileId);
+		if (user == null) {
+			throw new UserDoesNotExistException("No user " + profileId);
+		}
 		
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
-        System.out.println("This is the authenticated id: " + authId);
         if (authId == null) {
             throw new UserNotAuthenticatedException("You must be an authenticated user.");
         }
@@ -77,7 +80,7 @@ public class NewEmailController {
 				json = getJson(raw);
 			} catch (org.apache.tomcat.util.json.ParseException e) {
 				e.printStackTrace();
-				return ResponseEntity.status(HttpStatus.resolve(500)).body("Failed to retrieve request data.");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid format for JSON body.");
 			}
 						
 			if (json.containsKey("additional_email")) {
@@ -91,11 +94,6 @@ public class NewEmailController {
 					throw new MaximumEmailsException("Maximum email addresses is (5)");
 				} else {
 					allEmailsValid(newEmails, user);
-					/*for (String email: newEmails) {
-						if (emailAlreadyRegisteredToOtherUser(email, user)) {
-							throw new EmailAlreadyRegisteredException("Email " + email + " is already registered to another user.");
-						}
-					}*/
 					updateAdditionalEmails(user, newEmails);					
 					return ResponseEntity.status(HttpStatus.resolve(201)).body("Successfully updated account emails.");					
 				}
@@ -103,7 +101,7 @@ public class NewEmailController {
 				return ResponseEntity.status(HttpStatus.resolve(400)).body("Missing additional email list.");
 			}
         } else {	// The user is not an admin or editing their own profile
-        	throw new AccessDeniedException("must be logged in as user or as admin to edit emails");
+        	return ResponseEntity.status(HttpStatus.FORBIDDEN).body("must be logged in as user or as admin to edit emails");
         }
 	}
 	
@@ -141,9 +139,7 @@ public class NewEmailController {
 				
 				if (emailAlreadyRegisteredToOtherUser(newPrimaryEmailString, user) || !(emailRepo.findByEmail(newPrimaryEmailString).getUser() == user)) {
 					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("New primary email is not already registered to user."));
-				} else {
-					System.out.println("It IS your email!");
-					
+				} else {					
 					ArrayList<String> newEmails;
 					try {
 						newEmails = (ArrayList<String>) json.get("additional_email");
@@ -199,7 +195,6 @@ public class NewEmailController {
 	private boolean emailAlreadyRegisteredToOtherUser(String email, User user) {
 		boolean registered = false;
 		Email emailFound = emailRepo.findByEmail(email);
-		System.out.println(emailFound);
 		if (emailFound != null && emailFound.getUser().getUserId() != user.getUserId()) {
 			registered = true;
 		}
