@@ -43,27 +43,6 @@
                   </v-container-fluid>
                 </template>
 
-                <div id="activity-chips" v-if="editedUser.activities && editedUser.activities.length > 0">
-                  <v-chip
-                    v-for="activity in editedUser.activities"
-                    :key="activity"
-                    close
-                    class="ma-2"
-                    @click:close="removeActivityType(activity)"
-                  >{{ activity }}</v-chip>
-                </div>
-
-                <v-autocomplete
-                  :items="activityTypes"
-                  color="white"
-                  item-text="name"
-                  label="Activity types interested in"
-                  v-model="selectedActivity"
-                  @input="addActivityType()"
-                ></v-autocomplete>
-                <v-btn id="updateActivities"  @click="updateActivityType()">Save activity choices</v-btn>
-
-
                 <v-divider></v-divider>
 
                 <v-card-title>Personal Details</v-card-title>
@@ -368,6 +347,8 @@ const Homepage = Vue.extend({
       .getAvailableActivityTypes()
       .then(activityTypes => {
         this.availableActivityTypes = activityTypes;
+
+        
       })
       .catch(err => {
         console.error("unable to load activity types");
