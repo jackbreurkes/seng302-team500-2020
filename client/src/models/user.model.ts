@@ -9,7 +9,8 @@ import axios from 'axios'
  */
 interface LoginResponse {
   token: string,
-  profile_id: string
+  profile_id: string,
+  permission_level: string
 }
 
 
@@ -28,6 +29,13 @@ const instance = axios.create({
   timeout: 10000
 });
 
+export function getMyPermissionLevel(): number {
+  let level = localStorage.getItem("permissionLevel");
+  if (!level) {
+    return 0;
+  }
+  return parseInt(level);
+}
 
 function getMyUserId() {
   return localStorage.getItem("userId")
@@ -88,6 +96,7 @@ export async function login(email: string, password: string): Promise<boolean> {
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
+  localStorage.setItem("permissionLevel", responseData.permission_level);
   setMyUserId(responseData.profile_id);
   return true;
 }
@@ -347,55 +356,29 @@ export async function deleteUserEmail(email: string, profileId: number) {
 }
 
 /**
- * Update the list of activity types which the user is interested in.
- * @param activityType activity type which user is registering interest in
+ * Saves the current user's activity types list using PUT /profiles/{profileId}/activity-types endpoint
+ * @param user UserApiFormat user with already-updated (in controller class) list of activities
  */
-export async function addUserActivityType(activityType: string) {
+export async function saveActivityTypes(user: UserApiFormat, profileId: number) {
   try {
-    let user = await getCurrentUser();
-    if (user.activities === undefined) {
-      user.activities = [activityType];
-    } else {
-      user.activities.push(activityType);
-    }
     let body = {"activities": user.activities}
     // PUT /profiles/{profileId}/activity-types
-    let res = await instance.put("profiles/" + localStorage.userId + "/activity-types", body, {
+    let res = await instance.put(`profiles/${profileId}/activity-types`, body, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
   } catch (e) {
-    throw new Error(e.response.data.error)
-  }
-}
-
-/**
- * Remove an activity type from the user's profile
- * @param activityType activity type to remove from the user's profile
- */
-export async function removeUserActivityType(activityType: string) {
-  try {
-    let user = await getCurrentUser();
-    if (user.activities === undefined) {
-      throw new Error("User has no activity types added to their profile.");
-    } else {
-      let index = user.activities.indexOf(activityType);
-      if (user.activities.indexOf(activityType) == -1) {
-        throw new Error("Activity is not associated with user's profile.");
-      } else {
-        user.activities.splice(index, 1);
-      }
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
     }
-    let body = {"activities": user.activities}
-    // PUT /profiles/{profileId}/activity-types
-    let res = await instance.put("profiles/" + localStorage.userId + "/activity-types", body, {
-      headers: {
-        "X-Auth-Token": localStorage.getItem("token")
-      }
-    });
-  } catch (e) {
-    throw new Error(e.response.data.error)
   }
 }
 

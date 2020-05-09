@@ -29,12 +29,16 @@
                 >Something in here</v-textarea>
                 <template>
                   <v-container-fluid>
-                    <v-radio-group v-model="userFitnessLevel" label="Fitness Level" :mandatory="false">
-                      <v-radio label="Muffin (no fitness)" value="0"></v-radio>
-                      <v-radio label="Potato (little fitness)" value="1"></v-radio>
-                      <v-radio label="Carrot (moderate fitness)" value="2"></v-radio>
-                      <v-radio label="Blueberry (outdoors enthusiast)" value="3"></v-radio>
-                      <v-radio label="Kale (fitness fanatic)" value="4"></v-radio>
+                    <v-radio-group
+                      v-model="editedUser.fitness"
+                      label="Fitness Level"
+                      :mandatory="false"
+                    >
+                      <v-radio label="Muffin (no fitness)" :value="0"></v-radio>
+                      <v-radio label="Potato (little fitness)" :value="1"></v-radio>
+                      <v-radio label="Carrot (moderate fitness)" :value="2"></v-radio>
+                      <v-radio label="Blueberry (outdoors enthusiast)" :value="3"></v-radio>
+                      <v-radio label="Kale (fitness fanatic)" :value="4"></v-radio>
                     </v-radio-group>
                   </v-container-fluid>
                 </template>
@@ -119,10 +123,17 @@
                       :rules="inputRules.dobRules"
                     ></v-text-field>
                   </template>
-                  <v-date-picker no-title v-model="editedUser.date_of_birth" @input="dobMenu = false"></v-date-picker>
+                  <v-date-picker
+                    no-title
+                    v-model="editedUser.date_of_birth"
+                    @input="dobMenu = false"
+                  ></v-date-picker>
                 </v-menu>
 
-                <div id="passport-chips" v-if="editedUser.passports && editedUser.passports.length > 0">
+                <div
+                  id="passport-chips"
+                  v-if="editedUser.passports && editedUser.passports.length > 0"
+                >
                   <v-chip
                     v-for="passport in editedUser.passports"
                     :key="passport"
@@ -141,6 +152,27 @@
                   @input="addSelectedPassportCountry()"
                 ></v-autocomplete>
 
+                <div
+                  id="activity-type-chips"
+                  v-if="editedUser.activities && editedUser.activities.length > 0"
+                >
+                  <v-chip
+                    v-for="activity in editedUser.activities"
+                    :key="activity"
+                    close
+                    class="ma-1"
+                    @click:close="deleteActivityType(activity)"
+                  >{{ activity }}</v-chip>
+                </div>
+
+                <v-autocomplete
+                  :items="availableActivityTypes"
+                  color="white"
+                  item-text="name"
+                  label="Interests"
+                  v-model="selectedActivityType"
+                  @input="addSelectedActivityType()"
+                ></v-autocomplete>
               </v-form>
 
               <v-btn @click="saveButtonClicked">Save</v-btn>
@@ -156,61 +188,60 @@
             <v-card-title>Login Details</v-card-title>
             <v-card-text>
               <p>Primary email: {{ editedUser.primary_email }}</p>
-                <br />
-                <p>Secondary Emails {{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }} / 5:</p>
-                <ul>
-                  <li v-for="email in editedUser.additional_email" :key="email">
-                    {{ email }}
-                    <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
-                    <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
-                  </li>
-                </ul>
-                <br />
-                <p>Add a new email:</p>
-                <v-card-actions v-if="editedUser.additional_email.length !== 5">
-                  <v-text-field
-                    v-model="newEmail"
-                    label="enter new email here"
-                    type="email"
-                    dense
-                    filled
-                    required
-                    :rules="inputRules.emailRules"
-                  ></v-text-field>
+              <br />
+              <p>Secondary Emails {{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }} / 5:</p>
+              <ul>
+                <li v-for="email in editedUser.additional_email" :key="email">
+                  {{ email }}
+                  <v-btn @click="deleteEmailAddress(email)">delete</v-btn>
+                  <v-btn @click="setPrimaryEmail(email)">Make Primary</v-btn>
+                </li>
+              </ul>
+              <br />
+              <p>Add a new email:</p>
+              <v-card-actions v-if="editedUser.additional_email.length !== 5">
+                <v-text-field
+                  v-model="newEmail"
+                  label="enter new email here"
+                  type="email"
+                  dense
+                  filled
+                  required
+                  :rules="inputRules.emailRules"
+                ></v-text-field>
 
-                  <v-btn id="addEmailAddress"  @click="addTempEmail(newEmail)">Add Email</v-btn>
-                  
-                </v-card-actions>
-                <v-btn id="updateEmail"  @click="updateEmail()">Update Email</v-btn>
+                <v-btn id="addEmailAddress" @click="addTempEmail(newEmail)">Add Email</v-btn>
+              </v-card-actions>
+              <v-btn id="updateEmail" @click="updateEmail()">Update Email</v-btn>
               <v-form>
-                  <v-text-field
-                    v-model="oldPassword"
-                    label="old password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="newPassword"
-                    label="new password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="repeatPassword"
-                    label="repeat password"
-                    type="password"
-                    dense
-                    filled
-                    required
-                  ></v-text-field>
-                  <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
-                  <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
-                </v-form>
+                <v-text-field
+                  v-model="oldPassword"
+                  label="old password"
+                  type="password"
+                  dense
+                  filled
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="newPassword"
+                  label="new password"
+                  type="password"
+                  dense
+                  filled
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="repeatPassword"
+                  label="repeat password"
+                  type="password"
+                  dense
+                  filled
+                  required
+                ></v-text-field>
+                <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
+                <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
+                <v-btn id="updatePassword" @click="updatePasswordButtonClicked">Update your password</v-btn>
+              </v-form>
               <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
@@ -224,15 +255,8 @@
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
-import {
-  fetchProfileWithId,
-  persistChangesToProfile,
-  
-  updatePassword,
-  setPrimary,
-  updateNewEmailList,
-  // isValidEmail
-} from "../controllers/profile.controller";
+import * as profileController from "../controllers/profile.controller";
+import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
@@ -285,8 +309,7 @@ const Homepage = Vue.extend({
         ],
         emailRules: [
           (v: string) =>
-          formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
-
+            formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
         ]
       },
 
@@ -296,15 +319,15 @@ const Homepage = Vue.extend({
       selectedActivity: "" as string,
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
+      availableActivityTypes: [] as string[],
+      selectedActivityType: "" as string,
       dobMenu: false,
-      userFitnessLevel: "",
       newEmail: "" as string,
       oldPassword: "",
       newPassword: "",
       repeatPassword: "",
       passwordErrorMessage: "",
-      passwordSuccessMessage: "",
-      
+      passwordSuccessMessage: ""
     };
   },
 
@@ -315,17 +338,16 @@ const Homepage = Vue.extend({
     // load profile info
     const profileId: number = parseInt(this.$route.params.profileId);
     if (isNaN(profileId)) {
+      // profile id in route not a number
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
-    fetchProfileWithId(profileId)
+    profileController.fetchProfileWithId(profileId)
       .then(user => {
         this.titleBarUserName = `${user.firstname} ${user.lastname}`;
         this.editedUser = user;
         if (this.editedUser.fitness) {
           this.userFitnessLevel = this.editedUser.fitness.toString();
-        }
-        console.log("WADAWDADWDAWDWADD")
         console.log(this.editedUser)
         console.log(JSON.stringify(this.editedUser))
       })
@@ -333,27 +355,24 @@ const Homepage = Vue.extend({
         console.error(err);
       });
 
-    // load country names
-    const Http = new XMLHttpRequest();
-    const url = "https://restcountries.eu/rest/v2/all";
-    Http.open("GET", url, true);
-    Http.send();
-    Http.onreadystatechange = () => {
-      try {
-        const countries = JSON.parse(Http.responseText);
+    profileController.getAvailablePassportCountries()
+      .then(countries => {
         this.passportCountries = countries;
-      } catch (err) {
+      })
+      .catch(err => {
+        console.error("unable to load passport countries");
         console.error(err);
-      }
-    };
-    getActivityTypes()
-    .then((types)=>{
-      this.activityTypes = types;
-    })
-    .catch(err=>{
-      console.log(err)
-    })
+      });
 
+    activityController
+      .getAvailableActivityTypes()
+      .then(activityTypes => {
+        this.availableActivityTypes = activityTypes;
+      })
+      .catch(err => {
+        console.error("unable to load activity types");
+        console.error(err);
+      });
   },
 
   methods: {
@@ -362,12 +381,12 @@ const Homepage = Vue.extend({
      */
     addSelectedPassportCountry: function() {
       if (!this.selectedCountry) {
-        return
+        return;
       }
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
-      }
-      this.editedUser.passports.push(this.selectedCountry);
+      await profileController.addPassportCountry(
+        this.selectedCountry,
+        this.editedUser
+      );
     },
 
     addActivityType: function() {
@@ -404,30 +423,44 @@ const Homepage = Vue.extend({
      * removes the given country from the passport countries of the user being edited
      */
     deletePassportCountry: function(country: string) {
-      if (!this.editedUser.passports) {
-        this.editedUser.passports = []
+      profileController.deletePassportCountry(country, this.editedUser);
+    },
+
+    /**
+     * adds the activity type selected in the dropdown to the current user's activity types
+     */
+    addSelectedActivityType: async function() {
+      if (!this.selectedActivityType) {
+        return;
       }
-      for (let i = 0; i < this.editedUser.passports.length; i++) {
-        if (this.editedUser.passports[i] === country) {
-          this.editedUser.passports.splice(i, 1);
-        }
-      }
+      await profileController.addActivityType(
+        this.selectedActivityType,
+        this.editedUser
+      );
+    },
+
+    /**
+     * removes the given activity type from the interests of the user being edited
+     */
+    deleteActivityType: function(activityType: string) {
+      profileController.deleteActivityType(activityType, this.editedUser);
     },
 
     /**
      * persists the changes made on the edit page by the user
      */
     saveButtonClicked: async function() {
-      if (this.userFitnessLevel !== "") { // converts the fitness level v-model string into an integer
-        this.editedUser.fitness = parseInt(this.userFitnessLevel);
-      }
       if (
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
-        
-        persistChangesToProfile(this.editedUser, this.currentProfileId)
-        .then(() => {this.returnToProfile()})
-        .catch(() => {alert("Unable to update user.");});
+        profileController
+          .persistChangesToProfile(this.editedUser, this.currentProfileId)
+          .then(() => {
+            this.returnToProfile();
+          })
+          .catch(() => {
+          });
+            alert("Unable to update user.");
       }
     },
 
@@ -435,7 +468,7 @@ const Homepage = Vue.extend({
      * returns the user to the profile page of the profile they are editing
      */
     returnToProfile: function() {
-      this.$router.push("/profiles/" + this.currentProfileId)
+      this.$router.push("/profiles/" + this.currentProfileId);
     },
 
     /**
@@ -443,52 +476,63 @@ const Homepage = Vue.extend({
      */
     updateEmail: function() {
       if (this.editedUser.primary_email === undefined) {
-        this.editedUser.primary_email = ""
+        this.editedUser.primary_email = "";
       }
       if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = []
+        this.editedUser.additional_email = [];
       }
-      setPrimary(this.editedUser.primary_email, this.currentProfileId)
-      updateNewEmailList(this.editedUser.additional_email, this.currentProfileId)
+      profileController.setPrimary(
+        this.editedUser.primary_email,
+        this.currentProfileId
+      );
+      profileController
+        .updateNewEmailList(
+          this.editedUser.additional_email,
+          this.currentProfileId
+        )
         .then(() => {
           console.log("Email address added");
-           // refresh page after adding emails
+          // refresh page after adding emails
           history.go(0);
         })
         .catch(err => {
           console.log(err);
-        })
+        });
     },
 
     deleteEmailAddress: function(email: string) {
       if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = []
+        this.editedUser.additional_email = [];
       }
       let index = this.editedUser.additional_email.indexOf(email);
       this.editedUser.additional_email.splice(index, 1);
     },
 
-    
     setPrimaryEmail: function(email: string) {
       let oldPrimaryEmail = this.editedUser.primary_email;
       this.editedUser.primary_email = email;
       if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = []
+        this.editedUser.additional_email = [];
       }
       if (oldPrimaryEmail !== undefined) {
-        this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1, oldPrimaryEmail);
+        this.editedUser.additional_email.splice(
+          this.editedUser.additional_email.indexOf(email),
+          1,
+          oldPrimaryEmail
+        );
       } else {
-       this.editedUser.additional_email.splice(this.editedUser.additional_email.indexOf(email), 1);
+        this.editedUser.additional_email.splice(
+          this.editedUser.additional_email.indexOf(email),
+          1
+        );
       }
     },
 
     addTempEmail: function(email: string) {
-
-      if(new FormValidator().isValidEmail(email)){
+      if (new FormValidator().isValidEmail(email)) {
         if (this.editedUser.additional_email === undefined) {
-              this.editedUser.additional_email = []
-        }
-        else {
+          this.editedUser.additional_email = [];
+        } else {
           this.editedUser.additional_email.push(email);
         }
       }
@@ -497,13 +541,14 @@ const Homepage = Vue.extend({
     updatePasswordButtonClicked: function() {
       this.passwordSuccessMessage = "";
       this.passwordErrorMessage = "";
-      
-      updatePassword(
-        this.oldPassword,
-        this.newPassword,
-        this.repeatPassword,
-        this.currentProfileId
-      )
+
+      profileController
+        .updatePassword(
+          this.oldPassword,
+          this.newPassword,
+          this.repeatPassword,
+          this.currentProfileId
+        )
         .then(() => {
           this.passwordSuccessMessage = "password changed successfully";
         })
@@ -513,12 +558,8 @@ const Homepage = Vue.extend({
 
       this.oldPassword = "";
       this.newPassword = "";
-      this.repeatPassword = ""; 
-    },
-
-
-
-    
+      this.repeatPassword = "";
+    }
   }
 });
 

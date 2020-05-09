@@ -61,3 +61,29 @@ export async function loadAvailableActivityTypes(): Promise<string[]> {
   }
   return res.data;
 }
+
+
+export async function getActivitiesByCreator(creatorId: number): Promise<CreateActivityRequest[]> {
+  let res;
+  try {
+    res = await instance.get(`/profiles/${creatorId}/activities`, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      },
+    });
+  } catch (e) {
+    if (e.response) {
+      // request made and server responded
+      console.error(e.response);
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else {
+      // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
+  }
+  return res.data;
+}

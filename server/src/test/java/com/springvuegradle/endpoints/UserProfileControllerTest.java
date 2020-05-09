@@ -61,6 +61,8 @@ class UserProfileControllerTest {
     private ActivityRepository activityRepository;
     @MockBean
     private ActivityTypeRepository activityTypeRepository;
+    @MockBean
+    private LocationRepository locationRepository;
     
     /**
      * Creates the edit password controller and inserts the mocks we define in the place of the repositories

@@ -50,6 +50,10 @@ public class Profile implements Serializable {
 	)
 	private List<Country> countries;
 
+	@ManyToOne
+	@JoinColumn(name = "location_id")
+	private Location location;
+
 
 	/**
      * Fitness level of the user (default null or -1)
@@ -301,5 +305,19 @@ public class Profile implements Serializable {
 	 */
 	public void setActivityTypes(List<ActivityType> activityTypes) {
 		this.activityTypes = activityTypes;
+	}
+
+	/**
+	 * @return the location in which the user is currently based
+	 */
+	public Location getLocation() {
+		return location;
+	}
+
+	/**
+	 * @param location the location in which the user is currently based
+	 */
+	public void setLocation(Location location) {
+		this.location = location;
 	}
 }

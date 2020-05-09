@@ -1,4 +1,5 @@
 export interface CreateActivityRequest {
+    activity_id?: number;
     activity_name?: string;
     description?: string;
     activity_type?: string[];
