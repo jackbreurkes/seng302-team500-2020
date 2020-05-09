@@ -1,6 +1,6 @@
 <template>
   <div v-if="activities.length > 0">
-    <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-2">
+    <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4">
       <v-card-title>
         {{ activity.activity_name }} ({{ activity.location }})
         <v-spacer></v-spacer>
