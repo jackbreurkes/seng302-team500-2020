@@ -2,8 +2,8 @@ package com.springvuegradle.model.data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -72,13 +72,13 @@ public class Activity {
             joinColumns = {@JoinColumn(name = "activity_id")},
             inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
     )
-    private List<ActivityType> activityTypes;
+    private Set<ActivityType> activityTypes;
 
     /**
      * no arg constructor required by JPA
      */
     public Activity() {
-    	activityTypes = new ArrayList<ActivityType>();
+    	activityTypes = new HashSet<ActivityType>();
     }
 
     /**
@@ -88,7 +88,7 @@ public class Activity {
      * @param location the location of the activity
      * @param creator the profile who created the activity
      */
-    public Activity(String activityName, boolean isDuration, String location, Profile creator, List<ActivityType> activityTypes)
+    public Activity(String activityName, boolean isDuration, String location, Profile creator, Set<ActivityType> activityTypes)
     {
         this.activityName = activityName;
         this.isDuration = isDuration;
@@ -101,7 +101,7 @@ public class Activity {
      * Setter for activity types
      * @param activityTypes
      */
-    public void setActivityTypes(List<ActivityType> activityTypes) {
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
         this.activityTypes = activityTypes;
     }
 
@@ -236,7 +236,7 @@ public class Activity {
     /**
      * @return the list of activity types associated with the activity
      */
-    public List<ActivityType> getActivityTypes() {
+    public Set<ActivityType> getActivityTypes() {
         return activityTypes;
     }
 }

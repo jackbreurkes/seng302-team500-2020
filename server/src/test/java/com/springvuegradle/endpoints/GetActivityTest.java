@@ -1,10 +1,13 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.responses.ActivityResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,14 +17,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.responses.ActivityResponse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GetActivityTest {
@@ -46,7 +50,7 @@ public class GetActivityTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        Activity activity = new Activity("Test", false, "Dunedin", profile, new ArrayList<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
         ActivityResponse response = activitiesController.getActivity(1L,2L, request);
         assertEquals(response.getActivityName(), "Test");

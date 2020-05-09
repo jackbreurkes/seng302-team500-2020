@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -268,7 +269,7 @@ public class ActivitiesController {
                 !createActivityRequest.isContinuous(),
                 createActivityRequest.getLocation(),
                 optionalCreator.get(),
-                activityTypeList);
+                new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
         activity.setStartDate(startDate);
         activity.setEndDate(endDate);

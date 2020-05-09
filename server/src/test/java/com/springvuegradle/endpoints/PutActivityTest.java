@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -145,7 +146,7 @@ public class PutActivityTest {
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
-        activity.setActivityTypes(new ArrayList<>());
+        activity.setActivityTypes(new HashSet<>());
 
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
@@ -160,7 +161,7 @@ public class PutActivityTest {
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
-        activity.setActivityTypes(new ArrayList<>());
+        activity.setActivityTypes(new HashSet<>());
 
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 

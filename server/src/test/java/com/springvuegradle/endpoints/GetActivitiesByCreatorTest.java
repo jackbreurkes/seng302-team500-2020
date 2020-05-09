@@ -1,11 +1,16 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.responses.ActivityResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +21,16 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.responses.ActivityResponse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GetActivitiesByCreatorTest {
@@ -51,7 +59,7 @@ public class GetActivitiesByCreatorTest {
         this.mockProfile = new Profile(mockUser, "Mocko", "Mockitoson", LocalDate.EPOCH, Gender.NON_BINARY);
         ActivityType mockWalking = new ActivityType("Walking Mock");
         ActivityType mockRunning = new ActivityType("Running Mock");
-        mockActivity = new Activity("Mock activity 1", false, "Kaikoura", mockProfile, Arrays.asList(mockWalking, mockRunning));
+        mockActivity = new Activity("Mock activity 1", false, "Kaikoura", mockProfile, new HashSet<ActivityType>(Arrays.asList(mockWalking, mockRunning)));
         Mockito.when(profileRepository.findById(mockUser.getUserId())).thenReturn(Optional.of(mockProfile));
         Mockito.when(activityRepository.findActivitiesByCreator(this.mockProfile)).thenReturn(Arrays.asList(mockActivity));
 
@@ -65,7 +73,11 @@ public class GetActivitiesByCreatorTest {
         assertEquals(1, activities.size());
         ActivityResponse responseActivity = activities.get(0);
         assertEquals(mockActivity.getActivityName(), responseActivity.getActivityName());
-        assertEquals(Arrays.asList("Walking Mock", "Running Mock"), responseActivity.getActivityTypes());
+        
+        assertTrue(responseActivity.getActivityTypes().contains("Walking Mock"));
+        assertTrue(responseActivity.getActivityTypes().contains("Running Mock"));
+        assertEquals(2, responseActivity.getActivityTypes().size());
+        
         assertEquals(mockActivity.getCreator().getUser().getUserId(), responseActivity.getCreatorId());
         assertEquals(mockActivity.getDescription(), responseActivity.getDescription());
         assertEquals(mockActivity.getLocation(), responseActivity.getLocation());
