@@ -42,7 +42,7 @@ public class ProfileResponse {
         primary_email = emailRepository.getPrimaryEmail(profile.getUser());
         bio = profile.getBio();
         gender = profile.getGender().getJsonName();
-        fitness = profile.getFitness() != -1 ? profile.getFitness() : 0;
+        fitness = profile.getFitness();
         for (Country country : profile.getCountries()) {
             passports.add(country.getName());
         }
