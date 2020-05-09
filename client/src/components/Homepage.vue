@@ -8,7 +8,7 @@
               <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <div v-if="currentlyHasAuthority">
-                <v-btn @click="editProfile" outlined="true" class="mr-1">Edit</v-btn>
+                <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
               </div>
             </v-toolbar>
             <v-card-text>
@@ -49,7 +49,7 @@
                   class="mr-1 mb-2"
                   v-for="country of currentUser.passports"
                   v-bind:key="country"
-                  outlined="true"
+                  outlined
                 >{{ country }}</v-chip>
               </div>
 
@@ -62,7 +62,7 @@
               <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
               <v-spacer></v-spacer>
               <div v-if="currentlyHasAuthority">
-                <v-btn @click="createActivityClicked" outlined="true">Create Activity</v-btn>
+                <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
               </div>
             </v-toolbar>
 
@@ -75,7 +75,7 @@
                   v-bind:key="activityType"
                 >{{ activityType }}</v-chip>
               </div>
-              <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority"></ActivitiesList>
+              <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" v-ref:activityList></ActivitiesList>
             </v-card-text>
           </v-card>
         </v-col>
@@ -169,17 +169,6 @@ const Homepage = Vue.extend({
             this.currentlyHasAuthority = true;
           }
         })
-    } else {
-      this.currentlyHasAuthority = true;
-    }
-
-    if (permissionLevel < 120) {
-      getCurrentUser().then(user => {
-        if (user.profile_id == profileId) {
-          //if we're editing ourself
-          this.currentlyHasAuthority = true;
-        }
-      });
     } else {
       this.currentlyHasAuthority = true;
     }

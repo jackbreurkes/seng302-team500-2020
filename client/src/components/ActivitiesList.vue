@@ -9,9 +9,7 @@
             <div v-on="on">
               <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
             </div>
-            <div v-if="authority">
-              <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)">Edit</v-chip>
-            </div>
+            <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
           </template>
           <span>Your role</span>
         </v-tooltip>
@@ -52,6 +50,7 @@ const ActivitiesList = Vue.extend({
   // app initial state
   data: function() {
     return {
+      hasAuthority: this.authority as boolean,
       isValid: false,
       mandatoryAttributes: ["email", "password"],
       email: "",
@@ -59,6 +58,15 @@ const ActivitiesList = Vue.extend({
       errorMessage: "",
       activities: [] as CreateActivityRequest[]
     };
+  },
+
+  watch: {
+    // eslint-disable-next-line no-unused-vars
+    authority(newValue, oldValue) {
+      this.hasAuthority = newValue;
+      console.log("UPDATING "+this.hasAuthority);
+      this.$forceUpdate();
+    }
   },
 
   created() {

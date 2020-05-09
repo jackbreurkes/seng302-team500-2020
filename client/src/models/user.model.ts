@@ -108,7 +108,11 @@ export async function login(email: string, password: string): Promise<boolean> {
 export async function getCurrentUser() {
   let res;
   try {
-    res = await instance.get("profiles/" + getMyUserId());
+    res = await instance.get("profiles/" + getMyUserId(), {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     console.error(e.response);
     throw new Error(e.response.data.error);
