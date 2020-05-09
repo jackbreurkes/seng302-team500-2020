@@ -136,49 +136,49 @@ test('expect undefined to be a valid description', () => {
 // Start date is in valid format and is in today or in the future.
 test.skip.each(["2021-12-29", today])( //TODO make tests pass forever
   'expect %s to be a valid start date', (startDate) => {
-      expect(activityController.validateStartDate(startDate)).toBe(true)
+      expect(activityController.isFutureDate(startDate)).toBe(true)
   }
 );
 
 // Start date is in valid format but does not exist.
 test.skip.each(["2021-12-32", "2021-02-31"])(
   'expect %s to be an invalid start date', (startDate) => {
-      expect(activityController.validateStartDate(startDate)).toBe(false)
+      expect(activityController.isFutureDate(startDate)).toBe(false)
   }
 )
 
 // Start date is in valid format and is in past.
 test.skip.each(["2001-12-32", "2001-02-28"])(
   'expect %s to be an invalid start date', (startDate) => {
-      expect(activityController.validateStartDate(startDate)).toBe(false)
+      expect(activityController.isFutureDate(startDate)).toBe(false)
   }
 )
 
 // Date given is in invalid format
 test.skip.each(["Today", "Wednesday 24th June, 2021", "2021/01/01", "01-02-2021", "30-04-31", "2021-1-1"])(
   'expect %s to be an invalid start date', (date) => {
-      expect(activityController.validateDate(date)).toBe(false)
+      expect(activityController.isFutureDate(date)).toBe(false)
   }
 )
 
 // Date given is the empty string
 test.skip('expect "" to be an invalid start date', () => {
-      expect(activityController.validateDate("")).toBe(false)
+      expect(activityController.isFutureDate("")).toBe(false)
   }
 )
 
 // Date given is undefined
-test.skip('expect undefined to be an invalid start date', () => {
-      expect(activityController.validateDate(undefined)).toBe(false)
-  }
-)
+// test.skip('expect undefined to be an invalid start date', () => {
+//       expect(activityController.validateDate(undefined)).toBe(false)
+//   }
+// )
 
 // End date is in valid format and is after start date
-test.skip.each([["2021-12-25", "2022-02-27"], ["2021-02-25", "2022-02-18"]])( //TODO make tests pass forever
-  'expect %s to be valid end date', (startDate, endDate) => {
-      expect(activityController.validateEndDate(startDate, endDate)).toBe(true)
-  }
-);
+// test.skip.each([["2021-12-25", "2022-02-27"], ["2021-02-25", "2022-02-18"]])( //TODO make tests pass forever
+//   'expect %s to be valid end date', (startDate, endDate) => {
+//       expect(activityController.validateEndDate(startDate, endDate)).toBe(true)
+//   }
+// );
 //TODO time tests
 //merging date and time to api format
 //end date validation

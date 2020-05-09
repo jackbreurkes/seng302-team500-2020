@@ -1,5 +1,30 @@
 package com.springvuegradle.endpoints;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -11,31 +36,8 @@ import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.UpdateActivityRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller for all endpoints relating to activities
@@ -63,7 +65,7 @@ public class ActivitiesController {
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                              @RequestBody UpdateActivityRequest updateActivityRequest,
+                                              @RequestBody CreateActivityRequest updateActivityRequest,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
@@ -87,7 +89,7 @@ public class ActivitiesController {
         if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
             throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
         }
-        if (updateActivityRequest.getActivityTypes() == null) {
+        if (updateActivityRequest.getActivityTypes() == null || updateActivityRequest.getActivityTypes().size() == 0) {
             throw new InvalidRequestFieldException("missing activity_type field");
         }
         if (updateActivityRequest.getActivityTypes().size() == 0) {
@@ -114,6 +116,8 @@ public class ActivitiesController {
             activity.setDescription(updateActivityRequest.getDescription());
             activity.setIsDuration(updateActivityRequest.isContinuous());
             activity.setLocation(updateActivityRequest.getLocation());
+            activity.getActivityTypes().clear();
+            
             for(String activityTypeString : updateActivityRequest.getActivityTypes()){
                 Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
                 if(!activityType.isPresent()){
@@ -135,12 +139,15 @@ public class ActivitiesController {
                 }catch (Exception e){
                     throw new InvalidRequestFieldException("Time format is invalid");
                 }
-
+                
+                activity.setIsDuration(true);
                 activity.setStartDate(startDateTime.toLocalDate());
                 activity.setEndDate(endDateTime.toLocalDate());
 
                 activity.setStartTime(startDateTime.toLocalTime());
                 activity.setEndTime(startDateTime.toLocalTime());
+            } else {
+            	activity.setIsDuration(false);
             }
             return new ActivityResponse(activityRepository.save(activity));
         }
@@ -262,7 +269,7 @@ public class ActivitiesController {
                 !createActivityRequest.isContinuous(),
                 createActivityRequest.getLocation(),
                 optionalCreator.get(),
-                activityTypeList);
+                new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
         activity.setStartDate(startDate);
         activity.setEndDate(endDate);

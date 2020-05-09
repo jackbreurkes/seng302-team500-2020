@@ -1,10 +1,21 @@
 package com.springvuegradle.model.data;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * JPA POJO representing an Activity.
@@ -61,12 +72,14 @@ public class Activity {
             joinColumns = {@JoinColumn(name = "activity_id")},
             inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
     )
-    private List<ActivityType> activityTypes;
+    private Set<ActivityType> activityTypes;
 
     /**
      * no arg constructor required by JPA
      */
-    public Activity() {}
+    public Activity() {
+    	activityTypes = new HashSet<ActivityType>();
+    }
 
     /**
      * Create an activity with required and optional fields
@@ -75,7 +88,7 @@ public class Activity {
      * @param location the location of the activity
      * @param creator the profile who created the activity
      */
-    public Activity(String activityName, boolean isDuration, String location, Profile creator, List<ActivityType> activityTypes)
+    public Activity(String activityName, boolean isDuration, String location, Profile creator, Set<ActivityType> activityTypes)
     {
         this.activityName = activityName;
         this.isDuration = isDuration;
@@ -88,7 +101,7 @@ public class Activity {
      * Setter for activity types
      * @param activityTypes
      */
-    public void setActivityTypes(List<ActivityType> activityTypes) {
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
         this.activityTypes = activityTypes;
     }
 
@@ -223,7 +236,7 @@ public class Activity {
     /**
      * @return the list of activity types associated with the activity
      */
-    public List<ActivityType> getActivityTypes() {
+    public Set<ActivityType> getActivityTypes() {
         return activityTypes;
     }
 }

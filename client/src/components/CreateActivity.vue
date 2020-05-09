@@ -6,7 +6,7 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>CreateActivity:</v-toolbar-title>
+                <v-toolbar-title>{{this.isEditing ? "Edit Activity" : "Create Activity"}}</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-text-field
@@ -18,12 +18,11 @@
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
-                <v-radio-group v-model="timeMode" row>
-                <v-radio label="Continuous" value="continuous"></v-radio>
-                <v-radio label="Duration" value="duration"></v-radio>
+              <v-radio-group v-model="createActivityRequest.continuous" row>
+                <v-radio label="Continuous" value="true"></v-radio>
+                <v-radio label="Duration" value="false"></v-radio>
               </v-radio-group>
-
-                <div v-if="timeMode === 'duration'">
+                <div v-if="createActivityRequest.continuous == 'false'">
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -75,9 +74,14 @@
                         label="End Date"
                         :rules="inputRules.endDateRules"
                       ></v-text-field>
+                      
+
                     </template>
+                    
                     <v-date-picker no-title v-model="endDate" @input="endDateMenu = false"></v-date-picker>
+                    
                   </v-menu>
+                  
 
                   <v-text-field
                     label="End Time"
@@ -130,7 +134,7 @@
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer />
-                <v-btn @click="createButtonClicked" color="primary">Create</v-btn>
+                <v-btn @click="createButtonClicked" color="primary">{{this.isEditing ? "Save" : "Create"}}</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -154,8 +158,9 @@ const CreateActivity = Vue.extend({
   data: function() {
     return {
       createActivityRequest: {} as CreateActivityRequest,
+      isEditing: false as boolean,
+      editingId: NaN as number,
       currentProfileId: NaN as number,
-      timeMode: "",
       startDate: "",
       startTime: "",
       endDate: "",
@@ -170,7 +175,7 @@ const CreateActivity = Vue.extend({
         ],
         startDateRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isFutureDate(v) || activityController.INVALID_DATE_MESSAGE
           }
         ],
         endDateRules: [
@@ -180,12 +185,12 @@ const CreateActivity = Vue.extend({
         ],
         startTimeRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
           }
         ],
         endTimeRules: [
           (v: string) => {
-            return true || v; // TODO make error checking
+            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
           }
         ],
         descriptionRules: [
@@ -211,6 +216,12 @@ const CreateActivity = Vue.extend({
         this.activityTypes = activity})
       .catch(err => {console.error("unable to load activity types");
       console.error(err)});
+
+    if (this.$route.params.activityId) {
+      this.editingId = parseInt(this.$route.params.activityId);
+      this.isEditing = true;
+      this.populateFields(this.editingId);
+    }
   },
 
   methods: {
@@ -231,14 +242,33 @@ const CreateActivity = Vue.extend({
       this.$router.push({ name: "profilePage" });
     },
 
-    createButtonClicked() {
-      activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
+    createButtonClicked: async function() {
+      await activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
+      await activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
+      if (this.isEditing) {
+        activityController.editActivity(this.createActivityRequest, this.currentProfileId, this.editingId)
           .then(() => {
-            history.go(0);
+            this.$router.push({ name: "profilePage" });
           })
           .catch(() => {
-            alert(`${this.createActivityRequest.activity_type}`);
+            alert(`An error occured while saving this activity`);
           });
+      } else {
+        activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
+          .then(() => {
+            this.$router.push({ name: "profilePage" });
+          })
+          .catch(() => {
+            alert(`An error occured while saving this activity`);
+          });
+      }
+    },
+
+    populateFields: async function(editingId: number) {
+      let activityData: CreateActivityRequest = await activityController.getActivityById(this.currentProfileId, editingId);
+      this.createActivityRequest = activityData;
+
+      //TODO populate date fields
     }
   }
 });

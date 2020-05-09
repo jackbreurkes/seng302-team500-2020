@@ -108,7 +108,11 @@ export async function login(email: string, password: string): Promise<boolean> {
 export async function getCurrentUser() {
   let res;
   try {
-    res = await instance.get("profiles/" + getMyUserId());
+    res = await instance.get("profiles/" + getMyUserId(), {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     console.error(e.response);
     throw new Error(e.response.data.error);
@@ -124,7 +128,11 @@ export async function getCurrentUser() {
 export async function getProfileById(profileId: number) {
   let res;
   try {
-    res = await instance.get("profiles/" + profileId);
+    res = await instance.get("profiles/" + profileId, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     if (e.response) { // request made and server responded
       console.error(e.response)
@@ -209,6 +217,7 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
         delete notNullUser[key];
       }
     }
+    console.log(JSON.stringify(notNullUser))
     let res = await instance.put("profiles/" + profileId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
@@ -227,6 +236,26 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
     }
   }
 }
+
+/**
+ * Register the specified email to the target profile by adding it to the list of additional emails.
+ * @param email email to register to user
+ */
+export async function updateActivityTypes(selectedActivities: string[], profileId: any) {
+  try {
+    let activityDict = {"activities": selectedActivities}
+    let res = await instance.put("profiles/" + profileId + "/activity-types", activityDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }//, data: activityDict
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+    
+  }
+}
+
+
 
 /**
  * Register the specified email to the target profile by adding it to the list of additional emails.
@@ -278,7 +307,7 @@ export async function addEmail(email: string, profileId: number) {
  */
 export async function updatePrimaryEmail(primaryEmail: string, profileId: number) {
   try { // TODO lots of busines logic in here
-    let user = await getProfileById(profileId);
+    let user = await getProfileById(profileId); 
     let emails = user.additional_email;
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {
