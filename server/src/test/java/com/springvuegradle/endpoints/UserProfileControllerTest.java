@@ -41,7 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {UserProfileController.class})
-//@WebMvcTest(UserProfileController.class)
 @WebMvcTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserProfileControllerTest {
