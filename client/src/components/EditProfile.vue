@@ -260,7 +260,6 @@ import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-import {getActivityTypes} from "../models/activityTypes.model"
 import {updateActivityTypes} from "../models/user.model"
 // app Vue instance
 const Homepage = Vue.extend({
@@ -314,7 +313,7 @@ const Homepage = Vue.extend({
       },
 
       // values pertaining Personal Details section
-      passportCountries: [],
+      passportCountries: [] as Array<string>,
       activityTypes: [],
       selectedActivity: "" as string,
       selectedCountry: "" as string,
@@ -346,8 +345,9 @@ const Homepage = Vue.extend({
       .then(user => {
         this.titleBarUserName = `${user.firstname} ${user.lastname}`;
         this.editedUser = user;
-        if (this.editedUser.fitness) {
-          this.userFitnessLevel = this.editedUser.fitness.toString();
+        if (user.fitness) {
+          this.editedUser.fitness = user.fitness;
+        }
         console.log(this.editedUser)
         console.log(JSON.stringify(this.editedUser))
       })
@@ -383,7 +383,7 @@ const Homepage = Vue.extend({
       if (!this.selectedCountry) {
         return;
       }
-      await profileController.addPassportCountry(
+      profileController.addPassportCountry(
         this.selectedCountry,
         this.editedUser
       );
