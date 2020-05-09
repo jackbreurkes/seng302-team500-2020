@@ -83,39 +83,39 @@ public class UserProfileController {
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 127;
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
-    
-    
+
+
     @PostConstruct
-	public void findSuperAdmin() {
-		System.out.println("================================================");
+    public void findSuperAdmin() {
+        System.out.println("================================================");
 
-		if (userRepository.superAdminExists() == 0) {
-			User superAdmin = new User();
-			
-			superAdmin.setPermissionLevel(SUPER_ADMIN_USER_PERMISSION);
-			
-	        userRepository.save(superAdmin);
-			
-	        superAdmin = userRepository.getSuperAdmin().get(0);
-	        try {
-				superAdmin.setPassword("password");
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
-	        
-	        userRepository.save(superAdmin);
+        if (userRepository.superAdminExists() == 0) {
+            User superAdmin = new User();
 
-	        Email superAdminEmail = new Email(superAdmin, "super@admin.com", true);
-	        emailRepository.save(superAdminEmail);
-	        emailRepository.findByEmail(superAdminEmail.getEmail()).setIsPrimary(true);
+            superAdmin.setPermissionLevel(SUPER_ADMIN_USER_PERMISSION);
 
-			System.out.println("Made a new super admin!");
-		} else {
-			System.out.println("A super admin exists! Yay!");
-		}
+            userRepository.save(superAdmin);
 
-		System.out.println("================================================");
-	}
+            superAdmin = userRepository.getSuperAdmin().get(0);
+            try {
+                superAdmin.setPassword("password");
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+
+            userRepository.save(superAdmin);
+
+            Email superAdminEmail = new Email(superAdmin, "super@admin.com", true);
+            emailRepository.save(superAdminEmail);
+            emailRepository.findByEmail(superAdminEmail.getEmail()).setIsPrimary(true);
+
+            System.out.println("Made a new super admin!");
+        } else {
+            System.out.println("A super admin exists! Yay!");
+        }
+
+        System.out.println("================================================");
+    }
 
 
     /**
