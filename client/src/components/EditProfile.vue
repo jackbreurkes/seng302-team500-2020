@@ -4,7 +4,7 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8" md="6">
           <v-card class="elevation-12" width="100%">
-            <v-toolbar color="primary" dark flat>
+            <v-toolbar color="primary" dark flat> 
               <v-toolbar-title>Profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
 
@@ -42,6 +42,27 @@
                     </v-radio-group>
                   </v-container-fluid>
                 </template>
+
+                <div id="activity-chips" v-if="editedUser.activities && editedUser.activities.length > 0">
+                  <v-chip
+                    v-for="activity in editedUser.activities"
+                    :key="activity"
+                    close
+                    class="ma-2"
+                    @click:close="removeActivityType(activity)"
+                  >{{ activity }}</v-chip>
+                </div>
+
+                <v-autocomplete
+                  :items="activityTypes"
+                  color="white"
+                  item-text="name"
+                  label="Activity types interested in"
+                  v-model="selectedActivity"
+                  @input="addActivityType()"
+                ></v-autocomplete>
+                <v-btn id="updateActivities"  @click="updateActivityType()">Save activity choices</v-btn>
+
 
                 <v-divider></v-divider>
 
@@ -239,7 +260,8 @@ import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-
+import {getActivityTypes} from "../models/activityTypes.model"
+import {updateActivityTypes} from "../models/user.model"
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -292,7 +314,9 @@ const Homepage = Vue.extend({
       },
 
       // values pertaining Personal Details section
-      passportCountries: [] as string[],
+      passportCountries: [],
+      activityTypes: [],
+      selectedActivity: "" as string,
       selectedCountry: "" as string,
       availableGenders: ["male", "female", "non-binary"], // casing is dependent on API spec
       availableActivityTypes: [] as string[],
@@ -322,6 +346,10 @@ const Homepage = Vue.extend({
       .then(user => {
         this.titleBarUserName = `${user.firstname} ${user.lastname}`;
         this.editedUser = user;
+        if (this.editedUser.fitness) {
+          this.userFitnessLevel = this.editedUser.fitness.toString();
+        console.log(this.editedUser)
+        console.log(JSON.stringify(this.editedUser))
       })
       .catch(err => {
         console.error(err);
@@ -351,7 +379,7 @@ const Homepage = Vue.extend({
     /**
      * adds the passport country selected in the dropdown to the current user's passport countries
      */
-    addSelectedPassportCountry: async function() {
+    addSelectedPassportCountry: function() {
       if (!this.selectedCountry) {
         return;
       }
@@ -361,6 +389,36 @@ const Homepage = Vue.extend({
       );
     },
 
+    addActivityType: function() {
+      if (!this.selectedActivity) {
+        return
+      }
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      
+      this.editedUser.activities.push(this.selectedActivity);
+    },
+    updateActivityType: function(){
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      updateActivityTypes(this.editedUser.activities, this.currentProfileId)
+      .then(() => {this.returnToProfile()})
+      .catch(() => {alert("Unable to update user.");});
+    },
+
+    removeActivityType:function(activitySelected: string){
+      if (!this.editedUser.activities) {
+        this.editedUser.activities = []
+      }
+      for (let i = 0; i < this.editedUser.activities.length; i++) {
+        if (this.editedUser.activities[i] === activitySelected) {
+          this.editedUser.activities.splice(i, 1);
+        }
+      }
+
+    },
     /**
      * removes the given country from the passport countries of the user being edited
      */
@@ -401,8 +459,8 @@ const Homepage = Vue.extend({
             this.returnToProfile();
           })
           .catch(() => {
-            alert("Unable to update user.");
           });
+            alert("Unable to update user.");
       }
     },
 
