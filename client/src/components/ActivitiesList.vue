@@ -4,12 +4,12 @@
       <v-card-title>
         {{ activity.activity_name }} ({{ activity.location }})
         <v-spacer></v-spacer>
+        <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <div v-on="on">
               <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
             </div>
-            <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
           </template>
           <span>Your role</span>
         </v-tooltip>
@@ -64,7 +64,6 @@ const ActivitiesList = Vue.extend({
     // eslint-disable-next-line no-unused-vars
     authority(newValue, oldValue) {
       this.hasAuthority = newValue;
-      console.log("UPDATING "+this.hasAuthority);
       this.$forceUpdate();
     }
   },
