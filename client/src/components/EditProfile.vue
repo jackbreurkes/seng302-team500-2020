@@ -236,9 +236,9 @@ import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-import {getCurrentUser} from "@/models/user.model";
 
 import {updateActivityTypes} from "../models/user.model"
+import {fetchCurrentUser} from "../controllers/profile.controller";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -322,7 +322,7 @@ const Homepage = Vue.extend({
     }
 
     // User has authority if their permission level is high enough or if they are the profile in question
-    getCurrentUser().then(user => {
+    fetchCurrentUser().then(user => {
       // user = the user currently using the system
       if (user.profile_id == profileId || user.permission_level! >= 120) {
         // If the profile_ids are the same

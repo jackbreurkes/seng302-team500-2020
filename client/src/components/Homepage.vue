@@ -92,12 +92,11 @@ import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId,
-  getPermissionLevel
+  getPermissionLevel, fetchCurrentUser
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-import { getCurrentUser } from '../models/user.model';
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -162,7 +161,7 @@ const Homepage = Vue.extend({
     this.currentProfileId = profileId;
 
     if (permissionLevel < 120) {
-      getCurrentUser()
+      fetchCurrentUser()
         .then(user => {
           if (user.profile_id == profileId) {
             //if we're editing ourself
