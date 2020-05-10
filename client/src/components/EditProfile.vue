@@ -4,7 +4,7 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="12" md="6">
           <v-card class="elevation-12" width="100%">
-            <v-toolbar color="primary" dark flat>
+            <v-toolbar color="primary" dark flat> 
               <v-toolbar-title>Editing profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
 
@@ -135,7 +135,7 @@
           </v-card>
           <br />
           <v-card>
-            <v-toolbar color="primary" dark flat>
+            <v-toolbar color="primary" dark flat> 
               <v-toolbar-title>Email Addresses</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
@@ -151,7 +151,7 @@
               <br />
               <v-tooltip top v-for="email in editedUser.additional_email" :key="email">
                 <template v-slot:activator="{ on }">
-                  <v-chip v-on="on" class="ml-1" close
+                  <v-chip v-on="on" class="ml-1" close 
                     @click:close="deleteEmailAddress(email)"
                     @click="setPrimaryEmail(email)">
                     {{ email }}
@@ -183,7 +183,7 @@
           </v-card>
           <br />
           <v-card>
-            <v-toolbar color="primary" dark flat>
+            <v-toolbar color="primary" dark flat> 
               <v-toolbar-title>Change Password</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
@@ -236,9 +236,7 @@ import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-
 import {updateActivityTypes} from "../models/user.model"
-import {fetchCurrentUser} from "../controllers/profile.controller";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -286,7 +284,7 @@ const Homepage = Vue.extend({
         ],
         emailRules: [
           (v: string) =>
-            formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING
+            formValidator.isValidEmail(v) || formValidator.EMAIL_ERROR_STRING          
         ]
       },
 
@@ -313,64 +311,46 @@ const Homepage = Vue.extend({
    */
   created() {
     // load profile info
-
     const profileId: number = parseInt(this.$route.params.profileId);
-    let hasAuthority: boolean = false;
-
-    if (isNaN(profileId)) {  // profile id in route is not a number
+    if (isNaN(profileId)) {
+      // profile id in route not a number
       this.$router.push({ name: "login" });
     }
+    this.currentProfileId = profileId;
+    profileController.fetchProfileWithId(profileId)
+      .then(user => {
+        this.titleBarUserName = `${user.firstname} ${user.lastname}`;
+        this.editedUser = user;
+        if (user.fitness) {
+          this.editedUser.fitness = user.fitness;
+        } else {
+          this.editedUser.fitness = -1;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      });
 
-    // User has authority if their permission level is high enough or if they are the profile in question
-    fetchCurrentUser().then(user => {
-      // user = the user currently using the system
-      if (user.profile_id == profileId || user.permission_level! >= 120) {
-        // If the profile_ids are the same
-        hasAuthority = true;
-      }
-      if (!hasAuthority) {
-        this.$router.push(`/profiles/${profileId}`);
-      }
+    profileController.getAvailablePassportCountries()
+      .then(countries => {
+        this.passportCountries = countries;
+      })
+      .catch(err => {
+        console.error("unable to load passport countries");
+        console.error(err);
+      });
 
-      // Load the rest of the edit profile if they have authority
-      this.currentProfileId = profileId;
-      profileController.fetchProfileWithId(profileId)
-              .then(user => {
-                this.titleBarUserName = `${user.firstname} ${user.lastname}`;
-                this.editedUser = user;
-                if (user.fitness) {
-                  this.editedUser.fitness = user.fitness;
-                } else {
-                  this.editedUser.fitness = -1;
-                }
-              })
-              .catch(err => {
-                console.error(err);
-              });
+    activityController
+      .getAvailableActivityTypes()
+      .then(activityTypes => {
+        this.availableActivityTypes = activityTypes;
 
-      profileController.getAvailablePassportCountries()
-              .then(countries => {
-                this.passportCountries = countries;
-              })
-              .catch(err => {
-                console.error("unable to load passport countries");
-                console.error(err);
-              });
-
-      activityController
-              .getAvailableActivityTypes()
-              .then(activityTypes => {
-                this.availableActivityTypes = activityTypes;
-
-
-              })
-              .catch(err => {
-                console.error("unable to load activity types");
-                console.error(err);
-              });
-    })
-
-
+        
+      })
+      .catch(err => {
+        console.error("unable to load activity types");
+        console.error(err);
+      });
   },
 
   methods: {
@@ -395,7 +375,7 @@ const Homepage = Vue.extend({
       if (!this.editedUser.activities) {
         this.editedUser.activities = []
       }
-
+      
       this.editedUser.activities.push(this.selectedActivity);
     },
     updateActivityType: function(){
