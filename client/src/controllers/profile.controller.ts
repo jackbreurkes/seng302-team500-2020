@@ -278,7 +278,7 @@ export async function persistChangesToProfile(city: string, state: string | unde
     }
     if (await !checkCountryValidity(location)) {
         throw new Error("Location is not a city")
-    } else {
+    } else if (city !== "" && state !== "" && country !== ""){
         let validLocation: LocationInterface = {city, state, country};
         updatedProfile.location = validLocation;
     }
