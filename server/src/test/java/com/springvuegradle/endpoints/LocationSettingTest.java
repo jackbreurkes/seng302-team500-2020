@@ -76,7 +76,6 @@ public class LocationSettingTest {
         Mockito.when(profileRepository.save(Mockito.any())).thenReturn(profile);
         Mockito.when(countryRepository.save(Mockito.any())).thenReturn(null);
         Mockito.when(activityTypeRepository.save(Mockito.any())).thenReturn(null);
-
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(this.user));
 
         this.request = new MockHttpServletRequest();
@@ -85,7 +84,8 @@ public class LocationSettingTest {
 
     @Test
     void createProfileWithLocation() throws InvalidRequestFieldException, NoSuchAlgorithmException, RecordNotFoundException {
-        Location location = new Location("City", "Country");
+    	Location location = mockLocation("City", "Country");
+        
         Mockito.when(locationRepository.save(Mockito.any())).thenReturn(true);
         Mockito.when(locationRepository.findLocationByCityAndCountry(Mockito.anyString(), Mockito.anyString())).thenReturn(Optional.of(location));
         this.pom = createProfileObjectMappers(location);
@@ -95,7 +95,8 @@ public class LocationSettingTest {
 
     @Test
     void noDuplicateCountries() throws InvalidRequestFieldException, NoSuchAlgorithmException, RecordNotFoundException {
-        Location location = new Location("City1", "Country1");
+    	Location location = mockLocation("City1", "Country1");
+        
         Mockito.when(locationRepository.findLocationByCityAndCountry(Mockito.anyString(), Mockito.anyString())).thenReturn(Optional.of(location));
         this.pom = createProfileObjectMappers(location);
         userProfileController.createprofile(this.pom);
@@ -105,7 +106,8 @@ public class LocationSettingTest {
 
     @Test
     void editProfileWithLocation() throws ParseException, UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
-        Location location = new Location("City3", "Country5");
+    	Location location = mockLocation("City3", "Country5");
+
         Mockito.when(locationRepository.findLocationByCityAndCountry("City3", "Country5")).thenReturn(Optional.of(location));
         this.pom = createProfileObjectMappers(location);
         ProfileResponse response = userProfileController.updateProfile(pom, 1L, request);
@@ -137,6 +139,13 @@ public class LocationSettingTest {
         return returnProfile;
     }
 
-
+    private Location mockLocation(String city, String country) {
+    	Location location = Mockito.mock(Location.class);
+        Mockito.when(location.getCity()).thenReturn(city);
+        Mockito.when(location.getCountry()).thenReturn(country);
+        Mockito.when(location.getState()).thenReturn("");
+        Mockito.when(location.lookupAndValidate()).thenReturn(location);
+        return location;
+    }
 }
 

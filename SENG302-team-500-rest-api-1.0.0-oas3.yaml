@@ -92,6 +92,22 @@ components:
           items:
             type: string
           example: ["Running"]
+        location:
+          type: object
+          required:
+            - city
+            - country
+          properties:
+            city:
+              type: string
+              example: "Christchurch"
+            state:
+              type: string
+              example: "Canterbury"
+            country:
+              type: string
+              example: "New Zealand"
+            
     FullUser:
       title: FullUser
       type: object
@@ -113,6 +129,21 @@ components:
           type: string
           minLength: 8
           example: my secret password
+        location:
+          type: object
+          required:
+            - city
+            - country
+          properties:
+            city:
+              type: string
+              example: "Christchurch"
+            state:
+              type: string
+              example: "Canterbury"
+            country:
+              type: string
+              example: "New Zealand"
   responses:
     InternalServerError:
       description: An internal server error occurred   

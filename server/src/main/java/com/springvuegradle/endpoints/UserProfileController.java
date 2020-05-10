@@ -146,7 +146,7 @@ public class UserProfileController {
         }
         Location location = null;
         if (request.getLocation() != null) {
-            location = addLocationIfNotExisting(request.getLocation());
+            location = addLocationIfNotExisting(request.getLocation().lookupAndValidate());
         }
         profile.setLocation(location); // setting location to null will remove it
 
