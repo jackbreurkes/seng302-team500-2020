@@ -352,6 +352,13 @@ const Homepage = Vue.extend({
         } else {
           this.editedUser.fitness = -1;
         }
+        if(user.location == undefined) {
+          user.location = {
+            city: "",
+            state: "",
+            country: ""
+          }
+        }
       })
       .catch(err => {
         console.error(err);
@@ -465,8 +472,8 @@ const Homepage = Vue.extend({
           .then(() => {
             this.returnToProfile();
           })
-          .catch(() => {
-            alert("Unable to update user.");
+          .catch((e) => {
+            alert(e.message);
           });
       }
     },

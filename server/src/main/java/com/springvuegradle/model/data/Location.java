@@ -177,7 +177,7 @@ public class Location implements Serializable {
 	
 	private String makeRequest(String locationString) {
 		final String uri = "https://nominatim.openstreetmap.org/search/?q=" + locationString
-				+ "&format=json&addressdetails=1&accept-language=en&limit=3";
+				+ "&format=json&addressdetails=1&accept-language=en&limit=10";
 
 		RestTemplate restTemplate = new RestTemplate();
 		String result = restTemplate.getForObject(uri, String.class);
