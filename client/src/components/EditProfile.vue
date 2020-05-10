@@ -98,6 +98,32 @@
                     @input="dobMenu = false"
                   ></v-date-picker>
                 </v-menu>
+                <v-continer>
+                  <v-card-title>Your Location:</v-card-title>
+                  <v-row>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="City"
+                        single-line
+                        v-model="city"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="State"
+                        single-line
+                        v-model="state"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="Country"
+                        single-line
+                        v-model="country"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-continer>
 
                 <v-card-title>Passport Countries</v-card-title>
 
@@ -302,7 +328,10 @@ const Homepage = Vue.extend({
       newPassword: "",
       repeatPassword: "",
       passwordErrorMessage: "",
-      passwordSuccessMessage: ""
+      passwordSuccessMessage: "",
+      city: "",
+      state: "",
+      country: "",
     };
   },
 
@@ -435,7 +464,7 @@ const Homepage = Vue.extend({
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
         profileController
-          .persistChangesToProfile(this.editedUser, this.currentProfileId)
+          .persistChangesToProfile(this.city, this.state, this.country, this.editedUser, this.currentProfileId)
           .then(() => {
             this.returnToProfile();
           })

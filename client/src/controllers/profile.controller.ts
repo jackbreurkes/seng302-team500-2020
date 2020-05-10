@@ -3,6 +3,8 @@ import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 import { getAvailableActivityTypes } from './activity.controller';
+import { checkCountryExistence } from '../models/location.model';
+import { LocationInterface } from '@/scripts/LocationInteface'
 
 let formValidator = new FormValidator();
 
@@ -24,6 +26,21 @@ export async function getAvailablePassportCountries(force = false): Promise<Arra
     }
     return _passportCountryNames;
 }
+
+let _results: boolean;
+export async function checkCountryValidity(location: string, force = false): Promise<boolean> {
+    if (_results === undefined || force) {
+        let results: Array<{class: string, type: string, address: string}> = await checkCountryExistence(location);
+        for (let i=0; i < results.length; i++) {
+            if ((results[i].class === "boundary" && results[i].type === "administrative") || (results[i].class === "city" && results[i].type === "place") ) {
+                return true;
+            }
+        }
+        
+    }
+    return false;
+}
+
 
 /**
  * adds a passport country to a profile object
@@ -252,7 +269,19 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
  * Update the profile information of the user supplied.
  * @param user user to update the information of
  */
-export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
+export async function persistChangesToProfile(city: string, state: string | undefined, country: string, updatedProfile: UserApiFormat, profileId: number) {
+    let location;
+    if (state === undefined) {
+        location = `${city},${country}`
+    } else {
+        location = `${city},${state},${country}`
+    }
+    if (await !checkCountryValidity(location)) {
+        throw new Error("Location is not a city")
+    } else {
+        let validLocation: LocationInterface = {city, state, country};
+        updatedProfile.location = validLocation;
+    }
     if (await checkProfileValidity(updatedProfile)) {
         if (updatedProfile.activities === undefined) {
             updatedProfile.activities = []

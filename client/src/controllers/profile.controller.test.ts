@@ -7,6 +7,7 @@ import {
   removeAndSaveActivityType,
   addActivityType,
   deleteActivityType,
+  checkCountryValidity
 } from "./profile.controller";
 import { UserApiFormat } from "@/scripts/User";
 import axios from "axios";
@@ -245,7 +246,7 @@ test("expect persistChangesToProfile to throw an error when a required field is 
     profile_id: 1,
   };
   await expect(
-    persistChangesToProfile(profile, 1)
+    persistChangesToProfile("Christchurch", "", "New Zealand", profile, 1)
   ).rejects.toThrow("Profile is not valid");
   expect(axios.put).toHaveBeenCalledTimes(0);
 });
@@ -260,7 +261,7 @@ test.skip("expect persistChangesToProfile to persist changes when given a valid 
   };
   await expect(
     // TODO this does not work
-    persistChangesToProfile(profile, 1)
+    persistChangesToProfile("Christchurch", "", "New Zealand", profile, 1)
   ).resolves.toBe(undefined);
   expect(axios.put).toHaveBeenCalled();
 });
