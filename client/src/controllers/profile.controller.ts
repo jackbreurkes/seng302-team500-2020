@@ -28,6 +28,12 @@ export async function getAvailablePassportCountries(force = false): Promise<Arra
 }
 
 let _results: boolean;
+/**
+ * This check country validity simply checks if the user inputted string is an actual city.
+ * formatting is done in back end validator
+ * @param location string input from user
+ * @param force default value
+ */
 export async function checkCountryValidity(location: string, force = false): Promise<boolean> {
     if(location == ',,'){
         return true
