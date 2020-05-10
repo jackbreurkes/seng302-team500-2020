@@ -263,6 +263,10 @@ public class ProfileObjectMapper {
             this.location = addLocationIfNotExisting(this.location, locationRepository);
             profile.setLocation(this.location);
         }
+        if (this.fitness == null) {
+            this.fitness = -1;  // default to no fitness level
+        }
+        profile.setFitness(this.fitness);
         
         List<ActivityType> activityTypes = new ArrayList<>();
         if (this.activities != null) {
