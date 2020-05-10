@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -80,6 +81,8 @@ public class UserProfileController {
 
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private final short STD_ADMIN_USER_PERMISSION = 126;
+    private final short SUPER_ADMIN_USER_PERMISSION = 127;
 
 
     /**

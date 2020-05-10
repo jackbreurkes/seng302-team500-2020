@@ -25,9 +25,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.User;
 
-//@Configuration
-//@ComponentScan("repository")
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {UserProfileController.class})
