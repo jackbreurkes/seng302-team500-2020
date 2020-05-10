@@ -100,8 +100,6 @@ public class UserProfileController {
         boolean isTargetUser = authId != null && authId == profileId;
         boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
         if (!isTargetUser && !isAdmin) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
