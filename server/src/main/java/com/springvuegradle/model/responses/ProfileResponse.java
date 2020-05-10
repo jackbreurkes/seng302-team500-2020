@@ -43,8 +43,10 @@ public class ProfileResponse {
         bio = profile.getBio();
         gender = profile.getGender().getJsonName();
         fitness = profile.getFitness();
-        for (Country country : profile.getCountries()) {
-            passports.add(country.getName());
+        if (profile.getCountries() != null) {
+            for (Country country : profile.getCountries()) {
+                passports.add(country.getName());
+            }
         }
         ArrayList<String> emailArray = new ArrayList<String>();
         for (Email email: emailRepository.getNonPrimaryEmails(profile.getUser())) {
@@ -52,8 +54,10 @@ public class ProfileResponse {
         }
         additional_email = emailArray.toArray(new String[emailArray.size()]);
         date_of_birth = profile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        for (ActivityType activityType : profile.getActivityTypes()) {
-            activities.add(activityType.getActivityTypeName());
+        if (profile.getActivityTypes() != null) {
+            for (ActivityType activityType : profile.getActivityTypes()) {
+                activities.add(activityType.getActivityTypeName());
+            }
         }
         location = profile.getLocation();
     }

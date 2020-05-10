@@ -15,6 +15,7 @@ import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -256,9 +257,9 @@ public class UserProfileController {
      */
     @GetMapping("/{profileId}")
     @CrossOrigin
-    public ResponseEntity<?> viewProfile(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException {
+    public ProfileResponse viewProfile(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         if (request.getAttribute("authenticatedid") != null){
-            return view(profileId);
+            return view(profileId); // throws record not found exception if user does not exist
         } else{
             throw new UserNotAuthenticatedException("User not authenticated");
         }
@@ -315,13 +316,12 @@ public class UserProfileController {
      * @param id Profile ID of the profile to view
      * @return response entity to be sent to the client
      */
-    private ResponseEntity<?> view(long id) {
+    private ProfileResponse view(long id) throws RecordNotFoundException {
         if (profileRepository.existsById(id)) {
             Profile profile = profileRepository.findById(id).get();
-            return ResponseEntity.ok().body(new ProfileResponse(profile, emailRepository));
+            return new ProfileResponse(profile, emailRepository);
         } else {
-            return ResponseEntity.status(HttpStatus.resolve(404))
-                    .body(new ErrorResponse("Profile with id " + id + " does not exist"));
+            throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
     }
 }
