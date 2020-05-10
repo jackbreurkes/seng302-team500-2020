@@ -2,6 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,6 +27,8 @@ import com.springvuegradle.auth.ChecksumUtils;
 @Entity
 @Table(name = "user")
 @NamedQuery(name = "User.findById", query = "select u from User u where u.uuid = ?1")
+@NamedQuery(name = "User.getSuperAdmin", query = "select u from User u where u.permissionLevel = 127")
+@NamedQuery(name = "User.superAdminExists", query = "select count(*) from User u where u.permissionLevel = 127")
 public class User {
 	
 	/**

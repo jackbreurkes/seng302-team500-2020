@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -80,6 +81,8 @@ public class UserProfileController {
 
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private final short STD_ADMIN_USER_PERMISSION = 126;
+    private final short SUPER_ADMIN_USER_PERMISSION = 127;
 
 
     /**
@@ -277,13 +280,12 @@ public class UserProfileController {
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // authentication
-        System.out.println("DWADAWDAWDAD");
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        if (authId == null) {
-            throw new UserNotAuthenticatedException("you are not logged in");
 
-        } else if (!authId.equals((long)-1) && !authId.equals(profileId)) { //TODO update to permission level
-            throw new AccessDeniedException("Insufficient permission");
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
 
         // validate request body
