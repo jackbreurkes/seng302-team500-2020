@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2c1219f0-0adf-4f85-b274-d032176fc203",
+		"_postman_id": "e88d436d-5161-49b7-a4e5-8e12be1a76e5",
 		"name": "SENG302",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -14,7 +14,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "245491b8-2493-42d4-a516-edd86a2dfdfa",
+								"id": "9704f026-a9b1-4f6a-950e-5609af28952c",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -30,7 +30,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "ac89b66c-cf1a-4a44-b87c-24cd7a88d1a6",
+								"id": "89c32e9f-5692-46bb-a731-cfefb8575164",
 								"exec": [
 									""
 								],
@@ -76,7 +76,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "321eca14-0b86-41f6-8bf7-2c6c6507da03",
+								"id": "f2568119-b773-40e3-9550-f2f50a31c680",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -88,7 +88,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "d1ab0224-07b7-4e9c-9c79-280d065f3c06",
+								"id": "05ad3c24-f430-45bd-a6ab-d03ca6ccf604",
 								"exec": [
 									""
 								],
@@ -133,7 +133,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "2befda23-e273-4a50-babf-eaad95895ede",
+								"id": "4d6437a1-bb85-4b8d-b0fd-483c7070ab9f",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -185,7 +185,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8e5207d5-8baa-49bd-8528-64056951fb35",
+								"id": "592da219-e776-447c-9f5c-5d883a755a66",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -197,7 +197,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "38b875cc-2138-4376-bebf-ef77d2ba47f9",
+								"id": "9791c18d-2d5d-459b-a2df-5026ce6e2140",
 								"exec": [
 									""
 								],
@@ -249,7 +249,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e4847f17-121c-4896-8900-2d5e6baf932e",
+								"id": "ba4fa5c4-c8f0-4945-9ea5-8e1c9c9556d7",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -265,7 +265,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "9615e444-b52a-4b6a-a669-a6625e9157f8",
+								"id": "7700031b-fd50-4d54-8945-f80aa82a3905",
 								"exec": [
 									""
 								],
@@ -311,7 +311,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "30786e37-5df5-4580-a7e5-c26fb42e6327",
+								"id": "4316a111-0787-424b-a163-270e7e623402",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -323,7 +323,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "5a7d9163-8076-4515-86f3-71c52cbe6120",
+								"id": "0c7ee97c-710f-4763-bc3c-93ae05e04821",
 								"exec": [
 									""
 								],
@@ -392,7 +392,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "9f5733bf-e4e7-4839-b635-dfd482ce6204",
+						"id": "688b6e4c-c4f7-4a97-a311-a7caa4196843",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -402,7 +402,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "fb106dcd-d805-4fe3-9e5d-69b21706d6c9",
+						"id": "6ba9c425-6e1e-426c-978b-308ed1717c46",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -421,7 +421,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f9d029aa-6a08-4814-a003-197b5b36c52e",
+								"id": "34470843-d469-43d6-ac7a-a3b47ff4ab3f",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -437,7 +437,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "5aeb83c4-eca9-4dd5-bd20-3c6bc8b60b43",
+								"id": "6a9b8f2d-53ba-41e8-9d6d-d068ede5ffbc",
 								"exec": [
 									""
 								],
@@ -483,7 +483,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "5390d5b1-55b8-4030-a8bd-bea4ec67076c",
+								"id": "a8e49616-1279-4ff7-a9c9-eda85b9ed9bc",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -495,7 +495,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "3daa7334-1975-4774-91ee-29160e80c8af",
+								"id": "129ed704-c634-4934-9b8f-ca2c3c1bfef5",
 								"exec": [
 									""
 								],
@@ -598,7 +598,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "45ec441b-6141-4405-a545-e3ccba374303",
+						"id": "b2afffc2-0fa6-4cde-97c4-8ff6ad97f537",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -608,7 +608,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "f6e96ddf-dfad-4455-85aa-92266edf3281",
+						"id": "17514aa5-4f67-4fe8-9e82-d603b8247384",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -627,7 +627,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a85b209d-5f64-435b-84b1-b5a23cd0e0d4",
+								"id": "0fd68a30-071f-4fdf-b72e-6d3f4246c2e4",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -679,7 +679,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "59826c50-4f5e-4684-98bf-f2b8e432fe3d",
+								"id": "408ffae4-1392-4221-81bc-c49a11bee4ba",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -691,7 +691,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "eb715e1a-bbc1-4e80-a23f-845de719ca9f",
+								"id": "a41f7c28-1d26-455e-a861-e02898a22469",
 								"exec": [
 									""
 								],
@@ -769,7 +769,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "3030ae4a-15fd-4677-91cf-bc60053f687e",
+								"id": "5f9435b9-d0b5-4948-a1ad-ad0af54c0156",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -896,7 +896,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "33177f93-de0c-4d55-ba26-3071b0a23b8b",
+								"id": "77e93127-be2d-42e7-8760-85f278044a04",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -912,7 +912,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1f46ddef-8256-47fc-930f-cfb8d15c2ab6",
+								"id": "0c6d9b79-fa90-472c-a6a1-dc2e317af103",
 								"exec": [
 									""
 								],
@@ -958,7 +958,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "adf21218-7f63-469b-be6d-59cf19ebd1c9",
+								"id": "846f7377-1f1a-4efc-adc0-416c5de55f22",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -970,7 +970,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "af87e4f3-29c9-43e4-b06c-e5916b4b0deb",
+								"id": "c168fb25-442e-4f93-87d7-ceafd5189b91",
 								"exec": [
 									""
 								],
@@ -1151,7 +1151,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "f33a2706-e828-4ac1-b6ef-e2b0061d9574",
+						"id": "fdae50aa-d19d-43ba-a1ff-0ce593e57db6",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1161,7 +1161,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "8c53a846-3365-4192-965c-855e530f2e8a",
+						"id": "0dd7fa87-692b-4e70-94e0-5fc1f7971836",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1180,7 +1180,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "7d478a25-845a-4f04-954e-a77bc133eea5",
+								"id": "82e078a5-524d-4035-88a8-66e8339225d7",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -1196,7 +1196,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "99e055ab-5b49-490a-a978-50d656098389",
+								"id": "f3d02e66-d28d-4be6-9834-efb535c3cf59",
 								"exec": [
 									""
 								],
@@ -1242,7 +1242,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "63139ccc-3e70-42e0-b0a9-33b9307e0683",
+								"id": "f392dbc2-8d91-4307-ae2b-3a5ba323c4c8",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -1254,7 +1254,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "58571d13-2045-4b8a-bfdb-4bc10c03f202",
+								"id": "c3195af1-5f74-40e7-bf9c-39b1f27b6da3",
 								"exec": [
 									""
 								],
@@ -1537,7 +1537,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "0394bff6-5a2f-4c90-aabb-7d90a02a0d9e",
+						"id": "fc22d7ab-b1e4-48fd-8335-434bf88105bf",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1547,7 +1547,185 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "a1ffe5c7-18af-4e77-b2fa-574bad193b0d",
+						"id": "5377ece8-d901-4eba-9a5f-9d69d0a89634",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "PUT profile tests",
+			"item": [
+				{
+					"name": "blue sky",
+					"item": [
+						{
+							"name": "PUT profile with activities",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "8d65df39-c55f-4e2e-8889-9bfa16bd2751",
+										"exec": [
+											"var requestData = JSON.parse(request.data);",
+											"var jsonData = JSON.parse(responseBody);",
+											"if (jsonData.profile_id !== undefined) {",
+											"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+											"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+											"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "2a64962a-d799-4e9e-8d15-94fe7c53ffe8",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-Auth-Token",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstname\": \"Jack\",\n\t\"lastname\": \"Sparrow\",\n\t\"activities\": [\"Walking\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/profiles/{{profile_id}}/",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "failing",
+					"item": [
+						{
+							"name": "PUT profile with fake activity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "cc401e84-d957-43c9-a901-1191ba0476fd",
+										"exec": [
+											"var requestData = JSON.parse(request.data);",
+											"var jsonData = JSON.parse(responseBody);",
+											"if (jsonData.profile_id !== undefined) {",
+											"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+											"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+											"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "b254c144-f602-4ce4-80c5-967b999c0ca8",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Auth-Token",
+										"type": "text",
+										"value": "{{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstname\": \"Jack\",\n\t\"lastname\": \"Sparrow\",\n\t\"activities\": [\"not real\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/profiles/{{profile_id}}/",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f8bcc3d9-a02c-45e4-9759-6bbee859e0b6",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "97d6ec71-aeee-4e85-b9c2-ad7a61df719f",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1663,7 +1841,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "9c5e615d-3cbe-4fd6-8cb4-a69e4c092ec5",
+				"id": "8f4a7f3e-b064-4e20-b8b4-038e349b9269",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -1673,7 +1851,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "127fafda-a349-4324-a4d9-476f63af2a63",
+				"id": "8080bb64-420b-4ba3-b00e-cf3c2a45c60c",
 				"type": "text/javascript",
 				"exec": [
 					""

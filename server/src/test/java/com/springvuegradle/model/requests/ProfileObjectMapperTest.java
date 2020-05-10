@@ -86,20 +86,4 @@ class ProfileObjectMapperTest {
         assertNull(profileObjectMapper.getMiddlename());
     }
 
-    @Test
-    void testDeleteNonMandatoryAttributes() throws RecordNotFoundException, InvalidRequestFieldException {
-        User user = new User();
-        Profile profile = new Profile(user, "Bob", "Andrews", LocalDate.of(1990, 01, 01), Gender.NON_BINARY);
-        profile.setMiddleName("MiddleNameExists");
-        profile.setNickName("NickNameExists");
-        profile.setBio("BioExists");
-
-        profileObjectMapper.setMiddlename("");
-        profileObjectMapper.setNickname("");
-        profileObjectMapper.setBio("");
-        profileObjectMapper.updateExistingProfile(profile, profileRepository, countryRepository, locationRepository);
-        assertNull(profile.getMiddleName());
-        assertNull(profile.getNickName());
-        assertNull(profile.getBio());
-    }
 }

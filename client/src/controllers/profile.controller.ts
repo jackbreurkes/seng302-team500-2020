@@ -2,6 +2,7 @@ import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPa
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
+import { getAvailableActivityTypes } from './activity.controller';
 
 let formValidator = new FormValidator();
 
@@ -45,7 +46,7 @@ export async function addPassportCountry(countryName: string, profile: UserApiFo
 }
 
 /**
- * adds a passport country to a profile object
+ * deletes a passport country from a profile object
  * does not persist changes to the database
  * @param countryName the name of the country to remove from the profile
  * @param profileId the profile to remove the passport country from
@@ -62,6 +63,48 @@ export function deletePassportCountry(countryName: string, profile: UserApiForma
 
     profile.passports.splice(profile.passports.indexOf(countryName), 1);
 }
+
+/**
+ * adds an activity type to a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to add to the profile
+ * @param profile the profile to add the activity type to
+ */
+export async function addActivityType(activityType: string, profile: UserApiFormat) {
+    if (!profile.activities) {
+        profile.activities = []
+    }
+    if (!(await getAvailableActivityTypes()).includes(activityType)) {
+        throw new Error(`${activityType} is not recognised as an activity type`)
+    }
+    if (profile.activities.includes(activityType)) {
+        throw new Error(`the target profile already has ${activityType} as an interest`)
+    }
+
+    profile.activities.push(activityType);
+}
+
+/**
+ * removes an activity type from a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to remove from the profile
+ * @param profile the profile to remove the activity type from
+ */
+export function deleteActivityType(activityType: string, profile: UserApiFormat) {
+
+    if (!profile.activities) {
+        profile.activities = []
+    }
+
+    if (!profile.activities.includes(activityType)) {
+        throw `the target user does not have ${activityType} as an interest`;
+    }
+
+    profile.activities.splice(profile.activities.indexOf(activityType), 1);
+}
+
+
+
 
 let loggedInUser: UserApiFormat|null = null;
 
@@ -170,7 +213,7 @@ export async function setPrimary(primaryEmail: string, profileId: number) {
  * Add the given activity type to the user's profile.
  * @param activityType activity type to add to the user's profile
  */
-export async function addActivityType(activityType: string, profileId: number) {
+export async function addAndSaveActivityType(activityType: string, profileId: number) {
     let user = await getProfileById(profileId);
     if (user === null) {
         throw new Error("No active user found.");
@@ -187,7 +230,7 @@ export async function addActivityType(activityType: string, profileId: number) {
  * Remove the supplied activity type from the user's profile.
  * @param activityType activity type to remove from user's profile
  */
-export async function removeActivityType(activityType: string, profileId: number) {
+export async function removeAndSaveActivityType(activityType: string, profileId: number) {
     let user = await getProfileById(profileId);
     if (user === null) {
         throw new Error("No active user found.");
@@ -211,6 +254,10 @@ export async function removeActivityType(activityType: string, profileId: number
  */
 export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
     if (await checkProfileValidity(updatedProfile)) {
+        if (updatedProfile.activities === undefined) {
+            updatedProfile.activities = []
+        }
+        await saveActivityTypes(updatedProfile, profileId);
         await saveUser(updatedProfile, profileId);
     } else {
         throw new Error("Profile is not valid.");

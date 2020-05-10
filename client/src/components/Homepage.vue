@@ -1,81 +1,81 @@
 <template>
   <div>
-    <v-container class="fill-height" fluid>
+    <v-container fill-height align-content-center>
       <v-row align="top" justify="center">
-        <v-col sm="12" md="8" lg="4">
+        <v-col sm="12" md="10" lg="4">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
               <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <div v-if="currentlyHasAuthority">
-                <v-btn @click="editProfile" outlined="true" class="mr-1">Edit</v-btn>
-                <v-btn @click="createActivityClicked" outlined="true">Create Activity</v-btn>
+                <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
               </div>
             </v-toolbar>
-            <v-card-text>
-                <h3>Name</h3>
-                <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
+            <v-card-text class="grey lighten-4">
+              <h3>Name</h3>
+              <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
 
+              <div v-if="currentUser.bio">
                 <h3>Bio</h3>
                 <p>{{ currentUser.bio }}</p>
                 <br />
+              </div>
 
-                <h3>Info</h3>
-                <p>Born on {{ currentUser.date_of_birth }}</p>
-                <br />
-                <p>Identifies as {{ currentUser.gender }}</p>
-                <br />
+              <h3>Info</h3>
+              <p>Born on {{ currentUser.date_of_birth }}</p>
+              <br />
+              <p>Identifies as {{ currentUser.gender }}</p>
+              <br />
 
-                <div v-if="currentUser.fitness">
-                  <p>Fitness level {{ currentUser.fitness }}</p>
-                  <br />
-                </div>
-                <p>Email: {{ currentUser.primary_email }}</p>
+              <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
+                <p>Fitness level {{ currentUser.fitness }}</p>
                 <br />
+              </div>
 
-                <div v-if="currentUser.passports">
-                  <h3>Passport Countries</h3>
-                  <v-chip
-                    class="mr-1 mb-2"
-                    v-for="country of currentUser.passports"
-                    v-bind:key="country"
-                    outlined="true"
-                  >{{ country }}</v-chip>
-                  <v-chip
-                    class="mr-1 mb-2"
-                    v-if="currentUser.passports.length == 0"
-                    outlined="true"
-                  >None</v-chip>
-                </div>
-
-                <br />
-                <div v-if="currentlyHasAuthority">
-                  <p>Primary email: {{ currentUser.primary_email }}</p>
-                  <br />
-                  <p>Secondary Emails {{ (currentUser.additional_email !== undefined && currentUser.additional_email.length) || 0 }} / 5:</p>
+              <div v-if="currentlyHasAuthority">
+                <p class="mb-0">Primary email: {{ currentUser.primary_email }}</p>
+                <div v-if="currentUser.additional_email && currentUser.additional_email.length > 0">
+                  <p class="mb-0">Secondary Emails {{ currentUser.additional_email.length }} / 4:</p>
                   <ul>
                     <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
                   </ul>
+                  <br />
                 </div>
-                <br />
+              </div>
+
+              <div v-if="currentUser.passports && currentUser.passports.length > 0">
+                <h3>Passport Countries</h3>
+                <v-chip
+                  class="mr-1 mb-2"
+                  v-for="country of currentUser.passports"
+                  v-bind:key="country"
+                  outlined
+                >{{ country }}</v-chip>
+              </div>
+
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col sm="12" md="8" lg="8">
+        <v-col sm="12" md="10" lg="8">
           <v-card class="elevation-12">
             <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Activities</v-toolbar-title>
+              <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <div v-if="currentlyHasAuthority">
+                <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
+              </div>
             </v-toolbar>
 
-            <v-card-text>
-              <div v-if="currentUser.activities">
+            <v-card-text class="grey lighten-4">
+              <div v-if="currentUser.activities && currentUser.activities.length > 0">
                 <h3>Interests</h3>
                 <v-chip
                   class="mr-2 mb-2"
                   v-for="activityType of currentUser.activities"
                   v-bind:key="activityType"
                 >{{ activityType }}</v-chip>
-              </div>insert activities here
+              </div>
+              <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" v-ref:activityList></ActivitiesList>
             </v-card-text>
           </v-card>
         </v-col>
@@ -86,15 +86,13 @@
 
 <script lang="ts">
 import Vue from "vue";
+import ActivitiesList from "./ActivitiesList.vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId,
-  getPermissionLevel,
-  // addNewEmail,
-  // deleteEmail,
-  // setPrimary
+  getPermissionLevel
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -104,6 +102,7 @@ import { getCurrentUser } from '../models/user.model';
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
+  components: { ActivitiesList },
 
   // app initial state
   data: function() {
@@ -196,50 +195,12 @@ const Homepage = Vue.extend({
         });
     },
 
-    // addEmailAddress: function() {
-    //   addNewEmail(this.newEmail, this.currentProfileId)
-    //     .then(() => {
-    //       console.log("Email address added");
-    //       // refresh page after adding emails
-    //       history.go(0);
-    //     })
-    //     .catch(err => {
-    //       console.log(err);
-    //     });
-    // },
-
-    // deleteEmailAddress: function(email: string) {
-    //   deleteEmail(email, this.currentProfileId)
-    //     .then(() => {
-    //       // refresh page after deleting emails
-    //       history.go(0);
-    //     })
-    //     .catch((err: any) => {
-    //       console.log(err);
-    //       // refresh page hopefully fixing issues
-    //       history.go(0);
-    //     });
-    // },
-
-    // setPrimaryEmail: function(email: string) {
-    //   setPrimary(email, this.currentProfileId) // Does not validate the email as it is a requirement that the email must already be registered to the user (hence, has previously been validated);
-    //     .then(() => {
-    //       // refresh page after changing primary email
-    //       history.go(0);
-    //     })
-    //     .catch(err => {
-    //       console.log(err);
-    //       // refresh page to hopefully fix issues
-    //       history.go(0);
-    //     });
-    // },
-
     editProfile: function() {
         this.$router.push(`/profiles/${this.currentProfileId}/edit`);
     },
 
     createActivityClicked: function() {
-      this.$router.push({ name: "createActivity" });
+      this.$router.push(`/profiles/${this.currentProfileId}/createActivity`);
     }
   }
 });

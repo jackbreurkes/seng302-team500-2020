@@ -5,6 +5,8 @@ import Register from "./components/Register.vue";
 import Homepage from "./components/Homepage.vue";
 import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
+import AdminDashboard from "./components/AdminDashboard.vue";
+import EditActivity from "./components/EditActivity.vue";
 
 Vue.config.productionTip = false;
 
@@ -14,12 +16,17 @@ import { verifyUserId } from "./models/user.model";
 import vuetify from "./plugins/vuetify";
 
 const routes = [
-  { path: "/", name: "login", component: Login },
+  { path: "/", name: "landing", component: Login },
   { path: "/login", name: "login", component: Login },
   { path: "/register", name: "register", component: Register },
   {
-    path: "/createActivity",
+    path: "/profiles/:profileId/createActivity",
     name: "createActivity",
+    component: CreateActivity,
+  },
+  {
+    path: "/profiles/:profileId/editActivity/:activityId",
+    name: "editActivity",
     component: CreateActivity,
   },
   {
@@ -31,6 +38,11 @@ const routes = [
     path: "/profiles/:profileId/edit",
     name: "editProfile",
     component: EditProfile,
+  },
+  {
+    path: "/admin",
+    name: "adminDashboard",
+    component: AdminDashboard,
   },
 ];
 

@@ -5,11 +5,13 @@
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
-          Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined="true">Logout</v-btn>
+          Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
       <v-content>
-        <router-view></router-view>
+        <transition name="page-transition">
+          <router-view></router-view>
+        </transition>
       </v-content>
     </v-app>
   </div>
@@ -19,7 +21,8 @@
   import Vue from "vue"
   import {
     logoutCurrentUser,
-    fetchCurrentUser
+    fetchCurrentUser,
+    getPermissionLevel
   } from "./controllers/profile.controller";
   // app Vue instance
   const app = Vue.extend({
@@ -42,9 +45,6 @@
     },
 
     methods: {
-      returnToProfileClicked: function() {
-        this.$router.push({ name: "login" });
-      },
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
@@ -58,11 +58,16 @@
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
           this.isLoggedIn = true;
-          this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          if ((!user || !user.firstname) && getPermissionLevel() >= 120) {
+            this.currentName = "Admin";
+          } else {
+            this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          }
           this.currentProfileId = user.profile_id!;
         })
         .catch(() => {
-          this.isLoggedIn = false;
+          this.isLoggedIn = getPermissionLevel() >= 120;
+          this.currentName = getPermissionLevel() >= 120 ? "Admin" : "";
         });
       }
     }
