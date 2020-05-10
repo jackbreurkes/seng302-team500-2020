@@ -1,6 +1,6 @@
 package com.springvuegradle.exceptions;
 
-import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -81,18 +81,6 @@ public class ExceptionHandlerController {
 	public ErrorResponse requestHandlingInvalidField(InvalidRequestFieldException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
-	
-	/**
-	 * catches all UserDoesNotExistExceptions thrown by endpoints and returns an ErrorResponse with code 400.
-	 * @param exception the exception object thrown by a method
-	 * @return ErrorResponse object with message equal to the exception message
-	 */
-	@ExceptionHandler(UserDoesNotExistException.class)
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	@ResponseBody
-	public ErrorResponse requestHandlingUserDoesNotExist(UserDoesNotExistException exception) {
-		return new ErrorResponse(exception.getMessage());
-	}
 
 	/**
 	 * catches all RecordNotFoundExceptions thrown by endpoints and returns an ErrorResponse with code 404.
@@ -105,28 +93,16 @@ public class ExceptionHandlerController {
 	public ErrorResponse requestHandlingInvalidField(RecordNotFoundException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
-	
-	/**
-	 * catches all EmailAlreaadyRegisteredExceptions thrown by endpoints and returns an ErrorResponse with code 403.
-	 * @param exception the exception object thrown by a method
-	 * @return ErrorResponse object with message equal to the exception message
-	 */
-	@ExceptionHandler(EmailAlreadyRegisteredException.class)
-	@ResponseStatus(value = HttpStatus.FORBIDDEN)
-	@ResponseBody
-	public ErrorResponse requestHandlingInvalidField(EmailAlreadyRegisteredException exception) {
-		return new ErrorResponse(exception.getMessage());
-	}
 
 	/**
-	 * catches all InvalidPasswordExceptions thrown by endpoints and returns an ErrorResponse with code 403.
+	 * catches all ForbiddenOperationExceptions thrown by endpoints and returns an ErrorResponse with code 403.
 	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
-	@ExceptionHandler(InvalidPasswordException.class)
+	@ExceptionHandler(ForbiddenOperationException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ResponseBody
-	public ErrorResponse requestHandlingInvalidField(InvalidPasswordException exception) {
+	public ErrorResponse requestHandlingInvalidField(ForbiddenOperationException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
 

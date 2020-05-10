@@ -29,10 +29,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.auth.ChecksumUtils;
-import com.springvuegradle.exceptions.EmailAlreadyRegisteredException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.MaximumEmailsException;
-import com.springvuegradle.exceptions.UserDoesNotExistException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Session;
@@ -60,10 +59,10 @@ public class NewEmailController {
 
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, AccessDeniedException, MaximumEmailsException, EmailAlreadyRegisteredException, InvalidRequestFieldException, UserDoesNotExistException {
+	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, AccessDeniedException, InvalidRequestFieldException, ForbiddenOperationException, RecordNotFoundException {
 		User user = userRepo.getOne(profileId);
 		if (user == null) {
-			throw new UserDoesNotExistException("No user " + profileId);
+			throw new RecordNotFoundException("No user " + profileId);
 		}
 		
         // check correct authentication
@@ -77,6 +76,9 @@ public class NewEmailController {
 		
 			LinkedHashMap<String, Object> json = null;
 			try {
+				System.out.println("-------------------------------------------------------------------------------------");
+				System.out.println(raw);
+				System.out.println("-------------------------------------------------------------------------------------");
 				json = getJson(raw);
 			} catch (org.apache.tomcat.util.json.ParseException e) {
 				e.printStackTrace();
@@ -91,7 +93,7 @@ public class NewEmailController {
 					throw new InvalidRequestFieldException("Invalid format for additional email list.");
 				}
 				if (newEmails.size() >= 5) {					// As this list does not include the primary email
-					throw new MaximumEmailsException("Maximum email addresses is (5)");
+					throw new ForbiddenOperationException("Maximum email addresses is (5)");
 				} else {
 					allEmailsValid(newEmails, user);
 					updateAdditionalEmails(user, newEmails);					
@@ -107,10 +109,10 @@ public class NewEmailController {
 	
 	@PutMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
-	public ResponseEntity<?> updatePrimaryEmail(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, InvalidRequestFieldException, UserNotAuthenticatedException, EmailAlreadyRegisteredException, MaximumEmailsException, UserDoesNotExistException {
+	public ResponseEntity<?> updatePrimaryEmail(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, InvalidRequestFieldException, UserNotAuthenticatedException, ForbiddenOperationException, RecordNotFoundException {
 		User user = userRepo.getOne(profileId);
 		if (user == null) {
-			throw new UserDoesNotExistException("No user " + profileId);
+			throw new RecordNotFoundException("No user " + profileId);
 		}
 		
         // check correct authentication
@@ -151,7 +153,7 @@ public class NewEmailController {
 						throw new InvalidRequestFieldException("Invalid format for additional email list.");
 					}
 					if (newEmails != null && newEmails.size() >= 5) {					// As this list does not include the primary email
-						throw new MaximumEmailsException("Maximum email addresses is (5)");
+						throw new ForbiddenOperationException("Maximum email addresses is (5)");
 					}
 					
 					if (newEmails != null) {
@@ -213,13 +215,13 @@ public class NewEmailController {
 		return registered;
 	}
 
-	private void allEmailsValid(ArrayList<String> emailList, User user) throws EmailAlreadyRegisteredException, InvalidRequestFieldException {
+	private void allEmailsValid(ArrayList<String> emailList, User user) throws ForbiddenOperationException, InvalidRequestFieldException {
 		for (String email: emailList) {
 			if (!isValidEmail(email)) {
 				throw new InvalidRequestFieldException("Invalid email: " + email);
 			}
 			if (emailAlreadyRegisteredToOtherUser(email, user)) {
-				throw new EmailAlreadyRegisteredException("Email " + email + " is already registered to another user.");
+				throw new ForbiddenOperationException("Email " + email + " is already registered to another user.");
 			}
 		}
 	}
