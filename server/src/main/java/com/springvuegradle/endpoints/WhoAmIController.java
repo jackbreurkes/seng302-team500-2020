@@ -43,6 +43,8 @@ public class WhoAmIController {
     private EmailRepository emailRepository;
 
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
+    private final String SUPER_ADMIN_EMAIL = "super@admin.com";
+    private final String SUPER_ADMIN_PASSWORD = "IncludeActuals5348";
 	
     /**
      * Calls checkStartUpAdmin method
@@ -70,13 +72,13 @@ public class WhoAmIController {
             
             superAdmin = userRepository.getSuperAdmin().get(0);	// Will fail here in tests if no mocking is used
             try {
-                superAdmin.setPassword("password");
+                superAdmin.setPassword(SUPER_ADMIN_PASSWORD);
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
             userRepository.save(superAdmin);
 
-            Email superAdminEmail = new Email(superAdmin, "super@admin.com", true);
+            Email superAdminEmail = new Email(superAdmin, SUPER_ADMIN_EMAIL, true);
             emailRepository.save(superAdminEmail);
             emailRepository.findByEmail(superAdminEmail.getEmail()).setIsPrimary(true);
         } else {
