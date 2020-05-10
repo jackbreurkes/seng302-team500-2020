@@ -1,8 +1,5 @@
 package com.springvuegradle;
 
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;

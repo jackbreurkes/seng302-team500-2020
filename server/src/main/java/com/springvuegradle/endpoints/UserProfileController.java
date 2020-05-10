@@ -15,6 +15,8 @@ import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.util.FormValidator;
+import com.springvuegradle.util.LocationValidator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -231,17 +233,23 @@ public class UserProfileController {
 
 
     /**
+     * Performs a lookup for the given location and capitalises & fills in missing info by making an API call, then
      * adds a location to the database if it doesn't exist, otherwise returns the existing value.
      * @param location the location to find a match for
      * @return a location from the database
+     * @throws InvalidRequestFieldException if the location is not a real place
      */
-    private Location addLocationIfNotExisting(Location location) {
-        Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
+    private Location addLocationIfNotExisting(Location location) throws InvalidRequestFieldException {
+    	Location validated = LocationValidator.lookupAndValidate(location);
+    	if (validated == null) {
+    		throw new InvalidRequestFieldException("Location "+location.getCity()+", "+location.getCountry()+" is not a valid city");
+    	}
+        Optional<Location> existing = locationRepository.findLocationByCityAndCountry(validated.getCity(), validated.getCountry());
         if (existing.isPresent()) {
             return existing.get();
         }
 
-        return locationRepository.save(location);
+        return locationRepository.save(validated);
     }
 
 
