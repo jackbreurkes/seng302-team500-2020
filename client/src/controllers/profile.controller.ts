@@ -29,10 +29,13 @@ export async function getAvailablePassportCountries(force = false): Promise<Arra
 
 let _results: boolean;
 export async function checkCountryValidity(location: string, force = false): Promise<boolean> {
+    if(location == ',,'){
+        return true
+    }
     if (_results === undefined || force) {
         let results: Array<{class: string, type: string, address: string}> = await checkCountryExistence(location);
         for (let i=0; i < results.length; i++) {
-            if ((results[i].class === "boundary" && results[i].type === "administrative") || (results[i].class === "city" && results[i].type === "place") ) {
+            if ((results[i].class === "boundary" && results[i].type === "administrative") || (results[i].class === "place" && results[i].type === "city") ) {
                 return true;
             }
         }
@@ -280,8 +283,9 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
         } else {
             location = `${city},${state},${country}`
         }
-        if (await !checkCountryValidity(location)) {
+        if (!(await checkCountryValidity(location))) {
             throw new Error("Location is not a city")
+
         } else if (city !== "" && state !== "" && country !== ""){
             let validLocation: LocationInterface = {city, state, country};
             updatedProfile.location = validLocation;

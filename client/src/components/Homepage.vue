@@ -26,10 +26,15 @@
               <br />
               <p>Identifies as {{ currentUser.gender }}</p>
               <br />
-
               <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
                 <p>Fitness level {{ currentUser.fitness }}</p>
                 <br />
+              </div>
+
+              <div v-if="currentUser.location !== undefined && currentUser.location.city !==null && currentUser.location.city.length != 0">
+              <br />
+              <p> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+              <br />
               </div>
 
               <div v-if="currentlyHasAuthority">

@@ -145,7 +145,8 @@ public class UserProfileController {
             profile.setActivityTypes(activityTypes);
         }
         Location location = null;
-        if (request.getLocation() != null) {
+        if (request.getLocation() != null && request.getLocation().getCity()!=null && request.getLocation().getCity().length()
+                > 0 && request.getLocation().getCountry() !=null && request.getLocation().getCountry().length() >0) {
             location = addLocationIfNotExisting(request.getLocation().lookupAndValidate());
         }
         profile.setLocation(location); // setting location to null will remove it
@@ -237,7 +238,7 @@ public class UserProfileController {
      */
     private Location addLocationIfNotExisting(Location location) {
         Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
-        if (existing.isPresent()) {
+        if (existing != null && existing.isPresent()) {
             return existing.get();
         }
 
