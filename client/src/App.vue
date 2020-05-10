@@ -31,8 +31,7 @@
     data: () => {
       return {
         isLoggedIn: false,
-        currentName: "",
-        currentProfileId: NaN as number
+        currentName: ""
       }
     },
     created() {
@@ -63,7 +62,6 @@
           } else {
             this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
           }
-          this.currentProfileId = user.profile_id!;
         })
         .catch(() => {
           this.isLoggedIn = getPermissionLevel() >= 120;
