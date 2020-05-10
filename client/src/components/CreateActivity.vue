@@ -109,24 +109,16 @@
                   v-model="createActivityRequest.location"
                   :rules="inputRules.locationRules"
                 ></v-text-field>
-
-                <div id="activity-type-chips" v-if="createActivityRequest.activity_type && createActivityRequest.activity_type.length > 0">
-                  <v-chip
-                    v-for="type in createActivityRequest.activity_type"
-                    :key="type"
-                    close
-                    class="ma-2"
-                    @click:close="removeActivityType(type)"
-                  >{{ type }}</v-chip>
-                </div>
-    
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
                   item-text="name"
-                  label="Activity Types"  
-                  v-model="selectedActivityType"
-                  @input="addSelectedActivityType()"
+                  label="Activity Types"
+                  placeholder="Add Activity Types"
+                  v-model="createActivityRequest.activity_type"
+                  chips
+                  deletable-chips
+                  multiple
                 ></v-autocomplete>
               <p class="pl-1" style="color: red">{{ errorMessage }}</p>
               </v-card-text>
