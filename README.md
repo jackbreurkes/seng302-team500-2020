@@ -1,15 +1,16 @@
-# Seng302 Example Project
------
-Basic project template using Gradle, NPM, Spring Boot, Vue and Gitlab CI. Remember to set up y
-our Gitlab Ci server (refer to the student guide for instructions).
+# Seng302 Team 500 Project
 
 ### Basic Project Structure
-- client/src Frontend source code (JS - Vue)
+- client/src Frontend source code (TypeScript - Vue)
 - client/public publicly accesable web assets
 - client/dist Frontend production build
 
 - server/src Backend source code (Java - Spring)
 - server/out Backend production build
+
+### Demo user credentials
+- email: `tessa.testman@gmail.com`
+- password: `password123`
 
 ### How to run
 ##### Client (Frotnend/GUI)
@@ -28,10 +29,12 @@ Running on: http://localhost:9499/
 
 ### Todo
 - Add team name into `build.gradle` and `package.json`
-- Set up Gitlab CI server (refer to the student guide on learn)
 
 ### Reference
 - [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
 - [Spring JPA docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface)
 - [Vue docs](https://vuejs.org/v2/guide/)
 
+### Additional Dependencies
+- [Vue Router](https://router.vuejs.org/)
+- [Vuetify](https://vuetifyjs.com/)

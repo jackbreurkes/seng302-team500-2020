@@ -178,12 +178,15 @@ export async function logout() {
 export async function create(formData: RegisterFormData) {
     let userData = {
       lastname: formData.lastName,
+      middlename: formData.middleName,
       firstname: formData.firstName,
+      nickname: formData.nickname,
       primary_email: formData.email,
       date_of_birth: formData.dateOfBirth,
+      bio: formData.bio,
       gender: formData.gender,
       passports: [],
-      fitness: 0,
+      fitness: -1,
       additional_email: [],
       password: formData.password
     }
