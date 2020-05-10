@@ -9,12 +9,25 @@ const activityModel = require("../models/activity.model");
 var today = new Date().toISOString().slice(0, 10);
 activityModel.createActivity = jest.fn();
 
+
+
 const mockActivityTypes: string[] = [
   "Walking",
   "Running",
   "Swimming",
   "Dancing",
 ];
+
+const mockCreateActivityRequest: CreateActivityRequest = {
+  activity_name: "Raid Area 52",
+  description: "Naruto run through area 52",
+  activity_type: mockActivityTypes,
+  continuous: true,
+  start_time: "",
+  end_time: "",
+  location: "Christchurch, New Zealand", 
+}
+
 activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
@@ -132,31 +145,38 @@ test('expect undefined to be a valid description', () => {
 }
 )
 
-// Start date is in valid format and is in today or in the future.
+// Date is in the future
 test.each(["2021-12-29", "2020-12-31"])( 
-  'expect %s to be a valid start date', (startDate) => {
-      expect(activityController.isFutureDate(startDate)).toBe(true)
+  'expect %s to be a valid date', (date) => {
+      expect(activityController.isFutureDate(date)).toBe(true)
+  }
+);
+
+// Check date if date is valid
+test.each(["2021-12-29", "2020-12-31"])( 
+  'expect %s to be a valid date', (date) => {
+      expect(activityController.isValidDate(date)).toBe(true)
   }
 );
 
 
-// Start date is in valid format and is in past.
+//Date is in the past.
 test.each(["2001-12-32", "2001-02-28"])(
-  'expect %s to be an invalid start date', (startDate) => {
-      expect(activityController.isFutureDate(startDate)).toBe(false)
+  'expect %s to be an invalid date', (date) => {
+      expect(activityController.isFutureDate(date)).toBe(false)
   }
 )
 
 // Date given is in invalid format
 test.each(["Today", "Wednesday 24th June, 2021", "30-04-31"])(
   'expect %s to be an invalid start date', (date) => {
-      expect(activityController.isFutureDate(date)).toBe(false)
+      expect(activityController.isValidDate(date)).toBe(false)
   }
 )
 
 // Date given is the empty string
 test('expect "" to be an invalid start date', () => {
-      expect(activityController.isFutureDate("")).toBe(false)
+      expect(activityController.isValidDate("")).toBe(false)
   }
 )
 

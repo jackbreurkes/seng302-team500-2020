@@ -110,19 +110,7 @@ export function removeActivityType(activityType: string, createActivityRequest: 
  * @param time start time in string format
  */
 export function setStartDate(dateString: string, time: string) {
-  if (time === "") {
-    time = "00:00"
-  }
-  let date = new Date(dateString)
-  let offset = date.getTimezoneOffset();
-  let offSetString = offset.toString();
-  let newOffsetString;
-  if (offSetString.length === 4) {
-    newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
-  } else {
-    newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
-  }
-  return  dateString + "T" + time + ":00" + newOffsetString;
+  return getApiDateTimeString(dateString, time);
 }
 
 /**
@@ -130,7 +118,7 @@ export function setStartDate(dateString: string, time: string) {
  * @param dateString full ISO format date string
  * @returns only the date as string
  */
-export function getDateFromISO(dateString: string | number): string {
+export function getDateFromISO(dateString: string): string {
   if (dateString === undefined) {
     dateString = "";
   }
@@ -145,19 +133,29 @@ export function getDateFromISO(dateString: string | number): string {
  * @param time end time in string format
  */
 export function setEndDate(dateString: string, time: string) {
-  if (time === "") {
-    time = "00:00"
+  return getApiDateTimeString(dateString, time);
+}
+
+/**
+ * combines the date, time and timezones given into ISO 8601 format
+ * @param createActivityRequest the activity to remove the activity type from
+ * @param dateString end date in string format
+ * @param timeString end time in string format
+ */
+function getApiDateTimeString(dateString: string, timeString: string) {
+  if (timeString === "") {
+    timeString = "00:00";
   }
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
-  let offSetString = offset.toString();
+  let offSetString =offset.toString();
   let newOffsetString;
   if (offSetString.length === 4) {
     newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
   } else {
     newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
   }
-  return dateString + "T" + time + ":00" + newOffsetString;
+  return dateString + "T" + timeString + ":00" + newOffsetString;
 }
 
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
@@ -214,18 +212,37 @@ export async function getActivitiesByCreator(creatorId: number) {
 }
 
 export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
+/**
+ * Checks if dateString given is a date in the future
+ * if it is valid
+ * @param dateString date in question in string form
+ * @return true or false
+ */
 export function isFutureDate(dateString: string): boolean {
-  try {
-    let today = new Date().getTime()
-    let date = new Date(dateString).getTime()
-    if ((today - date) < 0) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (err) {
+  let today = new Date().getTime()
+  let date = new Date(dateString).getTime()
+  if ((today - date) < 0) {
+    return true;
+  } else {
     return false;
   }
+}
+
+/**
+ * Checks if date is in valid format of YYYY-MM-DD
+ * @param dateString date in question
+ */
+export function isValidDate(dateString: string) {
+  var dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
+  if(!dateString.match(dateRegEx)) {
+    return false; 
+  }
+  var d = new Date(dateString);
+  var dNum = d.getTime();
+  if(!dNum && dNum !== 0) {
+    return false;
+  }
+  return d.toISOString().slice(0,10) === dateString;
 }
 
 /**
@@ -280,12 +297,12 @@ export function isValidEndDate(startDateString: string, endDateString: string): 
 
 export const INVALID_TIME_MESSAGE = "Please enter a valid time"
 /**
- * Checks if time string input is in described regex
+ * Checks if time string input in the format of HH:MM
  * @param timeString time string to be checked
  */
 export function isValidTime(timeString: string): boolean {
-  let re = /^\d{1,2}:\d{2}([ap]m)?$/;
-  if (timeString.match(re)) {
+  let timeRegEx = /^\d{1,2}:\d{2}([ap]m)?$/;
+  if (timeString.match(timeRegEx)) {
     return true;
   } else {
     return false;
