@@ -38,7 +38,8 @@ public class LocationValidator {
 				if ((node.get("class").asText().equals("boundary") && node.get("type").asText().equals("administrative"))
 						|| (node.get("class").asText().equals("place") && node.get("type").asText().equals("city"))) {
 					JsonNode addressNode = node.get("address");
-					String city = addressNode.toString().split(Pattern.quote("\""))[3];
+					String city = addressNode.has("city") ? addressNode.get("city").asText() :
+							(addressNode.toString().split(Pattern.quote("\""))[3]);
 					String state = addressNode.has("state") ? addressNode.get("state").asText() : 
 						(addressNode.has("province") ? addressNode.get("province").asText() : null);
 					String country = addressNode.get("country").asText();
