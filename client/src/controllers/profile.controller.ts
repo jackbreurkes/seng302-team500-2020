@@ -269,18 +269,23 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
  * Update the profile information of the user supplied.
  * @param user user to update the information of
  */
-export async function persistChangesToProfile(city: string, state: string | undefined, country: string, updatedProfile: UserApiFormat, profileId: number) {
-    let location;
-    if (state === undefined) {
-        location = `${city},${country}`
-    } else {
-        location = `${city},${state},${country}`
-    }
-    if (await !checkCountryValidity(location)) {
-        throw new Error("Location is not a city")
-    } else if (city !== "" && state !== "" && country !== ""){
-        let validLocation: LocationInterface = {city, state, country};
-        updatedProfile.location = validLocation;
+export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
+    if (updatedProfile.location) {
+        let city = updatedProfile.location.city;
+        let state = updatedProfile.location.state;
+        let country = updatedProfile.location.country;
+        let location;
+        if (state === undefined) {
+            location = `${city},${country}`
+        } else {
+            location = `${city},${state},${country}`
+        }
+        if (await !checkCountryValidity(location)) {
+            throw new Error("Location is not a city")
+        } else if (city !== "" && state !== "" && country !== ""){
+            let validLocation: LocationInterface = {city, state, country};
+            updatedProfile.location = validLocation;
+        }
     }
     if (await checkProfileValidity(updatedProfile)) {
         if (updatedProfile.activities === undefined) {

@@ -105,21 +105,21 @@
                       <v-text-field
                         label="City"
                         single-line
-                        v-model="city"
+                        v-model="editedUser.location.city"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="8" sm="4">
                       <v-text-field
                         label="State"
                         single-line
-                        v-model="state"
+                        v-model="editedUser.location.state"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="8" sm="4">
                       <v-text-field
                         label="Country"
                         single-line
-                        v-model="country"
+                        v-model="editedUser.location.country"
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -328,10 +328,7 @@ const Homepage = Vue.extend({
       newPassword: "",
       repeatPassword: "",
       passwordErrorMessage: "",
-      passwordSuccessMessage: "",
-      city: "",
-      state: "",
-      country: "",
+      passwordSuccessMessage: ""
     };
   },
 
@@ -464,7 +461,7 @@ const Homepage = Vue.extend({
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
         profileController
-          .persistChangesToProfile(this.city, this.state, this.country, this.editedUser, this.currentProfileId)
+          .persistChangesToProfile(this.editedUser, this.currentProfileId)
           .then(() => {
             this.returnToProfile();
           })

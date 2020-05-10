@@ -244,9 +244,14 @@ test.each(["Cooking", "Moonwalking", "Speaking Russian"])("expect deleteActivity
 test("expect persistChangesToProfile to throw an error when a required field is missing", async () => {
   let profile: UserApiFormat = {
     profile_id: 1,
+    location: {
+      "city": "Christchurch",
+      "state": "",
+      "country": "New Zealand"
+    }
   };
   await expect(
-    persistChangesToProfile("Christchurch", "", "New Zealand", profile, 1)
+    persistChangesToProfile(profile, 1)
   ).rejects.toThrow("Profile is not valid");
   expect(axios.put).toHaveBeenCalledTimes(0);
 });
@@ -258,10 +263,15 @@ test.skip("expect persistChangesToProfile to persist changes when given a valid 
     lastname: "Ross",
     date_of_birth: "2000-01-01",
     gender: "male",
+    location: {
+      "city": "Christchurch",
+      "state": "",
+      "country": "New Zealand"
+    }
   };
   await expect(
     // TODO this does not work
-    persistChangesToProfile("Christchurch", "", "New Zealand", profile, 1)
+    persistChangesToProfile(profile, 1)
   ).resolves.toBe(undefined);
   expect(axios.put).toHaveBeenCalled();
 });
