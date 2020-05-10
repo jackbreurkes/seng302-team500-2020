@@ -1,60 +1,119 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById } from '../models/user.model'
+import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes } from '../models/user.model'
+import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
+import { getAvailableActivityTypes } from './activity.controller';
 
 let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
     await logout();
+    loggedInUser = null;
+}
+
+let _passportCountryNames: Array<string>;  // cache for passport country names
+/**
+ * loads the list of valid passport country names from the cache
+ * if the cache is empty, polls the rest countries API
+ * @param force whether the cache should be forced to update, default false
+ */
+export async function getAvailablePassportCountries(force = false): Promise<Array<string>> {
+    if (_passportCountryNames === undefined || force) {
+        let passportCountries: Array<{name: string}> = await loadPassportCountries();
+        _passportCountryNames = passportCountries.map(country => country.name);
+    }
+    return _passportCountryNames;
 }
 
 /**
- * 
- * @param countryName the name of the country to add to the user
- * @param profileId the profile to add the passport country to
+ * adds a passport country to a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to add to the profile
+ * @param profile the profile to add the passport country to
  */
-export async function addPassportCountry(countryName: string, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found")
+export async function addPassportCountry(countryName: string, profile: UserApiFormat) {
+    if (!profile.passports) {
+        profile.passports = []
+    }
+    if (!(await getAvailablePassportCountries()).includes(countryName)) {
+        throw new Error(`${countryName} is not recognised as a country`)
+    }
+    if (profile.passports.includes(countryName)) {
+        throw new Error(`the target profile already has ${countryName} as a passport country`)
     }
 
-    if (!user.passports) {
-        user.passports = []
-    }
-    if (user.passports.includes(countryName)) {
-        throw new Error("the target user already has desired passport country")
-    }
-
-    user.passports.push(countryName);
-    await saveUser(user, profileId);
-
+    profile.passports.push(countryName);
 }
 
-export async function deletePassportCountry(countryName: string, profileId: number) {
+/**
+ * deletes a passport country from a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to remove from the profile
+ * @param profileId the profile to remove the passport country from
+ */
+export function deletePassportCountry(countryName: string, profile: UserApiFormat) {
 
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found")
+    if (!profile.passports) {
+        profile.passports = []
     }
 
-    if (!user.passports || !(user.passports.includes(countryName))) {
-        throw new Error("User does not have this passport added to their profile.")
+    if (!profile.passports.includes(countryName)) {
+        throw `the target user does not have ${countryName} as a passport country`;
     }
 
-    user.passports.splice(user.passports.indexOf(countryName), 1);
-    await saveUser(user, profileId);
-
+    profile.passports.splice(profile.passports.indexOf(countryName), 1);
 }
 
-let loggedInUser: UserApiFormat = {};
+/**
+ * adds an activity type to a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to add to the profile
+ * @param profile the profile to add the activity type to
+ */
+export async function addActivityType(activityType: string, profile: UserApiFormat) {
+    if (!profile.activities) {
+        profile.activities = []
+    }
+    if (!(await getAvailableActivityTypes()).includes(activityType)) {
+        throw new Error(`${activityType} is not recognised as an activity type`)
+    }
+    if (profile.activities.includes(activityType)) {
+        throw new Error(`the target profile already has ${activityType} as an interest`)
+    }
+
+    profile.activities.push(activityType);
+}
+
+/**
+ * removes an activity type from a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to remove from the profile
+ * @param profile the profile to remove the activity type from
+ */
+export function deleteActivityType(activityType: string, profile: UserApiFormat) {
+
+    if (!profile.activities) {
+        profile.activities = []
+    }
+
+    if (!profile.activities.includes(activityType)) {
+        throw `the target user does not have ${activityType} as an interest`;
+    }
+
+    profile.activities.splice(profile.activities.indexOf(activityType), 1);
+}
+
+
+
+
+let loggedInUser: UserApiFormat|null = null;
 
 /**
  * implemented by Alex Hobson, seems to cache the current user and save it to a class variable
  * @param force force a cache update
  */
 export async function fetchCurrentUser(force = false) {
-    if (force || !loggedInUser.primary_email) {
+    if (force || !loggedInUser) {
         loggedInUser = await getCurrentUser();
         if (loggedInUser === null) {
             throw new Error("no active user found");
@@ -65,10 +124,14 @@ export async function fetchCurrentUser(force = false) {
 
 
 /**
- * fetches a profile for a user with the given ID
+ * fetches the profile of the user with the given ID
  */
 export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
+}
+
+export function getPermissionLevel(): number {
+    return getMyPermissionLevel();
 }
 
 
@@ -82,19 +145,6 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
     await updateCurrentPassword(oldPassword, newPassword, repeatPassword, profileId);
 }
 
-
-
-export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found");
-    }
-    if (user.fitness !== fitnessLevel) {
-        user.fitness = fitnessLevel;
-    }
-
-    await saveUser(user, profileId);
-}
 
 /**
  * Register supplied email to the user by adding it to their additional emails list and communicating this to the database (via user.model method).
@@ -114,6 +164,17 @@ export async function addNewEmail(newEmail: string, profileId: number) {
         }
         await addEmail(newEmail, profileId); 
     }
+}
+
+export async function updateNewEmailList(newEmails: string[], profileId: number) {
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("user not found");
+    }
+    if (user.additional_email === undefined) {
+        user.additional_email = []
+    }
+    await updateEmailList(newEmails, profileId);
 }
 
 /**
@@ -149,16 +210,60 @@ export async function setPrimary(primaryEmail: string, profileId: number) {
 }
 
 /**
+ * Add the given activity type to the user's profile.
+ * @param activityType activity type to add to the user's profile
+ */
+export async function addAndSaveActivityType(activityType: string, profileId: number) {
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("No active user found.");
+    }
+    if (user.activities === undefined) {
+        user.activities = [activityType];
+      } else {
+        user.activities.push(activityType);
+      }
+    await saveActivityTypes(user, profileId);
+}
+
+/**
+ * Remove the supplied activity type from the user's profile.
+ * @param activityType activity type to remove from user's profile
+ */
+export async function removeAndSaveActivityType(activityType: string, profileId: number) {
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("No active user found.");
+    }
+    if (!user.activities || user.activities.length === 0) {
+        throw new Error("User has no activity types associated with their profile.");
+    }
+
+    let index = user.activities.indexOf(activityType);
+    if (user.activities.indexOf(activityType) == -1) {
+      throw new Error("Activity is not associated with user's profile.");
+    } else {
+      user.activities.splice(index, 1);
+    }
+    await saveActivityTypes(user, profileId);
+}
+
+/**
  * Update the profile information of the user supplied.
  * @param user user to update the information of
  */
 export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
     if (await checkProfileValidity(updatedProfile)) {
+        if (updatedProfile.activities === undefined) {
+            updatedProfile.activities = []
+        }
+        await saveActivityTypes(updatedProfile, profileId);
         await saveUser(updatedProfile, profileId);
     } else {
         throw new Error("Profile is not valid.");
     }
 }
+
 
 /**
  * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.

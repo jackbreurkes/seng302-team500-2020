@@ -9,7 +9,8 @@ import axios from 'axios'
  */
 interface LoginResponse {
   token: string,
-  profile_id: string
+  profile_id: string,
+  permission_level: string
 }
 
 
@@ -28,6 +29,13 @@ const instance = axios.create({
   timeout: 10000
 });
 
+export function getMyPermissionLevel(): number {
+  let level = localStorage.getItem("permissionLevel");
+  if (!level) {
+    return 0;
+  }
+  return parseInt(level);
+}
 
 function getMyUserId() {
   return localStorage.getItem("userId")
@@ -75,11 +83,20 @@ export async function login(email: string, password: string): Promise<boolean> {
   try {
     res = await instance.post("login", {email, password});
   } catch (e) {
-    console.error(e.name);
-    throw new Error(e.response.data.error);
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
   }
   let responseData: LoginResponse = res.data;
   localStorage.setItem("token", responseData.token);
+  localStorage.setItem("permissionLevel", responseData.permission_level);
   setMyUserId(responseData.profile_id);
   return true;
 }
@@ -91,7 +108,11 @@ export async function login(email: string, password: string): Promise<boolean> {
 export async function getCurrentUser() {
   let res;
   try {
-    res = await instance.get("profiles/" + getMyUserId());
+    res = await instance.get("profiles/" + getMyUserId(), {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     console.error(e.response);
     throw new Error(e.response.data.error);
@@ -107,7 +128,11 @@ export async function getCurrentUser() {
 export async function getProfileById(profileId: number) {
   let res;
   try {
-    res = await instance.get("profiles/" + profileId);
+    res = await instance.get("profiles/" + profileId, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      }
+    });
   } catch (e) {
     if (e.response) { // request made and server responded
       console.error(e.response)
@@ -141,6 +166,7 @@ export async function logout() {
     throw new Error(e.response.data.error);
   }
   localStorage.removeItem("token"); //still remove token if not deleted from backend
+  localStorage.removeItem("permissionLevel"); //remove our permission level too
   setMyUserId(null); // removes userId
 }
 
@@ -180,6 +206,7 @@ export async function create(formData: RegisterFormData) {
  * For more endpoint information see file team-500/*.yaml
  */
 export async function saveUser(user: UserApiFormat, profileId: number) {
+  console.log("saving user")
   if (profileId !== user.profile_id) {
     throw new Error("cannot save a profile to an id different from that which appears in the user object")
   }
@@ -190,15 +217,23 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
         delete notNullUser[key];
       }
     }
+    console.log(JSON.stringify(notNullUser))
     let res = await instance.put("profiles/" + profileId, notNullUser, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
     });
-    console.log(res)
   } catch (e) {
-    console.log(e.response.data.error)
-    throw new Error(e.response.data.error);
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
   }
 }
 
@@ -206,6 +241,46 @@ export async function saveUser(user: UserApiFormat, profileId: number) {
  * Register the specified email to the target profile by adding it to the list of additional emails.
  * @param email email to register to user
  */
+export async function updateActivityTypes(selectedActivities: string[], profileId: any) {
+  try {
+    let activityDict = {"activities": selectedActivities}
+    let res = await instance.put("profiles/" + profileId + "/activity-types", activityDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }//, data: activityDict
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+    
+  }
+}
+
+
+
+/**
+ * Register the specified email to the target profile by adding it to the list of additional emails.
+ * @param email email to register to user
+ */
+export async function updateEmailList(newEmails: string[], profileId: number) {
+  try { // TODO there should be no business logic in the model class
+    let user = await getProfileById(profileId);
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      emails = newEmails;
+    } else {
+      emails = newEmails;
+    }
+    let emailDict = {"additional_email": emails}
+    let res = await instance.post("profiles/" + profileId + "/emails", emailDict, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: emailDict
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
+
 export async function addEmail(email: string, profileId: number) {
   try { // TODO there should be no business logic in the model class
     let user = await getProfileById(profileId);
@@ -231,7 +306,7 @@ export async function addEmail(email: string, profileId: number) {
  */
 export async function updatePrimaryEmail(primaryEmail: string, profileId: number) {
   try { // TODO lots of busines logic in here
-    let user = await getProfileById(profileId);
+    let user = await getProfileById(profileId); 
     let emails = user.additional_email;
     let oldPrimaryEmail = user.primary_email;
     if (emails === undefined) {
@@ -288,6 +363,32 @@ export async function deleteUserEmail(email: string, profileId: number) {
   }
 }
 
+/**
+ * Saves the current user's activity types list using PUT /profiles/{profileId}/activity-types endpoint
+ * @param user UserApiFormat user with already-updated (in controller class) list of activities
+ */
+export async function saveActivityTypes(user: UserApiFormat, profileId: number) {
+  try {
+    let body = {"activities": user.activities}
+    // PUT /profiles/{profileId}/activity-types
+    let res = await instance.put(`profiles/${profileId}/activity-types`, body, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }
+    });
+  } catch (e) {
+    if (e.response) { // request made and server responded
+      console.error(e.response)
+      throw new Error(e.response.data.error);
+    } else if (e.request) {
+      console.error(e.request);
+      throw new Error(e.request);
+    } else { // something happened in setting up the request
+      console.error(e);
+      throw new Error(e);
+    }
+  }
+}
 
 export async function updateCurrentPassword(old_password: string, new_password: string, repeat_password: string, profileId: number) {
   let res;
@@ -298,7 +399,9 @@ export async function updateCurrentPassword(old_password: string, new_password: 
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
       }
+
     },
+
     
     );
   } catch (e) {

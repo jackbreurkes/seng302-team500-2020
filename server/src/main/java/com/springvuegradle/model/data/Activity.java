@@ -1,9 +1,21 @@
 package com.springvuegradle.model.data;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * JPA POJO representing an Activity.
@@ -16,7 +28,7 @@ public class Activity {
 
     @Id
     @GeneratedValue
-    private long id;
+    private long activity_id;
 
     // the @NotNull annotation will automatically set the column to not null
     // if hibernate.validator.apply_to_ddl = true (true by default)
@@ -53,12 +65,21 @@ public class Activity {
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
-    //TODO activity types once they have been added
+    @NotNull
+    @ManyToMany
+    @JoinTable(
+            name = "activity_activity_type",
+            joinColumns = {@JoinColumn(name = "activity_id")},
+            inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
+    )
+    private Set<ActivityType> activityTypes;
 
     /**
      * no arg constructor required by JPA
      */
-    protected Activity() {}
+    public Activity() {
+    	activityTypes = new HashSet<ActivityType>();
+    }
 
     /**
      * Create an activity with required and optional fields
@@ -67,19 +88,28 @@ public class Activity {
      * @param location the location of the activity
      * @param creator the profile who created the activity
      */
-    public Activity(String activityName, boolean isDuration, String location, Profile creator)
+    public Activity(String activityName, boolean isDuration, String location, Profile creator, Set<ActivityType> activityTypes)
     {
         this.activityName = activityName;
         this.isDuration = isDuration;
         this.location = location;
         this.creator = creator;
+        this.activityTypes = activityTypes;
+    }
+
+    /**
+     * Setter for activity types
+     * @param activityTypes
+     */
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
     }
 
     /**
      * @return the id associated with the activity in the database
      */
     public long getId() {
-        return id;
+        return activity_id;
     }
 
     /**
@@ -203,4 +233,10 @@ public class Activity {
         return creator;
     }
 
+    /**
+     * @return the list of activity types associated with the activity
+     */
+    public Set<ActivityType> getActivityTypes() {
+        return activityTypes;
+    }
 }

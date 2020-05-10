@@ -397,5 +397,19 @@ html .clear-checked:active {
 }
 
 #app {
-    background: url('background.jpg') center center, white;
+    background: url('background.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.page-transition-enter-active {
+    opacity: 1;
+    transition: opacity 0.15s, transform 0.15s;
+    transition-timing-function: ease-out;
+    transition-delay: 0.1s;
+}
+
+.page-transition-enter {
+    opacity: 0;
+    transform: translate(0px, 6px);
 }
