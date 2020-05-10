@@ -260,7 +260,7 @@ public class ProfileObjectMapper {
         }
 
         if (this.location != null) {
-            this.location = addLocationIfNotExisting(this.location, locationRepository);
+            this.location = addLocationIfNotExisting(this.location.lookupAndValidate(), locationRepository);
             profile.setLocation(this.location);
         }
         
