@@ -236,6 +236,8 @@ import * as activityController from "../controllers/activity.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
+import {getCurrentUser} from "@/models/user.model";
+
 import {updateActivityTypes} from "../models/user.model"
 // app Vue instance
 const Homepage = Vue.extend({
@@ -248,7 +250,6 @@ const Homepage = Vue.extend({
       titleBarUserName: "",
       currentProfileId: NaN as number,
       editedUser: {} as UserApiFormat,
-      currentSessionUser: {} as UserApiFormat,
       inputRules: {
         lastnameRules: [
           (v: string) =>
@@ -314,48 +315,62 @@ const Homepage = Vue.extend({
     // load profile info
 
     const profileId: number = parseInt(this.$route.params.profileId);
-    const permissionLevel: number = getPermissionLevel();
-    if (isNaN(profileId)) {  // profile id in route not a number
+    let hasAuthority: boolean = false;
+
+    if (isNaN(profileId)) {  // profile id in route is not a number
       this.$router.push({ name: "login" });
-    } else if (permissionLevel < 120 && profileId != this.currentSessionUser.profile_id) {
-      // Checking to see if current session user has the right permission_level or is the original profile
-      this.$router.push(`/profiles/${profileId}`);
     }
-    this.currentProfileId = profileId;
-    profileController.fetchProfileWithId(profileId)
-      .then(user => {
-        this.titleBarUserName = `${user.firstname} ${user.lastname}`;
-        this.editedUser = user;
-        if (user.fitness) {
-          this.editedUser.fitness = user.fitness;
-        } else {
-          this.editedUser.fitness = -1;
-        }
-      })
-      .catch(err => {
-        console.error(err);
-      });
 
-    profileController.getAvailablePassportCountries()
-      .then(countries => {
-        this.passportCountries = countries;
-      })
-      .catch(err => {
-        console.error("unable to load passport countries");
-        console.error(err);
-      });
+    // User has authority if their permission level is high enough or if they are the profile in question
+    getCurrentUser().then(user => {
+      // user = the user currently using the system
+      if (user.profile_id == profileId || user.permission_level! >= 120) {
+        // If the profile_ids are the same
+        hasAuthority = true;
+      }
+      if (!hasAuthority) {
+        this.$router.push(`/profiles/${profileId}`);
+      }
 
-    activityController
-      .getAvailableActivityTypes()
-      .then(activityTypes => {
-        this.availableActivityTypes = activityTypes;
+      // Load the rest of the edit profile if they have authority
+      this.currentProfileId = profileId;
+      profileController.fetchProfileWithId(profileId)
+              .then(user => {
+                this.titleBarUserName = `${user.firstname} ${user.lastname}`;
+                this.editedUser = user;
+                if (user.fitness) {
+                  this.editedUser.fitness = user.fitness;
+                } else {
+                  this.editedUser.fitness = -1;
+                }
+              })
+              .catch(err => {
+                console.error(err);
+              });
+
+      profileController.getAvailablePassportCountries()
+              .then(countries => {
+                this.passportCountries = countries;
+              })
+              .catch(err => {
+                console.error("unable to load passport countries");
+                console.error(err);
+              });
+
+      activityController
+              .getAvailableActivityTypes()
+              .then(activityTypes => {
+                this.availableActivityTypes = activityTypes;
 
 
-      })
-      .catch(err => {
-        console.error("unable to load activity types");
-        console.error(err);
-      });
+              })
+              .catch(err => {
+                console.error("unable to load activity types");
+                console.error(err);
+              });
+    })
+
+
   },
 
   methods: {
