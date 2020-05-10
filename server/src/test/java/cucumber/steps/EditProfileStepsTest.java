@@ -64,6 +64,7 @@ public class EditProfileStepsTest {
     private LocationRepository locationRepository;
 
     private User testUser;
+    private User testAdminUser;
     private Profile testProfile;
     private ProfileObjectMapper updateProfileRequest;
     private MockHttpServletRequest mockRequest;
@@ -110,9 +111,9 @@ public class EditProfileStepsTest {
         assertFalse(errorResponse.getMessage().isBlank());
     }
 
-    @Given("I am logged in as the profile with id {int}")
+    @Given("I am logged in as the user/profile with id {int}")
     public void i_am_logged_in_as_the_profile_with_id(Integer id) {
-        mockRequest.setAttribute("authenticatedid", id);
+        mockRequest.setAttribute("authenticatedid", (long)id);
     }
 
     @Then("I will view the profile with id {int}")
@@ -121,15 +122,15 @@ public class EditProfileStepsTest {
         assertEquals((long)id, successReponse.getProfile_id());
     }
 
-    @Given("I am updating the profile with id {int}'s {string} information to {string}")
+    @Given("I am trying to update the profile with id {int}'s {string} information to {string}")
     public void i_am_updating_the_profile_with_id_s_information_to(Integer id, String field, String newValue) {
         updateProfileRequest = new ProfileObjectMapper();
         updateProfileRequest.setFirstname(testProfile.getFirstName());
         updateProfileRequest.setLastname(testProfile.getLastName());
+        updateProfileRequest.setDateOfBirth(testProfile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE));
 //        updateProfileRequest.setMiddlename(testProfile.getMiddleName());
 //        updateProfileRequest.setNickname(testProfile.getNickName());
 //        updateProfileRequest.setBio(testProfile.getBio());
-        updateProfileRequest.setDateOfBirth(testProfile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE));
 //        updateProfileRequest.setFitness(testProfile.getFitness());
 //        updateProfileRequest.setGender(testProfile.getGender().getJsonName());
 //        updateProfileRequest.setPassports(testProfile.getCountries().stream().map(Country::getName).toArray(String[]::new));
@@ -143,12 +144,12 @@ public class EditProfileStepsTest {
 
     @When("I try to update the profile information of the profile with id {int}")
     public void i_update_the_profile_information_of_the_profile_with_id(Integer id) {
-        throw new io.cucumber.java.PendingException();
-//        try {
-//            successReponse = userProfileController.updateProfile(updateProfileRequest, (long) id, mockRequest);
-//        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException | RecordNotFoundException e) {
-//            errorResponse = e;
-//        }
+        when(profileRepository.save(testProfile)).thenReturn(testProfile);
+        try {
+            successReponse = userProfileController.updateProfile(updateProfileRequest, (long) id, mockRequest);
+        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException | RecordNotFoundException e) {
+            errorResponse = e;
+        }
     }
 
     @Then("the profile with id {int}'s {string} will have been updated to {string}")
@@ -160,21 +161,17 @@ public class EditProfileStepsTest {
         }
     }
 
-    @When("I try to edit the profile with id {int}")
-    public void i_try_to_edit_the_profile_with_id(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
     @Then("I will receive a message that I am not authenticated as the target user")
-    public void the_profile_with_id_will_not_be_updated(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+    public void the_profile_with_id_will_not_be_updated() {
+        assertNotNull(errorResponse);
+        assertTrue(errorResponse instanceof UserNotAuthenticatedException);
+        assertFalse(errorResponse.getMessage().isBlank());
     }
 
-    @Given("I am logged in as an admin user")
-    public void i_am_logged_in_as_an_admin_user() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+    @Given("there is an admin user in the database with profile id {int}")
+    public void i_am_logged_in_as_an_admin_user(int id) {
+        testAdminUser = new User((long)id);
+        testAdminUser.setPermissionLevel(127);
+        when(userRepository.findById((long)id)).thenReturn(Optional.of(testAdminUser));
     }
 }
