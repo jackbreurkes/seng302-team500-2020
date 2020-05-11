@@ -2,6 +2,8 @@ package com.springvuegradle.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +58,12 @@ public class PutActivityTest {
     @BeforeEach
     void beforeEach(){
         user = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         ActivityType running = new ActivityType("Running");
         ActivityType swimming = new ActivityType("Swimming");
 
-        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
-        Mockito.when(activityTypeRepository.getActivityTypeByActivityTypeName("Swimming")).thenReturn(Optional.of(swimming));
+        when(activityTypeRepository.getActivityTypeByActivityTypeName("Running")).thenReturn(Optional.of(running));
+        when(activityTypeRepository.getActivityTypeByActivityTypeName("Swimming")).thenReturn(Optional.of(swimming));
     }
 
     @Test
@@ -99,7 +101,7 @@ public class PutActivityTest {
         request.setAttribute("authenticatedid", 1L);
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
-        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.empty());
+        when(activityRepository.findById(2L)).thenReturn(Optional.empty());
 
         assertThrows(RecordNotFoundException.class, () -> {
            activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
@@ -115,7 +117,7 @@ public class PutActivityTest {
         CreateActivityRequest.setActivityTypes(new ArrayList<>(Arrays.asList("Invalid")));
 
         Activity activity = new Activity();
-        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         assertThrows(RecordNotFoundException.class, () -> {
            activitiesController.putActivity(1L, 2L, CreateActivityRequest, request);
@@ -130,7 +132,7 @@ public class PutActivityTest {
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
-        Mockito.when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
+        when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
         assertThrows(UserNotAuthenticatedException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
@@ -148,7 +150,7 @@ public class PutActivityTest {
         Activity activity = new Activity();
         activity.setActivityTypes(new HashSet<>());
 
-        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         assertEquals(activitiesController.putActivity(3L, 2L, CreateActivityRequest, request), HttpStatus.OK);
     }
@@ -160,10 +162,11 @@ public class PutActivityTest {
         request.setAttribute("authenticatedid", 1L);
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
-        Activity activity = new Activity();
+        Activity activity = mock(Activity.class);
+        when(activity.getId()).thenReturn(1L);
         activity.setActivityTypes(new HashSet<>());
 
-        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         assertEquals(activitiesController.putActivity(1L, 2L, CreateActivityRequest, request), HttpStatus.OK);
     }

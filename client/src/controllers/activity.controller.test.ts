@@ -9,17 +9,29 @@ const activityModel = require("../models/activity.model");
 var today = new Date().toISOString().slice(0, 10);
 activityModel.createActivity = jest.fn();
 
+
+
 const mockActivityTypes: string[] = [
   "Walking",
   "Running",
   "Swimming",
   "Dancing",
 ];
+
+const mockCreateActivityRequest: CreateActivityRequest = {
+  activity_name: "Raid Area 52",
+  description: "Naruto run through area 52",
+  activity_type: mockActivityTypes,
+  continuous: true,
+  start_time: "",
+  end_time: "",
+  location: "Christchurch, New Zealand", 
+}
+
 activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
 
-// describe.skip("activity controller test suite", () => {
 // --------- ACTIVITY TYPES ---------- //
 test.each(["Walking", "Existing", "Whatever"])(
   "expect addActivityType to throw an error if %s is already added to the activity",
@@ -122,67 +134,120 @@ test.each(["Short!", "A", "Tiny", "A test"])(
 )
 
 // description is the empty string.
-test('expect "" to be a valid description', () => {
-      expect(activityController.validateDescription("")).toBe(true)
+test('expect "" to be a invalid description', () => {
+      expect(activityController.validateDescription("")).toBe(false)
   }
 )
 
 // description is undefined.
-test('expect undefined to be a valid description', () => {
-  expect(activityController.validateDescription(undefined)).toBe(true)
+test('expect undefined to be a invalid description', () => {
+  expect(activityController.validateDescription(undefined)).toBe(false)
 }
 )
 
-// Start date is in valid format and is in today or in the future.
-test.skip.each(["2021-12-29", today])( //TODO make tests pass forever
-  'expect %s to be a valid start date', (startDate) => {
-      expect(activityController.isFutureDate(startDate)).toBe(true)
+// Date is in the future
+test.each(["2021-12-29", "2020-12-31"])( 
+  'expect %s to be a valid date', (date) => {
+      expect(activityController.isFutureDate(date)).toBe(true)
   }
 );
 
-// Start date is in valid format but does not exist.
-test.skip.each(["2021-12-32", "2021-02-31"])(
-  'expect %s to be an invalid start date', (startDate) => {
-      expect(activityController.isFutureDate(startDate)).toBe(false)
+// Check date if date is valid
+test.each(["2021-12-29", "2020-12-31"])( 
+  'expect %s to be a valid date', (date) => {
+      expect(activityController.isValidDate(date)).toBe(true)
   }
-)
+);
 
-// Start date is in valid format and is in past.
-test.skip.each(["2001-12-32", "2001-02-28"])(
-  'expect %s to be an invalid start date', (startDate) => {
-      expect(activityController.isFutureDate(startDate)).toBe(false)
-  }
-)
 
-// Date given is in invalid format
-test.skip.each(["Today", "Wednesday 24th June, 2021", "2021/01/01", "01-02-2021", "30-04-31", "2021-1-1"])(
-  'expect %s to be an invalid start date', (date) => {
+//Date is in the past.
+test.each(["2001-12-32", "2001-02-28"])(
+  'expect %s to be an invalid date', (date) => {
       expect(activityController.isFutureDate(date)).toBe(false)
   }
 )
 
-// Date given is the empty string
-test.skip('expect "" to be an invalid start date', () => {
-      expect(activityController.isFutureDate("")).toBe(false)
+// Date given is in invalid format
+test.each(["Today", "Wednesday 24th June, 2021", "30-04-31"])(
+  'expect %s to be an invalid start date', (date) => {
+      expect(activityController.isValidDate(date)).toBe(false)
   }
 )
 
-// Date given is undefined
-// test.skip('expect undefined to be an invalid start date', () => {
-//       expect(activityController.validateDate(undefined)).toBe(false)
-//   }
-// )
+// Date given is the empty string
+test('expect "" to be an invalid start date', () => {
+      expect(activityController.isValidDate("")).toBe(false)
+  }
+)
+
 
 // End date is in valid format and is after start date
-// test.skip.each([["2021-12-25", "2022-02-27"], ["2021-02-25", "2022-02-18"]])( //TODO make tests pass forever
-//   'expect %s to be valid end date', (startDate, endDate) => {
-//       expect(activityController.validateEndDate(startDate, endDate)).toBe(true)
-//   }
-// );
-//TODO time tests
-//merging date and time to api format
-//end date validation
-//start and end time validation
-//location validation TODO after U9
+test.each([["2021-12-25", "2022-02-27"], ["2021-02-25", "2022-02-18"]])(
+  'expect %s to be valid end date', (startDate, endDate) => {
+      expect(activityController.isValidEndDate(startDate, endDate)).toBe(true)
+  }
+);
 
-// });
+// End date is in valid format and is before start date
+test.each([["2022-12-25", "2021-02-27"], ["2022-02-25", "2021-02-18"]])(
+  'expect %s to be an invalid end date', (startDate, endDate) => {
+      expect(activityController.isValidEndDate(startDate, endDate)).toBe(false)
+  }
+);
+
+// Time is in valid format
+test.each(["01:00", "12:30", "19:30"])(
+  `expect %s to be valid time`, (time) => {
+    expect(activityController.isValidTime(time)).toBe(true)
+  }
+);
+
+// Time is not in valid format
+test.each(["half past one", "12:30:20", "7PM"])(
+  `expect %s to be an invalid time`, (time) => {
+    expect(activityController.isValidTime(time)).toBe(false)
+  }
+);
+
+// Time frame exists
+test.each([true, false])(
+  'expect activity request to have time frame', (timeFrame) => {
+    expect(activityController.hasTimeFrame(timeFrame)).toBe(true);
+  }
+)
+
+//Time frame does not exist
+test('expect undefined to be an invalid timeFrame', () => {
+  expect(activityController.hasTimeFrame(undefined)).toBe(false)
+  }
+)
+
+// Set end date with time and offset of ISO 8601 form. Empty time string implies no input
+// ISO 8601 format is a string of length
+test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]])(
+  'expect end date to be formatted to ISO 8601', (endDate, time) => {
+    expect(activityController.setEndDate(endDate, time)).toHaveLength(25);
+  }
+)
+
+// Set start date with time and offset of ISO 8601 form. Empty time string implies no input
+// ISO 8601 format is a string of length
+test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]])(
+  'expect end date to be formatted to ISO 8601', (startDate, time) => {
+    expect(activityController.setStartDate(startDate, time)).toHaveLength(25);
+  }
+)
+
+// Reverse set end date and returns just the date which is a string of length 10
+test.each(["2020-02-20T08:00:00+1300", "2020-02-20T08:00:00+1300"])(
+  'expect end date to be formatted to ISO 8601', (endDateTime) => {
+    expect(activityController.getDateFromISO(endDateTime)).toHaveLength(10);
+  }
+)
+
+// Reverse set end date and returns just the date which is a string of length 10
+test.each([["2020-01-01", "", "2020-01-01T00:00:00+13:00"], ["2021-01-02", "01:00", "2021-01-02T01:00:00+13:00"], ["2021-01-02", "23:00", "2021-01-02T23:00:00+13:00"]])(
+  'expect end date to be formatted to ISO 8601', (dateString, timeString, expected) => {
+    expect(activityController.getApiDateTimeString(dateString, timeString)).toBe(expected);
+  }
+)

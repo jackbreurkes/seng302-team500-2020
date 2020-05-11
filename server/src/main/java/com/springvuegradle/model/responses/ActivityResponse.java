@@ -9,6 +9,7 @@ import com.springvuegradle.model.data.ActivityType;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 /**
@@ -42,9 +43,12 @@ public class ActivityResponse {
         this.description = activity.getDescription();
         this.location = activity.getLocation();
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        TimeZone timeZone = TimeZone.getDefault();
         if (activity.isDuration()) {
-            this.startTime = activity.getStartDate().toString() + "T" + activity.getStartTime().format(timeFormatter) + "+1300";
-            this.endTime = activity.getEndDate().toString() + "T" + activity.getEndTime().format(timeFormatter) + "+1300";
+//            this.startTime = activity.getStartDate().toString() + "T" + activity.getStartTime().format(timeFormatter) + "+1300";
+//            this.endTime = activity.getEndDate().toString() + "T" + activity.getEndTime().format(timeFormatter) + "+1300";
+            this.startTime = activity.getStartTime();
+            this.endTime = activity.getEndTime();
         }
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.activityTypes = activity.getActivityTypes()
