@@ -1,50 +1,63 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.MockReset;
-import org.springframework.http.MediaType;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import java.util.Optional;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class EditPasswordControllerTest {
 
-class EditPasswordControllerTest {
+    /**
+     * Creates the edit password controller and inserts the mocks we define in the place of the repositories
+     */
+    @InjectMocks
+    EditPasswordController editPasswordController;
 
-    private EditPasswordController editPasswordController;
+    /**
+     * Mock of the userRepository
+     */
+    @Mock
+    UserRepository userRepository;
+
+    public User tempUser;
+
+    @BeforeAll
+    public void setUp(){
+        //Initialize the mocks we create
+        MockitoAnnotations.initMocks(this);
+    }
 
     @BeforeEach
-    void beforeEach() {
-        editPasswordController = new EditPasswordController();
+    public void beforeEach(){
+        //Create a new user and set a password
+        this.tempUser = new User(1l);
+        try{
+            tempUser.setPassword("goodOldPassword");
+        }catch (Exception e){
+            return;
+        }
     }
 
     @Test
@@ -63,6 +76,8 @@ class EditPasswordControllerTest {
     public void testDifferentUsersAuthId() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 2L);
+
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
         assertThrows(UserNotAuthenticatedException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -73,9 +88,86 @@ class EditPasswordControllerTest {
     }
 
     @Test
+    public void testOldPasswordIncorrect() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        //mock the return of userRepositroy.findById
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 1L);
+        assertThrows(ForbiddenOperationException.class, () -> {
+            editPasswordController.editPassword(1L, new UpdatePasswordRequest("badOldPassword", "newPassValid", "newPassValid"),
+                    request);
+        });
+    }
+
+    @Test
+    public void blueSkyScenario() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 1L);
+        try {
+            ResponseEntity<Object> response = editPasswordController.editPassword(1l, new UpdatePasswordRequest("goodOldPassword", "newValidPass", "newValidPass"), request);
+            assertEquals(response.getStatusCode(), HttpStatus.CREATED);
+        }catch (Exception e){
+            return;
+        }
+
+        //assertEquals();
+    }
+
+    @Test
+    public void nonExistingUserTest(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        //is authenticated
+        request.setAttribute("authenticatedid", 1L);
+        assertThrows(RecordNotFoundException.class, () -> {
+            editPasswordController.editPassword(1L, new UpdatePasswordRequest("goodOldPassword", "newPassValid", "newPassValid"),
+                    request);
+        });
+    }
+
+    @Test
+    public void adminBadRequestTest(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        User tempAdminUser = new User(2L);
+        tempAdminUser.setPermissionLevel(127);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempAdminUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 2L);
+
+        assertThrows(InvalidRequestFieldException.class,() -> {
+            editPasswordController.editPassword(1L, new UpdatePasswordRequest(null, null, null), request);
+        });
+    }
+
+    @Test
+    public void adminChangePassword() throws Exception{
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        User tempAdminUser = new User(2L);
+        tempAdminUser.setPermissionLevel(127);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempAdminUser));
+        //is authenticated
+        request.setAttribute("authenticatedid", 2L);
+
+        ResponseEntity<Object> response = editPasswordController.editPassword(1L, new UpdatePasswordRequest(null, "newValidPass", "newValidPass"), request);
+
+        assertEquals(response.getStatusCode(), HttpStatus.CREATED);
+    }
+
+    @Test
     public void testMissingOldPassword() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         assertThrows(InvalidRequestFieldException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -89,6 +181,8 @@ class EditPasswordControllerTest {
     public void testMissingNewPassword() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         assertThrows(InvalidRequestFieldException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -102,6 +196,8 @@ class EditPasswordControllerTest {
     public void testMissingRepeatPassword() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         assertThrows(InvalidRequestFieldException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -115,6 +211,7 @@ class EditPasswordControllerTest {
     public void testPasswordNotRepeatedCorrectly() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         assertThrows(InvalidRequestFieldException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -128,6 +225,7 @@ class EditPasswordControllerTest {
     public void testNewPasswordNotValid() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         assertThrows(InvalidRequestFieldException.class, () -> {
             editPasswordController.editPassword(
                     1L,
@@ -136,10 +234,4 @@ class EditPasswordControllerTest {
             );
         });
     }
-
-    // TODO once we know how to mock userRepository, implement tests for:
-    //  TODO incorrect old password field
-    //  TODO correct info (blue sky scenario)
-    //  TODO changing password as admin
-    //  TODO profile_id for nonexistent user (record not found)
 }

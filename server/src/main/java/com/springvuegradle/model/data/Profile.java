@@ -50,7 +50,12 @@ public class Profile implements Serializable {
 	)
 	private List<Country> countries;
 
-    /**
+	@ManyToOne
+	@JoinColumn(name = "location_id")
+	private Location location;
+
+
+	/**
      * Fitness level of the user (default null or -1)
      */
     @Column(columnDefinition = "smallint default -1")
@@ -95,6 +100,14 @@ public class Profile implements Serializable {
      * Gender of the profile
      */
     private Gender gender;
+
+	@ManyToMany
+	@JoinTable(
+			name = "profile_activity_type",
+			joinColumns = {@JoinColumn(name = "profile_id")},
+			inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
+	)
+	private List<ActivityType> activityTypes;
 
     /**
      * Constructor required by spring
@@ -266,11 +279,45 @@ public class Profile implements Serializable {
 		this.gender = gender;
 	}
 
+	/**
+	 * @return the passport countries associated with this profile
+	 */
 	public List<Country> getCountries() {
 		return countries;
 	}
 
+	/**
+	 * @param countries the passport countries to associate with this profile
+	 */
 	public void setCountries(List<Country> countries) {
 		this.countries = countries;
+	}
+
+	/**
+	 * @return the activity types associated with this profile
+	 */
+	public List<ActivityType> getActivityTypes() {
+		return activityTypes;
+	}
+
+	/**
+	 * @param activityTypes the activity types to associate with this profile
+	 */
+	public void setActivityTypes(List<ActivityType> activityTypes) {
+		this.activityTypes = activityTypes;
+	}
+
+	/**
+	 * @return the location in which the user is currently based
+	 */
+	public Location getLocation() {
+		return location;
+	}
+
+	/**
+	 * @param location the location in which the user is currently based
+	 */
+	public void setLocation(Location location) {
+		this.location = location;
 	}
 }

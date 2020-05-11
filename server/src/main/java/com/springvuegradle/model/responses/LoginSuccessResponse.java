@@ -20,14 +20,20 @@ public class LoginSuccessResponse {
 	 * profile id to be sent to client
 	 */
 	private final Long profileId;
-	
+
+	/**
+	 * The permission level of the user
+	 */
+	private final int permissionLevel;
+
 	/**
 	 * Create a LoginSuccessResponse with a given token
 	 * @param token Token this instance represents
 	 */
-	public LoginSuccessResponse(String token, Long profileId) {
+	public LoginSuccessResponse(String token, Long profileId, int permissionLevel) {
 		this.token = token;
 		this.profileId = profileId;
+		this.permissionLevel = permissionLevel;
 	}
 
 	/**
@@ -45,4 +51,13 @@ public class LoginSuccessResponse {
 	public Long getProfileId() {
 		return profileId;
 	}
+
+	/**
+	 * Get the permission leve
+	 * @return the permission
+	 */
+	public int getPermissionLevel() {
+		return permissionLevel;
+	}
+
 }

@@ -17,8 +17,6 @@ public class CreateUserRequest {
 
     protected CreateUserRequest() {}
 
-    //TODO Validate this and maybe fix up the input (i.e will probs pass a string for the DOB
-
     // Some attributes can be null, instead of creating a bunch of constructors just let the DB validate it
     public CreateUserRequest(String lastname, String firstname, String middlename, String nickname, String primary_email, String password, String bio, String date_of_birth, String gender){
 

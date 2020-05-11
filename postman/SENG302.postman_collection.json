@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ec3c1f7c-4526-4f57-9518-12ff8d141366",
+		"_postman_id": "e88d436d-5161-49b7-a4e5-8e12be1a76e5",
 		"name": "SENG302",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -14,7 +14,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c2b520d9-3971-4ce8-ace4-db29453206bb",
+								"id": "9704f026-a9b1-4f6a-950e-5609af28952c",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -30,7 +30,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "e431708c-709d-4e74-a756-23841a31deee",
+								"id": "89c32e9f-5692-46bb-a731-cfefb8575164",
 								"exec": [
 									""
 								],
@@ -76,7 +76,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "f2568119-b773-40e3-9550-f2f50a31c680",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -88,7 +88,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "05ad3c24-f430-45bd-a6ab-d03ca6ccf604",
 								"exec": [
 									""
 								],
@@ -133,7 +133,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"id": "4d6437a1-bb85-4b8d-b0fd-483c7070ab9f",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -185,7 +185,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "592da219-e776-447c-9f5c-5d883a755a66",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -197,7 +197,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "9791c18d-2d5d-459b-a2df-5026ce6e2140",
 								"exec": [
 									""
 								],
@@ -241,6 +241,384 @@
 			"protocolProfileBehavior": {}
 		},
 		{
+			"name": "Create User with Passport Countries Test",
+			"item": [
+				{
+					"name": "/profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ba4fa5c4-c8f0-4945-9ea5-8e1c9c9556d7",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7700031b-fd50-4d54-8945-f80aa82a3905",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4316a111-0787-424b-a163-270e7e623402",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "0c7ee97c-710f-4763-bc3c-93ae05e04821",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "test that creating a new user with passport countries works",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "688b6e4c-c4f7-4a97-a311-a7caa4196843",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "6ba9c425-6e1e-426c-978b-308ed1717c46",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Update Profile Activity Types Test",
+			"item": [
+				{
+					"name": "/profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "34470843-d469-43d6-ac7a-a3b47ff4ab3f",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6a9b8f2d-53ba-41e8-9d6d-d068ede5ffbc",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a8e49616-1279-4ff7-a9c9-eda85b9ed9bc",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "129ed704-c634-4934-9b8f-ca2c3c1bfef5",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile activity types",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"activities\": [\"Walking\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activity-types",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activity-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "tests that the endpoint for PUT profile activity types is functioning correctly\ncreates a user with no activity interests, logs in, adds an interest then fetches the user.\nthe fetched user should have a field \"activities\" containing the added activity type.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b2afffc2-0fa6-4cde-97c4-8ff6ad97f537",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "17514aa5-4f67-4fe8-9e82-d603b8247384",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
 			"name": "Sprint 2 Acceptance Tests",
 			"item": [
 				{
@@ -249,7 +627,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e2ee46d6-698b-4a50-aa78-d5084d9f06f8",
+								"id": "0fd68a30-071f-4fdf-b72e-6d3f4246c2e4",
 								"exec": [
 									"var requestData = JSON.parse(request.data);",
 									"var jsonData = JSON.parse(responseBody);",
@@ -301,7 +679,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4b0615dc-70f1-45d6-8af0-f11b27fc5db2",
+								"id": "408ffae4-1392-4221-81bc-c49a11bee4ba",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
@@ -313,7 +691,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1a90161b-c901-4677-8bf3-12e14cf91511",
+								"id": "a41f7c28-1d26-455e-a861-e02898a22469",
 								"exec": [
 									""
 								],
@@ -391,7 +769,7 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"id": "1b636e7b-fa79-4f78-bd78-17636180d105",
+								"id": "5f9435b9-d0b5-4948-a1ad-ad0af54c0156",
 								"exec": [
 									"postman.setEnvironmentVariable(\"new_password\", \"newpassword\");"
 								],
@@ -510,6 +888,854 @@
 			"protocolProfileBehavior": {}
 		},
 		{
+			"name": "Create Activity Blue Sky",
+			"item": [
+				{
+					"name": "/profiles Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "77e93127-be2d-42e7-8760-85f278044a04",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "0c6d9b79-fa90-472c-a6a1-dc2e317af103",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "846f7377-1f1a-4efc-adc0-416c5de55f22",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c168fb25-442e-4f93-87d7-ceafd5189b91",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: continuous",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": true,\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: no description",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: continuous with bad time format",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": true,\n  \"start_time\": \"bad format\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "all POST activity requests in this folder should return information on a newly created after sending POST activity",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "fdae50aa-d19d-43ba-a1ff-0ce593e57db6",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "0dd7fa87-692b-4e70-94e0-5fc1f7971836",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Create Activity Failing Cases",
+			"item": [
+				{
+					"name": "/profiles Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "82e078a5-524d-4035-88a8-66e8339225d7",
+								"exec": [
+									"var requestData = JSON.parse(request.data);",
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.profile_id !== undefined) {",
+									"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+									"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+									"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "f3d02e66-d28d-4be6-9834-efb535c3cf59",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lastname\": \"Benson\",\n  \"firstname\": \"Maurice\",\n  \"primary_email\": \"{{$randomEmail}}\",\n  \"date_of_birth\": \"1985-12-20\",\n  \"gender\": \"male\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f392dbc2-8d91-4307-ae2b-3a5ba323c4c8",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c3195af1-5f74-40e7-bf9c-39b1f27b6da3",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: no name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: no activity types",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\": [],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: duration with no end time",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: non-existent activity type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"spring booting\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: no location",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: name too short",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kai\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20T08:00:00+1300\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST activity: duration bad time format",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Auth-Token",
+								"type": "text",
+								"value": "{{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"activity_name\": \"Kaikoura Coast Track race\",\n  \"description\": \"A big and nice race on a lovely peninsula\",\n  \"activity_type\":[ \n    \"Walking\",\n    \"Running\"\n  ],\n  \"continuous\": false,\n  \"start_time\": \"2020-02-20T08:00:00+1300\", \n  \"end_time\": \"2020-02-20\",\n  \"location\": \"Kaikoura, NZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/{{profile_id}}/activities",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"{{profile_id}}",
+								"activities"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "None of the requests in this folder should return a success response with status 201",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "fc22d7ab-b1e4-48fd-8335-434bf88105bf",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "5377ece8-d901-4eba-9a5f-9d69d0a89634",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "PUT profile tests",
+			"item": [
+				{
+					"name": "blue sky",
+					"item": [
+						{
+							"name": "PUT profile with activities",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "8d65df39-c55f-4e2e-8889-9bfa16bd2751",
+										"exec": [
+											"var requestData = JSON.parse(request.data);",
+											"var jsonData = JSON.parse(responseBody);",
+											"if (jsonData.profile_id !== undefined) {",
+											"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+											"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+											"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "2a64962a-d799-4e9e-8d15-94fe7c53ffe8",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "X-Auth-Token",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstname\": \"Jack\",\n\t\"lastname\": \"Sparrow\",\n\t\"activities\": [\"Walking\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/profiles/{{profile_id}}/",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "failing",
+					"item": [
+						{
+							"name": "PUT profile with fake activity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "cc401e84-d957-43c9-a901-1191ba0476fd",
+										"exec": [
+											"var requestData = JSON.parse(request.data);",
+											"var jsonData = JSON.parse(responseBody);",
+											"if (jsonData.profile_id !== undefined) {",
+											"    postman.setEnvironmentVariable(\"email\", requestData.primary_email);",
+											"    postman.setEnvironmentVariable(\"password\", requestData.password);",
+											"    postman.setEnvironmentVariable(\"profile_id\", jsonData.profile_id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "b254c144-f602-4ce4-80c5-967b999c0ca8",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Auth-Token",
+										"type": "text",
+										"value": "{{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"firstname\": \"Jack\",\n\t\"lastname\": \"Sparrow\",\n\t\"activities\": [\"not real\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/profiles/{{profile_id}}/",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f8bcc3d9-a02c-45e4-9759-6bbee859e0b6",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "97d6ec71-aeee-4e85-b9c2-ad7a61df719f",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
 			"name": "/logmeout",
 			"request": {
 				"method": "DELETE",
@@ -609,6 +1835,28 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "8f4a7f3e-b064-4e20-b8b4-038e349b9269",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "8080bb64-420b-4ba3-b00e-cf3c2a45c60c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	],
 	"protocolProfileBehavior": {}

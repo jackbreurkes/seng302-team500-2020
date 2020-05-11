@@ -1,8 +1,7 @@
 package com.springvuegradle.model.responses;
 
-import com.springvuegradle.model.data.Country;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Profile;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.EmailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,7 +24,15 @@ public class ProfileResponse {
     private final int fitness;
     private final List<String> passports = new ArrayList<>();
     private final String[] additional_email;
+    private final List<String> activities = new ArrayList<>();
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final Location location;
+
+    /**
+     * @param profile the profile whose information should populate the response fields
+     * @param emailRepository an email repository to use when getting the user's primary email
+     */
     public ProfileResponse(Profile profile, EmailRepository emailRepository) {
         profile_id = profile.getUser().getUserId();
         lastname = profile.getLastName();
@@ -35,17 +42,24 @@ public class ProfileResponse {
         primary_email = emailRepository.getPrimaryEmail(profile.getUser());
         bio = profile.getBio();
         gender = profile.getGender().getJsonName();
-        fitness = profile.getFitness() != -1 ? profile.getFitness() : 0;
-        for (Country country : profile.getCountries()) {
-            passports.add(country.getName());
+        fitness = profile.getFitness();
+        if (profile.getCountries() != null) {
+            for (Country country : profile.getCountries()) {
+                passports.add(country.getName());
+            }
         }
         ArrayList<String> emailArray = new ArrayList<String>();
         for (Email email: emailRepository.getNonPrimaryEmails(profile.getUser())) {
         	emailArray.add(email.getEmail());
         }
         additional_email = emailArray.toArray(new String[emailArray.size()]);
-
         date_of_birth = profile.getDob().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        if (profile.getActivityTypes() != null) {
+            for (ActivityType activityType : profile.getActivityTypes()) {
+                activities.add(activityType.getActivityTypeName());
+            }
+        }
+        location = profile.getLocation();
     }
 
     public long getProfile_id() {
@@ -94,5 +108,19 @@ public class ProfileResponse {
 
     public String[] getAdditional_email() {
         return additional_email;
+    }
+
+    /**
+     * @return the list of activity type names the user is interested in
+     */
+    public List<String> getActivities() {
+        return activities;
+    }
+
+    /**
+     * @return the location in which the user is normally based
+     */
+    public Location getLocation() {
+        return location;
     }
 }

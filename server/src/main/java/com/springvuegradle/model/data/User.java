@@ -2,6 +2,8 @@ package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
 
+import javax.annotation.PostConstruct;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -9,7 +11,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.springvuegradle.auth.ChecksumUtils;
 
 /**
@@ -26,6 +27,8 @@ import com.springvuegradle.auth.ChecksumUtils;
 @Entity
 @Table(name = "user")
 @NamedQuery(name = "User.findById", query = "select u from User u where u.uuid = ?1")
+@NamedQuery(name = "User.getSuperAdmin", query = "select u from User u where u.permissionLevel = 127")
+@NamedQuery(name = "User.superAdminExists", query = "select count(*) from User u where u.permissionLevel = 127")
 public class User {
 	
 	/**
@@ -41,6 +44,12 @@ public class User {
 
 	private String password;
 	
+	/**
+	 * Permission level of the user
+	 */
+	@Column(columnDefinition = "tinyint default 0")
+	private int permissionLevel;
+
 	/**
 	 * Construct a user and automatically assign their ID
 	 */
@@ -78,6 +87,22 @@ public class User {
 	public void setPassword(String unhashed) throws NoSuchAlgorithmException {
 		String hashed = ChecksumUtils.hashPassword(this.uuid, unhashed);
 		this.password = hashed;
+	}
+	
+	/**
+	 * Gets the permission level of the user
+	 * @return the permission level of the user
+	 */
+	public int getPermissionLevel() {
+		return permissionLevel;
+	}
+
+	/**
+	 * Changes the permission level of the user to the one specified
+	 * @param permissionLevel the permission level of the user
+	 */
+	public void setPermissionLevel(int permissionLevel) {
+		this.permissionLevel = permissionLevel;
 	}
 
 }

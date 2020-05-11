@@ -1,7 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
-import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -22,6 +22,8 @@ import java.util.Optional;
 @RestController
 public class EditPasswordController {
 
+    int ADMIN_USER_MINIMUM_PERMISSION = 120;
+
     @Autowired
     private UserRepository userRepository;
 
@@ -33,7 +35,7 @@ public class EditPasswordController {
      * @return ResponseEntity object with 201 Created status if password changed successfully
      * @throws InvalidRequestFieldException if a request field is invalid
      * @throws RecordNotFoundException if no user is found from the auth id
-     * @throws InvalidPasswordException if the old_password field is incorrect
+     * @throws ForbiddenOperationException if the old_password field is incorrect
      * @throws NoSuchAlgorithmException If SHA-256 doesn't exist in your version of java
      * @throws UserNotAuthenticatedException if the user is not authenticated as the target user or an admin
      */
@@ -42,21 +44,25 @@ public class EditPasswordController {
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
             @RequestBody UpdatePasswordRequest updatePasswordRequest,
-            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, InvalidPasswordException, NoSuchAlgorithmException, UserNotAuthenticatedException
+            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException
     {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
-        if (authId == null || !(authId == profileId || authId == -1)) {
+
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
+
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {
             throw new InvalidRequestFieldException("no new_password field found");
         }
-        if (updatePasswordRequest.getOldPassword() == null) {
-            throw new InvalidRequestFieldException("no old_password field found");
-        }
+
         if (updatePasswordRequest.getRepeatPassword() == null) {
             throw new InvalidRequestFieldException("no repeat_password field found");
         }
@@ -77,11 +83,22 @@ public class EditPasswordController {
             throw new RecordNotFoundException("profile not found");
         }
 
-        // checks if old_password matches user's current password
+        //get the user if they exist
         User user = optionalUser.get();
 
-        if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){
-            throw new InvalidPasswordException("old_password does not match user's current password");
+        //all completed checks apply to both admin user and normal user
+
+        if(!(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)){
+            //admin can edit
+            //assuming user does not have the correct permission levels but is editing their own profile
+            if (updatePasswordRequest.getOldPassword() == null) {
+                throw new InvalidRequestFieldException("no old_password field found");
+            }
+
+            // checks if old_password matches user's current password
+            if(!ChecksumUtils.checkPassword(user, updatePasswordRequest.getOldPassword())){
+                throw new ForbiddenOperationException("old_password does not match user's current password");
+            }
         }
 
         // updates the user's password

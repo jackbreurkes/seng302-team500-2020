@@ -1,6 +1,6 @@
-package com.springvuegradle.endpoints;
+package com.springvuegradle.exceptions;
 
-import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -95,14 +95,14 @@ public class ExceptionHandlerController {
 	}
 
 	/**
-	 * catches all InvalidPasswordExceptions thrown by endpoints and returns an ErrorResponse with code 403.
+	 * catches all ForbiddenOperationExceptions thrown by endpoints and returns an ErrorResponse with code 403.
 	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
-	@ExceptionHandler(InvalidPasswordException.class)
+	@ExceptionHandler(ForbiddenOperationException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ResponseBody
-	public ErrorResponse requestHandlingInvalidField(InvalidPasswordException exception) {
+	public ErrorResponse requestHandlingInvalidField(ForbiddenOperationException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
 

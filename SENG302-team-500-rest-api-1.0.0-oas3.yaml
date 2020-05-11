@@ -87,6 +87,11 @@ components:
           items:
             type: string
           example: ["john.smith@secretservice.govt.nz"]
+        activities:
+          type: array
+          items:
+            type: string
+          example: ["Running"]
     FullUser:
       title: FullUser
       type: object
@@ -112,9 +117,29 @@ components:
     InternalServerError:
       description: An internal server error occurred   
     MissingRequiredFields:
-      description: Missing required fields  
+      description: Missing required fields
+    RecordNotFound:
+      description: A field required by the request was not found
 
 paths:
+  '/activity-types':
+    get:
+      tags:
+        - activities
+      summary: get all activity types
+      responses:
+        '200':
+          description: list of activity types (unordered)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["running", "biking", "walking", "swimming"]
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      
   /login:
     post:
       tags:
@@ -259,6 +284,44 @@ paths:
           description: User not authenticated
         '400':
           $ref: '#/components/responses/MissingRequiredFields'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /profiles/{profile_id}/activity-types:
+    parameters:
+      - in: path
+        name: profile_id
+        schema:
+          $ref: '#/components/schemas/FullUser/properties/profile_id'
+        required: true
+        description: numeric ID of the target
+    put:
+      description: >
+        Updates the given user's interested activity types.
+        Only available to users with permission.
+      tags:
+        - profiles
+      security:
+        - SessionToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - activities
+              properties:
+                activities:
+                  $ref: '#/components/schemas/User/properties/activities'
+                  description: must be an existing activity type
+                  example: Walking
+      responses:
+        '200':
+          description: Profile updated
+        '401':
+          description: User not authenticated
+        '400':
+          $ref: '#/components/responses/MissingRequiredFields'
+        '404':
+          $ref: '#/components/responses/RecordNotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 

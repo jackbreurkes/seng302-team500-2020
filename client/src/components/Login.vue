@@ -49,6 +49,8 @@
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
+  import * as profileController from "../controllers/profile.controller";
+
   // app Vue instance
   const Login = Vue.extend({
     name: 'Login',
@@ -65,26 +67,42 @@
     },
 
     mounted: function() {
-      if (localStorage.getItem("token") !== null) {
-        this.errorMessage = "Automatically logging you in...";
-        this.$router.push({ name: "profilePage" });
-      }
+      this.goToCurrentUsersPageIfPossible();
     },
 
     methods: {
       saveButtonClicked() {
         submitForm({email: this.email, password: this.password})
           .then(() => {
-            this.$router.push({ name: "profilePage" })
-              .catch((err) => {
-                console.error(err);
-                this.errorMessage = "failed to load profile page";
-              })
+            this.goToCurrentUsersPageIfPossible();
           })
           .catch((err: Error) => {
             this.errorMessage = err.message;
           })
         this.errorMessage = "submitting..."
+      },
+
+      /**
+       * goes to the profile page associated with the currently logged in user
+       * if no user info is stored currently, does nothing
+       */
+      goToCurrentUsersPageIfPossible() {
+        const currentlyStoredToken = localStorage.getItem("token");
+        const currentlyStoredUserId = localStorage.getItem("userId");
+        const currentlyStoredPermissionLevel = profileController.getPermissionLevel();
+        if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
+          this.errorMessage = "Logging you in...";
+          if (currentlyStoredPermissionLevel === 0) {
+            this.$router.push({ name: "profilePage", params: {profileId: currentlyStoredUserId} })
+              .catch((err) => {
+                console.error(err);
+                this.errorMessage = "failed to load profile page";
+              });
+          } else {
+            this.$router.push({ name: "adminDashboard" });
+          }
+          
+        }
       }
     }
 

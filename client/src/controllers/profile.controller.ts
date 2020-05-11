@@ -1,39 +1,119 @@
-import { logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail } from '../models/user.model'
+import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails } from '../models/user.model'
+import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
-import { checkFirstnameValidity, checkLastnameValidity, checkMiddlenameValidity, checkNicknameValidity, checkBioValidity, checkDobValidity, checkGenderValidity, checkPasswordValidity } from '../scripts/FormValidator';
+import FormValidator from '../scripts/FormValidator';
+import { getAvailableActivityTypes } from './activity.controller';
 
+let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
     await logout();
+    loggedInUser = null;
 }
 
-export async function addPassportCountry(country: any, userEmail: string) {
-    const countryName = country.name || null
-    if (countryName === null) {
-        throw new Error("country not found");
+let _passportCountryNames: Array<string>;  // cache for passport country names
+/**
+ * loads the list of valid passport country names from the cache
+ * if the cache is empty, polls the rest countries API
+ * @param force whether the cache should be forced to update, default false
+ */
+export async function getAvailablePassportCountries(force = false): Promise<Array<string>> {
+    if (_passportCountryNames === undefined || force) {
+        let passportCountries: Array<{name: string}> = await loadPassportCountries();
+        _passportCountryNames = passportCountries.map(country => country.name);
     }
-
-    let user = await getCurrentUser();
-    if (user === null) {
-        throw new Error("current user not found")
-    }
-
-    if (!user.passports) {
-        user.passports = []
-    }
-    if (user.passports.includes(countryName)) {
-        throw new Error("you already have this as a passport country")
-    }
-
-    user.passports.push(countryName);
-    await saveUser(user);
-
+    return _passportCountryNames;
 }
 
-let loggedInUser: UserApiFormat = {};
+/**
+ * adds a passport country to a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to add to the profile
+ * @param profile the profile to add the passport country to
+ */
+export async function addPassportCountry(countryName: string, profile: UserApiFormat) {
+    if (!profile.passports) {
+        profile.passports = []
+    }
+    if (!(await getAvailablePassportCountries()).includes(countryName)) {
+        throw new Error(`${countryName} is not recognised as a country`)
+    }
+    if (profile.passports.includes(countryName)) {
+        throw new Error(`the target profile already has ${countryName} as a passport country`)
+    }
 
+    profile.passports.push(countryName);
+}
+
+/**
+ * deletes a passport country from a profile object
+ * does not persist changes to the database
+ * @param countryName the name of the country to remove from the profile
+ * @param profileId the profile to remove the passport country from
+ */
+export function deletePassportCountry(countryName: string, profile: UserApiFormat) {
+
+    if (!profile.passports) {
+        profile.passports = []
+    }
+
+    if (!profile.passports.includes(countryName)) {
+        throw `the target user does not have ${countryName} as a passport country`;
+    }
+
+    profile.passports.splice(profile.passports.indexOf(countryName), 1);
+}
+
+/**
+ * adds an activity type to a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to add to the profile
+ * @param profile the profile to add the activity type to
+ */
+export async function addActivityType(activityType: string, profile: UserApiFormat) {
+    if (!profile.activities) {
+        profile.activities = []
+    }
+    if (!(await getAvailableActivityTypes()).includes(activityType)) {
+        throw new Error(`${activityType} is not recognised as an activity type`)
+    }
+    if (profile.activities.includes(activityType)) {
+        throw new Error(`the target profile already has ${activityType} as an interest`)
+    }
+
+    profile.activities.push(activityType);
+}
+
+/**
+ * removes an activity type from a profile object
+ * does not persist changes to the database
+ * @param activityType the name of the activity type to remove from the profile
+ * @param profile the profile to remove the activity type from
+ */
+export function deleteActivityType(activityType: string, profile: UserApiFormat) {
+
+    if (!profile.activities) {
+        profile.activities = []
+    }
+
+    if (!profile.activities.includes(activityType)) {
+        throw `the target user does not have ${activityType} as an interest`;
+    }
+
+    profile.activities.splice(profile.activities.indexOf(activityType), 1);
+}
+
+
+
+
+let loggedInUser: UserApiFormat|null = null;
+
+/**
+ * implemented by Alex Hobson, seems to cache the current user and save it to a class variable
+ * @param force force a cache update
+ */
 export async function fetchCurrentUser(force = false) {
-    if (force || !loggedInUser.primary_email) {
+    if (force || !loggedInUser) {
         loggedInUser = await getCurrentUser();
         if (loggedInUser === null) {
             throw new Error("no active user found");
@@ -43,85 +123,130 @@ export async function fetchCurrentUser(force = false) {
 }
 
 
-export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string) {
-    if (!checkPasswordValidity(newPassword)) {
+/**
+ * fetches the profile of the user with the given ID
+ */
+export async function fetchProfileWithId(profileId: number) {
+    return await getProfileById(profileId);
+}
+
+export function getPermissionLevel(): number {
+    return getMyPermissionLevel();
+}
+
+
+export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string, profileId: number) {
+    if (!formValidator.checkPasswordValidity(newPassword)) {
         throw new Error("new password must be at least 8 characters")
     }
     if (newPassword !== repeatPassword){
         throw new Error("new password and repeat password do not match");
     }
-    await updateCurrentPassword(oldPassword, newPassword, repeatPassword);
+    await updateCurrentPassword(oldPassword, newPassword, repeatPassword, profileId);
 }
 
-
-
-export async function setFitnessLevel(fitnessLevel: number, profileId: number) {
-    let user = await getCurrentUser();
+/**
+ * Update the user's primary and secondary emails by sending a request to the backend
+ * Checks all emails are valid email addresses and not null
+ * Throws error if no user with the profile id given, the primary email is invalid, any of the secondary emails is invalid, there are more than 5 emails total
+ * @param primaryEmail email to set as the user's new primary email
+ * @param additionalEmails list of secondary emails to have associated with the user
+ * @param profileId the id of the profile belonging to the user being updated
+ */
+export async function updateUserEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
+    console.log(primaryEmail)
+    console.log(additionalEmails)
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("no active user found");
-    }
-    if (user.fitness !== fitnessLevel) {
-        console.log("User fitness level changed");
-        user.fitness = fitnessLevel;
+        throw new Error("user not found");
     }
 
-    await saveUser(user);
+    if (primaryEmail == null || !formValidator.isValidEmail(primaryEmail)) {
+        throw new Error("Invalid primary email " + primaryEmail);
+    }
+    for (let i = 0; i < additionalEmails.length; i++) {
+        console.log(additionalEmails[i])
+        console.log(additionalEmails)
+        if (additionalEmails[i] == null || !formValidator.isValidEmail(additionalEmails[i])) {
+            throw new Error("Invalid email " + additionalEmails[i]);
+        }
+    }
+
+    if (additionalEmails.length >= 5) { // This is currently including primary emails in the 5 email limit
+        throw new Error("Exceeds maximum number of emails allowed (5)");
+    }
+
+    await updateEmails(primaryEmail, additionalEmails, profileId);
 }
 
-export async function addNewEmail(newEmail: string) {
-    let user = await getCurrentUser();
-    console.log(user)
+/**
+ * Add the given activity type to the user's profile.
+ * @param activityType activity type to add to the user's profile
+ */
+export async function addAndSaveActivityType(activityType: string, profileId: number) {
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("no active user found");
+        throw new Error("No active user found.");
     }
-    if (user.additional_email === undefined) {
-        user.additional_email = []
-    } else if (user.additional_email.length >= 4) {
-        throw new Error("Maximum number of emails reached (5).");
-    }
-    console.log(user.additional_email)
-    await addEmail(newEmail); 
+    if (user.activities === undefined) {
+        user.activities = [activityType];
+      } else {
+        user.activities.push(activityType);
+      }
+    await saveActivityTypes(user, profileId);
 }
 
-export async function deleteEmail(email: string) {
-    let user = await getCurrentUser();
+/**
+ * Remove the supplied activity type from the user's profile.
+ * @param activityType activity type to remove from user's profile
+ */
+export async function removeAndSaveActivityType(activityType: string, profileId: number) {
+    let user = await getProfileById(profileId);
     if (user === null) {
-        throw new Error("no active user found");
+        throw new Error("No active user found.");
+    }
+    if (!user.activities || user.activities.length === 0) {
+        throw new Error("User has no activity types associated with their profile.");
     }
 
-    if (user.additional_email !== undefined) {
-        deleteUserEmail(email);
+    let index = user.activities.indexOf(activityType);
+    if (user.activities.indexOf(activityType) == -1) {
+      throw new Error("Activity is not associated with user's profile.");
     } else {
-        throw new Error("No additional emails to delete.");
+      user.activities.splice(index, 1);
     }
+    await saveActivityTypes(user, profileId);
 }
 
-export async function setPrimary(primaryEmail: string) {
-    let user = await getCurrentUser();
-    if (user === null) {
-        throw new Error("No active user found");
-    }
-    if (user.additional_email !== undefined && user.additional_email.length > 0) {
-        updatePrimaryEmail(primaryEmail);
+/**
+ * Update the profile information of the user supplied.
+ * @param user user to update the information of
+ */
+export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
+    if (await checkProfileValidity(updatedProfile)) {
+        if (updatedProfile.activities === undefined) {
+            updatedProfile.activities = []
+        }
+        await saveActivityTypes(updatedProfile, profileId);
+        await saveUser(updatedProfile, profileId);
     } else {
-        throw new Error("Must have additional emails to update it with.");
+        throw new Error("Profile is not valid.");
     }
 }
 
-export async function editProfile(user: UserApiFormat) {
-    await checkProfileValidity(user);
-    await saveUser(user);
-}
 
-
-
+/**
+ * Check if the profile information is valid according to defined rules. Returns true if valid, false if not.
+ * @param formData profile information to validate, supplied in the form of a user's profile
+ */
 function checkProfileValidity(formData: UserApiFormat) {
-    checkFirstnameValidity(formData["firstname"]);
-    checkLastnameValidity(formData["lastname"]);
-    checkMiddlenameValidity(formData["middlename"]);
-    checkNicknameValidity(formData["nickname"]);
-    checkBioValidity(formData["bio"]);
-    checkDobValidity(formData["date_of_birth"]);
-    checkGenderValidity(formData["gender"]);
-
+    
+    return formValidator.checkFirstnameValidity(formData["firstname"]) &&
+    formValidator.checkLastnameValidity(formData["lastname"]) &&
+    formValidator.checkMiddlenameValidity(formData["middlename"]) &&
+    formValidator.checkNicknameValidity(formData["nickname"]) &&
+    formValidator.checkBioValidity(formData["bio"]) &&
+    formValidator.checkDobValidity(formData["date_of_birth"]) &&
+    formValidator.checkGenderValidity(formData["gender"]);
   }
+
