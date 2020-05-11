@@ -284,87 +284,24 @@ export async function updateEmailList(newEmails: string[], profileId: number) {
   }
 }
 
-export async function addEmail(email: string, profileId: number) {
-  try { // TODO there should be no business logic in the model class
-    let user = await getProfileById(profileId);
-    let emails = user.additional_email;
-    if (emails === undefined) {
-      emails = [email];
-    } else {
-      emails.push(email);
-    }
-    let emailDict = {"additional_email": emails, "email": email}
-    let res = await instance.post("profiles/" + profileId + "/emails", emailDict, {
-      headers: {
-        "X-Auth-Token": localStorage.getItem("token")
-      }, data: emailDict
-    });
-  } catch (e) {
-    throw new Error(e.response.data.error)
-  }
-}
-
 /**
- * Sets an email as the user's primary email. This email must already be registered to the user as an additional email.
- * @param primaryEmail email address to be set as the user's primary email.
+ * update the user's emails by sending a request to the back end
+ * @param primaryEmail the new primary email for the user
+ * @param additionalEmails the list of secondary emails for the user
+ * @param profileId the profile id of the user whose emails should be updated
  */
-export async function updatePrimaryEmail(primaryEmail: string, profileId: number) {
-  try { // TODO lots of busines logic in here
-    let user = await getProfileById(profileId); 
-    let emails = user.additional_email;
-    let oldPrimaryEmail = user.primary_email;
-    if (emails === undefined) {
-      emails = [];
-    }
-    if (emails.indexOf(primaryEmail) == -1) {
-      throw new Error("Email is not registered to user.");
-    }
-    if (oldPrimaryEmail !== undefined) {
-      emails.splice(emails.indexOf(primaryEmail), 1, oldPrimaryEmail);
-    } else {
-      emails.splice(emails.indexOf(primaryEmail), 1);
-    }
-    
-    let emailDict = {"additional_email": emails, "primary_email": primaryEmail}
-    console.log(JSON.stringify(emailDict));
-    let res = await instance.put("profiles/" + profileId + "/emails", emailDict, {
-      headers: {
-        "X-Auth-Token": localStorage.getItem("token")
-      },
-      data: emailDict
-    });
-  } catch (e) {
-    throw new Error(e.response.data.error)
-  }
-}
+export async function updateEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
+  try {
 
-/**
- * Unassociate the specified email from the account of the current user. Email must be an additional email in order to be removed.
- * @param email email address to unassociate from the user's account (removes it from their list of additional emails).
- */
-export async function deleteUserEmail(email: string, profileId: number) {
-  try { // TODO lots of business logic
-    let user = await getProfileById(profileId);
-    let emails = user.additional_email;
-    if (emails === undefined) {
-      throw new Error("No additional emails to delete.");
-    } else {
-      let index = emails.indexOf(email);
-      if (index == -1) {
-        throw new Error("Email is not registered as an additional email of the user.");
-      } else {
-        emails.splice(index, 1);
-      }
-    }
-    let emailDict = {"additional_email": emails}
-    await instance.post("profiles/" + profileId + "/emails", emailDict, {
+    let res = await instance.put("profiles/" + profileId + "/emails", null, {
       headers: {
         "X-Auth-Token": localStorage.getItem("token")
-      }, data: emailDict
+      }, data: {"additional_email": additionalEmails, "primary_email": primaryEmail}
     });
   } catch (e) {
     throw new Error(e.response.data.error)
   }
+
 }
 
 /**
