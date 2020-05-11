@@ -18,11 +18,11 @@
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
-                <v-radio-group v-model="createActivityRequest.continuous" row>
-                  <v-radio label="Continuous" value="true"></v-radio>
-                  <v-radio label="Duration" value="false"></v-radio>
-                </v-radio-group>
-                <div v-if="createActivityRequest.continuous == 'false'">
+              <v-radio-group v-model="createActivityRequest.continuous" row :rules="inputRules.continuousRules">
+                <v-radio label="Continuous" :value="true"></v-radio>
+                <v-radio label="Duration" :value="false"></v-radio>
+              </v-radio-group>
+                <div v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined">
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -105,31 +105,20 @@
                   v-model="createActivityRequest.location"
                   :rules="inputRules.locationRules"
                 ></v-text-field>
-
-                <div
-                  id="activity-type-chips"
-                  v-if="createActivityRequest.activity_type && createActivityRequest.activity_type.length > 0"
-                >
-                  <v-chip
-                    v-for="type in createActivityRequest.activity_type"
-                    :key="type"
-                    close
-                    class="ma-2"
-                    @click:close="removeActivityType(type)"
-                  >{{ type }}</v-chip>
-                </div>
-
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
                   item-text="name"
                   label="Activity Types"
-                  v-model="selectedActivityType"
-                  @input="addSelectedActivityType()"
+                  placeholder="Add Activity Types"
+                  v-model="createActivityRequest.activity_type"
+                  chips
+                  deletable-chips
+                  multiple
                 ></v-autocomplete>
+              <p class="pl-1" style="color: red">{{ errorMessage }}</p>
               </v-card-text>
               <v-card-actions>
-                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer></v-spacer>
                 <div v-if="this.isEditing">
@@ -188,11 +177,6 @@ const CreateActivity = Vue.extend({
             );
           }
         ],
-        endDateRules: [
-          (v: string) => {
-            return true || v; // TODO make error checking
-          }
-        ],
         startTimeRules: [
           (v: string) => {
             return (
@@ -243,6 +227,11 @@ const CreateActivity = Vue.extend({
       this.editingId = parseInt(this.$route.params.activityId);
       this.isEditing = true;
       this.populateFields(this.editingId);
+      if (!this.createActivityRequest.continuous && this.createActivityRequest.start_time !== undefined && this.createActivityRequest.end_time !== undefined) {
+        
+        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
+        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
+      }
     }
   },
 
@@ -270,39 +259,14 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked: async function() {
-      await activityController.setStartDate(
-        this.createActivityRequest,
-        this.startDate,
-        this.startTime
-      );
-      await activityController.setEndDate(
-        this.createActivityRequest,
-        this.endDate,
-        this.endTime
-      );
-      if (this.isEditing) {
-        activityController
-          .editActivity(
-            this.createActivityRequest,
-            this.currentProfileId,
-            this.editingId
-          )
+      activityController.validateNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
+        this.createActivityRequest, this.currentProfileId, this.isEditing, this.editingId )
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
-          .catch(() => {
-            alert(`An error occured while saving this activity`);
+          .catch(err => {
+            this.errorMessage = err.message;
           });
-      } else {
-        activityController
-          .createNewActivity(this.createActivityRequest, this.currentProfileId)
-          .then(() => {
-            this.$router.push({ name: "profilePage" });
-          })
-          .catch(() => {
-            alert(`An error occured while saving this activity`);
-          });
-      }
     },
 
     deleteButtonClicked: async function() {
@@ -322,7 +286,12 @@ const CreateActivity = Vue.extend({
         editingId
       );
       this.createActivityRequest = activityData;
-
+      if (this.createActivityRequest.start_time && this.createActivityRequest.end_time) {
+        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
+        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
+        this.startTime = activityController.getTimeFromISO(this.createActivityRequest.start_time);
+        this.endTime = activityController.getTimeFromISO(this.createActivityRequest.end_time);
+      }
       //TODO populate date fields
     }
   }

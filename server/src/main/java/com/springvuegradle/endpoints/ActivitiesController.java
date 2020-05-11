@@ -131,7 +131,7 @@ public class ActivitiesController {
 
             //check if it is continuous and if not then add date and time
             if(!updateActivityRequest.isContinuous()){
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+                DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
                 LocalDateTime startDateTime, endDateTime;
                 try{
                     startDateTime = LocalDateTime.parse(updateActivityRequest.getStartTime(), formatter);
@@ -243,7 +243,7 @@ public class ActivitiesController {
             if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
                 throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
             }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
             LocalDateTime startDateTime, endDateTime;
             try {
