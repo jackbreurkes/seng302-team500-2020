@@ -58,7 +58,7 @@ export function removeActivityType(activityType: string, createActivityRequest: 
  * @param dateString start date in string format
  * @param time start time in string format
  */
-export async function setStartDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
+export function setStartDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
   createActivityRequest.start_time = dateString + "T" + time + ":00" + offset;
@@ -159,6 +159,15 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
     year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
   });
   return "from " + dtf.format(start) + " to " + dtf.format(end);
+}
+
+export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
+export function hasTimeFrame(timeFrame: boolean): boolean {
+  if (timeFrame == null) {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"

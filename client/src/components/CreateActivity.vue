@@ -19,8 +19,8 @@
                 ></v-text-field>
 
               <v-radio-group v-model="createActivityRequest.continuous" row>
-                <v-radio label="Continuous" value="true"></v-radio>
-                <v-radio label="Duration" value="false"></v-radio>
+                <v-radio label="Continuous" :value="true"></v-radio>
+                <v-radio label="Duration" :value="false"></v-radio>
               </v-radio-group>
                 <div v-if="createActivityRequest.continuous == 'false'">
                   <v-menu
@@ -202,6 +202,9 @@ const CreateActivity = Vue.extend({
         activityTypes: [
           (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
           // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
+        ],
+        continuousRules: [
+          (v: boolean) => activityController.hasTimeFrame(v) || activityController.INVALID_CONTINUOUS_MESSAGE
         ],
       }
     };
