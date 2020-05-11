@@ -284,6 +284,51 @@ export async function updateEmailList(newEmails: string[], profileId: number) {
   }
 }
 
+export async function updateeEmails(email: string, profileId: number) {
+  try { // TODO there should be no business logic in the model class
+    let user = await getProfileById(profileId);
+    let emails = user.additional_email;
+    if (emails === undefined) {
+      emails = [email];
+    } else {
+      emails.push(email);
+    }
+    let res = await instance.post("profiles/" + profileId + "/emails", null, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: {"additional_email": emails}
+    });
+    console.log(res)
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+}
+
+/*
+# PUT /profiles/{profileId}/emails
+{
+  "primary_email": "triplej@google.com",
+  "additional_email": [
+    "triplej@xtra.co.nz",
+    "triplej@msn.com"
+  ]
+}
+*/
+
+export async function updateEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
+  try {
+
+    let res = await instance.put("profiles/" + profileId + "/emails", null, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token")
+      }, data: {"additional_email": additionalEmails, "primary_email": primaryEmail}
+    });
+  } catch (e) {
+    throw new Error(e.response.data.error)
+  }
+
+}
+
 export async function addEmail(email: string, profileId: number) {
   try { // TODO there should be no business logic in the model class
     let user = await getProfileById(profileId);

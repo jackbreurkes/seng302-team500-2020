@@ -455,43 +455,6 @@ public class NewEmailControllerTest {
     }
     
     @Test
-    public void updatePrimaryEmailToOneNotAlreadyRegistered() throws Exception {
-    	String newEmail1 = "abc@google.com";
-    	String newEmail2 = "def@google.com";
-    	String newEmail3 = "ghi@google.com";
-    	String newEmail4 = "jkl@google.com";
-    	String newEmail5 = "mno@google.com";
-    	    	
-    	Mockito.when(userRepository.getOne(editedUser.getUserId())).thenReturn(editedUser);
-    	Mockito.when(userRepository.findById(editedUser.getUserId())).thenReturn(Optional.of(editedUser));
-    	Mockito.when(emailRepository.findByEmail(newEmail1)).thenReturn(null);
-    	Mockito.when(emailRepository.findByEmail(newEmail2)).thenReturn(null);
-    	Mockito.when(emailRepository.findByEmail(newEmail3)).thenReturn(null);
-    	Mockito.when(emailRepository.findByEmail(newEmail4)).thenReturn(new Email(editedUser, newEmail5, true));
-    	Mockito.when(emailRepository.findByEmail(newEmail5)).thenReturn(null);
-    	Mockito.when(emailRepository.getNonPrimaryEmails(editedUser)).thenReturn(new ArrayList<Email>());
-    	
-    	
-    	String emailRequestJson = "{\r\n" + 
-    	    	"		  \"primary_email\": \"" + newEmail5 + "\",\r\n" + 
-    	    	"		  \"additional_email\": [\r\n" + 
-    	    	"		    \"" + newEmail1 + "\",\r\n" + 
-    	    	"		    \"" + newEmail2 + "\",\r\n" + 
-    	    	"		    \"" + newEmail3 + "\",\r\n" + 
-    	    	"		    \"" + newEmail4 + "\"\r\n" + 
-    	    	"		    ]\r\n" + 
-    	    	"		}";
-    	
-    	mvc.perform(MockMvcRequestBuilders
-                .put("/profiles/" + editedUser.getUserId() + "/emails")
-                .content(emailRequestJson).contentType(MediaType.APPLICATION_JSON)
-                .requestAttr("authenticatedid", editedUser.getUserId())
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
-    
-    @Test
     public void updateSomeoneElsesPrimaryEmail() throws Exception {
     	String newEmail1 = "abc@google.com";
     	String newEmail2 = "def@google.com";

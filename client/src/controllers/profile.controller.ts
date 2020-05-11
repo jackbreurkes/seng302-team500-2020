@@ -1,4 +1,4 @@
-import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes } from '../models/user.model'
+import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes, updateEmails } from '../models/user.model'
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
@@ -171,10 +171,36 @@ export async function updateNewEmailList(newEmails: string[], profileId: number)
     if (user === null) {
         throw new Error("user not found");
     }
-    if (user.additional_email === undefined) {
-        user.additional_email = []
-    }
+    // if (user.additional_email === undefined) {
+    //     user.additional_email = []
+    // }
     await updateEmailList(newEmails, profileId);
+}
+
+export async function updateUserEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
+    console.log(primaryEmail)
+    console.log(additionalEmails)
+    let user = await getProfileById(profileId);
+    if (user === null) {
+        throw new Error("user not found");
+    }
+
+    if (primaryEmail == null || !formValidator.isValidEmail(primaryEmail)) {
+        throw new Error("Invalid primary email " + primaryEmail);
+    }
+    for (let i = 0; i < additionalEmails.length; i++) {
+        console.log(additionalEmails[i])
+        console.log(additionalEmails)
+        if (additionalEmails[i] == null || !formValidator.isValidEmail(additionalEmails[i])) {
+            throw new Error("Invalid email " + additionalEmails[i]);
+        }
+    }
+
+    if (additionalEmails.length >= 5) { // This is currently including primary emails in the 5 email limit
+        throw new Error("Exceeds maximum number of emails allowed (5)");
+    }
+
+    await updateEmails(primaryEmail, additionalEmails, profileId);
 }
 
 /**

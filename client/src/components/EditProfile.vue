@@ -147,7 +147,7 @@
                 <span>Primary email</span>
               </v-tooltip>
               <br />
-              <p>Secondary email addresses (click to make primary): <b>{{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }}/5</b></p>
+              <p>Secondary email addresses (click to make primary): <b>{{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }}/4</b></p>
               <br />
               <v-tooltip top v-for="email in editedUser.additional_email" :key="email">
                 <template v-slot:activator="{ on }">
@@ -159,7 +159,7 @@
                 </template>
                 <span>Click to make primary</span>
               </v-tooltip>
-              <span v-if="editedUser.additional_email.length !== 5">
+              <span v-if="editedUser.additional_email.length !== 4">
                 <v-container class="fill-height" fluid>
                   <v-row align="center" justify="center">
                     <v-col cols="12" sm="12" md="6">
@@ -452,10 +452,26 @@ const Homepage = Vue.extend({
       this.$router.push("/profiles/" + this.currentProfileId);
     },
 
+    updateEmail: function() {
+      if (this.editedUser.primary_email !== undefined) {
+         if (this.editedUser.additional_email === undefined) {
+           this.editedUser.additional_email = [];
+         }
+        profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
+          .then(() => {
+            console.log("Emails saved");
+            // refresh the page after updating emails
+            history.go(0);
+          })
+          .catch(err => console.log(err));
+      }
+    },
+
+
     /**
      * Copies the current editedusers secondary emails to current user
      */
-    updateEmail: function() {
+    updateeEmail: function() {
       if (this.editedUser.primary_email === undefined) {
         this.editedUser.primary_email = "";
       }
@@ -487,9 +503,11 @@ const Homepage = Vue.extend({
       }
       let index = this.editedUser.additional_email.indexOf(email);
       this.editedUser.additional_email.splice(index, 1);
+      console.log(this.editedUser.additional_email)
+      console.log(this.editedUser.primary_email)
     },
 
-    setPrimaryEmail: function(email: string) {
+    settPrimaryEmail: function(email: string) {
       let oldPrimaryEmail = this.editedUser.primary_email;
       this.editedUser.primary_email = email;
       if (this.editedUser.additional_email === undefined) {
@@ -507,13 +525,40 @@ const Homepage = Vue.extend({
           1
         );
       }
+      console.log(this.editedUser.additional_email)
+      console.log(this.editedUser.primary_email)
+    },
+
+    setPrimaryEmail: function(email: string) {
+      let oldPrimaryEmail = this.editedUser.primary_email;
+      this.editedUser.primary_email = email;
+
+      if (this.editedUser.additional_email === undefined) {
+        if (oldPrimaryEmail !== undefined) {
+          this.editedUser.additional_email = [oldPrimaryEmail];
+        } else {
+          this.editedUser.additional_email = [];
+        }
+
+      } else {
+        let index = this.editedUser.additional_email.indexOf(email);
+        if (oldPrimaryEmail !== undefined) {
+          this.editedUser.additional_email.splice(index, 1, oldPrimaryEmail);
+        } else {
+          this.editedUser.additional_email.splice(index, 1);
+        }
+      }
+
+      console.log("Is now:")
+      console.log(this.editedUser.additional_email)
+      console.log(this.editedUser.primary_email)
     },
 
     addTempEmail: function(email: string) {
       if (new FormValidator().isValidEmail(email) && this.editedUser.primary_email != email &&
           !(this.editedUser.additional_email && this.editedUser.additional_email.includes(email))) {
         if (this.editedUser.additional_email === undefined) {
-          this.editedUser.additional_email = [];
+          this.editedUser.additional_email = [email];
         } else {
           this.editedUser.additional_email.push(email);
         }
