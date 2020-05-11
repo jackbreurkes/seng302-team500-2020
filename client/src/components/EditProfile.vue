@@ -98,6 +98,32 @@
                     @input="dobMenu = false"
                   ></v-date-picker>
                 </v-menu>
+                <v-continer>
+                  <v-card-title>Your Location:</v-card-title>
+                  <v-row>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="City"
+                        single-line
+                        v-model="editedUser.location.city"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="State"
+                        single-line
+                        v-model="editedUser.location.state"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="8" sm="4">
+                      <v-text-field
+                        label="Country"
+                        single-line
+                        v-model="editedUser.location.country"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-continer>
 
                 <v-card-title>Passport Countries</v-card-title>
 
@@ -327,6 +353,13 @@ const Homepage = Vue.extend({
         } else {
           this.editedUser.fitness = -1;
         }
+        if(user.location == undefined) {
+          user.location = {
+            city: "",
+            state: "",
+            country: ""
+          }
+        }
       })
       .catch(err => {
         console.error(err);
@@ -440,8 +473,8 @@ const Homepage = Vue.extend({
           .then(() => {
             this.returnToProfile();
           })
-          .catch(() => {
-            alert("Unable to update user.");
+          .catch((e) => {
+            alert(e.message);
           });
       }
     },
