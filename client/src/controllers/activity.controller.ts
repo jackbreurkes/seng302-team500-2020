@@ -103,18 +103,32 @@ export function validateActivityType(activityType: string, createActivityRequest
   return createActivityRequest.activity_type.includes(activityType)
 }
 
+/**
+ * Creates an activity
+ * @param createActivityRequest Data related to the activity to create
+ * @param profileId Profile ID this activity belongs to
+ */
 export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
   await activityModel.createActivity(createActivityRequest, profileId);
 }
 
 /**
- * Edit an activity
+ * Updates an activity
  * @param createActivityRequest Data related to the activity to edit
  * @param profileId Profile ID this activity belongs to
  * @param activityId Activity ID to edit
  */
 export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
   await activityModel.editActivity(createActivityRequest, profileId, activityId);
+}
+
+/**
+ * Deletes an activity
+ * @param profileId Profile ID this activity belongs to
+ * @param activityId Activity ID to delete
+ */
+export async function deleteActivity(profileId: number, activityId: number) {
+  await activityModel.deleteActivityById(profileId, activityId);
 }
 
 /**
