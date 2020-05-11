@@ -179,7 +179,7 @@ export function getApiDateTimeString(dateString: string, timeString: string) {
   if (hours < 10) {
     hourString += "0";
   }
-  let offSetString = hourString + ":" + minuteString;
+  let offSetString = hourString + minuteString;
   if (offset >= 0) {
     offSetString = "+" + offSetString
   }
