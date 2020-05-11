@@ -96,21 +96,19 @@ public class UserProfileController {
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-
 //        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-////        boolean isTargetUser = authId != null && authId == profileId;
-////        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-////        if (!isTargetUser && !isAdmin) {
-////            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-////        }
+//        boolean isTargetUser = authId != null && authId == profileId;
+//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
+//        if (!isTargetUser && !isAdmin) {
+//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+//        }
         Optional<User> editingUser = userRepository.findById(authId);
 
-       if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-           //here we check permission level and update the password accordingly
-           //assuming failure without admin
-          throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-      }
-
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        }
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
@@ -155,8 +153,9 @@ public class UserProfileController {
             profile.setActivityTypes(activityTypes);
         }
         Location location = null;
-        if (request.getLocation() != null) {
-            location = addLocationIfNotExisting(request.getLocation());
+        if (request.getLocation() != null && request.getLocation().getCity()!=null && request.getLocation().getCity().length()
+                > 0 && request.getLocation().getCountry() !=null && request.getLocation().getCountry().length() >0) {
+            location = addLocationIfNotExisting(request.getLocation().lookupAndValidate());
         }
         profile.setLocation(location); // setting location to null will remove it
 
@@ -247,7 +246,7 @@ public class UserProfileController {
      */
     private Location addLocationIfNotExisting(Location location) {
         Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
-        if (existing.isPresent()) {
+        if (existing != null && existing.isPresent()) {
             return existing.get();
         }
 

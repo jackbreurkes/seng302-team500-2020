@@ -226,7 +226,7 @@ test('expect undefined to be an invalid timeFrame', () => {
 // ISO 8601 format is a string of length
 test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]])(
   'expect end date to be formatted to ISO 8601', (endDate, time) => {
-    expect(activityController.setEndDate(endDate, time)).toHaveLength(25);
+    expect(activityController.setEndDate(endDate, time)).toHaveLength(24);
   }
 )
 
@@ -234,7 +234,7 @@ test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]]
 // ISO 8601 format is a string of length
 test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]])(
   'expect end date to be formatted to ISO 8601', (startDate, time) => {
-    expect(activityController.setStartDate(startDate, time)).toHaveLength(25);
+    expect(activityController.setStartDate(startDate, time)).toHaveLength(24);
   }
 )
 
@@ -246,7 +246,7 @@ test.each(["2020-02-20T08:00:00+1300", "2020-02-20T08:00:00+1300"])(
 )
 
 // Reverse set end date and returns just the date which is a string of length 10
-test.each([["2020-01-01", "", "2020-01-01T00:00:00+13:00"], ["2021-01-02", "01:00", "2021-01-02T01:00:00+13:00"], ["2021-01-02", "23:00", "2021-01-02T23:00:00+13:00"]])(
+test.each([["2020-01-01", "", "2020-01-01T00:00:00+1300"], ["2021-01-02", "01:00", "2021-01-02T01:00:00+1300"], ["2021-01-02", "23:00", "2021-01-02T23:00:00+1300"]])(
   'expect end date to be formatted to ISO 8601', (dateString, timeString, expected) => {
     expect(activityController.getApiDateTimeString(dateString, timeString)).toBe(expected);
   }

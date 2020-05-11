@@ -1,3 +1,5 @@
+import { LocationInterface } from './LocationInteface';
+
 export interface UserApiFormat {
     profile_id?: number,
     lastname?: string,
@@ -12,5 +14,6 @@ export interface UserApiFormat {
     passports?: string[],
     additional_email?: string[],
     activities?: string[],
-    password?: string
+    password?: string,
+    location?: LocationInterface
 }

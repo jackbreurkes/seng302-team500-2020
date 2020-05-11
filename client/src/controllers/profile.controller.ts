@@ -3,6 +3,8 @@ import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
 import { getAvailableActivityTypes } from './activity.controller';
+import { checkCountryExistence } from '../models/location.model';
+import { LocationInterface } from '@/scripts/LocationInteface'
 
 let formValidator = new FormValidator();
 
@@ -24,6 +26,30 @@ export async function getAvailablePassportCountries(force = false): Promise<Arra
     }
     return _passportCountryNames;
 }
+
+let _results: boolean;
+/**
+ * This check country validity simply checks if the user inputted string is an actual city.
+ * formatting is done in back end validator
+ * @param location string input from user
+ * @param force default value
+ */
+export async function checkCountryValidity(location: string, force = false): Promise<boolean> {
+    if(location == ',,'){
+        return true
+    }
+    if (_results === undefined || force) {
+        let results: Array<{class: string, type: string, address: string}> = await checkCountryExistence(location);
+        for (let i=0; i < results.length; i++) {
+            if ((results[i].class === "boundary" && results[i].type === "administrative") || (results[i].class === "place" && results[i].type === "city") ) {
+                return true;
+            }
+        }
+        
+    }
+    return false;
+}
+
 
 /**
  * adds a passport country to a profile object
@@ -223,6 +249,24 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
  * @param user user to update the information of
  */
 export async function persistChangesToProfile(updatedProfile: UserApiFormat, profileId: number) {
+    if (updatedProfile.location) {
+        let city = updatedProfile.location.city;
+        let state = updatedProfile.location.state;
+        let country = updatedProfile.location.country;
+        let location;
+        if (state === undefined) {
+            location = `${city},${country}`
+        } else {
+            location = `${city},${state},${country}`
+        }
+        if (!(await checkCountryValidity(location))) {
+            throw new Error("Location is not a city")
+
+        } else if (city !== "" && state !== "" && country !== ""){
+            let validLocation: LocationInterface = {city, state, country};
+            updatedProfile.location = validLocation;
+        }
+    }
     if (await checkProfileValidity(updatedProfile)) {
         if (updatedProfile.activities === undefined) {
             updatedProfile.activities = []
