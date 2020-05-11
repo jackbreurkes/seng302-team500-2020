@@ -96,13 +96,19 @@ public class UserProfileController {
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-        boolean isTargetUser = authId != null && authId == profileId;
-        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-        if (!isTargetUser && !isAdmin) {
+//        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
+//        boolean isTargetUser = authId != null && authId == profileId;
+//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
+//        if (!isTargetUser && !isAdmin) {
+//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+//        }
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
+            //here we check permission level and update the password accordingly
+            //assuming failure without admin
             throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
         }
-
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
