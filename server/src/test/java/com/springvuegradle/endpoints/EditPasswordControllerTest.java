@@ -1,6 +1,6 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.InvalidPasswordException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -94,7 +94,7 @@ public class EditPasswordControllerTest {
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
         //is authenticated
         request.setAttribute("authenticatedid", 1L);
-        assertThrows(InvalidPasswordException.class, () -> {
+        assertThrows(ForbiddenOperationException.class, () -> {
             editPasswordController.editPassword(1L, new UpdatePasswordRequest("badOldPassword", "newPassValid", "newPassValid"),
                     request);
         });
