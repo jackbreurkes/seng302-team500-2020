@@ -131,26 +131,40 @@ public class ActivitiesController {
 
             //check if it is continuous and if not then add date and time
             if(!updateActivityRequest.isContinuous()){
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-                LocalDateTime startDateTime, endDateTime;
-                try{
-                    startDateTime = LocalDateTime.parse(updateActivityRequest.getStartTime(), formatter);
-                    endDateTime = LocalDateTime.parse(updateActivityRequest.getEndTime(), formatter);
-                }catch (Exception e){
-                    throw new InvalidRequestFieldException("Time format is invalid");
-                }
-                
-                activity.setIsDuration(true);
-                activity.setStartDate(startDateTime.toLocalDate());
-                activity.setEndDate(endDateTime.toLocalDate());
+//                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
+//                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
 
-                activity.setStartTime(startDateTime.toLocalTime());
-                activity.setEndTime(startDateTime.toLocalTime());
+                activity.setIsDuration(true);
+//                activity.setStartDate(startDateTime.toLocalDate());
+//                activity.setEndDate(endDateTime.toLocalDate());
+//
+//                activity.setStartTime(startDateTime.toLocalTime());
+//                activity.setEndTime(startDateTime.toLocalTime());
+
+                activity.setStartTime(updateActivityRequest.getStartTime());
+                activity.setEndTime(updateActivityRequest.getEndTime());
             } else {
             	activity.setIsDuration(false);
             }
             return new ActivityResponse(activityRepository.save(activity));
         }
+    }
+
+    /**
+     * takes a string in ISO_OFFSET_DATE_TIME format and converts it to a LocalDateTime object.
+     * @param dateTimeString the date time string to convert
+     * @return a LocalDateTime object representing the given date time string
+     * @throws InvalidRequestFieldException if the given date time string is not valid
+     */
+    public LocalDateTime parseDateString(String dateTimeString) throws InvalidRequestFieldException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+        LocalDateTime dateTime;
+        try {
+            dateTime = LocalDateTime.parse(dateTimeString, formatter);
+        } catch (DateTimeParseException e) {
+            throw new InvalidRequestFieldException("Time format is invalid");
+        }
+        return dateTime;
     }
 
 
@@ -243,19 +257,21 @@ public class ActivitiesController {
             if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
                 throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
             }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
-            LocalDateTime startDateTime, endDateTime;
-            try {
-                startDateTime = LocalDateTime.parse(createActivityRequest.getStartTime(), formatter);
-                endDateTime = LocalDateTime.parse(createActivityRequest.getEndTime(), formatter);
-            } catch (DateTimeParseException e) {
-                throw new InvalidRequestFieldException("invalid time string " + e.getParsedString());
-            }
-            startDate = startDateTime.toLocalDate();
-            endDate = endDateTime.toLocalDate();
-            startTime = startDateTime.toLocalTime();
-            endTime = endDateTime.toLocalTime();
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+//
+//            LocalDateTime startDateTime, endDateTime;
+//            try {
+//                startDateTime = LocalDateTime.parse(createActivityRequest.getStartTime(), formatter);
+//                endDateTime = LocalDateTime.parse(createActivityRequest.getEndTime(), formatter);
+//            } catch (DateTimeParseException e) {
+//                throw new InvalidRequestFieldException("invalid time string " + e.getParsedString());
+//            }
+//            LocalDateTime startDateTime = parseDateString(createActivityRequest.getStartTime());
+//            LocalDateTime endDateTime = parseDateString(createActivityRequest.getEndTime());
+//            startDate = startDateTime.toLocalDate();
+//            endDate = endDateTime.toLocalDate();
+//            startTime = startDateTime.toLocalTime();
+//            endTime = endDateTime.toLocalTime();
         }
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
@@ -271,10 +287,12 @@ public class ActivitiesController {
                 optionalCreator.get(),
                 new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
-        activity.setStartDate(startDate);
-        activity.setEndDate(endDate);
-        activity.setStartTime(startTime);
-        activity.setEndTime(endTime);
+//        activity.setStartDate(startDate);
+//        activity.setEndDate(endDate);
+//        activity.setStartTime(startTime);
+//        activity.setEndTime(endTime);
+        activity.setStartTime(createActivityRequest.getStartTime());
+        activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
 
         return new ActivityResponse(activityRepository.save(activity));

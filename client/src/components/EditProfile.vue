@@ -139,43 +139,44 @@
               <v-toolbar-title>Email Addresses</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-              <p>Primary email:</p>
-              <v-tooltip top>
-                <template v-slot:activator="{ on }">
-                  <v-chip color="primary" v-on="on" class="ml-2">{{ editedUser.primary_email }}</v-chip>
-                </template>
-                <span>Primary email</span>
-              </v-tooltip>
-              <br />
-              <p>Secondary email addresses (click to make primary): <b>{{ (editedUser.additional_email !== undefined && editedUser.additional_email.length) || 0 }}/4</b></p>
-              <br />
-              <v-tooltip top v-for="email in editedUser.additional_email" :key="email">
-                <template v-slot:activator="{ on }">
-                  <v-chip v-on="on" class="ml-1" close 
-                    @click:close="deleteEmailAddress(email)"
-                    @click="setPrimaryEmail(email)">
-                    {{ email }}
-                  </v-chip>
-                </template>
-                <span>Click to make primary</span>
-              </v-tooltip>
-              <span v-if="editedUser.additional_email.length !== 4">
-                <v-container class="fill-height" fluid>
-                  <v-row align="center" justify="center">
-                    <v-col cols="12" sm="12" md="6">
-                      <v-text-field
-                        v-model="newEmail"
-                        label="New email address"
-                        type="email"
-                        required
-                        :rules="inputRules.emailRules"
-                        @keyup.enter.native="addTempEmail(newEmail)"
-                      ></v-text-field>
-                    </v-col>
-                    <v-btn id="addEmailAddress" @click="addTempEmail(newEmail)" text>Add Email</v-btn>
-                  </v-row>
-                </v-container>
-              </span>
+              <v-container class="fill-height" fluid>
+                <v-row align="center" justify="center">
+                  <v-col cols="12">
+                    <!-- +1 to additional_email length because there should always be a primary email -->
+                    <p>Email addresses: <b>{{ (editedUser.additional_email !== undefined && (1 + editedUser.additional_email.length)) || 0 }}/5</b></p>
+                    <br />
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-chip color="primary" v-on="on" class="ml-1 mb-2">{{ editedUser.primary_email }}</v-chip>
+                      </template>
+                      <span>Primary email</span>
+                    </v-tooltip>
+                    <v-tooltip top v-for="email in editedUser.additional_email" :key="email">
+                      <template v-slot:activator="{ on }">
+                        <v-chip v-on="on" class="ml-1 mb-2" close 
+                          @click:close="deleteEmailAddress(email)"
+                          @click="setPrimaryEmail(email)">
+                          {{ email }}
+                        </v-chip>
+                      </template>
+                      <span>Click to make primary</span>
+                    </v-tooltip>
+                  </v-col>
+                </v-row>
+                <v-row align="center" justify="center" v-if="editedUser.additional_email.length < 4">
+                  <v-col cols="12" sm="12" md="6">
+                    <v-text-field
+                      v-model="newEmail"
+                      label="New email address"
+                      type="email"
+                      required
+                      :rules="inputRules.emailRules"
+                      @keyup.enter.native="addTempEmail(newEmail)"
+                    ></v-text-field>
+                  </v-col>
+                  <v-btn id="addEmailAddress" @click="addTempEmail(newEmail)" text>Add Email</v-btn>
+                </v-row>
+              </v-container>
               <br /><br />
               <v-btn id="updateEmail" @click="updateEmail()" color="primary">Save email changes</v-btn>
               <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
@@ -517,6 +518,8 @@ const Homepage = Vue.extend({
         } else {
           this.editedUser.additional_email.push(email);
         }
+        this.editedUser.additional_email.push(email);
+        this.newEmail = "";
       }
     },
 

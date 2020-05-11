@@ -13,6 +13,23 @@ const instance = axios.create({
   timeout: 10000,
 });
 
+/**
+ * takes an error thrown by axios and returns a reader-friendly message.
+ * @param e the error thrown by axios
+ * @returns a reader-friendly message explaining the error
+ */
+function axiosErrorToMessage(e: any) {
+  if (e.response) {
+    // request made and server responded
+    return e.response.data.error;
+  } else if (e.request) {
+    return "unable to complete request";
+  } else {
+    // something happened in setting up the request
+    return "unknown error - check console for more info";
+  }
+}
+
 export async function createActivity(
   data: CreateActivityRequest,
   profileId: number
@@ -144,4 +161,26 @@ export async function getActivityById(creatorId: number, activityId: number): Pr
     }
   }
   return res.data;
+}
+
+
+/**
+ * Deletes an activity by a user's ID and the activity ID
+ * 
+ * @param {number} creatorId User the activity belongs to
+ * @param {number} activityId Activity ID
+ * @return {CreateActivityRequest} Retrieved activity data
+ */
+export async function deleteActivityById(creatorId: number, activityId: number) {
+  let res;
+  try {
+    res = await instance.delete(`/profiles/${creatorId}/activities/${activityId}`, {
+      headers: {
+        "X-Auth-Token": localStorage.getItem("token"),
+      },
+    });
+  } catch (e) {
+    console.log(e)
+    throw axiosErrorToMessage(e);
+  }
 }
