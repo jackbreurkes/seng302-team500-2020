@@ -1,5 +1,7 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
+import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
+import { create } from '@/models/user.model';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -8,6 +10,40 @@ export async function getAvailableActivityTypes(force = false) {
     _availableActivityTypes = await activityModel.loadAvailableActivityTypes();
   }
   return _availableActivityTypes;
+}
+
+export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
+  if (!validateActivityName(createActivityRequest.activity_name)) {
+    throw new Error("Please enter an activity name of 4-30 characters long");
+  }
+  if (!hasTimeFrame(createActivityRequest.continuous)) {
+    throw new Error("Please select a time frame");
+  }
+   if (!createActivityRequest.continuous) {
+     if (createActivityRequest.start_time == undefined){
+       throw new Error("Please enter the start date")
+       //currently not being picked up
+     }
+   }
+     
+  //   if (!isFutureDate(start_date)) {
+  //     throw new Error("Start date must be in the future")
+  //   }
+  //   if (!isValidEndDate(start_date, end_date)) {
+  //     throw new Error("End date must be in the future and after the start date");
+  //   }
+
+  // }
+  if (!validateDescription(createActivityRequest.description)) {
+    throw new Error("Description must be at least 8 characters or omitted completely.");
+  }
+  if (createActivityRequest.location == undefined) {
+    throw new Error("Please enter the location of the activity")
+  }
+  if (createActivityRequest.activity_type == [] || createActivityRequest.activity_type == undefined) {
+    throw new Error("Please select at least one activity type");
+  }
+  await createActivity(createActivityRequest, profileId);
 }
 
 
@@ -65,6 +101,19 @@ export function setStartDate(createActivityRequest: CreateActivityRequest, dateS
 }
 
 /**
+ * Returns only the date of the given ISO format date
+ * @param dateString full ISO format date string
+ * @returns only the date as string
+ */
+export function getDateFromISO(dateString: string | undefined): string {
+  if (dateString == undefined) {
+    dateString = "";
+  }
+  var date = new Date(dateString);
+  return date.toISOString().substring(0, 10);
+}
+
+/**
  * combines start date, time and timezone to a string as per API spec
  * @param createActivityRequest the activity to remove the activity type from
  * @param dateString end date in string format
@@ -78,7 +127,10 @@ export async function setEndDate(createActivityRequest: CreateActivityRequest, d
 
 
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
-export function validateActivityName(activityName: string): boolean {
+export function validateActivityName(activityName: string | undefined): boolean {
+  if (activityName == undefined) {
+    return false;
+  }
   if (activityName.length >= 4 && activityName.length <= 30) {
     return true;
   } else {
@@ -103,9 +155,6 @@ export function validateActivityType(activityType: string, createActivityRequest
   return createActivityRequest.activity_type.includes(activityType)
 }
 
-export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
-  await activityModel.createActivity(createActivityRequest, profileId);
-}
 
 /**
  * Edit an activity
@@ -162,8 +211,8 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
-export function hasTimeFrame(timeFrame: boolean): boolean {
-  if (timeFrame == null) {
+export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
+  if (timeFrame == undefined) {
     return false;
   } else {
     return true;

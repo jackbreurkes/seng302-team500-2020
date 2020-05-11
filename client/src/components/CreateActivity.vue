@@ -18,11 +18,11 @@
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
-              <v-radio-group v-model="createActivityRequest.continuous" row>
+              <v-radio-group v-model="createActivityRequest.continuous" row :rules="inputRules.continuousRules">
                 <v-radio label="Continuous" :value="true"></v-radio>
                 <v-radio label="Duration" :value="false"></v-radio>
               </v-radio-group>
-                <div v-if="createActivityRequest.continuous == 'false'">
+                <div v-if="!createActivityRequest.continuous & createActivityRequest.continuous != undefined">
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -128,10 +128,9 @@
                   v-model="selectedActivityType"
                   @input="addSelectedActivityType()"
                 ></v-autocomplete>
-
+              <p class="pl-1" style="color: red">{{ errorMessage }}</p>
               </v-card-text>
               <v-card-actions>
-                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer />
                 <v-btn @click="createButtonClicked" color="primary">{{this.isEditing ? "Save" : "Create"}}</v-btn>
@@ -253,8 +252,8 @@ const CreateActivity = Vue.extend({
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
-          .catch(() => {
-            alert(`An error occured while saving this activity`);
+          .catch(err => {
+            this.errorMessage = err.message;
           });
       } else {
         activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
