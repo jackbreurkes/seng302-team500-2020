@@ -23,7 +23,7 @@ export async function getAvailableActivityTypes(force = false) {
  * @param profileId user's id 
  */
 export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
-    createActivityRequest: CreateActivityRequest, profileId: number) {
+    createActivityRequest: CreateActivityRequest, profileId: number, isEditing: boolean, activityId: number | undefined) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
   }
@@ -34,7 +34,7 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
      if (sDate === "" || sDate === undefined) {
        throw new Error("Duration based activities must have a start date");
      }
-     if (!isValidTime(sTime) && sTime != "") {
+     if (!isValidTime(sTime) && sTime !== "") {
       throw new Error("Start time is not in valid format");
     }
      if (eDate === "" || eDate === undefined) {
@@ -50,7 +50,7 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
      createActivityRequest.end_time = setEndDate(eDate, eTime);
    }
   if (!validateDescription(createActivityRequest.description)) {
-    throw new Error("Description must be at least 8 characters or omitted completely.");
+    throw new Error("Description must be at least 8 characters");
   }
   if (createActivityRequest.location === undefined) {
     throw new Error("Please enter the location of the activity")
@@ -58,7 +58,21 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   if (createActivityRequest.activity_type === [] || createActivityRequest.activity_type === undefined) {
     throw new Error("Please select at least one activity type");
   }
-  await createActivity(createActivityRequest, profileId);
+  if (isEditing && activityId !== undefined) {
+    await editActivity(createActivityRequest, profileId, activityId)
+  } else {
+    await createActivity(createActivityRequest, profileId);
+  }
+}
+
+/**
+ * Edit an activity
+ * @param createActivityRequest Data related to the activity to edit
+ * @param profileId Profile ID this activity belongs to
+ * @param activityId Activity ID to edit
+ */
+export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
+  await activityModel.editActivity(createActivityRequest, profileId, activityId);
 }
 
 
@@ -119,11 +133,18 @@ export function setStartDate(dateString: string, time: string) {
  * @returns only the date as string
  */
 export function getDateFromISO(dateString: string): string {
-  if (dateString === undefined) {
-    dateString = "";
-  }
   var date = new Date(dateString);
   return date.toISOString().substring(0, 10);
+}
+
+/**
+ * Returns only the time of the given ISO format date in
+ * HH-MM format
+ * @param dateString 
+ */
+export function getTimeFromISO(dateString: string): string {
+  var date = new Date(dateString);
+  return date.toISOString().substring(11, 16);
 }
 
 /**
@@ -142,20 +163,27 @@ export function setEndDate(dateString: string, time: string) {
  * @param dateString end date in string format
  * @param timeString end time in string format
  */
-function getApiDateTimeString(dateString: string, timeString: string) {
-  if (timeString === "") {
+export function getApiDateTimeString(dateString: string, timeString: string) {
+  if (timeString === "" || timeString === undefined) {
     timeString = "00:00";
   }
   let date = new Date(dateString)
-  let offset = date.getTimezoneOffset();
-  let offSetString =offset.toString();
-  let newOffsetString;
-  if (offSetString.length === 4) {
-    newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
-  } else {
-    newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
+  let offset = -date.getTimezoneOffset();
+  let hours = Math.floor(offset / 60);
+  let minutes = offset % 60;
+  let minuteString = minutes.toString();
+  let hourString = hours.toString();
+  if (minutes < 10) {
+    minuteString += "0";
   }
-  return dateString + "T" + timeString + ":00" + newOffsetString;
+  if (hours < 10) {
+    hourString += "0";
+  }
+  let offSetString = hourString + ":" + minuteString;
+  if (offset >= 0) {
+    offSetString = "+" + offSetString
+  }
+  return dateString + "T" + timeString + ":00" + offSetString;
 }
 
 export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
@@ -177,7 +205,7 @@ export function validateActivityName(activityName: string | undefined): boolean 
 
 export const INVALID_DESCRIPTION_MESSAGE = "description must be at least 8 characters"
 export function validateDescription(activityDescription: string | undefined): boolean {
-  if (activityDescription === undefined || activityDescription.length >= 8 || activityDescription === "") {
+  if (activityDescription !== undefined && activityDescription.length >= 8) {
     return true;
   } else {
     return false;
@@ -193,15 +221,7 @@ export function validateActivityType(activityType: string, createActivityRequest
 }
 
 
-/**
- * Edit an activity
- * @param createActivityRequest Data related to the activity to edit
- * @param profileId Profile ID this activity belongs to
- * @param activityId Activity ID to edit
- */
-export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
-  await activityModel.editActivity(createActivityRequest, profileId, activityId);
-}
+
 
 /**
  * returns the activities created by a given creator.
@@ -267,7 +287,7 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
   const dtf = new Intl.DateTimeFormat(undefined, {
     year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
   });
-  return "from " + dtf.format(start) + " to " + dtf.format(end);
+  return "Starts at: " + dtf.format(start) + "Ends: " + dtf.format(end);
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"

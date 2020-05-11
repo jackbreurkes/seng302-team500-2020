@@ -134,14 +134,14 @@ test.each(["Short!", "A", "Tiny", "A test"])(
 )
 
 // description is the empty string.
-test('expect "" to be a valid description', () => {
-      expect(activityController.validateDescription("")).toBe(true)
+test('expect "" to be a invalid description', () => {
+      expect(activityController.validateDescription("")).toBe(false)
   }
 )
 
 // description is undefined.
-test('expect undefined to be a valid description', () => {
-  expect(activityController.validateDescription(undefined)).toBe(true)
+test('expect undefined to be a invalid description', () => {
+  expect(activityController.validateDescription(undefined)).toBe(false)
 }
 )
 
@@ -242,5 +242,12 @@ test.each([["2022-12-25", ""], ["2020-12-31", "12:30"], ["2020-12-31", "19:20"]]
 test.each(["2020-02-20T08:00:00+1300", "2020-02-20T08:00:00+1300"])(
   'expect end date to be formatted to ISO 8601', (endDateTime) => {
     expect(activityController.getDateFromISO(endDateTime)).toHaveLength(10);
+  }
+)
+
+// Reverse set end date and returns just the date which is a string of length 10
+test.each([["2020-01-01", "", "2020-01-01T00:00:00+13:00"], ["2021-01-02", "01:00", "2021-01-02T01:00:00+13:00"], ["2021-01-02", "23:00", "2021-01-02T23:00:00+13:00"]])(
+  'expect end date to be formatted to ISO 8601', (dateString, timeString, expected) => {
+    expect(activityController.getApiDateTimeString(dateString, timeString)).toBe(expected);
   }
 )

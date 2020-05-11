@@ -207,6 +207,11 @@ const CreateActivity = Vue.extend({
       this.editingId = parseInt(this.$route.params.activityId);
       this.isEditing = true;
       this.populateFields(this.editingId);
+      if (!this.createActivityRequest.continuous && this.createActivityRequest.start_time !== undefined && this.createActivityRequest.end_time !== undefined) {
+        
+        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
+        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
+      }
     }
   },
 
@@ -230,28 +235,24 @@ const CreateActivity = Vue.extend({
 
     createButtonClicked: async function() {
       activityController.validateNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
-        this.createActivityRequest, this.currentProfileId)
+        this.createActivityRequest, this.currentProfileId, this.isEditing, this.editingId )
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
           .catch(err => {
             this.errorMessage = err.message;
           });
-      } else {
-        activityController.createNewActivity(this.createActivityRequest, this.currentProfileId)
-          .then(() => {
-            this.$router.push({ name: "profilePage" });
-          })
-          .catch(() => {
-            alert(`An error occured while saving this activity`);
-          });
-      }
     },
 
     populateFields: async function(editingId: number) {
       let activityData: CreateActivityRequest = await activityController.getActivityById(this.currentProfileId, editingId);
       this.createActivityRequest = activityData;
-
+      if (this.createActivityRequest.start_time && this.createActivityRequest.end_time) {
+        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
+        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
+        this.startTime = activityController.getTimeFromISO(this.createActivityRequest.start_time);
+        this.endTime = activityController.getTimeFromISO(this.createActivityRequest.end_time);
+      }
       //TODO populate date fields
     }
   }
