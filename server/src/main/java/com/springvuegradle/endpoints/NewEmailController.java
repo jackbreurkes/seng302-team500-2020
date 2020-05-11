@@ -76,9 +76,6 @@ public class NewEmailController {
 		
 			LinkedHashMap<String, Object> json = null;
 			try {
-				System.out.println("-------------------------------------------------------------------------------------");
-				System.out.println(raw);
-				System.out.println("-------------------------------------------------------------------------------------");
 				json = getJson(raw);
 			} catch (org.apache.tomcat.util.json.ParseException e) {
 				e.printStackTrace();
@@ -117,7 +114,6 @@ public class NewEmailController {
 		
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
-        System.out.println("This is the authenticated id: " + authId);
         if (authId == null) {
             throw new UserNotAuthenticatedException("You must be an authenticated user.");
         }
@@ -141,9 +137,7 @@ public class NewEmailController {
 			} else {
 				
 				String newPrimaryEmailString = (String) json.get("primary_email");
-				
-				System.out.println("The new primary email is: " + newPrimaryEmailString);
-				
+								
 				// Check that the email is registered already but not to a different user
 				if (emailAlreadyRegisteredToOtherUser(newPrimaryEmailString, user)) {
 					return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("New primary email is already registered to another user."));
@@ -162,7 +156,8 @@ public class NewEmailController {
 					}
 					
 					String oldPrimaryEmailString = emailRepo.getPrimaryEmail(user);
-					if (oldPrimaryEmailString != null && oldPrimaryEmailString != newPrimaryEmailString) {
+
+					if (oldPrimaryEmailString != null && !oldPrimaryEmailString.equals(newPrimaryEmailString)) {
 						if (emailRepo.findByEmail(newPrimaryEmailString) != null) {
 							emailRepo.deleteById(newPrimaryEmailString);
 						}
@@ -172,25 +167,9 @@ public class NewEmailController {
 					
 					
 					if (newEmails != null) {
-//						if (!isValidEmail(newPrimaryEmailString)) {
-//							throw new InvalidRequestFieldException("Invalid email: " + newPrimaryEmailString);
-//						}
-//						allEmailsValid(newEmails, user);
-//						if (oldPrimaryEmailString != null && oldPrimaryEmailString != newPrimaryEmailString) {
-//							if (emailRepo.findByEmail(newPrimaryEmailString) != null) {
-//								emailRepo.deleteById(newPrimaryEmailString);
-//							}
-//							emailRepo.save(new Email(user, newPrimaryEmailString, true));
-//						}
 						allEmailsValid(newEmails, user);
 						updateAdditionalEmails(user, newEmails);
 					} else {
-//						if (oldPrimaryEmailString != null && oldPrimaryEmailString != newPrimaryEmailString) {
-//							if (emailRepo.findByEmail(newPrimaryEmailString) != null) {
-//								emailRepo.deleteById(newPrimaryEmailString);
-//							}
-//							emailRepo.save(new Email(user, newPrimaryEmailString, true));
-//						}
 					}
 					return ResponseEntity.status(HttpStatus.CREATED).body("Successfully updated account emails.");	
 

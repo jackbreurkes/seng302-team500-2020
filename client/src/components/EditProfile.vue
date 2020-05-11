@@ -452,6 +452,9 @@ const Homepage = Vue.extend({
       this.$router.push("/profiles/" + this.currentProfileId);
     },
 
+    /**
+     * saves the new state of the user's primary email and additional email list by making a http request to the backend
+     */
     updateEmail: function() {
       if (this.editedUser.primary_email !== undefined) {
          if (this.editedUser.additional_email === undefined) {
@@ -467,68 +470,10 @@ const Homepage = Vue.extend({
       }
     },
 
-
     /**
-     * Copies the current editedusers secondary emails to current user
+     * sets the primary email of the user to the email string specified if a valid email
+     * places the old primary email into the user's list of additional emails
      */
-    updateeEmail: function() {
-      if (this.editedUser.primary_email === undefined) {
-        this.editedUser.primary_email = "";
-      }
-      if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = [];
-      }
-      profileController.setPrimary(
-        this.editedUser.primary_email,
-        this.currentProfileId
-      );
-      profileController
-        .updateNewEmailList(
-          this.editedUser.additional_email,
-          this.currentProfileId
-        )
-        .then(() => {
-          console.log("Email address added");
-          // refresh page after adding emails
-          history.go(0);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    },
-
-    deleteEmailAddress: function(email: string) {
-      if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = [];
-      }
-      let index = this.editedUser.additional_email.indexOf(email);
-      this.editedUser.additional_email.splice(index, 1);
-      console.log(this.editedUser.additional_email)
-      console.log(this.editedUser.primary_email)
-    },
-
-    settPrimaryEmail: function(email: string) {
-      let oldPrimaryEmail = this.editedUser.primary_email;
-      this.editedUser.primary_email = email;
-      if (this.editedUser.additional_email === undefined) {
-        this.editedUser.additional_email = [];
-      }
-      if (oldPrimaryEmail !== undefined) {
-        this.editedUser.additional_email.splice(
-          this.editedUser.additional_email.indexOf(email),
-          1,
-          oldPrimaryEmail
-        );
-      } else {
-        this.editedUser.additional_email.splice(
-          this.editedUser.additional_email.indexOf(email),
-          1
-        );
-      }
-      console.log(this.editedUser.additional_email)
-      console.log(this.editedUser.primary_email)
-    },
-
     setPrimaryEmail: function(email: string) {
       let oldPrimaryEmail = this.editedUser.primary_email;
       this.editedUser.primary_email = email;
@@ -548,12 +493,22 @@ const Homepage = Vue.extend({
           this.editedUser.additional_email.splice(index, 1);
         }
       }
-
-      console.log("Is now:")
-      console.log(this.editedUser.additional_email)
-      console.log(this.editedUser.primary_email)
     },
 
+    /**
+     * remove the specified email from the locally stored list of user emails to be updated if the user clicks "Save email changes"
+     */
+    deleteEmailAddress: function(email: string) {
+      if (this.editedUser.additional_email === undefined) {
+        this.editedUser.additional_email = [];
+      }
+      let index = this.editedUser.additional_email.indexOf(email);
+      this.editedUser.additional_email.splice(index, 1);
+    },
+
+    /**
+     * adds an email to the user's list of additional emails in the view to be saved if the user clicks "Save email changes"
+     */
     addTempEmail: function(email: string) {
       if (new FormValidator().isValidEmail(email) && this.editedUser.primary_email != email &&
           !(this.editedUser.additional_email && this.editedUser.additional_email.includes(email))) {

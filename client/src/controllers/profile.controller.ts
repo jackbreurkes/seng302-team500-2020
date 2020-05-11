@@ -1,4 +1,4 @@
-import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, addEmail, updatePrimaryEmail, deleteUserEmail, getProfileById, updateEmailList, saveActivityTypes, updateEmails } from '../models/user.model'
+import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails } from '../models/user.model'
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
@@ -145,38 +145,14 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
     await updateCurrentPassword(oldPassword, newPassword, repeatPassword, profileId);
 }
 
-
 /**
- * Register supplied email to the user by adding it to their additional emails list and communicating this to the database (via user.model method).
- * Throws error if is no current user or the user has five emails registered already (including their primary email).
- * @param newEmail String of email to be registered under user's profile.
+ * Update the user's primary and secondary emails by sending a request to the backend
+ * Checks all emails are valid email addresses and not null
+ * Throws error if no user with the profile id given, the primary email is invalid, any of the secondary emails is invalid, there are more than 5 emails total
+ * @param primaryEmail email to set as the user's new primary email
+ * @param additionalEmails list of secondary emails to have associated with the user
+ * @param profileId the id of the profile belonging to the user being updated
  */
-export async function addNewEmail(newEmail: string, profileId: number) {
-    if(formValidator.isValidEmail(newEmail)) {
-        let user = await getProfileById(profileId);
-        if (user === null) {
-            throw new Error("user not found");
-        }
-        if (user.additional_email === undefined) {
-            user.additional_email = []
-        } else if (user.additional_email.length >= 4) {
-            throw new Error("Maximum number of emails reached (5).");
-        }
-        await addEmail(newEmail, profileId); 
-    }
-}
-
-export async function updateNewEmailList(newEmails: string[], profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found");
-    }
-    // if (user.additional_email === undefined) {
-    //     user.additional_email = []
-    // }
-    await updateEmailList(newEmails, profileId);
-}
-
 export async function updateUserEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
     console.log(primaryEmail)
     console.log(additionalEmails)
@@ -201,38 +177,6 @@ export async function updateUserEmails(primaryEmail: string, additionalEmails: s
     }
 
     await updateEmails(primaryEmail, additionalEmails, profileId);
-}
-
-/**
- * Remove the specified email from the user's list of additional emails.
- */
-export async function deleteEmail(email: string, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found");
-    }
-
-    if (user.additional_email !== undefined) {
-        await deleteUserEmail(email, profileId);
-    } else {
-        throw new Error("No additional emails to delete.");
-    }
-}
-
-/**
- * Email must be registered to user before it can be set as their primary email
- * @param primaryEmail the email to be set as the primary email
- */
-export async function setPrimary(primaryEmail: string, profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("user not found");
-    }
-    if (user.additional_email !== undefined && user.additional_email.length > 0) {  // Need additional emails available to be set as primary
-        await updatePrimaryEmail(primaryEmail, profileId);
-    } else {
-        throw new Error("Must have additional emails to update it with.");
-    }
 }
 
 /**
