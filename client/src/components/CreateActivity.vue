@@ -74,14 +74,10 @@
                         label="End Date"
                         :rules="inputRules.endDateRules"
                       ></v-text-field>
-                      
-
                     </template>
-                    
+
                     <v-date-picker no-title v-model="endDate" @input="endDateMenu = false"></v-date-picker>
-                    
                   </v-menu>
-                  
 
                   <v-text-field
                     label="End Time"
@@ -124,8 +120,15 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
-                <v-spacer />
-                <v-btn @click="createButtonClicked" color="primary">{{this.isEditing ? "Save" : "Create"}}</v-btn>
+                <v-spacer></v-spacer>
+                <div v-if="this.isEditing">
+                  <v-btn @click="deleteButtonClicked" color="error">Delete</v-btn>
+                </div>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="createButtonClicked"
+                  color="primary"
+                >{{this.isEditing ? "Save" : "Create"}}</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -139,8 +142,8 @@
 <script lang="ts">
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest } from '../scripts/Activity'
-import * as activityController from '../controllers/activity.controller'
+import { CreateActivityRequest } from "../scripts/Activity";
+import * as activityController from "../controllers/activity.controller";
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
@@ -162,25 +165,38 @@ const CreateActivity = Vue.extend({
       errorMessage: "",
       inputRules: {
         activityNameRules: [
-          (v: string) => activityController.validateActivityName(v) || activityController.INVALID_ACTIVITY_NAME_MESSAGE
+          (v: string) =>
+            activityController.validateActivityName(v) ||
+            activityController.INVALID_ACTIVITY_NAME_MESSAGE
         ],
         startDateRules: [
           (v: string) => {
-            return activityController.isFutureDate(v) || activityController.INVALID_DATE_MESSAGE
+            return (
+              activityController.isFutureDate(v) ||
+              activityController.INVALID_DATE_MESSAGE
+            );
           }
         ],
         startTimeRules: [
           (v: string) => {
-            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
+            return (
+              activityController.isValidTime(v) ||
+              activityController.INVALID_TIME_MESSAGE
+            );
           }
         ],
         endTimeRules: [
           (v: string) => {
-            return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
+            return (
+              activityController.isValidTime(v) ||
+              activityController.INVALID_TIME_MESSAGE
+            );
           }
         ],
         descriptionRules: [
-          (v: string) => activityController.validateDescription(v) || activityController.INVALID_DESCRIPTION_MESSAGE
+          (v: string) =>
+            activityController.validateDescription(v) ||
+            activityController.INVALID_DESCRIPTION_MESSAGE
         ],
         locationRules: [
           (v: string) => true || v //TODO location not implemented
@@ -188,7 +204,7 @@ const CreateActivity = Vue.extend({
         activityTypes: [
           (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
           // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
-        ],
+        ]
       }
     };
   },
@@ -196,12 +212,16 @@ const CreateActivity = Vue.extend({
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
     this.currentProfileId = profileId;
-    this.createActivityRequest = {}
-    activityController.getAvailableActivityTypes()
+    this.createActivityRequest = {};
+    activityController
+      .getAvailableActivityTypes()
       .then(activity => {
-        this.activityTypes = activity})
-      .catch(err => {console.error("unable to load activity types");
-      console.error(err)});
+        this.activityTypes = activity;
+      })
+      .catch(err => {
+        console.error("unable to load activity types");
+        console.error(err);
+      });
 
     if (this.$route.params.activityId) {
       this.editingId = parseInt(this.$route.params.activityId);
@@ -216,17 +236,22 @@ const CreateActivity = Vue.extend({
   },
 
   methods: {
-
     addSelectedActivityType: async function() {
       if (!this.selectedActivityType) {
-        return
+        return;
       }
-      await activityController.addActivityType(this.selectedActivityType, this.createActivityRequest);
-      this.selectedActivityType = ""
+      await activityController.addActivityType(
+        this.selectedActivityType,
+        this.createActivityRequest
+      );
+      this.selectedActivityType = "";
     },
 
     removeActivityType: function(activityType: string) {
-      activityController.removeActivityType(activityType, this.createActivityRequest);
+      activityController.removeActivityType(
+        activityType,
+        this.createActivityRequest
+      );
     },
 
     cancelButtonClicked() {
@@ -244,8 +269,22 @@ const CreateActivity = Vue.extend({
           });
     },
 
+    deleteButtonClicked: async function() {
+      activityController
+        .deleteActivity(this.currentProfileId, this.editingId)
+        .then(() => {
+          this.$router.push({ name: "profilePage" });
+        })
+        .catch(err => {
+          alert("An error occured while deleting the activity:\n" + err);
+        });
+    },
+
     populateFields: async function(editingId: number) {
-      let activityData: CreateActivityRequest = await activityController.getActivityById(this.currentProfileId, editingId);
+      let activityData: CreateActivityRequest = await activityController.getActivityById(
+        this.currentProfileId,
+        editingId
+      );
       this.createActivityRequest = activityData;
       if (this.createActivityRequest.start_time && this.createActivityRequest.end_time) {
         this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);

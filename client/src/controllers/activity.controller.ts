@@ -224,6 +224,15 @@ export function validateActivityType(activityType: string, createActivityRequest
 
 
 /**
+ * Deletes an activity
+ * @param profileId Profile ID this activity belongs to
+ * @param activityId Activity ID to delete
+ */
+export async function deleteActivity(profileId: number, activityId: number) {
+  await activityModel.deleteActivityById(profileId, activityId);
+}
+
+/**
  * returns the activities created by a given creator.
  * @param creatorId the profileId of the creator of the activities
  */
