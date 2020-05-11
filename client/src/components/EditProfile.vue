@@ -518,7 +518,6 @@ const Homepage = Vue.extend({
         } else {
           this.editedUser.additional_email.push(email);
         }
-        this.editedUser.additional_email.push(email);
         this.newEmail = "";
       }
     },
