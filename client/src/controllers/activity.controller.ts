@@ -12,7 +12,8 @@ export async function getAvailableActivityTypes(force = false) {
   return _availableActivityTypes;
 }
 
-export async function createNewActivity(createActivityRequest: CreateActivityRequest, profileId: number) {
+export async function createNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
+    createActivityRequest: CreateActivityRequest, profileId: number) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
   }
@@ -20,20 +21,24 @@ export async function createNewActivity(createActivityRequest: CreateActivityReq
     throw new Error("Please select a time frame");
   }
    if (!createActivityRequest.continuous) {
-     if (createActivityRequest.start_time == undefined){
-       throw new Error("Please enter the start date")
-       //currently not being picked up
+     if (sDate == "" || sDate == undefined) {
+       throw new Error("Duration based activities must have a start date");
      }
+     if (!isValidTime(sTime) && sTime != "") {
+      throw new Error("Start time is not in valid format");
+    }
+     if (eDate == "" || eDate == undefined) {
+       throw new Error("Duration based activities must have an end date");
+     }
+     if (!isValidEndDate(sDate, eDate)) {
+       throw new Error("End date must be after start date")
+     }
+     if (!isValidTime(eTime) && eTime != "") {
+       throw new Error("End time is not in valid format");
+     }
+     createActivityRequest.start_time = setStartDate(sDate, sTime);
+     createActivityRequest.end_time = setEndDate(eDate, eTime);
    }
-     
-  //   if (!isFutureDate(start_date)) {
-  //     throw new Error("Start date must be in the future")
-  //   }
-  //   if (!isValidEndDate(start_date, end_date)) {
-  //     throw new Error("End date must be in the future and after the start date");
-  //   }
-
-  // }
   if (!validateDescription(createActivityRequest.description)) {
     throw new Error("Description must be at least 8 characters or omitted completely.");
   }
@@ -94,10 +99,20 @@ export function removeActivityType(activityType: string, createActivityRequest: 
  * @param dateString start date in string format
  * @param time start time in string format
  */
-export function setStartDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
+export function setStartDate(dateString: string, time: string) {
+  if (time == "") {
+    time = "00:00"
+  }
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
-  createActivityRequest.start_time = dateString + "T" + time + ":00" + offset;
+  let offSetString = offset.toString();
+  let newOffsetString;
+  if (offSetString.length == 4) {
+    newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
+  } else {
+    newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
+  }
+  return  dateString + "T" + time + ":00" + newOffsetString;
 }
 
 /**
@@ -105,7 +120,7 @@ export function setStartDate(createActivityRequest: CreateActivityRequest, dateS
  * @param dateString full ISO format date string
  * @returns only the date as string
  */
-export function getDateFromISO(dateString: string | undefined): string {
+export function getDateFromISO(dateString: string | number): string {
   if (dateString == undefined) {
     dateString = "";
   }
@@ -119,10 +134,20 @@ export function getDateFromISO(dateString: string | undefined): string {
  * @param dateString end date in string format
  * @param time end time in string format
  */
-export async function setEndDate(createActivityRequest: CreateActivityRequest, dateString: string, time: string) {
+export function setEndDate(dateString: string, time: string) {
+  if (time == "") {
+    time = "00:00"
+  }
   let date = new Date(dateString)
   let offset = date.getTimezoneOffset();
-  createActivityRequest.end_time = dateString + "T" + time + ":00" + offset;
+  let offSetString = offset.toString();
+  let newOffsetString;
+  if (offSetString.length == 4) {
+    newOffsetString = offSetString.slice(0, 1) + "0" + offSetString.slice(1, 2) + ":" + offSetString.slice(2, 4);
+  } else {
+    newOffsetString = offSetString.slice(0, 3) + ":" + offSetString.slice(3, 5);
+  }
+  return dateString + "T" + time + ":00" + newOffsetString;
 }
 
 
@@ -222,24 +247,21 @@ export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
 export function isValidEndDate(startDateString: string, endDateString: string): boolean 
 {
-  if (isFutureDate(endDateString)) {
-    let endDate = new Date(endDateString).getTime();
-    let startDate = new Date(startDateString).getTime();
-    if ((startDate - endDate) < 0) {
-      return true;
-    } else {
-      return false
-    }
+  let endDate = new Date(endDateString).getTime();
+  let startDate = new Date(startDateString).getTime();
+  if ((startDate - endDate) < 0) {
+    return true;
   } else {
-    return false;
+    return false
   }
 }
 
-export const INVALID_TIME_MESSAGE = "please fill out completely"
-export function isValidTime(time: string): boolean {
-  if (time == "") {
-    return false;
-  } else {
+export const INVALID_TIME_MESSAGE = "Please enter a valid time"
+export function isValidTime(timeString: string): boolean {
+  let re = /^\d{1,2}:\d{2}([ap]m)?$/;
+  if (timeString.match(re)) {
     return true;
-  } 
+  } else {
+    return false;
+  }
 }

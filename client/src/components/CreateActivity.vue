@@ -177,11 +177,6 @@ const CreateActivity = Vue.extend({
             return activityController.isFutureDate(v) || activityController.INVALID_DATE_MESSAGE
           }
         ],
-        endDateRules: [
-          (v: string) => {
-            return true || v; // TODO make error checking
-          }
-        ],
         startTimeRules: [
           (v: string) => {
             return activityController.isValidTime(v) || activityController.INVALID_TIME_MESSAGE
@@ -201,9 +196,6 @@ const CreateActivity = Vue.extend({
         activityTypes: [
           (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
           // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
-        ],
-        continuousRules: [
-          (v: boolean) => activityController.hasTimeFrame(v) || activityController.INVALID_CONTINUOUS_MESSAGE
         ],
       }
     };
@@ -245,10 +237,8 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked: async function() {
-      await activityController.setStartDate(this.createActivityRequest, this.startDate, this.startTime)
-      await activityController.setEndDate(this.createActivityRequest, this.endDate, this.endTime)
-      if (this.isEditing) {
-        activityController.editActivity(this.createActivityRequest, this.currentProfileId, this.editingId)
+      activityController.createNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
+        this.createActivityRequest, this.currentProfileId)
           .then(() => {
             this.$router.push({ name: "profilePage" });
           })
