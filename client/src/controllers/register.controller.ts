@@ -1,5 +1,6 @@
 // import User, { UserBuilder } from '@/scripts/User';
-import { create, login, getCurrentUser } from '@/models/user.model';
+import { create, getCurrentUser } from '@/models/user.model';
+import { login } from "../services/auth.service";
 import FormValidator from '@/scripts/FormValidator';
 import { UserApiFormat } from '@/scripts/User';
 

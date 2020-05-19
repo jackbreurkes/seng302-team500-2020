@@ -12,7 +12,7 @@ Vue.config.productionTip = false;
 
 import VueLogger from "vuejs-logger";
 import VueRouter, { Route } from "vue-router";
-import { verifyUserId } from "./models/user.model";
+import { verifyUserId } from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
 
 const routes = [

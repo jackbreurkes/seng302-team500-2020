@@ -1,5 +1,5 @@
 import { submitForm, LoginFormData } from './login.controller'
-const loginPage = require('../models/user.model');
+const loginPage = require('../services/auth.service');
 
 loginPage.login = jest.fn();
 
