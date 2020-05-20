@@ -99,25 +99,25 @@
                   ></v-date-picker>
                 </v-menu>
                 <v-continer>
-                  <v-card-title>Your Location:</v-card-title>
+                  <v-card-title>Set your Location:<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1">Clear Current Location</v-btn></v-card-title>
                   <v-row>
                     <v-col cols="8" sm="4">
                       <v-text-field
-                        label="City"
+                        label="City (Required)"
                         single-line
                         v-model="editedUser.location.city"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="8" sm="4">
                       <v-text-field
-                        label="State"
+                        label="State (Optional)"
                         single-line
                         v-model="editedUser.location.state"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="8" sm="4">
                       <v-text-field
-                        label="Country"
+                        label="Country (Required)"
                         single-line
                         v-model="editedUser.location.country"
                       ></v-text-field>
@@ -460,7 +460,19 @@ const Homepage = Vue.extend({
     deleteActivityType: function(activityType: string) {
       profileController.deleteActivityType(activityType, this.editedUser);
     },
-
+    clearLocation: function(){
+      this.editedUser.location = undefined;
+      this.editedUser.location = {
+            city: "",
+            state: "",
+            country: ""
+          }
+      // if ((this.editedUser.location.city === undefined) ||(this.editedUser.location.city === undefined )|| (this.editedUser.location.city === undefined)) {
+      //   this.editedUser.location.city = '';
+      //   this.editedUser.location.state = '';
+      //   this.editedUser.location.country = '';
+      //} 
+    },
     /**
      * persists the changes made on the edit page by the user
      */
