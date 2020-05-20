@@ -29,7 +29,7 @@ export function getMyPermissionLevel(): number {
 /**
  * clears the stored token, user id and permission level information.
  */
-export function clearAuthInfo() {
+function clearAuthInfo() {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");
   localStorage.removeItem("permissionLevel");
@@ -46,17 +46,33 @@ interface LoginResponse {
 }
 
 /**
- * uses the whoami endpoint to check that the user's token matches their stored user id
+ * uses the whoami endpoint to check that the user's token matches their stored user id.
+ * if the user's token and user id do not match, removes the stored auth info.
+ * @returns true if the user's id matches their token, false otherwise
  */
 export async function verifyUserId() {
+  let userIdIsValid = false;
+
+  if (getMyUserId() === null) {
+    clearAuthInfo();
+    return false;
+  }
+
   let res;
-  res = await instance.get("whoami");
-  if (res.data.profile_id == getMyUserId() || res.data.profile_id == -1) {
-    return true;
-  } else {
-    throw "userId in localStorage does not match";
+  try {
+    res = await instance.get("whoami");
+    userIdIsValid = res.data.profile_id === getMyUserId();
+  } catch (e) {
+    if (!e.response) { // the server did not respond
+      console.error(e)
+      throw e; // don't clear auth info, instead throw the error
+    }
+  }
+
+  if (!userIdIsValid) {
     clearAuthInfo();
   }
+  return userIdIsValid;
 }
 
 function setMyUserId(value: string | null) {

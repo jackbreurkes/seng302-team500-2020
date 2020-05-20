@@ -12,7 +12,7 @@ Vue.config.productionTip = false;
 
 import VueLogger from "vuejs-logger";
 import VueRouter, { Route } from "vue-router";
-import { verifyUserId } from "./services/auth.service";
+import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
 
 const routes = [
@@ -56,17 +56,15 @@ const unprotectedRoutes = ["login", "register"];
 router.beforeEach((to, from, next) => {
   if (to.name && unprotectedRoutes.includes(to.name)) {
     next();
-  } else {
-    verifyUserId()
-      .then(() => {
-        next();
-      })
-      .catch(() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        next({ name: "login" });
-      });
+    return;
   }
+  
+  if (auth.getMyToken() === null) { // user is not authenticated
+    next({ name: "login" });
+    return;
+  }
+
+  next();
 });
 
 const options = {
