@@ -75,14 +75,6 @@ export async function verifyUserId() {
   return userIdIsValid;
 }
 
-function setMyUserId(value: string | null) {
-  if (value === null) {
-    localStorage.removeItem("userId");
-  } else {
-    localStorage.setItem("userId", value);
-  }
-}
-
 /**
  * Attempts to log the user into their account via POST /{{SERVER_URL}}/login
  * On unsuccessful login will throw an error containing the message from the endpoint.
