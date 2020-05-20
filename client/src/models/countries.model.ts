@@ -1,14 +1,10 @@
-import axios from "axios";
-
-const instance = axios.create({
-  timeout: 10000,
-});
+import instance, { externalApiRootUrls } from "../services/axios.service";
 
 export async function loadPassportCountries() {
     // TODO get this to poll our database instead of the API?
   let res;
   try {
-    res = await instance.get("https://restcountries.eu/rest/v2/all");
+    res = await instance.get(externalApiRootUrls.restCountries + "/all");
   } catch (e) {
     if (e.response) {
       // request made and server responded
