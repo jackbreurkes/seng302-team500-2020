@@ -14,8 +14,8 @@ junit:
 jest:
   stage: test
   script:
-    - npm install
     - cd client
+    - npm install
     - npm run test
 
 dev-build:
