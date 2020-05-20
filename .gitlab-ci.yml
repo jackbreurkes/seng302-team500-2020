@@ -1,9 +1,27 @@
+stages:
+  - install
+  - build
+  - test
+  - deploy
+
+cache:
+  paths:
+    - client/node_modules
+  key: node-modules
+
 tag_checker:
   stage: build
   script:
     - python tag_checker.py $CI_COMMIT_TAG
   only:
     - tags
+
+install-dependencies:
+  stage: install
+  script:
+    - cd client
+    - npm install
+    - cd ..
 
 junit:
   stage: test
@@ -15,14 +33,12 @@ jest:
   stage: test
   script:
     - cd client
-    - npm install
     - npm run test
 
 dev-build:
   stage: deploy
   script:
     - cd client
-    - npm install
     - npm run build
     - cd ../server
     - ./gradlew bootJar
