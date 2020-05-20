@@ -15,6 +15,8 @@ import VueRouter, { Route } from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
 
+const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
+
 const routes = [
   { path: "/", name: "landing", component: Login },
   { path: "/login", name: "login", component: Login },
@@ -48,6 +50,7 @@ const routes = [
 
 const router = new VueRouter({
   routes: routes,
+  base: ROUTER_BASE_URL,
   mode: "history",
 });
 
