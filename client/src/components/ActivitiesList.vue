@@ -1,35 +1,77 @@
 <template>
   <div v-if="activities.length > 0">
-    <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4">
-      <v-card-title>
-        {{ activity.activity_name }} ({{ activity.location }})
-        <v-spacer></v-spacer>
-        <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
-        <v-tooltip top>
-          <template v-slot:activator="{ on }">
-            <div v-on="on">
-              <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
-            </div>
-          </template>
-          <span>Your role</span>
-        </v-tooltip>
-      </v-card-title>
+    <v-tabs v-model="durationTab" grow>
+      <v-tab :key="true">Continuous</v-tab>
+      <v-tab :key="false">Duration</v-tab>
+    </v-tabs>
+    <div v-if="!durationTab">
+      <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4">
+        <div v-if="activity.continuous">
+          <v-card-title>
+            {{ activity.activity_name }} ({{ activity.location }})
+            <v-spacer></v-spacer>
+            <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <div v-on="on">
+                  <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
+                </div>
+              </template>
+              <span>Your role</span>
+            </v-tooltip>
+          </v-card-title>
 
-      <v-card-text>
-        <span class="subtitle-1">{{ activity.description }}</span>
-        <br />
-        <p
-          class="body-2"
-        >{{ activity.continuous ? 'continuous' : getDurationDescription(activity.start_time, activity.end_time) }}</p>
-        <v-spacer></v-spacer>
-        <v-chip
-          class="mr-2 mb-2"
-          v-for="activityType of activity.activity_type"
-          v-bind:key="activityType"
-          outlined
-        >{{ activityType }}</v-chip>
-      </v-card-text>
-    </v-card>
+          <v-card-text>
+            <span class="subtitle-1">{{ activity.description }}</span>
+            <br />
+            <p
+              class="body-2"
+            >{{ activity.continuous ? 'continuous' : getDurationDescription(activity.start_time, activity.end_time) }}</p>
+            <v-spacer></v-spacer>
+            <v-chip
+              class="mr-2 mb-2"
+              v-for="activityType of activity.activity_type"
+              v-bind:key="activityType"
+              outlined
+            >{{ activityType }}</v-chip>
+          </v-card-text>
+        </div>
+      </v-card>
+    </div>
+    <div v-if="durationTab">
+      <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4">
+        <div v-if="!activity.continuous">
+          <v-card-title>
+            {{ activity.activity_name }} ({{ activity.location }})
+            <v-spacer></v-spacer>
+            <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
+            <v-tooltip top>
+              <template v-slot:activator="{ on }">
+                <div v-on="on">
+                  <v-chip class="ml-2" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
+                </div>
+              </template>
+              <span>Your role</span>
+            </v-tooltip>
+          </v-card-title>
+
+          <v-card-text>
+            <span class="subtitle-1">{{ activity.description }}</span>
+            <br />
+            <p
+              class="body-2"
+            >{{ activity.continuous ? 'continuous' : getDurationDescription(activity.start_time, activity.end_time) }}</p>
+            <v-spacer></v-spacer>
+            <v-chip
+              class="mr-2 mb-2"
+              v-for="activityType of activity.activity_type"
+              v-bind:key="activityType"
+              outlined
+            >{{ activityType }}</v-chip>
+          </v-card-text>
+        </div>
+      </v-card>
+    </div>
   </div>
   <div v-else>
     <p>this user has created no activities!</p>
@@ -56,7 +98,8 @@ const ActivitiesList = Vue.extend({
       email: "",
       password: "",
       errorMessage: "",
-      activities: [] as CreateActivityRequest[]
+      activities: [] as CreateActivityRequest[],
+      durationTab: true
     };
   },
 
