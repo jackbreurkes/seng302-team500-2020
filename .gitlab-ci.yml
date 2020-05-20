@@ -8,6 +8,7 @@ tag_checker:
 junit:
   stage: test
   script:
+    - npm install jest
     - cd server
     - ./gradlew test
     
