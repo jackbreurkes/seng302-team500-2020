@@ -67,6 +67,13 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
+  //checking if route is going to admin dashboard, and if it is and 
+  //the permission level is too low then they will be redirected
+  if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
+    next({name: "profilePage"});
+    return;
+  }
+
   next();
 });
 
