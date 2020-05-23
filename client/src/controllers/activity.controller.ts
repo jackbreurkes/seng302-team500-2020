@@ -337,3 +337,33 @@ export function isValidTime(timeString: string): boolean {
     return false;
   }
 }
+
+
+/**
+ * Returns a list of duration based activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getDurationActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let durationActivities = [];
+  for (let i = 0; i < activityList.length; i++) {
+    if (!activityList[i].continuous) {
+      durationActivities.push(activityList[i]);
+    }
+  }
+  return durationActivities;
+}
+
+
+/**
+ * Returns a list of continuous activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getContinuousActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let continuousActivities = [];
+  for (let i = 0; i < activityList.length; i++) {
+    if (activityList[i].continuous) {
+      continuousActivities.push(activityList[i]);
+    }
+  }
+  return continuousActivities;
+}
