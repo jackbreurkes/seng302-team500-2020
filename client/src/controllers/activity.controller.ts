@@ -1,6 +1,5 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
-import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -61,7 +60,7 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   if (isEditing && activityId !== undefined) {
     await editActivity(createActivityRequest, profileId, activityId)
   } else {
-    await createActivity(createActivityRequest, profileId);
+    await activityModel.createActivity(createActivityRequest, profileId);
   }
 }
 
