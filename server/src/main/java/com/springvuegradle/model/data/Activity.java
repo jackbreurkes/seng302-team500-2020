@@ -41,18 +41,6 @@ public class Activity {
     @Column(columnDefinition = "boolean")
     private boolean isDuration;
 
-//    @Column(columnDefinition = "date")
-//    private LocalDate startDate;
-//
-//    @Column(columnDefinition = "date")
-//    private LocalDate endDate;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime startTime;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime endTime;
-
     @Column(columnDefinition = "varchar(30)", name = "start_time_string")
     private String startTime;
 
@@ -80,6 +68,14 @@ public class Activity {
     )
     private Set<ActivityType> activityTypes;
 
+    @ManyToMany
+    @JoinTable(
+            name = "activity_hashtag",
+            joinColumns = {@JoinColumn(name = "activity_id")},
+            inverseJoinColumns = {@JoinColumn(name = "hashtag_id")}
+    )
+    private Set<Hashtag> hashtags;
+
     /**
      * no arg constructor required by JPA
      */
@@ -100,14 +96,6 @@ public class Activity {
         this.isDuration = isDuration;
         this.location = location;
         this.creator = creator;
-        this.activityTypes = activityTypes;
-    }
-
-    /**
-     * Setter for activity types
-     * @param activityTypes
-     */
-    public void setActivityTypes(Set<ActivityType> activityTypes) {
         this.activityTypes = activityTypes;
     }
 
@@ -147,62 +135,6 @@ public class Activity {
     public void setIsDuration(boolean isDuration) {
         this.isDuration = isDuration;
     }
-
-//    /**
-//     * @return the start date of the activity or null if the activity is not a duration activity
-//     */
-//    public LocalDate getStartDate() {
-//        return startDate;
-//    }
-//
-//    /**
-//     * @param startDate the start date of the activity required for duration activities
-//     */
-//    public void setStartDate(LocalDate startDate) {
-//        this.startDate = startDate;
-//    }
-//
-//    /**
-//     * @return gets the end date of the activity or null if the activity is not a duration activity
-//     */
-//    public LocalDate getEndDate() {
-//        return endDate;
-//    }
-//
-//    /**
-//     * @param endDate the end date of the activity required for duration activities
-//     */
-//    public void setEndDate(LocalDate endDate) {
-//        this.endDate = endDate;
-//    }
-//
-//    /**
-//     * @return the start time of the activity or null if the activity does not have a start time set
-//     */
-//    public LocalTime getStartTime() {
-//        return startTime;
-//    }
-//
-//    /**
-//     * @param startTime the start time which is optionally used by duration activities
-//     */
-//    public void setStartTime(LocalTime startTime) {
-//        this.startTime = startTime;
-//    }
-//
-//    /**
-//     * @return the end time of the activity or null if the activity does not have an end time set
-//     */
-//    public LocalTime getEndTime() {
-//        return endTime;
-//    }
-//
-//    /**
-//     * @param endTime the end time which is optionally used by duration activities
-//     */
-//    public void setEndTime(LocalTime endTime) {
-//        this.endTime = endTime;
-//    }
 
     /**
      * @return the activity start time in API format
@@ -272,5 +204,27 @@ public class Activity {
      */
     public Set<ActivityType> getActivityTypes() {
         return activityTypes;
+    }
+
+    /**
+     * Setter for activity types
+     * @param activityTypes
+     */
+    public void setActivityTypes(Set<ActivityType> activityTypes) {
+        this.activityTypes = activityTypes;
+    }
+
+    /**
+     * @return the hashtags associated with this activity
+     */
+    public Set<Hashtag> getHashtags() {
+        return hashtags;
+    }
+
+    /**
+     * @param hashtags sets the set of hashtags associated with this activity
+     */
+    public void setHashtags(Set<Hashtag> hashtags) {
+        this.hashtags = hashtags;
     }
 }
