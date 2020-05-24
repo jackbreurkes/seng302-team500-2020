@@ -174,7 +174,7 @@ const Homepage = Vue.extend({
             this.currentlyHasAuthority = true;
           }
         })
-    } else {
+    } else if(this.getCookie("adminMode") == "true") {
       this.currentlyHasAuthority = true;
     }
 
@@ -206,6 +206,18 @@ const Homepage = Vue.extend({
 
     createActivityClicked: function() {
       this.$router.push(`/profiles/${this.currentProfileId}/createActivity`);
+    },
+
+    getCookie: function(name: string) {
+      let value = `; ${document.cookie}`;
+      let parts = value.split(`; ${name}=`);
+      if (parts && parts.length === 2) {
+        let cookieEnd = parts.pop();
+        if (cookieEnd !== undefined) {
+          return cookieEnd.split(';').shift()
+        }
+      }
+      return null;
     }
   }
 });
