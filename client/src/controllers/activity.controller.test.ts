@@ -248,7 +248,7 @@ test.each([["2020-01-01", "", "2020-01-01T00:00:00+1300"], ["2021-01-02", "01:00
   }
 )
 
-const mockContinuousCreateActivityRequest: CreateActivityRequest = {
+const continuousCreateActivityRequest: CreateActivityRequest = {
   activity_name: "Non-stop running",
   description: "Run without stopping",
   activity_type: mockActivityTypes,
@@ -258,7 +258,7 @@ const mockContinuousCreateActivityRequest: CreateActivityRequest = {
   location: "Christchurch, New Zealand", 
 }
 
-const mockDurationCreateActivityRequest: CreateActivityRequest = {
+const durationCreateActivityRequest: CreateActivityRequest = {
   activity_name: "One day run ",
   description: "Run for a full day",
   activity_type: mockActivityTypes,
@@ -271,8 +271,8 @@ const mockDurationCreateActivityRequest: CreateActivityRequest = {
 //Result list only contains duration based activities
 test('expect duration activity list to not contain continuous activities', () => {
   let activityList = [];
-  activityList.push(mockContinuousCreateActivityRequest);
-  activityList.push(mockDurationCreateActivityRequest);
+  activityList.push(continuousCreateActivityRequest);
+  activityList.push(durationCreateActivityRequest);
   let durationActivities = activityController.getDurationActivities(activityList);
   let hasContiuousActivity = false;
   for (let i = 0; i < durationActivities.length; i++) {
@@ -287,8 +287,8 @@ test('expect duration activity list to not contain continuous activities', () =>
 //Result list only contains continuous activities
 test('expect new continuous activity list to not contain duration based activities', () => {
   let activityList = [];
-  activityList.push(mockContinuousCreateActivityRequest);
-  activityList.push(mockDurationCreateActivityRequest);
+  activityList.push(continuousCreateActivityRequest);
+  activityList.push(durationCreateActivityRequest);
   let continuousActivities = activityController.getContinuousActivities(activityList);
   let hasDurationActivity = false;
   for (let i = 0; i < continuousActivities.length; i++) {
