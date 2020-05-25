@@ -80,7 +80,14 @@
                   v-bind:key="activityType"
                 >{{ activityType }}</v-chip>
               </div>
-              <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" v-ref:activityList></ActivitiesList>
+              <v-tabs v-model="durationTab" grow>
+                <v-tab v-for="item in activityList" :key="item.tab">{{ item.tab }}</v-tab>
+              </v-tabs>
+              <v-tabs-items v-model="durationTab">
+                <v-tab-item v-for="item in activityList" :key="item.tab">
+                  <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
+                </v-tab-item>
+              </v-tabs-items>
             </v-card-text>
           </v-card>
         </v-col>
@@ -91,6 +98,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+
 import ActivitiesList from "./ActivitiesList.vue";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
@@ -103,6 +111,13 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import { getCurrentUser } from '../models/user.model';
+import { 
+  getActivitiesByCreator,
+  getDurationActivities,
+  getContinuousActivities,
+} from '../controllers/activity.controller';
+// eslint-disable-next-line no-unused-vars
+import { CreateActivityRequest } from "../scripts/Activity";
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -120,6 +135,10 @@ const Homepage = Vue.extend({
       // email: "",
       editedUser: {} as UserApiFormat,
       formValidator: new FormValidator(),
+      durationActivities: [] as CreateActivityRequest[],
+      continuousActivities: [] as CreateActivityRequest[],
+      durationTab: null,
+      activityList: [] as any,
       inputRules: {
         lastnameRules: [
           (v: string) =>
@@ -182,6 +201,17 @@ const Homepage = Vue.extend({
       .then(user => {
         this.currentUser = user;
       })
+      .catch(err => {
+        console.error(err);
+      });
+
+    getActivitiesByCreator(profileId)
+      .then(res => {
+        this.durationActivities = getDurationActivities(res);
+        this.continuousActivities = getContinuousActivities(res);
+        this.activityList.push({tab: "Duration", content: this.durationActivities});
+        this.activityList.push({tab: "Continuous", content: this.continuousActivities});
+        })
       .catch(err => {
         console.error(err);
       });
