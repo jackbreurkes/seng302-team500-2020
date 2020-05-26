@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.helpers.UserAuthorizer;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
@@ -80,7 +81,6 @@ public class UserProfileController {
     @Autowired
     private LocationRepository locationRepository;
 
-
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
@@ -95,20 +95,7 @@ public class UserProfileController {
             @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // check correct authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-//        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-//        boolean isTargetUser = authId != null && authId == profileId;
-//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-//        if (!isTargetUser && !isAdmin) {
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
