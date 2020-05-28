@@ -3,13 +3,14 @@
     <v-app>
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
-        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour></v-app-bar-nav-icon> 
+        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour v-if="checkLoginPage()"></v-app-bar-nav-icon> 
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
+
       <v-navigation-drawer
           v-model= this.bar
           :expand-on-hover= this.collapsible
@@ -17,6 +18,7 @@
           :right= this.right
           absolute
           dark
+          v-if="checkLoginPage()"
         >
           <v-list
             dense
@@ -121,6 +123,12 @@
         else {
           this.logoutButtonClicked();
         }
+      },
+      checkLoginPage: function(){
+        if(this.$route.path == "/login") {
+          return false
+        }
+        return true
       },
       burgerSelected: function() {
         if (this.collapsible == true) {
