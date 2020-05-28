@@ -118,6 +118,7 @@ import {
 } from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
+import * as PropertiesService from '../services/properties.service';
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -193,7 +194,7 @@ const Homepage = Vue.extend({
             this.currentlyHasAuthority = true;
           }
         })
-    } else if(this.getCookie("adminMode") == "true") {
+    } else if(PropertiesService.getAdminMode()) {
       this.currentlyHasAuthority = true;
     }
 
@@ -236,18 +237,6 @@ const Homepage = Vue.extend({
 
     createActivityClicked: function() {
       this.$router.push(`/profiles/${this.currentProfileId}/createActivity`);
-    },
-
-    getCookie: function(name: string) {
-      let value = `; ${document.cookie}`;
-      let parts = value.split(`; ${name}=`);
-      if (parts && parts.length === 2) {
-        let cookieEnd = parts.pop();
-        if (cookieEnd !== undefined) {
-          return cookieEnd.split(';').shift()
-        }
-      }
-      return null;
     }
   }
 });

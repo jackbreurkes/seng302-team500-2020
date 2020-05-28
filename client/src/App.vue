@@ -24,6 +24,8 @@
     fetchCurrentUser,
     getPermissionLevel
   } from "./controllers/profile.controller";
+  import * as PropertiesService from './services/properties.service';
+
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
@@ -56,16 +58,15 @@
       },
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
-          this.isLoggedIn = true;
-          if ((!user || !user.firstname) && getPermissionLevel() >= 120) {
+          if (/*(!user || !user.firstname) && */getPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
             this.currentName = "Admin";
           } else {
             this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
           }
         })
         .catch(() => {
-          this.isLoggedIn = getPermissionLevel() >= 120;
-          this.currentName = getPermissionLevel() >= 120 ? "Admin" : "";
+          this.isLoggedIn = getPermissionLevel() >= 120 && PropertiesService.getAdminMode();
+          this.currentName = getPermissionLevel() >= 120 && PropertiesService.getAdminMode() ? "Admin" : "";
         });
       }
     }

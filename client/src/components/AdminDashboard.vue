@@ -31,6 +31,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import * as PropertiesService from '../services/properties.service';
 
 // app Vue instance
 const AdminDashboard = Vue.extend({
@@ -44,28 +45,18 @@ const AdminDashboard = Vue.extend({
   },
 
   mounted: function() {
-    this.adminToggleMode = this.getCookie("adminMode")=="true" ? 0 : 1;
+    this.adminToggleMode = PropertiesService.getAdminMode() ? 0 : 1;
   },
 
   methods: {
     setAdminMode: function() {
       if (this.adminToggleMode == 0) {
-        document.cookie = "adminMode=true";
+        PropertiesService.setAdminMode(true);
       } else {
-        document.cookie = "adminMode=false";
+        PropertiesService.setAdminMode(false);
       }
     },
-    getCookie: function(name: string) {
-      let value = `; ${document.cookie}`;
-      let parts = value.split(`; ${name}=`);
-      if (parts && parts.length === 2) {
-        let cookieEnd = parts.pop();
-        if (cookieEnd !== undefined) {
-          return cookieEnd.split(';').shift()
-        }
-      }
-      return null;
-    }
+    
   }
 
 
