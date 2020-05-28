@@ -1,18 +1,64 @@
 <template>
   <div id="app">
     <v-app>
-      <v-app-bar color="primary" dark app>
+
+      <v-app-bar color="primary" dark app clipped-left:true-value="">
+        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour></v-app-bar-nav-icon> 
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
+      <v-navigation-drawer
+          v-model= this.bar
+          :expand-on-hover= this.collapsible
+          :mini-variant = this.smallForm
+          :right= this.right
+          absolute
+          dark
+        >
+          <v-list
+            dense
+            nav
+            class="py-0"
+          >
+            <v-list-item two-line :class="this.smallForm && 'px-0'">
+              <v-list-item-avatar> 
+                <img src="">
+                <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
+              </v-list-item-avatar>
+  
+              <v-list-item-content>
+                <v-list-item-title>Application</v-list-item-title>
+                <v-list-item-subtitle>Subtext</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+  
+            <v-divider></v-divider>
+  
+            <v-list-item
+              v-for="item in items"
+              :key="item.title"
+              link
+              @click="goTo(item.pathing)"
+            >
+              <v-list-item-icon>
+                <v-icon>{{ item.icon }}</v-icon>
+              </v-list-item-icon>
+  
+              <v-list-item-content>
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-navigation-drawer>
       <v-content>
         <transition name="page-transition">
           <router-view></router-view>
         </transition>
       </v-content>
+
     </v-app>
   </div>
 </template>
@@ -30,12 +76,25 @@
     // app initial state
     data: () => {
       return {
+        burgerColour: 'white',
+        currentProfileId: NaN as Number,
+        bar: true,
+        collapsible: true,
+        smallForm: true,
+        right: false,
+        items: [] as any,
         isLoggedIn: false,
         currentName: ""
       }
     },
+    
     created() {
-      this.updateUserData();
+    this.updateUserData();
+    const profileId: number = parseInt(this.$route.params.profileId);
+    this.currentProfileId = profileId;
+    this.loadNavInfo();
+
+
     },
     watch: {
       $route() {
@@ -44,6 +103,37 @@
     },
 
     methods: {
+      loadNavInfo: function() {
+          this.items = [
+            {title: 'Search (inactive)', icon: 'mdi-magnify'},
+            {title: 'Home (active)', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId },
+            {title: 'Activities (inactive)', icon: 'mdi-bike' },
+            {title: 'Friends (inactive)', icon: 'mdi-account-group' },
+            {title: 'Edit My Profile (active)', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
+            {title: 'Logout (active)', icon: 'mdi-logout', pathing:"LOGOUT"}, 
+          ]
+
+      },
+      goTo: function(pathing : string) {
+        if(!(pathing == "LOGOUT")){
+          this.$router.push(pathing);
+          }
+        else {
+          this.logoutButtonClicked();
+        }
+      },
+      burgerSelected: function() {
+        if (this.collapsible == true) {
+        this.collapsible = false;
+        this.smallForm = false;
+        this.burgerColour = "grey"
+        }
+        else {
+        this.collapsible = true;
+        this.smallForm = true;
+        this.burgerColour = "white"
+        }
+      },
       logoutButtonClicked: function() {
         logoutCurrentUser()
           .then(() => {
