@@ -336,3 +336,23 @@ export function isValidTime(timeString: string): boolean {
     return false;
   }
 }
+
+
+/**
+ * Returns a list of duration based activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getDurationActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let durationActivities = activityList.filter(activity => activity.continuous === false);
+  return durationActivities;
+}
+
+
+/**
+ * Returns a list of continuous activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getContinuousActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let continuousActivities = activityList.filter(activity => activity.continuous === true);
+  return continuousActivities;
+}
