@@ -3,7 +3,7 @@
     <v-app>
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
-        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour v-if="checkLoginPage()"></v-app-bar-nav-icon> 
+        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
@@ -18,7 +18,7 @@
           :right= this.right
           absolute
           dark
-          v-if="checkLoginPage()"
+          v-if="showNavBar()"
         >
           <v-list
             dense
@@ -124,7 +124,8 @@
           this.logoutButtonClicked();
         }
       },
-      checkLoginPage: function(){
+      showNavBar: function(){
+        //Dont display the nav bar side menu
         if(this.$route.path == "/login") {
           return false
         }
