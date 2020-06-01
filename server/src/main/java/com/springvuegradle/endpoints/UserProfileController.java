@@ -15,8 +15,8 @@ import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
-import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -329,4 +329,26 @@ public class UserProfileController {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
     }
+    
+    
+    /**
+     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
+     * @param request HTTPServletRequest corresponding to the user's request
+     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
+     * @throws RecordNotFoundException
+     */
+    @GetMapping
+    @CrossOrigin
+    public List<Profile> retrieveAllUsers(HttpServletRequest request) throws RecordNotFoundException {
+    	    	
+    	// The following Strings will simply be null if the associated parameter is not specified
+    	String searchedFullname = request.getParameter("fullname");
+    	String searchedNickname = request.getParameter("nickname");
+    	String searchedEmail = request.getParameter("email");
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
+    	    	
+		return profiles;
+    }
+    
 }
