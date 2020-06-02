@@ -104,8 +104,7 @@ import ActivitiesList from "./ActivitiesList.vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
-  fetchProfileWithId,
-  getPermissionLevel
+  fetchProfileWithId
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -180,28 +179,27 @@ const Homepage = Vue.extend({
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
-    const permissionLevel: number = getPermissionLevel();
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
     
-    if (permissionLevel < 120) {
-      getCurrentUser()
-        .then(user => {
-          if (user.profile_id == profileId) {
-            //if we're editing ourself
-            this.currentlyHasAuthority = true;
-          }
-        })
-    } else if(PropertiesService.getAdminMode()) {
+    getCurrentUser()
+      .then(user => {
+        if (user.profile_id == profileId) {
+          //if we're editing ourself
+          this.currentlyHasAuthority = true;
+        }
+      })
+    if(PropertiesService.getAdminMode()) {
       this.currentlyHasAuthority = true;
     }
 
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;
-      })
+           console.log(this.currentUser)
+ })
       .catch(err => {
         console.error(err);
       });

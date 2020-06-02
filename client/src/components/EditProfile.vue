@@ -98,7 +98,7 @@
                     @input="dobMenu = false"
                   ></v-date-picker>
                 </v-menu>
-                <v-continer>
+                <v-container>
                   <v-card-title>Set your Location:<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1">Clear Current Location</v-btn></v-card-title>
                   <v-row>
                     <v-col cols="8" sm="4">
@@ -123,7 +123,7 @@
                       ></v-text-field>
                     </v-col>
                   </v-row>
-                </v-continer>
+                </v-container>
 
                 <v-card-title>Passport Countries</v-card-title>
 
@@ -248,6 +248,34 @@
               <!-- insert edit email and edit password forms here -->
             </v-card-text>
           </v-card>
+          <br />
+          <v-card>
+            <v-toolbar color="primary" dark flat> 
+              <v-toolbar-title>Delete Account</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text>
+              <v-dialog v-model="confirmDeleteModal" width="290">
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" color="error">Delete</v-btn>
+                  <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
+                </template>
+
+                <v-card>
+                  <v-card-title class="headline" primary-title>Delete account?</v-card-title>
+
+                  <v-card-text>This operation cannot be undone.</v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn color="error" text @click="deleteAccount">Delete</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-card-text>
+          </v-card>
         </v-col>
       </v-row>
     </v-container>
@@ -264,6 +292,8 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import {updateActivityTypes} from "../models/user.model"
+import { removeAdminCookie } from "../services/properties.service";
+import { clearAuthInfo } from "../services/auth.service";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -329,7 +359,8 @@ const Homepage = Vue.extend({
       newPassword: "",
       repeatPassword: "",
       passwordErrorMessage: "",
-      passwordSuccessMessage: ""
+      passwordSuccessMessage: "",
+      confirmDeleteModal: false
     };
   },
 
@@ -590,6 +621,28 @@ const Homepage = Vue.extend({
       this.oldPassword = "";
       this.newPassword = "";
       this.repeatPassword = "";
+    },
+    /**
+     * Delete the account of the user currently being looked at
+     * Can only be done by an admin or the user themself
+     */
+    deleteAccount: function() {
+        profileController.deleteUserAccount(this.currentProfileId)
+        .then(() => {
+          removeAdminCookie();
+          clearAuthInfo();
+          this.$router.push({ name: "register" });
+        })
+        .catch((err) => {
+          if (!err.response || !err.response.status) {
+            console.log(err)
+          } else {
+            console.log(err.response.status)
+            // May wish to eventually take different actions depending on type of error returned from server (once implemented)
+            // E.g. If the server decides to require a password and returns a 400 when password is wrong
+            // I.e. Basically, warn the user if the type of error means that the account has not actually been deleted
+          }
+        })
     }
   }
 });

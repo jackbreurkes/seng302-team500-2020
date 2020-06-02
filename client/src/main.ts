@@ -14,6 +14,7 @@ import VueLogger from "vuejs-logger";
 import VueRouter, { Route } from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
+import { removeAdminCookie } from './services/properties.service';
 
 const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
 
@@ -70,7 +71,7 @@ router.beforeEach((to, from, next) => {
   //checking if route is going to admin dashboard, and if it is and 
   //the permission level is too low then they will be redirected
   if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
-    document.cookie = "adminMode=; expires=Thu, 01 Jan 1970 00:00:01 GMT;"; // Will remove the adminMode cookie if exists
+    removeAdminCookie();
     next({name: "profilePage"});
     return;
   }

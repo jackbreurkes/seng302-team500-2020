@@ -50,6 +50,7 @@
   import Vue from 'vue'
 
   import * as profileController from "../controllers/profile.controller";
+  import * as PropertiesService from '../services/properties.service';
 
   // app Vue instance
   const Login = Vue.extend({
@@ -92,7 +93,7 @@
         const currentlyStoredPermissionLevel = profileController.getPermissionLevel();
         if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
           this.errorMessage = "Logging you in...";
-          if (currentlyStoredPermissionLevel === 0) {
+          if (currentlyStoredPermissionLevel === 0 || !PropertiesService.getAdminMode()) {
             this.$router.push({ name: "profilePage", params: {profileId: currentlyStoredUserId} })
               .catch((err) => {
                 console.error(err);
