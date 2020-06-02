@@ -4,7 +4,9 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -15,6 +17,7 @@ import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.model.requests.UpdateRoleRequest;
 import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
@@ -329,4 +333,88 @@ public class UserProfileController {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
     }
+    
+    /**
+     * Update the role 
+     * @param profileId id of the user whose permission level should be updated
+     * @param updateRoleRequest the body of the request
+     * @param validationErrors errors with the request
+     * @param httpRequest the HttpServletRequest associated with this request
+     * @return response entity with informative statement about updated role
+     * @throws RecordNotFoundException
+     * @throws UserNotAuthenticatedException
+     * @throws InvalidRequestFieldException
+     * @throws ForbiddenOperationException
+     */
+    @PutMapping("/{profileId}/role")
+    @CrossOrigin
+    public ResponseEntity<String> updateUserRole(@PathVariable("profileId") long profileId,
+                                                          @Valid @RequestBody UpdateRoleRequest updateRoleRequest,
+                                                          Errors validationErrors,
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, ForbiddenOperationException {
+        // authentication
+        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
+
+        Optional<User> editingUser = userRepository.findById(authId);
+
+        if (authId == null) { // not authenticated
+            throw new UserNotAuthenticatedException("you must be authenticated as an admin");
+        } else if (editingUser.isPresent()	// the user exists
+				&& !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {	// they are not an admin
+            throw new ForbiddenOperationException("you must be an admin to promote and demote users");
+        }
+
+        // validate request body
+        if (validationErrors.hasErrors()) {
+            throw new InvalidRequestFieldException(validationErrors.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        // get relevant profile
+        Optional<User> optionalUser = userRepository.findById(profileId);
+        if (optionalUser.isEmpty()) {
+            throw new RecordNotFoundException("user not found");
+        }
+        User user = optionalUser.get();
+        
+        String roleName = updateRoleRequest.getRole();
+
+        // validate role
+        int permissionLevel = getRolePermissionLevel(roleName);
+        if (permissionLevel == -1) {
+        	throw new InvalidRequestFieldException("role with name " + roleName + " does not exist");
+        }
+        
+        // do not allow admins to increase their privileges
+        if (profileId == authId && permissionLevel > user.getPermissionLevel()) {	// if they are trying to promote themselves
+        	throw new ForbiddenOperationException("cannot promote self");
+        }
+        
+        // do not allow admins to create new superadmins
+        if (permissionLevel == 127) {
+        	throw new ForbiddenOperationException("cannot promote a user to superadmin role");
+        }
+ 
+        // save profile with newly added activity types and return
+        user.setPermissionLevel(permissionLevel);
+        userRepository.save(user);
+		return ResponseEntity.status(HttpStatus.OK).body("Updated user role to " + roleName + ".");	
+    }
+    
+    /**
+     * Get the permission level associated with a given role name
+     * @param roleName the string role name to find in the system
+     * @return permission level associated with the provided role name or -1 if no role with the given name exists
+     */
+    private int getRolePermissionLevel(String roleName) {
+    	// TODO change this to use a repository of role names and corresponding permission levels
+    	
+    	Map<String, Integer> tempRoleMapping = new HashMap<>();
+    	tempRoleMapping.put("admin", 126);
+    	tempRoleMapping.put("superadmin", 127);	// probably don't want this one to actually be available...
+    	tempRoleMapping.put("user", 0);
+    	
+		return tempRoleMapping.getOrDefault(roleName, -1);
+
+    }
+    
 }

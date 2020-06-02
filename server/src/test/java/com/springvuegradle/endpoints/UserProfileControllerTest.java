@@ -242,5 +242,160 @@ class UserProfileControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
     }
+    
+    // ----------------------- Admin promotion/demotion tests ------------------------------------
+    
+    @Test
+    public void testPromoteOtherUserToAdmin() throws Exception {
+    	String updateRoleJson = "{\"role\": \"admin\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testPromoteSelf() throws Exception {
+    	String updateRoleJson = "{\"role\": \"superadmin\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	    	    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + adminId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void testPromoteToNonExistentRole() throws Exception {
+    	String updateRoleJson = "{\"role\": \"ultimateadmin\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void testNonAdminPromoting() throws Exception {
+    	String updateRoleJson = "{\"role\": \"admin\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void testDemoteSelf() throws Exception {
+    	String updateRoleJson = "{\"role\": \"user\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	System.out.println("Admin user id: " + adminUser.getUserId());
+    	    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + adminId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testDemoteOtherUser() throws Exception {
+    	String updateRoleJson = "{\"role\": \"user\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	userToEdit.setPermissionLevel(126);
+    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testPromoteToSuperAdmin() throws Exception {
+    	String updateRoleJson = "{\"role\": \"superadmin\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
 
 }
