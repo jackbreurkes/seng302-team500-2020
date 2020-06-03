@@ -340,7 +340,7 @@ class UserProfileControllerTest {
     	User adminUser = new User(adminId);
     	adminUser.setPermissionLevel(126);
     	
-    	System.out.println("Admin user id: " + adminUser.getUserId());
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
     	    	
     	mvc.perform(MockMvcRequestBuilders
                 .put("/profiles/" + adminId + "/role")
