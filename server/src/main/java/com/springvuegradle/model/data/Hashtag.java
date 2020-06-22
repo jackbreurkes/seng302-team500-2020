@@ -10,10 +10,10 @@ import java.util.Set;
  * JPA POJO to represent a hashtag
  */
 @Entity
-@Table(name="hashtag")
 public class Hashtag {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // required for testing with H2
     private long hashtagId;
 
     @Column(columnDefinition = "varchar(30) not null", unique = true)
