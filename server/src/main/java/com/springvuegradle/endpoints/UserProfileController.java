@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.springvuegradle.exceptions.ForbiddenOperationException;
@@ -347,8 +348,9 @@ public class UserProfileController {
      * @throws ForbiddenOperationException
      */
     @PutMapping("/{profileId}/role")
+    @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
-    public ResponseEntity<String> updateUserRole(@PathVariable("profileId") long profileId,
+    public void updateUserRole(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody UpdateRoleRequest updateRoleRequest,
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, ForbiddenOperationException {
@@ -380,9 +382,6 @@ public class UserProfileController {
 
         // validate role
         int permissionLevel = getRolePermissionLevel(roleName);
-        if (permissionLevel == -1) {
-        	throw new InvalidRequestFieldException("role with name " + roleName + " does not exist");
-        }
         
         // do not allow admins to increase their privileges
         if (profileId == authId && permissionLevel > user.getPermissionLevel()) {	// if they are trying to promote themselves
@@ -397,15 +396,15 @@ public class UserProfileController {
         // save profile with newly added activity types and return
         user.setPermissionLevel(permissionLevel);
         userRepository.save(user);
-		return ResponseEntity.status(HttpStatus.OK).body("Updated user role to " + roleName + ".");	
     }
     
     /**
      * Get the permission level associated with a given role name
      * @param roleName the string role name to find in the system
      * @return permission level associated with the provided role name or -1 if no role with the given name exists
+     * @throws RecordNotFoundException 
      */
-    private int getRolePermissionLevel(String roleName) {
+    private int getRolePermissionLevel(String roleName) throws RecordNotFoundException {
     	// TODO change this to use a repository of role names and corresponding permission levels
     	
     	Map<String, Integer> tempRoleMapping = new HashMap<>();
@@ -413,7 +412,13 @@ public class UserProfileController {
     	tempRoleMapping.put("superadmin", 127);	// probably don't want this one to actually be available...
     	tempRoleMapping.put("user", 0);
     	
-		return tempRoleMapping.getOrDefault(roleName, -1);
+    	int roleId = tempRoleMapping.getOrDefault(roleName, -1);
+    	
+    	if (roleId == -1) {
+    		throw new RecordNotFoundException("Could not find role with name: " + roleName);
+    	}
+    	
+		return roleId;
 
     }
     

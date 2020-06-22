@@ -269,25 +269,6 @@ class UserProfileControllerTest {
     }
     
     @Test
-    public void testPromoteSelf() throws Exception {
-    	String updateRoleJson = "{\"role\": \"superadmin\"}";
-    	
-    	Long adminId = 0l;
-    	User adminUser = new User(adminId);
-    	adminUser.setPermissionLevel(126);
-    	    	    	
-    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
-    	
-    	mvc.perform(MockMvcRequestBuilders
-                .put("/profiles/" + adminId + "/role")
-                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
-                .requestAttr("authenticatedid", adminId)
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
-    
-    @Test
     public void testPromoteToNonExistentRole() throws Exception {
     	String updateRoleJson = "{\"role\": \"ultimateadmin\"}";
     	
@@ -307,7 +288,7 @@ class UserProfileControllerTest {
                 .requestAttr("authenticatedid", adminId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
     
     @Test
