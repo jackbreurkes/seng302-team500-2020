@@ -7,6 +7,7 @@ import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.*;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -25,15 +26,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.text.SimpleDateFormat;
+import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.Optional;
-
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -242,5 +245,121 @@ class UserProfileControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
     }
+    
+    @Test
+    public void testGetUserByFullNickname() throws Exception {
+    	String nickname = "mika";
+
+    	Profile profile1 = new Profile(new User(1), "Fake", "User", LocalDate.now(), Gender.NON_BINARY);
+    	profile1.setNickName(nickname);
+    	
+    	List<Profile> profileList = new ArrayList<Profile>();
+    	profileList.add(profile1);
+    	
+        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("nickname", nickname)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
+    	
+    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+    }
+    
+    @Test
+    public void testGetUserByFirstCharOfNickname() throws Exception {
+    	String nickname = "mika";
+    	String partialNickname = "mi";
+
+    	Profile profile1 = new Profile(new User(1), "Fake", "User", LocalDate.now(), Gender.NON_BINARY);
+    	profile1.setNickName(nickname);
+    	
+    	List<Profile> profileList = new ArrayList<Profile>();
+    	profileList.add(profile1);
+    	
+        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("nickname", partialNickname)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
+    	
+    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+    }
+    
+    @Test
+    public void testGetMultipleUsersByNickname() throws Exception {
+    	String nickname1 = "mika";
+    	String nickname2 = "mickeymouse";
+    	String partialNickname = "mi";
+
+    	Profile profile1 = new Profile(new User(1), "Fake", "Number one", LocalDate.now(), Gender.NON_BINARY);
+    	profile1.setNickName(nickname1);
+    	Profile profile2 = new Profile(new User(2), "Fake", "Number two", LocalDate.now(), Gender.NON_BINARY);
+    	profile1.setNickName(nickname2);
+    	
+    	List<Profile> profileList = new ArrayList<Profile>();
+    	profileList.add(profile1);
+    	profileList.add(profile2);
+    	
+        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("nickname", partialNickname)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> firstUserFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
+        LinkedHashMap<String, Object> secondUserFound = (LinkedHashMap<String, Object>) body.get(1).get("user");
+    	
+    	assertEquals(2, body.size());
+    	assertEquals(BigInteger.valueOf(1l), firstUserFound.get("user_id"));
+    	assertEquals(BigInteger.valueOf(2l), secondUserFound.get("user_id"));
+    }
+    
+    @Test
+    public void testGetUserByNonExistentNickname() throws Exception {
+    	String nickname = "mika";
+    	
+        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(new ArrayList<Profile>());
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("nickname", nickname)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+
+    	assertEquals(0, body.size());
+    }
+    
+    // Helper function to get the list of users from the JSON returned when searching for them using GET /profiles with query parameters
+    private ArrayList<LinkedHashMap<String, Object>> getResultListJson(String raw) throws org.apache.tomcat.util.json.ParseException {
+		JSONParser parser = new JSONParser(raw);
+		ArrayList<LinkedHashMap<String, Object>> json = null;
+		json = (ArrayList<LinkedHashMap<String, Object>>) parser.parse();
+		return json;
+	}
 
 }

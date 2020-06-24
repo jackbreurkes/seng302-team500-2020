@@ -189,6 +189,40 @@ public class UserProfileController {
         return activityTypes;
     }
 
+    
+    /**
+     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
+     * @param request HTTPServletRequest corresponding to the user's request
+     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
+     * @throws RecordNotFoundException
+     */
+    @GetMapping
+    @CrossOrigin
+    public List<Profile> searchUsers(HttpServletRequest request) throws RecordNotFoundException {
+    	    	
+    	// The following Strings will simply be null if the associated parameter is not specified
+    	String searchedFullname = request.getParameter("fullname");
+    	String searchedNickname = request.getParameter("nickname");
+    	String searchedEmail = request.getParameter("email");
+    	
+    	System.out.println(searchedNickname);
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
+		
+		if (searchedNickname == null) {
+			searchedNickname = "";
+		}
+		profiles = getUsersByNickname(searchedNickname);
+ 	
+		return profiles;
+    }
+    
+    
+    private List<Profile> getUsersByNickname(String nickname) throws RecordNotFoundException {
+    	List<Profile> profiles = profileRepository.findByNickNameStartingWith(nickname);
+		return profiles;
+    }
+
 
     /**
      * Handle when user tries to POST to /profiles
@@ -330,25 +364,5 @@ public class UserProfileController {
         }
     }
     
-    
-    /**
-     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
-     * @param request HTTPServletRequest corresponding to the user's request
-     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
-     * @throws RecordNotFoundException
-     */
-    @GetMapping
-    @CrossOrigin
-    public List<Profile> retrieveAllUsers(HttpServletRequest request) throws RecordNotFoundException {
-    	    	
-    	// The following Strings will simply be null if the associated parameter is not specified
-    	String searchedFullname = request.getParameter("fullname");
-    	String searchedNickname = request.getParameter("nickname");
-    	String searchedEmail = request.getParameter("email");
-    	
-    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
-    	    	
-		return profiles;
-    }
     
 }
