@@ -354,8 +354,10 @@ public class UserProfileController {
         Profile profile = optionalProfile.get();
         User user = profile.getUser();
 
-        //sessionRepository.deleteUserSession(user);
-        //emailRepository.deleteUserEmails(user);
+        // If deleting user-related data from the database, must be done here and separately
+        // Cascading delete doesn't work
+        sessionRepository.deleteUserSession(user);
+        emailRepository.deleteUserEmails(user);
         profileRepository.delete(profile);
         userRepository.delete(user);
         return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
