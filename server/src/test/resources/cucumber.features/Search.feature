@@ -32,7 +32,7 @@ Feature: Searching user profiles
 
     @U11-search-full-name
     Scenario Outline: Search users by full name
-      When I search for profiles by "full name" with the search term <name>
+      When I search for profiles by "full name" with the search term "<name>"
       Then I should receive exactly <count> results
 
     Examples:
@@ -50,7 +50,7 @@ Feature: Searching user profiles
 
       @U11-search-email
       Scenario Outline: Search users by email
-        When I search for profiles by "email" with the search term <email>
+        When I search for profiles by "email" with the search term "<email>"
         Then I should receive exactly <count> results
 
       Examples:
@@ -68,7 +68,7 @@ Feature: Searching user profiles
 
     @U11-search-nickname
     Scenario Outline: Search users by nickname
-      When I search for profiles by "nickname" with the search term <nickname>
+      When I search for profiles by "nickname" with the search term "<nickname>"
       Then I should receive exactly <count> results
 
       Examples:
