@@ -18,6 +18,7 @@ import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,6 +28,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -74,6 +77,28 @@ public class SearchTestSteps {
     private ProfileRepository profileRepository;
 
     /*@Mock
+	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+	public class SearchTestSteps {
+	
+	@Autowired
+    private MockMvc mvc;
+	
+    @InjectMocks
+    private UserProfileController userProfileController;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private SessionRepository sessionRepository;
+
+    @Mock
+    private EmailRepository emailRepository;
+
+    @Mock
+    private ProfileRepository profileRepository;
+
+    @Mock
     private CountryRepository countryRepository;
 
     @Mock
@@ -104,6 +129,7 @@ public class SearchTestSteps {
 		
 		List<Map<String, String>> profilesToAdd = dataTable.asMaps();
 		profiles = new ArrayList<Profile>();
+
 		for (Map<String, String> person: profilesToAdd) {
 			System.out.println("========== The next one is ===========");
 			/*for (String key: person.keySet()) {
@@ -125,21 +151,26 @@ public class SearchTestSteps {
 	}
 
 	@When("I search for profiles by {string} with the search term {string}")
-	public void i_search_for_profiles_by_with_the_search_term(String searchBy, String searchTerm) throws Exception {
-//	    requestResult = mvc.perform(MockMvcRequestBuilders
-//                .get("/profiles")
-//                .queryParam(searchBy, searchTerm)
-//                .accept(MediaType.APPLICATION_JSON))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andReturn();
+	public void i_search_for_profiles_by_with_the_search_term(String searchBy, String searchTerm) {
+	    /*requestResult = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam(searchBy, searchTerm)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(requestResult.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
+    	
+    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));*/
 	}
 
 	@Then("I should receive exactly {int} results")
-	public void i_should_receive_exactly_results(Integer numResults) throws UnsupportedEncodingException, ParseException {
-        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(requestResult.getResponse().getContentAsString());
-        
-    	assertEquals(numResults, body.size());
+	public void i_should_receive_exactly_results(Integer int1) {
+	    // Write code here that turns the phrase above into concrete actions
+	    throw new io.cucumber.java.PendingException();
 	}
 
 	@When("I search for profiles interested in Scootering Skateboarding that are anded together")
