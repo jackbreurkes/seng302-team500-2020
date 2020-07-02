@@ -13,7 +13,6 @@ import javax.persistence.Table;
  * JPA class for Email addresses in persistent storage
  * @author Alex Hobson
  * @author Riley Symon
- * @author Olivia Mackintosh
  *
  */
 @Entity

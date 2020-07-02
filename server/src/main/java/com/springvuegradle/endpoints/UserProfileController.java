@@ -84,12 +84,16 @@ public class UserProfileController {
 
     @Autowired
     private LocationRepository locationRepository;
-
+    
+    /**
+     * Repository used to hold mappings of role names to the role's id
+     */
+    @Autowired
+    private RoleRepository roleRepository;
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
-
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -293,6 +297,10 @@ public class UserProfileController {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
+        if (authId == null) {
+            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        }
+        
         Optional<User> editingUser = userRepository.findById(authId);
 
         if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
@@ -358,6 +366,7 @@ public class UserProfileController {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
+        
 
         if (authId == null) { // not authenticated
             throw new UserNotAuthenticatedException("you must be authenticated as an admin");
@@ -377,11 +386,11 @@ public class UserProfileController {
             throw new RecordNotFoundException("user not found");
         }
         User user = optionalUser.get();
-        
+   
         String roleName = updateRoleRequest.getRole();
 
         // validate role
-        int permissionLevel = getRolePermissionLevel(roleName);
+        long permissionLevel = getRolePermissionLevel(roleName);
         
         // do not allow admins to increase their privileges
         if (profileId == authId && permissionLevel > user.getPermissionLevel()) {	// if they are trying to promote themselves
@@ -394,7 +403,7 @@ public class UserProfileController {
         }
  
         // save profile with newly added activity types and return
-        user.setPermissionLevel(permissionLevel);
+        user.setPermissionLevel((int) permissionLevel);
         userRepository.save(user);
     }
     
@@ -402,23 +411,17 @@ public class UserProfileController {
      * Get the permission level associated with a given role name
      * @param roleName the string role name to find in the system
      * @return permission level associated with the provided role name or -1 if no role with the given name exists
-     * @throws RecordNotFoundException 
+     * @throws RecordNotFoundException there if no role with the supplied rolename
      */
-    private int getRolePermissionLevel(String roleName) throws RecordNotFoundException {
-    	// TODO change this to use a repository of role names and corresponding permission levels
+    private long getRolePermissionLevel(String roleName) throws RecordNotFoundException {
     	
-    	Map<String, Integer> tempRoleMapping = new HashMap<>();
-    	tempRoleMapping.put("admin", 126);
-    	tempRoleMapping.put("superadmin", 127);	// probably don't want this one to actually be available...
-    	tempRoleMapping.put("user", 0);
-    	
-    	int roleId = tempRoleMapping.getOrDefault(roleName, -1);
-    	
-    	if (roleId == -1) {
+    	Role role = roleRepository.findByRolename(roleName);
+    	    	
+    	if (role == null) {
     		throw new RecordNotFoundException("Could not find role with name: " + roleName);
     	}
     	
-		return roleId;
+		return role.getRole_id();
 
     }
     
