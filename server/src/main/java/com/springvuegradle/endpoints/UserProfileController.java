@@ -4,8 +4,10 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -189,6 +191,112 @@ public class UserProfileController {
         return activityTypes;
     }
 
+    
+    /**
+     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
+     * If multiple parameters are provided, it will search only by one. The priority of parameters is: nickname, full name, email
+     * @param request HTTPServletRequest corresponding to the user's request
+     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
+     * @throws InvalidRequestFieldException 
+     */
+    @GetMapping
+    @CrossOrigin
+    public List<Profile> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException {
+    	    	
+    	// The following Strings will simply be null if the associated parameter is not specified
+    	String searchedFullname = request.getParameter("fullname");
+    	String searchedNickname = request.getParameter("nickname");
+    	String searchedEmail = request.getParameter("email");
+    	    	
+    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
+		
+		if (searchedNickname != null) {
+			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
+		} else if (searchedFullname != null) {
+			profiles = getUsersByFullname(searchedFullname);
+		} else if (searchedEmail != null) {
+			profiles = getUsersByEmail(searchedEmail);
+		}
+ 	
+		return profiles;
+    }
+    
+    /**
+     * Get all profiles of users with a full name partially or fully matching the full name given according to specified search rules
+     * @param fullname the substring of the full name to search for
+     * @return list of profiles of users with a full name matching that given
+     * @throws InvalidRequestFieldException when full name does not have at least a first and a last name separated by a ' '
+     */
+    private List<Profile> getUsersByFullname(String fullname) throws InvalidRequestFieldException {
+    	String[] names = fullname.strip().split(" ");
+    	if (names.length < 2) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	// TODO: Make able to handle names with spaces (e.g. lastname: "van Beethoven")
+    	String firstname = "";
+    	String middlename = "";
+    	String lastname = "";
+    	if (names.length == 3) {
+	    	firstname = names[0];
+	    	middlename = names[1];
+	    	lastname = names[2];
+    	} else if (names.length == 2) {
+    		firstname = names[0];
+	    	lastname = names[1];
+    	}
+    	if (firstname.length() == 0 || lastname.length() == 0) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();
+    	if (middlename.length() == 0) {
+    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    	} else {
+    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    	}
+
+		return profiles;
+    }
+    
+    /**
+     * Get all users with the email matching that given according to the search match rules of the system
+     * @param email the email (potentially a partial email) to search for
+     * @return list of profiles which have associated emails matching that given
+     * @throws InvalidRequestFieldException when email given has more than one '@' symbol
+     */
+    private List<Profile> getUsersByEmail(String email) throws InvalidRequestFieldException {
+    	/* EMAIL SEARCH
+    	  # must match full text before '@' symbol if there is no @ in the search query
+    	  # if there is an @ in the query, match the query string then anything after
+    	  # e.g. test@gmail.co(.*) */
+    	
+    	List<Email> emails = new ArrayList<Email>();
+    	Set<Profile> profileSet = new HashSet<Profile>();
+    	List<Profile> profiles = new ArrayList<Profile>();
+
+    	String[] emailPortions = email.split("@");
+    	if  (!email.contains("@")) {
+    		// Is not an '@' in the search so only try to match up to the '@' symbol in the database
+    		email = email + "@"; 		// Append '@' to the end so the email is forced to match the entire first portion
+    	} else if (emailPortions.length > 2) {
+    		// Will return empty profile list if has more than 1 '@' symbol - is correct outcome as email would violate system rules
+    		throw new InvalidRequestFieldException("Has not provided a valid email (too many '@' symbols).");
+    	}
+    	
+    	emails = emailRepository.findByEmailStartingWith(email);
+    	
+    	for (Email foundEmail: emails) {
+    		User foundUser = foundEmail.getUser();
+    		Profile foundProfile = profileRepository.getOne(foundUser.getUserId());
+    		profileSet.add(foundProfile);
+    	}
+    	
+    	profileSet.forEach((Profile profile) -> {profiles.add(profile);});
+
+    	return profiles;
+    }
+
 
     /**
      * Handle when user tries to POST to /profiles
@@ -330,25 +438,5 @@ public class UserProfileController {
         }
     }
     
-    
-    /**
-     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
-     * @param request HTTPServletRequest corresponding to the user's request
-     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
-     * @throws RecordNotFoundException
-     */
-    @GetMapping
-    @CrossOrigin
-    public List<Profile> retrieveAllUsers(HttpServletRequest request) throws RecordNotFoundException {
-    	    	
-    	// The following Strings will simply be null if the associated parameter is not specified
-    	String searchedFullname = request.getParameter("fullname");
-    	String searchedNickname = request.getParameter("nickname");
-    	String searchedEmail = request.getParameter("email");
-    	
-    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
-    	    	
-		return profiles;
-    }
     
 }
