@@ -11,7 +11,6 @@ import com.springvuegradle.model.data.Email;
 /**
  * JPA Repository of email addresses
  * @author Alex Hobson
- * @author Olivia Mackintosh
  *
  */
 public interface EmailRepository extends JpaRepository<Email, String> {
