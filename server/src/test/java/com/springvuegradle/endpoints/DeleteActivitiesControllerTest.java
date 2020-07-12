@@ -1,5 +1,6 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.IncorrectAuthenticationException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.User;
@@ -101,7 +102,7 @@ public class DeleteActivitiesControllerTest {
         //mock request
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
-        assertThrows(UserNotAuthenticatedException.class,() -> {
+        assertThrows(IncorrectAuthenticationException.class,() -> {
             activitiesController.deleteActivity(3L, 2L, request);
         });
     }

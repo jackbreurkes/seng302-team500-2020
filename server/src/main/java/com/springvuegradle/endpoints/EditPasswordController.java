@@ -1,10 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
@@ -44,19 +41,19 @@ public class EditPasswordController {
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
             @RequestBody UpdatePasswordRequest updatePasswordRequest,
-            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException
-    {
+            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, IncorrectAuthenticationException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        if (authId == null || editingUser.isEmpty()) {
+            throw new UserNotAuthenticatedException("user is not authenticated");
         }
 
+        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
+            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+        }
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {

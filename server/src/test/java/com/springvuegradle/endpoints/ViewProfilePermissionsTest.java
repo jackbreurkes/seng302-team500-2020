@@ -1,5 +1,6 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.IncorrectAuthenticationException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.User;
@@ -52,20 +53,20 @@ public class ViewProfilePermissionsTest {
     }
 
     @Test
-    void testUpdateOtherProfile(){
+    void testUpdateOtherProfileAsNonAdmin(){
         //auth as other
         MockHttpServletRequest request = new MockHttpServletRequest();
         User tempUser = new User(2L);
         tempUser.setPermissionLevel(0);
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempUser));
         request.setAttribute("authenticatedid", 2L);
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(IncorrectAuthenticationException.class, () -> {
             userProfileController.updateProfile(new ProfileObjectMapper(),1L, request);
         });
     }
 
     @Test
-    void testUpdateProfileNoAuth(){
+    void testUpdateProfileNotAuthenticated(){
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", null);
         assertThrows(UserNotAuthenticatedException.class, () -> {

@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.exceptions.IncorrectAuthenticationException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
@@ -93,21 +94,20 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, IncorrectAuthenticationException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 //        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
 //        boolean isTargetUser = authId != null && authId == profileId;
 //        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-//        if (!isTargetUser && !isAdmin) {
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        if (authId == null || editingUser.isEmpty()) {
+            throw new UserNotAuthenticatedException("user is not authenticated");
+        }
+
+        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
+            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
         }
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
@@ -217,11 +217,6 @@ public class UserProfileController {
 //
 //        Optional<User> editingUser = userRepository.findById(authId);
 //
-//        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-//            //here we check permission level and update the password accordingly
-//            //assuming failure without admin
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
 //
 //        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
 //            throw new InvalidRequestFieldException("location must have a city and a country");
@@ -284,14 +279,18 @@ public class UserProfileController {
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, IncorrectAuthenticationException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+        if (authId == null || editingUser.isEmpty()) {
+            throw new UserNotAuthenticatedException("user is not authenticated");
+        }
+
+        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
+            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
         }
 
         // validate request body

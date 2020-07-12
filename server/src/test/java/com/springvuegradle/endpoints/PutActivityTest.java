@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 
+import com.springvuegradle.exceptions.IncorrectAuthenticationException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -125,7 +126,7 @@ public class PutActivityTest {
     }
 
     @Test
-    void testUpdatingOthersActivity(){
+    void testUpdatingOtherUsersActivityFails(){
         //mock request
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
@@ -133,7 +134,7 @@ public class PutActivityTest {
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(IncorrectAuthenticationException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
     }

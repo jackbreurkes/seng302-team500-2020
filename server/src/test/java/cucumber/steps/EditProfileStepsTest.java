@@ -1,6 +1,7 @@
 package cucumber.steps;
 
 import com.springvuegradle.endpoints.UserProfileController;
+import com.springvuegradle.exceptions.IncorrectAuthenticationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -147,7 +148,8 @@ public class EditProfileStepsTest {
         when(profileRepository.save(testProfile)).thenReturn(testProfile);
         try {
             successReponse = userProfileController.updateProfile(updateProfileRequest, (long) id, mockRequest);
-        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException | RecordNotFoundException e) {
+        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException
+                | RecordNotFoundException | IncorrectAuthenticationException e) {
             errorResponse = e;
         }
     }

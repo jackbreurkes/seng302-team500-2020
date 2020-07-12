@@ -1,9 +1,6 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
@@ -73,12 +70,12 @@ public class EditPasswordControllerTest {
     }
 
     @Test
-    public void testDifferentUsersAuthId() {
+    public void testEditOtherUsersPasswordNotAdmin() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 2L);
 
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(IncorrectAuthenticationException.class, () -> {
             editPasswordController.editPassword(
                     1L,
                     new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
@@ -117,13 +114,16 @@ public class EditPasswordControllerTest {
     }
 
     @Test
-    public void nonExistingUserTest(){
+    public void adminEditNonExistingUserTest(){
         MockHttpServletRequest request = new MockHttpServletRequest();
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        //is authenticated
+        User tempAdminUser = new User(1L);
+        tempAdminUser.setPermissionLevel(127);
         request.setAttribute("authenticatedid", 1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempAdminUser));
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.empty());
+
         assertThrows(RecordNotFoundException.class, () -> {
-            editPasswordController.editPassword(1L, new UpdatePasswordRequest("goodOldPassword", "newPassValid", "newPassValid"),
+            editPasswordController.editPassword(2L, new UpdatePasswordRequest("goodOldPassword", "newPassValid", "newPassValid"),
                     request);
         });
     }
