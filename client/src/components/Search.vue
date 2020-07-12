@@ -31,8 +31,8 @@
                     ></v-select>
                     </v-col>
                     <v-col sm="4" md="4" lg="2">
-                    <v-btn v-on:click="search('pizza')">
-              Searchie</v-btn>
+                    <v-btn v-on:click="search()">
+              Search</v-btn>
                     </v-col>
                     </v-row>
 
@@ -43,8 +43,6 @@
             </v-card>
             </v-col>
             </v-row>
-            <v-btn v-on:click="search('pizza')">
-              Searchie</v-btn>
 
         </v-container>
   </div>
@@ -76,8 +74,7 @@ const Search = Vue.extend({
   },
 
   methods: {
-      search: function(string: string) {
-          console.log("search'n for " + string);
+      search: function() {
           if (this.searchBy == this.possibleSearchBys[1]) {
             this.searchTerms = ["", this.searchTerm, ""];
           } else if (this.searchBy == this.possibleSearchBys[2]) {

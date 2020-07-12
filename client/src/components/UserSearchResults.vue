@@ -1,7 +1,8 @@
 <template>
-  <div id="UserSearchResults">
+  <div style="text-align: center" id="UserSearchResults">
+    <p class="pl-1" style="color: red">{{ errorMessage }}</p>
     <v-data-table
-    no-data-text="No users found"
+    :no-data-text="noDataText"
     :headers="headers"
     :items="users"
     class="elevation-1"
@@ -21,15 +22,15 @@
 <script lang="ts">
 import Vue from "vue";
 import { searchUsers } from '../controllers/userSearch.controller';
+// eslint-disable-next-line no-unused-vars
+import { UserApiFormat } from "@/scripts/User";
 
 // app Vue instance
 const UserSearchResults = Vue.extend({
   name: "UserSearchResults",
   props: ['searchTerms'],
   watch: {
-    searchTerms(newValue, oldValue) {
-      console.log(oldValue)
-      console.log(newValue)
+    searchTerms(newValue) {
       this.search(newValue[0], newValue[1], newValue[2]);
     }
   },
@@ -41,7 +42,9 @@ const UserSearchResults = Vue.extend({
         { text: 'Email', value: 'primary_email' },
         { text: 'Interests', sortable: false, value: 'short_interests' }
       ],
-      users: []
+      users: [] as UserApiFormat[],
+      errorMessage: "",
+      noDataText: "No users found"
     }
   },
   created: function() {
@@ -50,26 +53,43 @@ const UserSearchResults = Vue.extend({
   methods: {
     getShortenedActivitiesString: function(activities: string[]) {
       let activitiesString = "";
-      if (activities == undefined) {
+      if (activities == undefined || activities.length == 0) {
         return "";
       } else if (activities.length <= 3) {
-        for (let activity in activities) {
-          activitiesString = activitiesString + activity + " ";
+        for (let activityIndex in activities) {
+          activitiesString = activitiesString + activities[activityIndex] + ", ";
         }
         activitiesString.trim();
+        activitiesString = activitiesString.substring(0, activitiesString.length-2);
         return activitiesString;
       } else {
         for (let i = 0; i < 3; i++) {
-          activitiesString = activitiesString + activities[i] + " ";
+          activitiesString = activitiesString + activities[i] + ", ";
         }
         activitiesString.trim();
+        activitiesString = activitiesString.substring(0, activitiesString.length-2);
         return activitiesString+"...";
       }
     },
     search: function(name: string, nickname: string, email: string) {
+      this.noDataText = "No users found";
+      this.errorMessage = "";
       searchUsers(name, nickname, email)
       .then((users) => {
-        this.users = users;
+        this.users = users as UserApiFormat[];
+      })
+      .catch((err) => {
+        if (err.response) {
+          if (err.response.status == 400) {
+            this.errorMessage = err.message;
+          }
+        } else if (err.message) {
+            this.errorMessage = err.message;
+        } else {
+            this.errorMessage = "Unexpected error";
+        }
+        this.noDataText = this.errorMessage;
+        this.users = [];
       });
     }
   }
