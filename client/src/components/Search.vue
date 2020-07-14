@@ -30,9 +30,48 @@
                         v-model="searchBy"
                     ></v-select>
                     </v-col>
-                    <v-col sm="4" md="4" lg="2">
+                    <v-col sm="4" md="4" lg="1">
                     <v-btn v-on:click="search()">
               Search</v-btn>
+                    </v-col>
+                    <v-col sm="2" md="2" lg="1">
+                      <v-dialog v-model="searchRulesModal" width="400">
+      <template v-slot:activator="{ on }">
+        <v-btn v-on="on" color="info">View Search Rules</v-btn>
+      </template>
+
+      <v-card>
+        <v-card-title class="headline" primary-title>Search rules</v-card-title>
+        <v-divider></v-divider><br>
+        <v-card-text>
+          <p>None of the searches are case-sensitive.</p>
+          <h4>
+            Search by full name:
+          </h4>
+          <p>
+            At least the user's first and last names must be given and each of these search terms must be at least 1 character.<br>
+            The search terms given are matched to the beginning of each of the user's names. E.g. "be" would match "ben" but not "abel".<br>
+            The middle name is not required, but can be given.
+          </p>
+          <h4>
+            Search by nickname:
+          </h4>
+          <p>The search string matches from the start of the user's nickname with the minimum length of the search term being 1 character.</p>
+          <h4>
+            Search by email:
+          </h4>
+          <p>The search term matches from the beginning of the email and must contain at least all of the symbols up to (but not necessarily including the '@' symbol).</p>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-col class="text-right">
+            <v-btn text @click="searchRulesModal = false">Close</v-btn>
+          </v-col>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
                     </v-col>
                     </v-row>
 
