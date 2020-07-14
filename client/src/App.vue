@@ -3,14 +3,13 @@
     <v-app>
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
-        <v-app-bar-nav-icon @click="burgerSelected" :color= this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
+        <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
         <v-toolbar-title>WE STILL DON'T HAVE A NAME</v-toolbar-title>
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
-
       <v-navigation-drawer
           v-model= this.bar
           :expand-on-hover= this.collapsible
@@ -18,6 +17,9 @@
           :right= this.right
           absolute
           dark
+          color = "rgba(30, 30, 30, 0.95)"
+          overlay-opacity= 0.7
+
           v-if="showNavBar()"
         >
           <v-list
@@ -107,12 +109,12 @@
     methods: {
       loadNavInfo: function() {
           this.items = [
-            {title: 'Search (inactive)', icon: 'mdi-magnify'},
-            {title: 'Home (active)', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId },
-            {title: 'Activities (inactive)', icon: 'mdi-bike' },
-            {title: 'Friends (inactive)', icon: 'mdi-account-group' },
-            {title: 'Edit My Profile (active)', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
-            {title: 'Logout (active)', icon: 'mdi-logout', pathing:"LOGOUT"}, 
+            {title: 'Search (Not implemented)', icon: 'mdi-magnify'},
+            {title: 'Home ', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'Activities (Not implemented)', icon: 'mdi-bike' },
+            {title: 'Friends (Not implemented)', icon: 'mdi-account-group' },
+            {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
+            {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
 
       },
