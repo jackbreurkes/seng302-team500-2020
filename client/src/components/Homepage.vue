@@ -110,7 +110,6 @@ import {
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-import { getCurrentUser } from '../models/user.model';
 import { 
   getActivitiesByCreator,
   getDurationActivities,
@@ -184,26 +183,25 @@ const Homepage = Vue.extend({
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
-    
-    if (permissionLevel < 120) {
-      getCurrentUser()
-        .then(user => {
-          if (user.profile_id == profileId) {
-            //if we're editing ourself
-            this.currentlyHasAuthority = true;
-          }
-        })
-    } else {
-      this.currentlyHasAuthority = true;
-    }
 
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;
+        if (user.profile_id == profileId) {
+            //if we're editing ourself
+            this.currentlyHasAuthority = true;
+          }
       })
       .catch(err => {
+        if (err.response && err.response.status === 401) {
+          this.$router.push({ name: "login" });
+        }
         console.error(err);
       });
+
+    if (permissionLevel >= 120) {
+      this.currentlyHasAuthority = true;
+    }
 
     getActivitiesByCreator(profileId)
       .then(res => {
@@ -218,7 +216,7 @@ const Homepage = Vue.extend({
   },
 
   methods: {
-    //click login button
+    //click logout button
     logoutButtonClicked: function() {
       logoutCurrentUser()
         .then(() => {
