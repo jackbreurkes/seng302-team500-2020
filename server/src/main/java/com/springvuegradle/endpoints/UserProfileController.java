@@ -207,7 +207,9 @@ public class UserProfileController {
     	String searchedFullname = request.getParameter("fullname");
     	String searchedNickname = request.getParameter("nickname");
     	String searchedEmail = request.getParameter("email");
-    	    	
+        String searchedActivities = request.getParameter("activity");
+        String method = request.getParameter("method");
+
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
 		
 		if (searchedNickname != null) {
@@ -216,7 +218,9 @@ public class UserProfileController {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null) {
 			profiles = getUsersByEmail(searchedEmail);
-		}
+		} else if (searchedActivities != null) {
+		    profiles = getProfilesByActivityTypes(searchedActivities, method);
+        }
  	
 		return profiles;
     }
@@ -295,6 +299,14 @@ public class UserProfileController {
     	profileSet.forEach((Profile profile) -> {profiles.add(profile);});
 
     	return profiles;
+    }
+
+    private List<Profile> getProfilesByActivityTypes(String activityTypeNames, String method) {
+//        List<ActivityType> activityTypes = new ArrayList<>();
+//        for (String name : activityTypeNames) {
+//            activityTypeRepository.getActivityTypeByActivityTypeName(name);
+//        }
+        return new ArrayList<>();
     }
 
 
