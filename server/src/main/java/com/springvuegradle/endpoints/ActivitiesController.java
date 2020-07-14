@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.springvuegradle.exceptions.IncorrectAuthenticationException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +67,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                               @RequestBody CreateActivityRequest updateActivityRequest,
-                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, IncorrectAuthenticationException {
+                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -78,7 +78,7 @@ public class ActivitiesController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
         //now user is either correct or an admin
         //then update fields
@@ -175,7 +175,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ResponseEntity<Object> deleteActivity(@PathVariable("profileId") long profileId,
                                                  @PathVariable("activityId") long activityId,
-                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, IncorrectAuthenticationException {
+                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         //authenticate
         Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -186,7 +186,7 @@ public class ActivitiesController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
@@ -214,7 +214,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
             @RequestBody CreateActivityRequest createActivityRequest,
-                                   HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, IncorrectAuthenticationException {
+                                   HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
@@ -223,7 +223,7 @@ public class ActivitiesController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
 
         // validate request body

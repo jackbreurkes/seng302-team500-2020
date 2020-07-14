@@ -1,9 +1,5 @@
 package com.springvuegradle.exceptions;
 
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -119,14 +115,14 @@ public class ExceptionHandlerController {
 	}
 
 	/**
-	 * catches all IncorrectAuthenticationExceptions thrown by endpoints and returns an ErrorResponse with code 403.
+	 * catches any UserNotAuthorizedException thrown by endpoints and returns an ErrorResponse with code 403.
 	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
-	@ExceptionHandler(IncorrectAuthenticationException.class)
+	@ExceptionHandler(UserNotAuthorizedException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	@ResponseBody
-	public ErrorResponse requestHandlingInvalidField(IncorrectAuthenticationException exception) {
+	public ErrorResponse requestHandlingInvalidField(UserNotAuthorizedException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
 	

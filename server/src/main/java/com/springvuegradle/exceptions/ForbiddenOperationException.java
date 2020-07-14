@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * (e.g. with invalid password, register too may emails)
  *
  * this error should not be used when the operation is forbidden due to the user's permission level.
- * for this, an IncorrectAuthenticationException should be used.
+ * for this, an UserNotAuthorizedException should be used.
  */
 @ResponseStatus(value = HttpStatus.CONFLICT)
 public class ForbiddenOperationException extends Exception {

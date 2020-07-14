@@ -5,7 +5,6 @@ import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class EditPasswordController {
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
             @RequestBody UpdatePasswordRequest updatePasswordRequest,
-            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, IncorrectAuthenticationException {
+            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -52,7 +51,7 @@ public class EditPasswordController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
 
         // check for missing fields

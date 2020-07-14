@@ -7,21 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.exceptions.IncorrectAuthenticationException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
-import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -94,7 +91,7 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, IncorrectAuthenticationException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 //        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
@@ -107,7 +104,7 @@ public class UserProfileController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
@@ -279,7 +276,7 @@ public class UserProfileController {
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, IncorrectAuthenticationException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
@@ -290,7 +287,7 @@ public class UserProfileController {
         }
 
         if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new IncorrectAuthenticationException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
 
         // validate request body

@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * complete the request.
  */
 @ResponseStatus(value = HttpStatus.FORBIDDEN)
-public class IncorrectAuthenticationException extends Exception {
+public class UserNotAuthorizedException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public IncorrectAuthenticationException(String message) {
+    public UserNotAuthorizedException(String message) {
         super(message);
     }
 
-    public IncorrectAuthenticationException(String message, Throwable t) {
+    public UserNotAuthorizedException(String message, Throwable t) {
         super(message, t);
     }
 }

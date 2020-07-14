@@ -1,6 +1,6 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.IncorrectAuthenticationException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -106,7 +106,7 @@ public class LocationSettingTest {
     }
 
     @Test
-    void editProfileWithLocation() throws ParseException, UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, IncorrectAuthenticationException {
+    void editProfileWithLocation() throws ParseException, UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
     	Location location = mockLocation("City3", "Country5");
 
         Mockito.when(locationRepository.findLocationByCityAndCountry("City3", "Country5")).thenReturn(Optional.of(location));
@@ -116,7 +116,7 @@ public class LocationSettingTest {
     }
 
     @Test
-    void testPutRemoveLocation() throws UserNotAuthenticatedException, InvalidRequestFieldException, ParseException, RecordNotFoundException, IncorrectAuthenticationException {
+    void testPutRemoveLocation() throws UserNotAuthenticatedException, InvalidRequestFieldException, ParseException, RecordNotFoundException, UserNotAuthorizedException {
         //Mockito.when(locationRepository.findLocationByCityAndCountry("City3", "Country5")).thenReturn(Optional.of(location));
         this.pom = createProfileObjectMappers(null);
         ProfileResponse response = userProfileController.updateProfile(pom, 1L, request);

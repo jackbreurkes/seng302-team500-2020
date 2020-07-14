@@ -4,7 +4,6 @@ import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -75,7 +73,7 @@ public class EditPasswordControllerTest {
         request.setAttribute("authenticatedid", 2L);
 
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
-        assertThrows(IncorrectAuthenticationException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
             editPasswordController.editPassword(
                     1L,
                     new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
