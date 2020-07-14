@@ -57,7 +57,7 @@ release-build:
  stage: deploy
  script:
     - cd client
-    - npm run build
+    - npm run build-prod
     - cd ../server
     - ./gradlew bootJar
     - cd ..
