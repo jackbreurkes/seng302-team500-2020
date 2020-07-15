@@ -38,4 +38,4 @@ out/
 **/.DS_Store
 
 ### Reports ###
-client/coverage/
+client/coverage/lcov-report
