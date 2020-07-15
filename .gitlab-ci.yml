@@ -28,12 +28,20 @@ junit:
   script:
     - cd server
     - ./gradlew test
-    
+
 jest:
   stage: test
   script:
     - cd client
     - npm run test
+
+sonarqube:
+  stage: test
+  script:
+    - cd client
+    - npm run sonarqube
+    - cd ../server
+    - if [ "$CI_BRANCH_NAME" == dev ]; then gradlew sonarqube fi
 
 dev-build:
   stage: deploy
