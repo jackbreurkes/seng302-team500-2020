@@ -93,9 +93,9 @@
     },
     
     created() {
-    this.updateUserData();
-    const profileId: number = parseInt(this.$route.params.profileId);
+    const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
     this.currentProfileId = profileId;
+    this.updateUserData();
     this.loadNavInfo();
 
 
