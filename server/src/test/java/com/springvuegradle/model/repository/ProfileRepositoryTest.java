@@ -1,7 +1,7 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.*;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -16,22 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProfileRepositoryTest {
 
     @Autowired
     ProfileRepository profileRepository;
 
     @Autowired
-    private ActivityTypeRepository activityTypeRepository;
+    ActivityTypeRepository activityTypeRepository;
 
-    @BeforeEach
+    @BeforeAll
     public void createTestProfiles() {
         ActivityType walking = new ActivityType("Walking");
         ActivityType running = new ActivityType("Running");
         ActivityType biking = new ActivityType("Biking");
         ActivityType skiing = new ActivityType("Skiing");
         ActivityType tramping = new ActivityType("Tramping");
-        ActivityType scootering = new ActivityType("Tramping");
+        ActivityType scootering = new ActivityType("Scootering");
         activityTypeRepository.save(walking);
         activityTypeRepository.save(running);
         activityTypeRepository.save(biking);
@@ -74,13 +75,13 @@ public class ProfileRepositoryTest {
             "Skiing,0",
             "Walking Skiing Biking Running,3",
             "Running Biking,2",
-            "Tramping Walking,0",
+            "Tramping Walking,4",
             "Running Running,2"
     })
     public void searchForActivityTypeContainingAnyOf(String spaceSeparatedActivityTypes, String expectedCount) {
-        Set<String> activityTypes = Set.of(spaceSeparatedActivityTypes.split(" "));
+        List<String> activityTypes = Arrays.asList(spaceSeparatedActivityTypes.split(" "));
         List<Profile> result = profileRepository.findByActivityTypesContainsAnyOf(activityTypes);
-        assertEquals(Integer.parseInt(expectedCount), result.size());
+        assertEquals(Integer.parseInt(expectedCount), result.size(), "search for " + spaceSeparatedActivityTypes + " (OR method)");
     }
 
     @ParameterizedTest
@@ -95,9 +96,23 @@ public class ProfileRepositoryTest {
             "Running Running,2"
     })
     public void searchForActivityTypeContainingAllOf(String spaceSeparatedActivityTypes, String expectedCount) {
-        Set<String> activityTypes = Set.of(spaceSeparatedActivityTypes.split(" "));
+        List<String> activityTypes = Arrays.asList(spaceSeparatedActivityTypes.split(" "));
         List<Profile> result = profileRepository.findByActivityTypesContainsAllOf(activityTypes);
         assertEquals(Integer.parseInt(expectedCount), result.size());
+    }
+
+    @Test
+    public void searchForActivityTypeContainingAnyOf_EmptySearchArray() {
+        List<String> activityTypes = new ArrayList<>();
+        List<Profile> result = profileRepository.findByActivityTypesContainsAnyOf(activityTypes);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void searchForActivityTypeContainingAllOf_EmptySearchArray() {
+        List<String> activityTypes = new ArrayList<>();
+        List<Profile> result = profileRepository.findByActivityTypesContainsAllOf(activityTypes);
+        assertEquals(0, result.size());
     }
 
 }

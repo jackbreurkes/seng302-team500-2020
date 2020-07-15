@@ -18,9 +18,13 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	public List<Profile> findByFirstNameStartingWithAndLastNameStartingWith(String firstname, String lastname);
 	public List<Profile> findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(String firstname, String middlename, String lastname);
 
+	/**
+	 * fetches all Profiles whose activity types contain any of the given activity types.
+	 * @param activityTypeNames the activity type names to search profiles for
+	 * @return a list of all profiles who have an associated activity type that matches any of the given names
+	 */
 	@Query(
-			value = "select * from Profile where 1 = 2",
-			nativeQuery = true
+			value = "SELECT DISTINCT p FROM Profile p JOIN p.activityTypes a WHERE a.activityTypeName IN ?1"
 	)
 	public List<Profile> findByActivityTypesContainsAnyOf(Collection<String> activityTypeNames);
 
