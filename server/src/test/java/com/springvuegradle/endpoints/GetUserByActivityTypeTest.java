@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -41,10 +42,21 @@ class GetUserByActivityTypeTest {
     @Autowired
     private MockMvc mvc;
 
+    // all mocks below are required for injection into userProfileController
+    @MockBean
+    private UserRepository userRepository;
+    @MockBean
+    private EmailRepository emailRepository;
     @MockBean
     private ProfileRepository profileRepository;
     @MockBean
+    private CountryRepository countryRepository;
+    @MockBean
+    private ActivityRepository activityRepository;
+    @MockBean
     private ActivityTypeRepository activityTypeRepository;
+    @MockBean
+    private LocationRepository locationRepository;
 
     /**
      * Creates the edit password controller and inserts the mocks we define in the place of the repositories
@@ -92,8 +104,8 @@ class GetUserByActivityTypeTest {
         Profile profile1 = new Profile(new User(1), "Fake", "User", LocalDate.EPOCH, Gender.NON_BINARY);
         profile1.setActivityTypes(Collections.singletonList(new ActivityType(activityTypeName)));
 
-        Mockito.when(profileRepository.findByActivityTypesContainsAnyOf(Collections.singleton(activityTypeName))).thenReturn(Arrays.asList(profile1));
-        Mockito.when(profileRepository.findByActivityTypesContainsAllOf(Collections.singleton(activityTypeName))).thenReturn(Arrays.asList(profile1));
+        Mockito.when(profileRepository.findByActivityTypesContainsAnyOf(Arrays.asList(activityTypeName))).thenReturn(Arrays.asList(profile1));
+        Mockito.when(profileRepository.findByActivityTypesContainsAllOf(Arrays.asList(activityTypeName))).thenReturn(Arrays.asList(profile1));
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -104,9 +116,9 @@ class GetUserByActivityTypeTest {
                 .andReturn();
 
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
-
         assertEquals(1, body.size());
+
+        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
         assertEquals(BigInteger.valueOf(profile1.getUser().getUserId()), userFound.get("user_id"));
     }
 
@@ -169,9 +181,9 @@ class GetUserByActivityTypeTest {
                 .andReturn();
 
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
-
         assertEquals(1, body.size());
+
+        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
         assertEquals(BigInteger.valueOf(profile1.getUser().getUserId()), userFound.get("user_id"));
     }
 
@@ -231,7 +243,7 @@ class GetUserByActivityTypeTest {
     public void testActivityTypeSearch_InvalidMethod_Returns400(String method) throws Exception {
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
-                .queryParam("activity", "Walking")
+                .queryParam("activity", "Walking Running")
                 .queryParam("method", method)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -241,6 +253,35 @@ class GetUserByActivityTypeTest {
         JSONParser parser = new JSONParser(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> body = (LinkedHashMap<String, Object>) parser.parse();
         assertEquals("the method provided for activity type search must be either 'and' or 'or'", body.get("error"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "",
+            "nand",
+            "xor",
+            "garbage",
+            "o r",
+            "and;",
+            "or; and"
+    })
+    public void testActivityTypeSearch_SingleTermInvalidMethod_IgnoresMethodAndSucceeds(String method) throws Exception {
+        String activityTypeName = "Walking";
+        Mockito.when(profileRepository.findByActivityTypesContainsAnyOf(Collections.singleton(activityTypeName))).thenReturn(new ArrayList<>());
+        Mockito.when(profileRepository.findByActivityTypesContainsAllOf(Collections.singleton(activityTypeName))).thenReturn((new ArrayList<>()));
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("activity", activityTypeName)
+                .queryParam("method", method) // should be ignored
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+
+        assertEquals(0, body.size());
     }
 
     @Test

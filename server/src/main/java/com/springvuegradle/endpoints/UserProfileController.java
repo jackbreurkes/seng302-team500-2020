@@ -3,11 +3,7 @@ package com.springvuegradle.endpoints;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -301,12 +297,24 @@ public class UserProfileController {
     	return profiles;
     }
 
-    private List<Profile> getProfilesByActivityTypes(String activityTypeNames, String method) {
-//        List<ActivityType> activityTypes = new ArrayList<>();
-//        for (String name : activityTypeNames) {
-//            activityTypeRepository.getActivityTypeByActivityTypeName(name);
-//        }
-        return new ArrayList<>();
+    private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException {
+        List<Profile> profiles = new ArrayList<>();
+        List<String> activityTypeNames = Arrays.asList(spaceSeparatedActivityTypeNames.split(" "));
+
+        if (method == null || !Arrays.asList("or", "and").contains(method)) {
+            if (activityTypeNames.size() > 1){
+                throw new InvalidRequestFieldException("the method provided for activity type search must be either 'and' or 'or'");
+            } else {
+                return profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+            }
+        }
+
+        if (method == null && activityTypeNames.size() == 1) {
+            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        } else if (method.toLowerCase().equals("or")) {
+            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        }
+        return profiles;
     }
 
 
