@@ -34,7 +34,7 @@
                     <v-btn v-on:click="search()">
               Search</v-btn>
                     </v-col>
-                    <v-col sm="2" md="2" lg="1">
+                    <!-- <v-col sm="2" md="2" lg="1">
                       <v-dialog v-model="searchRulesModal" width="400">
       <template v-slot:activator="{ on }">
         <v-btn v-on="on" color="info">View Search Rules</v-btn>
@@ -72,7 +72,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-                    </v-col>
+                    </v-col> -->
                     </v-row>
 
                 </div>

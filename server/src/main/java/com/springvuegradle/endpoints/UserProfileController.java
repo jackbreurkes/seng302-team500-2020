@@ -209,15 +209,15 @@ public class UserProfileController {
     	String searchedEmail = request.getParameter("email");
     	    	
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
-		
-		if (searchedNickname != null) {
+    	
+		if (searchedNickname != null && searchedNickname != "") {
 			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFullname != null) {
+		} else if (searchedFullname != null && searchedFullname != "") {
 			profiles = getUsersByFullname(searchedFullname);
-		} else if (searchedEmail != null) {
+		} else if (searchedEmail != null && searchedEmail != "") {
 			profiles = getUsersByEmail(searchedEmail);
 		}
- 	
+
 		return profiles;
     }
     
