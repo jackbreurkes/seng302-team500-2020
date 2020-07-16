@@ -24,7 +24,10 @@ import javax.persistence.*;
 @NamedQuery(name = "Profile.findById", query = "select p from Profile p where p.user = ?1")
 @NamedQuery(name = "Profile.updateFitness", query = "update Profile p set p.fitness = ?2 where p.user = ?1")*/
 //@NamedQuery(name = "Profile.searchByNickname", query = "SELECT first_name FROM profile p WHERE p.nick_name LIKE '^The'")
-@NamedQuery(name = "Profile.findByFirstName", query = "SELECT p.firstName FROM Profile p WHERE p.firstName LIKE 'J%'")
+
+
+//@NamedQuery(name = "Profile.findByFirstName", query = "SELECT p.firstName FROM Profile p WHERE p.firstName LIKE '?1%'")
+@NamedQuery(name = "Profile.findByFirstLastname", query = "SELECT p.firstName, p.lastName FROM Profile p WHERE p.firstName LIKE '?1%' AND p.lastName LIKE '?2%' ")
 
 
 public class Profile implements Serializable {
