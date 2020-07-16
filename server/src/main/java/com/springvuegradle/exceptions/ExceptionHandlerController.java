@@ -1,9 +1,5 @@
 package com.springvuegradle.exceptions;
 
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -95,12 +91,12 @@ public class ExceptionHandlerController {
 	}
 
 	/**
-	 * catches all ForbiddenOperationExceptions thrown by endpoints and returns an ErrorResponse with code 403.
+	 * catches all ForbiddenOperationExceptions thrown by endpoints and returns an ErrorResponse with code 409.
 	 * @param exception the exception object thrown by a method
 	 * @return ErrorResponse object with message equal to the exception message
 	 */
 	@ExceptionHandler(ForbiddenOperationException.class)
-	@ResponseStatus(value = HttpStatus.FORBIDDEN)
+	@ResponseStatus(value = HttpStatus.CONFLICT)
 	@ResponseBody
 	public ErrorResponse requestHandlingInvalidField(ForbiddenOperationException exception) {
 		return new ErrorResponse(exception.getMessage());
@@ -115,6 +111,18 @@ public class ExceptionHandlerController {
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	@ResponseBody
 	public ErrorResponse requestHandlingInvalidField(UserNotAuthenticatedException exception) {
+		return new ErrorResponse(exception.getMessage());
+	}
+
+	/**
+	 * catches any UserNotAuthorizedException thrown by endpoints and returns an ErrorResponse with code 403.
+	 * @param exception the exception object thrown by a method
+	 * @return ErrorResponse object with message equal to the exception message
+	 */
+	@ExceptionHandler(UserNotAuthorizedException.class)
+	@ResponseStatus(value = HttpStatus.FORBIDDEN)
+	@ResponseBody
+	public ErrorResponse requestHandlingInvalidField(UserNotAuthorizedException exception) {
 		return new ErrorResponse(exception.getMessage());
 	}
 	

@@ -67,7 +67,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                               @RequestBody CreateActivityRequest updateActivityRequest,
-                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -170,7 +170,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ResponseEntity<Object> deleteActivity(@PathVariable("profileId") long profileId,
                                                  @PathVariable("activityId") long activityId,
-                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         //authenticate
         Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -203,7 +203,7 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
             @RequestBody CreateActivityRequest createActivityRequest,
-                                   HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
+                                   HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);

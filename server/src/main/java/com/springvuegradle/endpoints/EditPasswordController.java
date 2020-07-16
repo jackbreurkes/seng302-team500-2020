@@ -9,7 +9,6 @@ import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,8 +44,7 @@ public class EditPasswordController {
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
             @RequestBody UpdatePasswordRequest updatePasswordRequest,
-            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException
-    {
+            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 

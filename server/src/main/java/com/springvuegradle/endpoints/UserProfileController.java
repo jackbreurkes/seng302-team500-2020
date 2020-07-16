@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.model.data.*;
@@ -90,7 +91,7 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
@@ -201,11 +202,6 @@ public class UserProfileController {
 //
 //        Optional<User> editingUser = userRepository.findById(authId);
 //
-//        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-//            //here we check permission level and update the password accordingly
-//            //assuming failure without admin
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
 //
 //        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
 //            throw new InvalidRequestFieldException("location must have a city and a country");
@@ -268,7 +264,7 @@ public class UserProfileController {
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 

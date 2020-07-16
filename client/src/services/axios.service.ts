@@ -40,6 +40,9 @@ instance.interceptors.response.use(
     return response;
   },
   function(error) {
+    if (error.response && error.response.status === 401) {
+      auth.verifyUserId(); // will clear credentials if the user is invalid
+    }
     console.error(error);
     error.message = axiosErrorToMessage(error);
     return Promise.reject(error);
