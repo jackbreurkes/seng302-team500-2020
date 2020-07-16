@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -17,14 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.User;
@@ -125,7 +124,7 @@ public class PutActivityTest {
     }
 
     @Test
-    void testUpdatingOthersActivity(){
+    void testUpdatingOtherUsersActivityFails(){
         //mock request
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
@@ -133,7 +132,7 @@ public class PutActivityTest {
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
     }
