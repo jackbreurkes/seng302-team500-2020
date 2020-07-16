@@ -17,7 +17,6 @@
                         :placeholder=searchBy
                         outlined
                         click:append="search('k')"
-                        append-icon="S"
                         v-model="searchTerm"
                         @keyup.enter.native="search()"
                     ></v-text-field>
@@ -31,8 +30,7 @@
                     ></v-select>
                     </v-col>
                     <v-col sm="4" md="4" lg="1">
-                    <v-btn v-on:click="search()">
-              Search</v-btn>
+                    <v-btn v-on:click="search()">Search</v-btn>
                     </v-col>
                     <v-col sm="2" md="2" lg="1">
                       <v-dialog v-model="searchRulesModal" width="400">
@@ -104,7 +102,8 @@ const Search = Vue.extend({
         possibleSearchBys: ["Name", "Nickname", "Email"],
         searchBy: "Name",
         searchTerm: "",
-        searchTerms: ["", "", ""]
+        searchTerms: ["", "", ""],
+        searchRulesModal: false
     };
   },
 
