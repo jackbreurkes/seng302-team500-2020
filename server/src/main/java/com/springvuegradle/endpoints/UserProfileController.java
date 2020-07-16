@@ -7,20 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
-import com.springvuegradle.model.requests.PutActivityTypesRequest;
-import com.springvuegradle.model.responses.UserResponse;
-import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,10 +25,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Country;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.LocationRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
+import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
+import com.springvuegradle.util.FormValidator;
 
 
 /**
@@ -92,7 +99,7 @@ public class UserProfileController {
     @PutMapping("/{profileId}")
     @CrossOrigin
     public ProfileResponse updateProfile(
-            @RequestBody ProfileObjectMapper request,
+            @Valid @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
@@ -195,7 +202,7 @@ public class UserProfileController {
      */
     @PostMapping
     @CrossOrigin
-    public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
+    public Object createprofile(@Valid @RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
 
         User user = null;
         try {

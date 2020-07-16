@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,7 +66,7 @@ public class ActivitiesController {
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                              @RequestBody CreateActivityRequest updateActivityRequest,
+                                              @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
@@ -208,7 +209,7 @@ public class ActivitiesController {
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
-            @RequestBody CreateActivityRequest createActivityRequest,
+            @Valid @RequestBody CreateActivityRequest createActivityRequest,
                                    HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");

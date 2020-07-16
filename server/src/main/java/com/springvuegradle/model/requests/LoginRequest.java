@@ -1,5 +1,7 @@
 package com.springvuegradle.model.requests;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Login request spring should create when user tries to log in
  * @author Alex Hobson
@@ -10,11 +12,13 @@ public class LoginRequest {
 	/**
 	 * Provided email address
 	 */
+	@NotNull(message = "missing email field")
 	private String email;
 	
 	/**
 	 * Provided password (plaintext)
 	 */
+	@NotNull(message = "missing password field")
 	private String password;
 
 	/**
