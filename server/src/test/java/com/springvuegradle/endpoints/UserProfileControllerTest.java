@@ -35,8 +35,11 @@ import org.springframework.web.context.WebApplicationContext;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -313,9 +316,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     }
     
     @Test
@@ -341,9 +343,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
     
     @Test
@@ -369,9 +370,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
     
     @Test
@@ -400,12 +400,12 @@ class UserProfileControllerTest {
                 .andReturn();
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> firstUserFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
-        LinkedHashMap<String, Object> secondUserFound = (LinkedHashMap<String, Object>) body.get(1).get("user");
+        LinkedHashMap<String, Object> firstProfileFound = (LinkedHashMap<String, Object>) body.get(0);
+        LinkedHashMap<String, Object> secondProfileFound = (LinkedHashMap<String, Object>) body.get(1);
     	
     	assertEquals(2, body.size());
-    	assertEquals(BigInteger.valueOf(1l), firstUserFound.get("user_id"));
-    	assertEquals(BigInteger.valueOf(2l), secondUserFound.get("user_id"));
+        assertEquals(BigInteger.valueOf(1L), firstProfileFound.get("profile_id"));
+        assertEquals(BigInteger.valueOf(2L), secondProfileFound.get("profile_id"));
     }
     
     @Test
@@ -449,9 +449,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
     
     @Test
@@ -476,9 +475,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     }
     
     @Test
@@ -505,9 +503,8 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     }
     
     @Test
@@ -556,12 +553,10 @@ class UserProfileControllerTest {
                 .andReturn();
     	
     	ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> firstUserFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
-        LinkedHashMap<String, Object> secondUserFound = (LinkedHashMap<String, Object>) body.get(1).get("user");
-    	
+
     	assertEquals(2, body.size());
-    	assertEquals(BigInteger.valueOf(1l), firstUserFound.get("user_id"));
-    	assertEquals(BigInteger.valueOf(2l), secondUserFound.get("user_id"));
+        assertEquals(BigInteger.valueOf(1L), body.get(0).get("profile_id"));
+        assertEquals(BigInteger.valueOf(2L), body.get(1).get("profile_id"));
     }
     
     // ------------------------ Test GET /profiles by email -----------------------------
@@ -587,10 +582,9 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
+
     	assertEquals(1, body.size());
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
     
     @Test
@@ -614,11 +608,9 @@ class UserProfileControllerTest {
                 .andReturn();
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
     	assertEquals(1, body.size());
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+
+        assertEquals(BigInteger.valueOf(1L), body.get(0).get("profile_id"));
     }
     
     @Test
@@ -663,10 +655,9 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
+
     	assertEquals(1, body.size());
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+    	assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     }
     
     @Test
@@ -691,10 +682,9 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
+
     	assertEquals(1, body.size());
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+        assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     }
     
     @Test
@@ -741,10 +731,9 @@ class UserProfileControllerTest {
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
-        LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
     	
     	assertEquals(1, body.size());
-    	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));
+        assertEquals(BigInteger.valueOf(1l), profileFound.get("profile_id"));
     } 
     
     @Test
@@ -772,12 +761,10 @@ class UserProfileControllerTest {
                 .andReturn();
         
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
-        LinkedHashMap<String, Object> firstUserFound = (LinkedHashMap<String, Object>) body.get(0).get("user");
-        LinkedHashMap<String, Object> secondUserFound = (LinkedHashMap<String, Object>) body.get(1).get("user");
-    	
+
     	assertEquals(2, body.size());
-    	assertEquals(BigInteger.valueOf(1l), firstUserFound.get("user_id"));
-    	assertEquals(BigInteger.valueOf(2l), secondUserFound.get("user_id"));
+    	List<BigInteger> ids = body.stream().map(profile -> (BigInteger) profile.get("profile_id")).collect(Collectors.toList());
+        assertTrue(ids.containsAll(Arrays.asList(BigInteger.valueOf(1), BigInteger.valueOf(2))));
     } 
     
     // Helper function to get the list of users from the JSON returned when searching for them using GET /profiles with query parameters

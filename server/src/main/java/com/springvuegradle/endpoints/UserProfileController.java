@@ -301,6 +301,12 @@ public class UserProfileController {
     	return profiles;
     }
 
+    /**
+     * retrieves profiles based on a search by activity types they are interested in.
+     * @param spaceSeparatedActivityTypeNames the space separated search string of activity type names. case sensitive
+     * @param method if multiple activity types are provided, should specify "and" or "or" for how the search should treat them
+     * @return the list of profiles matching the search
+     */
     private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException, RecordNotFoundException {
         List<Profile> profiles = new ArrayList<>();
 
@@ -328,10 +334,10 @@ public class UserProfileController {
             }
         }
 
-        if (method == null && activityTypeNames.size() == 1) {
+        if (method.toLowerCase().equals("or")) {
             profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
-        } else if (method.toLowerCase().equals("or")) {
-            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        } else { // method equals "and"
+            profiles = profileRepository.findByActivityTypesContainsAllOf(activityTypeNames);
         }
         return profiles;
     }
