@@ -1,6 +1,6 @@
 <template>
   <div style="text-align: center" id="UserSearchResults">
-    <p class="pl-1" style="color: red">{{ errorMessage }}</p>
+  <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
     
 

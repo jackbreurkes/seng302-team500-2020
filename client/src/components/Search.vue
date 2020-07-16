@@ -1,5 +1,5 @@
 <template>
-  <div id="Search">
+  <div  style="text-align: center" id="Search">
         <v-container fill-height align-content-center>
             <v-row align="center" justify="center">
             <v-col sm="12" md="12" lg="12">
@@ -15,6 +15,7 @@
                     <v-text-field
                         label="Search users"
                         :placeholder=searchBy
+                        :rules="inputRules"
                         outlined
                         click:append="search('k')"
                         v-model="searchTerm"
@@ -32,7 +33,7 @@
                     <v-col sm="4" md="4" lg="1">
                     <v-btn v-on:click="search()">Search</v-btn>
                     </v-col>
-                    <!-- <v-col sm="2" md="2" lg="1">
+                    <v-col sm="2" md="2" lg="1">
                       <v-dialog v-model="searchRulesModal" width="400">
       <template v-slot:activator="{ on }">
         <v-btn v-on="on" color="info">View Search Rules</v-btn>
@@ -70,10 +71,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-                    </v-col> -->
+                    </v-col>
                     </v-row>
 
                 </div>
+                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <div id="searchResults">
                     <UserSearchResults :searchTerms="searchTerms"></UserSearchResults>
                 </div>
@@ -89,6 +91,7 @@
 <script lang="ts">
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
+import FormValidator from "../scripts/FormValidator";
 import UserSearchResults from "./UserSearchResults.vue";
 
 // app Vue instance
@@ -98,12 +101,14 @@ const Search = Vue.extend({
 
   // app initial state
   data: function() {
+    //let formValidator = new FormValidator();
     return {
         possibleSearchBys: ["Name", "Nickname", "Email"],
         searchBy: "Name",
         searchTerm: "",
         searchTerms: ["", "", ""],
-        searchRulesModal: false
+        searchRulesModal: false,
+        errorMessage: ""
     };
   },
 
@@ -113,12 +118,24 @@ const Search = Vue.extend({
 
   methods: {
       search: function() {
-          if (this.searchBy == this.possibleSearchBys[1]) {
-            this.searchTerms = ["", this.searchTerm, ""];
-          } else if (this.searchBy == this.possibleSearchBys[2]) {
-            this.searchTerms = ["", "", this.searchTerm];
+          if (this.searchTerm.trim().length >= 1) {
+            if (this.searchBy == this.possibleSearchBys[1]) {
+              this.errorMessage = ""
+              this.searchTerms = ["", this.searchTerm, ""];
+            } else if (this.searchBy == this.possibleSearchBys[2]) {
+              this.errorMessage = ""
+              this.searchTerms = ["", "", this.searchTerm];
+            } else {
+              if (this.searchTerm.trim().includes(" ")) {
+              this.errorMessage = ""
+                this.searchTerms = [this.searchTerm, "", ""];
+              } else {
+                this.errorMessage = "Must enter characters from first and last names (or entire names)";
+                
+              }
+            }
           } else {
-            this.searchTerms = [this.searchTerm, "", ""];
+            this.errorMessage = "Must enter characters";
           }
       }
   }
