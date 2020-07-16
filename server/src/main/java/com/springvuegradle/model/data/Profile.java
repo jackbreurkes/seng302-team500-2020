@@ -44,7 +44,7 @@ public class Profile implements Serializable {
 	@Id
 	private long id;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.PERSIST) // PERSIST means that a Profile's User will be persisted if it does not exist
 	@MapsId
 	@JoinColumn(name = "uuid")
 	private User user;
