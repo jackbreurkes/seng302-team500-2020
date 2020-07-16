@@ -4,6 +4,7 @@ import com.springvuegradle.endpoints.UserProfileController;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Location;
 import com.springvuegradle.model.data.Profile;
@@ -89,7 +90,7 @@ public class MyLocationTestSteps {
     }
 
     @Given("I have set my location where I am normally based as {string} {string} {string}")
-    public void i_set_my_location_given(String city, String state, String country) throws UserNotAuthenticatedException, InvalidRequestFieldException, ParseException, RecordNotFoundException {
+    public void i_set_my_location_given(String city, String state, String country) throws UserNotAuthenticatedException, InvalidRequestFieldException, ParseException, RecordNotFoundException, UserNotAuthorizedException {
         if(state.equalsIgnoreCase("null")){
             state = null;
         }

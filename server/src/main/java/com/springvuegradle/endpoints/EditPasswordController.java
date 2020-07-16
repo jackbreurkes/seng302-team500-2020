@@ -2,10 +2,7 @@ package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
 import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;

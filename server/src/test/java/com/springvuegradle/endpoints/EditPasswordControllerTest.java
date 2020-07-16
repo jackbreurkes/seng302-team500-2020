@@ -73,7 +73,7 @@ public class EditPasswordControllerTest {
         request.setAttribute("authenticatedid", 2L);
 
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
-        assertThrows(UserNotAuthorizedException.class, () -> {
+        assertThrows(UserNotAuthenticatedException.class, () -> {
             editPasswordController.editPassword(
                     1L,
                     new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
