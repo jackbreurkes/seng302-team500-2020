@@ -42,17 +42,13 @@ public class UserAuthorizer {
      */
 
     public long checkIsAuthenticated(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException {
-        //Check the id of the request
         Long authId = (Long) request.getAttribute("authenticatedid");
-        //Attempt to find the user in the repository
         if(authId != null){
             Optional<User> editingUser = userRepository.findById(authId);
-            //checking the user meets auth requirement
             if(authId.equals(profileId)){
 
                 return authId;
             }else{
-                //admin check
                 if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION){
                     return authId;
                 }else{
