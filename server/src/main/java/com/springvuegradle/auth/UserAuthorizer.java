@@ -1,12 +1,10 @@
-package com.springvuegradle.helpers;
+package com.springvuegradle.auth;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.http.HttpRequest;
 import java.util.Optional;
 
 public class UserAuthorizer {

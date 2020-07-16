@@ -1,6 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
@@ -51,12 +52,7 @@ public class EditPasswordController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
-
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {

@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,11 +73,8 @@ public class ActivitiesController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+
         //now user is either correct or an admin
         //then update fields
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
@@ -178,11 +176,7 @@ public class ActivitiesController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
         //check if activity exists
@@ -213,9 +207,8 @@ public class ActivitiesController {
         // check correct authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
-        if (!(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
         if (createActivityRequest.getActivityName() == null) {
