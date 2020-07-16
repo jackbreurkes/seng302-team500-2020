@@ -3,11 +3,7 @@ package com.springvuegradle.endpoints;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -201,13 +197,15 @@ public class UserProfileController {
      */
     @GetMapping
     @CrossOrigin
-    public List<Profile> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException {
+    public List<ProfileResponse> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException {
     	    	
     	// The following Strings will simply be null if the associated parameter is not specified
     	String searchedFullname = request.getParameter("fullname");
     	String searchedNickname = request.getParameter("nickname");
     	String searchedEmail = request.getParameter("email");
-    	    	
+        String searchedActivities = request.getParameter("activity");
+        String method = request.getParameter("method");
+
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
 		
 		if (searchedNickname != null) {
@@ -216,9 +214,15 @@ public class UserProfileController {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null) {
 			profiles = getUsersByEmail(searchedEmail);
-		}
- 	
-		return profiles;
+		} else if (searchedActivities != null) {
+		    profiles = getProfilesByActivityTypes(searchedActivities, method);
+        }
+
+		List<ProfileResponse> responses = new ArrayList<>();
+		for (Profile profile : profiles) {
+		    responses.add(new ProfileResponse(profile, emailRepository));
+        }
+		return responses;
     }
     
     /**
@@ -295,6 +299,47 @@ public class UserProfileController {
     	profileSet.forEach((Profile profile) -> {profiles.add(profile);});
 
     	return profiles;
+    }
+
+    /**
+     * retrieves profiles based on a search by activity types they are interested in.
+     * @param spaceSeparatedActivityTypeNames the space separated search string of activity type names. case sensitive
+     * @param method if multiple activity types are provided, should specify "and" or "or" for how the search should treat them
+     * @return the list of profiles matching the search
+     */
+    private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException, RecordNotFoundException {
+        List<Profile> profiles = new ArrayList<>();
+
+        if (spaceSeparatedActivityTypeNames.isBlank()) {
+            throw new InvalidRequestFieldException("activity search string cannot be empty");
+        }
+
+        List<String> activityTypeNames = Arrays.asList(spaceSeparatedActivityTypeNames.split(" "));
+
+        if (!Arrays.asList("or", "and").contains(method)) {
+            if (activityTypeNames.size() > 1) {
+                if (method == null) {
+                    throw new InvalidRequestFieldException("a 'method' param must be supplied when searching by multiple activity types");
+                } else {
+                    throw new InvalidRequestFieldException("the method provided for activity type search must be either 'and' or 'or'");
+                }
+            } else {
+                method = "or";
+            }
+        }
+
+        for (String name : activityTypeNames) {
+            if (activityTypeRepository.getActivityTypeByActivityTypeName(name).isEmpty()) {
+                throw new RecordNotFoundException(String.format("an activity type named '%s' does not exist", name));
+            }
+        }
+
+        if (method.toLowerCase().equals("or")) {
+            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        } else { // method equals "and"
+            profiles = profileRepository.findByActivityTypesContainsAllOf(activityTypeNames);
+        }
+        return profiles;
     }
 
 
