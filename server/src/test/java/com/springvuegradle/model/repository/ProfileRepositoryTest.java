@@ -76,7 +76,7 @@ public class ProfileRepositoryTest {
             "Walking Skiing Biking Running,3",
             "Running Biking,2",
             "Tramping Walking,4",
-            "Running Running,2"
+            "Running Running,2" // duplicate terms
     })
     public void searchForActivityTypeContainingAnyOf(String spaceSeparatedActivityTypes, String expectedCount) {
         List<String> activityTypes = Arrays.asList(spaceSeparatedActivityTypes.split(" "));
@@ -93,7 +93,7 @@ public class ProfileRepositoryTest {
             "Walking Skiing Biking Running,0",
             "Running Biking,1",
             "Tramping Walking,0",
-            "Running Running,2"
+            "Running Running,2" // duplicate terms
     })
     public void searchForActivityTypeContainingAllOf(String spaceSeparatedActivityTypes, String expectedCount) {
         List<String> activityTypes = Arrays.asList(spaceSeparatedActivityTypes.split(" "));

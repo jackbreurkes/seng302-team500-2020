@@ -197,7 +197,7 @@ public class UserProfileController {
      */
     @GetMapping
     @CrossOrigin
-    public List<Profile> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException {
+    public List<ProfileResponse> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException {
     	    	
     	// The following Strings will simply be null if the associated parameter is not specified
     	String searchedFullname = request.getParameter("fullname");
@@ -217,8 +217,12 @@ public class UserProfileController {
 		} else if (searchedActivities != null) {
 		    profiles = getProfilesByActivityTypes(searchedActivities, method);
         }
- 	
-		return profiles;
+
+		List<ProfileResponse> responses = new ArrayList<>();
+		for (Profile profile : profiles) {
+		    responses.add(new ProfileResponse(profile, emailRepository));
+        }
+		return responses;
     }
     
     /**
@@ -297,15 +301,30 @@ public class UserProfileController {
     	return profiles;
     }
 
-    private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException {
+    private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException, RecordNotFoundException {
         List<Profile> profiles = new ArrayList<>();
+
+        if (spaceSeparatedActivityTypeNames.isBlank()) {
+            throw new InvalidRequestFieldException("activity search string cannot be empty");
+        }
+
         List<String> activityTypeNames = Arrays.asList(spaceSeparatedActivityTypeNames.split(" "));
 
-        if (method == null || !Arrays.asList("or", "and").contains(method)) {
-            if (activityTypeNames.size() > 1){
-                throw new InvalidRequestFieldException("the method provided for activity type search must be either 'and' or 'or'");
+        if (!Arrays.asList("or", "and").contains(method)) {
+            if (activityTypeNames.size() > 1) {
+                if (method == null) {
+                    throw new InvalidRequestFieldException("a 'method' param must be supplied when searching by multiple activity types");
+                } else {
+                    throw new InvalidRequestFieldException("the method provided for activity type search must be either 'and' or 'or'");
+                }
             } else {
-                return profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+                method = "or";
+            }
+        }
+
+        for (String name : activityTypeNames) {
+            if (activityTypeRepository.getActivityTypeByActivityTypeName(name).isEmpty()) {
+                throw new RecordNotFoundException(String.format("an activity type named '%s' does not exist", name));
             }
         }
 
