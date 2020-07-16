@@ -115,4 +115,18 @@ public class ProfileRepositoryTest {
         assertEquals(0, result.size());
     }
 
+    @Test
+    public void searchForActivityTypeContainingAnyOf_EmptyString() {
+        List<String> activityTypes = Collections.singletonList("");
+        List<Profile> result = profileRepository.findByActivityTypesContainsAnyOf(activityTypes);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void searchForActivityTypeContainingAllOf_EmptyString() {
+        List<String> activityTypes = Collections.singletonList("");
+        List<Profile> result = profileRepository.findByActivityTypesContainsAllOf(activityTypes);
+        assertEquals(0, result.size());
+    }
+
 }

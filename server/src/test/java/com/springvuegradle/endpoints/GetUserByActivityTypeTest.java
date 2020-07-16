@@ -1,16 +1,15 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.ExceptionHandlerController;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import org.apache.tomcat.util.json.JSONParser;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,7 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigInteger;
@@ -39,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GetUserByActivityTypeTest {
 
-    @Autowired
     private MockMvc mvc;
 
     // all mocks below are required for injection into userProfileController
@@ -64,9 +61,12 @@ class GetUserByActivityTypeTest {
     @InjectMocks
     UserProfileController userProfileController;
 
-    public void setUp(){
-        //Initialize the mocks we create
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mvc = MockMvcBuilders.standaloneSetup(userProfileController)
+                .setControllerAdvice(new ExceptionHandlerController()) // allows us to use our ExceptionHandlerController with MockMvc
+                .build();
     }
 
     // Helper function to get the list of users from the JSON returned when searching for them using GET /profiles with query parameters
