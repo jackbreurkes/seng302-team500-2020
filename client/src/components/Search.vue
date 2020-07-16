@@ -129,7 +129,8 @@ const Search = Vue.extend({
       searchTerm: "",
       searchTerms: ["", "", ""],
       availableActivityTypes: [] as string[],
-      selectedActivityTypes: [] as string[]
+      selectedActivityTypes: [] as string[],
+      searchRulesModal: false
     };
   },
 
