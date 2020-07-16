@@ -23,7 +23,7 @@ public class Session {
 	/**
 	 * User that the session belongs to
 	 */
-	@ManyToOne(cascade = CascadeType.REMOVE)
+	@ManyToOne
 	@JoinColumn(name = "uuid")
 	private User user;
 
