@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -132,7 +133,7 @@ public class PutActivityTest {
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
-        assertThrows(UserNotAuthorizedException.class, () -> {
+        assertThrows(UserNotAuthenticatedException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
     }
