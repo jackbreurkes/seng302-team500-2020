@@ -1,6 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
@@ -46,13 +47,7 @@ public class EditPasswordController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
-
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {

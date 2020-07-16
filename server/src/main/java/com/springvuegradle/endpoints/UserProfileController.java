@@ -12,6 +12,7 @@ import javax.validation.Valid;
 
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
@@ -77,7 +78,6 @@ public class UserProfileController {
     @Autowired
     private LocationRepository locationRepository;
 
-
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
@@ -92,19 +92,7 @@ public class UserProfileController {
             @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-//        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-//        boolean isTargetUser = authId != null && authId == profileId;
-//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
-
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
@@ -279,15 +267,7 @@ public class UserProfileController {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
-
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
         if (validationErrors.hasErrors()) {
