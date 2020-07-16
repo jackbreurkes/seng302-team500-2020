@@ -93,8 +93,8 @@
     },
     
     created() {
+    const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
     this.updateUserData();
-    const profileId: number = parseInt(this.$route.params.profileId);
     this.currentProfileId = profileId;
     this.loadNavInfo();
 
@@ -116,6 +116,9 @@
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
+          if (getPermissionLevel() >= 120) {
+            this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
+          }
 
       },
       goTo: function(pathing : string) {
