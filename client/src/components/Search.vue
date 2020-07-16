@@ -9,35 +9,58 @@
                 </v-toolbar>
             
 
-                <div id="searchAndFilter" class="mt-3 mx-2" fill-height fill-width>
-                    <v-row justify="center">
-                    <v-col sm="12" md="12" lg="8">
-                    <v-text-field
-                        label="Search users"
-                        :placeholder=searchBy
-                        :rules="inputRules"
-                        outlined
-                        click:append="search('k')"
-                        v-model="searchTerm"
-                        @keyup.enter.native="search()"
-                    ></v-text-field>
-                    </v-col>
-                    <v-col sm="6" md="4" lg="2">
-                    <v-select
-                        :items="possibleSearchBys"
-                        label="Search By:"
-                        outlined
-                        v-model="searchBy"
-                    ></v-select>
-                    </v-col>
-                    <v-col sm="4" md="4" lg="1">
-                    <v-btn v-on:click="search()">Search</v-btn>
-                    </v-col>
-                    <v-col sm="2" md="2" lg="1">
-                      <v-dialog v-model="searchRulesModal" width="400">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on" color="info">View Search Rules</v-btn>
-      </template>
+            <div id="searchAndFilter" class="mt-3 mx-2" fill-height fill-width>
+              <v-row class="d-flex align-center">
+                <v-col xs="12" sm="12" md="8" lg="8" v-if="searchBy !== 'Interests'">
+                  <v-text-field
+                    label="Search users"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    append-icon="S"
+                    v-model="searchTerm"
+                    @keyup.enter.native="search()"
+                  ></v-text-field>
+                </v-col>
+                <v-col xs="12" sm="12" md="9" lg="9" v-else>
+                  <v-row class="px-5 d-flex flex-nowrap align-center">
+                      <v-radio-group v-model="methodRadioGroup" class="pr-5" id="method-radios">
+                        <v-radio label="at least one of" value="or"></v-radio>
+                        <v-radio label="all of" value="and"></v-radio>
+                      </v-radio-group>
+                      <v-autocomplete
+                        id="activity-selector"
+                        :items="availableActivityTypes"
+                        color="white"
+                        item-text="name"
+                        label="Interests"
+                        placeholder="Select interests"
+                        v-model="selectedActivityTypes"
+                        chips
+                        deletable-chips
+                        multiple
+                      ></v-autocomplete>
+                  </v-row>
+                </v-col>
+                <v-col xs="12" sm="12" md="3" lg="3">
+                  <v-select
+                    :items="possibleSearchBys"
+                    label="Search By:"
+                    outlined
+                    v-model="searchBy"
+                  ></v-select>
+                </v-col>
+                <v-col md="12" class="d-flex justify-center">
+                  <v-btn x-large color="primary" v-on:click="search()">Search</v-btn>
+                </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col sm="2" md="2" lg="1">
+                  <v-dialog v-model="searchRulesModal" width="400">
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" color="info">View Search Rules</v-btn>
+                    </template>
 
       <v-card>
         <v-card-title class="headline" primary-title>Search rules</v-card-title>
@@ -93,6 +116,7 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import FormValidator from "../scripts/FormValidator";
 import UserSearchResults from "./UserSearchResults.vue";
+import * as activityController from "../controllers/activity.controller";
 
 // app Vue instance
 const Search = Vue.extend({
@@ -103,17 +127,28 @@ const Search = Vue.extend({
   data: function() {
     //let formValidator = new FormValidator();
     return {
-        possibleSearchBys: ["Name", "Nickname", "Email"],
-        searchBy: "Name",
-        searchTerm: "",
-        searchTerms: ["", "", ""],
-        searchRulesModal: false,
+      possibleSearchBys: ["Name", "Nickname", "Email", "Interests"],
+      searchBy: "Name",
+      methodRadioGroup: "or",
+      searchTerm: "",
+      searchTerms: ["", "", ""],
+      availableActivityTypes: [] as string[],
+      selectedActivityTypes: [] as string[],
+      searchRulesModal: false
         errorMessage: ""
     };
   },
 
   created() {
-      
+    activityController
+      .getAvailableActivityTypes()
+      .then(activityTypes => {
+        this.availableActivityTypes = activityTypes;
+      })
+      .catch(err => {
+        console.error("unable to load activity types");
+        console.error(err);
+      });
   },
 
   methods: {
@@ -138,6 +173,7 @@ const Search = Vue.extend({
             this.errorMessage = "Must enter characters";
           }
       }
+    }
   }
 });
 
@@ -155,5 +191,13 @@ export default Search;
 
 p {
   display: inline-block;
+}
+
+#method-radios {
+   min-width: 140px;
+}
+
+#activity-selector {
+  min-width: 200px;
 }
 </style>
