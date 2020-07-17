@@ -95,10 +95,10 @@ public class EmailRepositoryTest {
             "primary@,2",
             "primary@1234.com,2",
             "primary@test.com,1",
-            //"primary,1" TODO is broken
+
 
     })
-    public void retrieveMultipleUsersWithIdenticalValidPartialEmail(String email, String userId) {
+    public void retrieveMultipleUsersWithSimilarValidPartialEmail(String email, String userId) {
         int userIdNum = Integer.parseInt(userId);
         List<Email> result = emailRepository.findByEmailStartingWith(email);
         assertEquals(userIdNum, result.get(0).getUser().getUserId());
@@ -121,5 +121,11 @@ public class EmailRepositoryTest {
         String email = " ";
         List<Email> result = emailRepository.findByEmailStartingWith(email);
         assertEquals(0, result.size());
+    }
+    @Test
+    public void retrieveMultipleUsersWithIdenticalValidPartialEmail() {
+        String email = "primary";
+        List<Email> result = emailRepository.findByEmailStartingWith(email);
+        assertEquals(2, result.size());
     }
 }
