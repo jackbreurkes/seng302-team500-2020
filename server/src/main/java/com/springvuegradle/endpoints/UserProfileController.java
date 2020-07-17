@@ -21,14 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
@@ -75,6 +68,12 @@ public class UserProfileController {
      */
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+
+    /**
+     * Repository used for accessing sessions
+     */
+    @Autowired
+    private SessionRepository sessionRepository;
 
     @Autowired
     private LocationRepository locationRepository;
@@ -304,5 +303,36 @@ public class UserProfileController {
         } else {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
+    }
+
+    /**
+     * Deletes a user and its associated data with a user id by deleting all the profile data
+     * and then deleting the user itself.
+     * @param profileId of the user to be deleted
+     * @throws RecordNotFoundException if the user doesn't exist
+     * @throws UserNotAuthenticatedException if the user isn't the original profile or not an admin
+     */
+    @DeleteMapping("/{profileId}")
+    @CrossOrigin
+    public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
+                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
+        // Authenticating the logged in user
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+
+        // Get relevant profile
+        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+        if (optionalProfile.isEmpty()) {
+            throw new RecordNotFoundException("Profile not found.");
+        }
+        Profile profile = optionalProfile.get();
+        User user = profile.getUser();
+
+        // If deleting user-related data from the database, must be done here and separately
+        // Cascading delete doesn't work
+        sessionRepository.deleteUserSession(user);
+        emailRepository.deleteUserEmails(user);
+        profileRepository.delete(profile);
+        userRepository.delete(user);
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
     }
 }
