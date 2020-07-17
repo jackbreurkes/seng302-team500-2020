@@ -11,18 +11,38 @@
 
             <div id="searchAndFilter" class="mt-3 mx-2" fill-height fill-width>
               <v-row class="d-flex align-center">
-                <v-col xs="12" sm="12" md="8" lg="8" v-if="searchBy !== 'Interests'">
+
+                <v-col xs="12" sm="12" md="9" lg="9" v-if="searchBy == 'Name'">
+                  <v-row class= "align-center">
+                  <v-col xs="12" sm="12" md="4" lg="4">
                   <v-text-field
-                    label="Search users"
+                    label="Search users by First Name"
                     :placeholder="searchBy"
                     outlined
                     click:append="search('k')"
-                    append-icon="S"
                     v-model="searchTerm"
                     @keyup.enter.native="search()"
-                  ></v-text-field>
+                  ></v-text-field> </v-col>
+                    <v-col xs="12" sm="12" md="4" lg="4">
+                    <v-text-field
+                    label="Search users by Middle Name"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="searchTerm"
+                    @keyup.enter.native="search()"
+                  ></v-text-field> </v-col>
+                    <v-col xs="12" sm="12" md="4" lg="4">
+                    <v-text-field
+                    label="Search users by Last Name"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="searchTerm"
+                    @keyup.enter.native="search()"
+                  ></v-text-field> </v-col> </v-row>
                 </v-col>
-                <v-col xs="12" sm="12" md="9" lg="9" v-else>
+                <v-col xs="12" sm="12" md="9" lg="9" v-else-if="searchBy == 'Interests'">
                   <v-row class="px-5 d-flex flex-nowrap align-center">
                       <v-radio-group v-model="methodRadioGroup" class="pr-5" id="method-radios">
                         <v-radio label="at least one of" value="or"></v-radio>
@@ -41,6 +61,16 @@
                         multiple
                       ></v-autocomplete>
                   </v-row>
+                </v-col>
+                <v-col xs="12" sm="12" md="9" lg="9" v-else>
+                  <v-text-field
+                    label="Search users"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="searchTerm"
+                    @keyup.enter.native="search()"
+                  ></v-text-field>
                 </v-col>
                 <v-col xs="12" sm="12" md="3" lg="3">
                   <v-select
@@ -134,7 +164,7 @@ const Search = Vue.extend({
       searchTerms: ["", "", ""],
       availableActivityTypes: [] as string[],
       selectedActivityTypes: [] as string[],
-      searchRulesModal: false
+      searchRulesModal: false,
         errorMessage: ""
     };
   },
@@ -174,7 +204,7 @@ const Search = Vue.extend({
           }
       }
     }
-  }
+  
 });
 
 export default Search;
