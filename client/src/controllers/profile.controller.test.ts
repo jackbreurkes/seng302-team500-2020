@@ -24,6 +24,9 @@ formValidator.checkPasswordValidity = jest.fn((password) => {
   }
 });
 
+const authService = require('../services/auth.service');
+authService.getMyToken = jest.fn(() => 'faketoken');
+
 const mockedUser: UserApiFormat = {
   profile_id: 1,
   passports: [],
