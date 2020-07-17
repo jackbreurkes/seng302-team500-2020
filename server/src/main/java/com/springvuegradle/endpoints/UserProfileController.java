@@ -317,18 +317,12 @@ public class UserProfileController {
     public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
                                              HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
         // Authenticating the logged in user
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // Get relevant profile
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
         if (optionalProfile.isEmpty()) {
-            throw new RecordNotFoundException("profile not found");
+            throw new RecordNotFoundException("Profile not found.");
         }
         Profile profile = optionalProfile.get();
         User user = profile.getUser();
