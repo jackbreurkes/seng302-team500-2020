@@ -41,7 +41,7 @@ sonarqube:
     - cd client
     - npm run sonarqube
     - cd ../server
-    - if [ "$CI_BRANCH_NAME" == s4-u282-t2334-sonarqube ]; then ./gradlew sonarqube; fi
+    - if [ "$CI_BRANCH_NAME" == dev ]; then ./gradlew sonarqube; fi
 
 dev-build:
   stage: deploy
