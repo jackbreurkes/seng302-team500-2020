@@ -157,10 +157,6 @@ export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
 }
 
-export function getPermissionLevel(): number {
-    return auth.getMyPermissionLevel();
-}
-
 
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string, profileId: number) {
     if (!formValidator.checkPasswordValidity(newPassword)) {

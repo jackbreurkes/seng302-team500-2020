@@ -4,9 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * custom error to be thrown when a user is not authenticated
- * @author Jack van Heugten Breurkes
- * @author Josh Yee
+ * custom error to be thrown when a user is not authenticated at all.
  */
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 public class UserNotAuthenticatedException extends Exception {

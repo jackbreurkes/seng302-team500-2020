@@ -49,6 +49,7 @@
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
+  import * as auth from "../services/auth.service";
   import * as profileController from "../controllers/profile.controller";
   import * as PropertiesService from '../services/properties.service';
 
@@ -90,7 +91,7 @@
       goToCurrentUsersPageIfPossible() {
         const currentlyStoredToken = localStorage.getItem("token");
         const currentlyStoredUserId = localStorage.getItem("userId");
-        const currentlyStoredPermissionLevel = profileController.getPermissionLevel();
+        const currentlyStoredPermissionLevel = auth.getMyPermissionLevel();
         if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
           this.errorMessage = "Logging you in...";
           if (currentlyStoredPermissionLevel === 0 || !PropertiesService.getAdminMode()) {
