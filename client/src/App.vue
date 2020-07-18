@@ -19,7 +19,8 @@
           absolute
           dark
           overlay-opacity= 0.7
-          
+          fixed
+          permanent = true 
           v-if="showNavBar()"
 
         >
