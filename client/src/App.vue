@@ -10,17 +10,18 @@
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
-      <v-navigation-drawer
+      <v-navigation-drawer 
           v-model= this.bar
           :expand-on-hover= this.collapsible
           :mini-variant = this.smallForm
           :right= this.right
+          color = "rgba(30,30,30, 0.95)"
           absolute
           dark
-          color = "rgba(30, 30, 30, 0.95)"
           overlay-opacity= 0.7
-
+          
           v-if="showNavBar()"
+
         >
           <v-list
             dense
@@ -56,8 +57,9 @@
               </v-list-item-content>
             </v-list-item>
           </v-list>
-        </v-navigation-drawer>
-      <v-content>
+        </v-navigation-drawer >
+      <v-content           
+      :class= "[computedPadding]">
         <transition name="page-transition">
           <router-view></router-view>
         </transition>
@@ -91,6 +93,11 @@
         currentName: ""
       }
     },
+      computed: {
+    computedPadding () {
+      return `p${'l'}-${12}`
+    },
+  },
     
     created() {
     const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
