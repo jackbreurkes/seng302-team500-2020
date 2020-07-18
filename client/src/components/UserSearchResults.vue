@@ -8,6 +8,7 @@
     :items="users"
     class="elevation-1"
     @click:row="goToUser"
+    
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
     <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
@@ -20,6 +21,7 @@
       <td class="text-xs-right">{{ users.item.short_interests }}</td>
     </template>
   </v-data-table>
+
   </div>
 </template>
 
