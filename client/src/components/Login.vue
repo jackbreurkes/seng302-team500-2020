@@ -50,7 +50,6 @@
   import Vue from 'vue'
 
   import * as auth from "../services/auth.service";
-  import * as profileController from "../controllers/profile.controller";
   import * as PropertiesService from '../services/properties.service';
 
   // app Vue instance

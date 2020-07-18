@@ -277,9 +277,14 @@ const Homepage = Vue.extend({
     deleteAccount: function() {
         deleteUserAccount(this.currentProfileId)
         .then(() => {
-          removeAdminCookie();
-          clearAuthInfo();
-          this.$router.push({ name: "register" });
+          if (authService.getMyUserId() == this.currentProfileId) {
+            //if we're editing ourself
+            removeAdminCookie();
+            clearAuthInfo();  
+            this.$router.push({ name: "register" });  
+          } else {
+            this.$router.push({ name: "adminDashboard" });
+          }
         })
         .catch((err) => {
           if (!err.response || !err.response.status) {
