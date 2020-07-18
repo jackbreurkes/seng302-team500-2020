@@ -1,7 +1,7 @@
 <template>
   <div  style="text-align: center" id="Search">
         <v-container fill-height align-content-center>
-            <v-row align="center" justify="center">
+            <v-row justify="center">
             <v-col sm="12" md="12" lg="12">
             <v-card class="elevation-12">
                 <v-toolbar color="primary" dark flat>
@@ -188,7 +188,12 @@ const Search = Vue.extend({
 
   methods: {
       search: function() {
-          if (this.searchTerm.trim().length >= 1 || (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1)) {
+          if (this.searchTerm.trim().length >= 1 ||
+                (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1) ||
+                (this.searchBy == "Interests" && this.selectedActivityTypes.length != 0)
+          ) {
+              console.log(this.selectedActivityTypes)
+              console.log(this.selectedActivityTypes.length)
             if (this.searchBy == "Name") {
               if (this.firstname == "" || this.lastname == "") {
                 this.errorMessage = "Must enter characters from first and last names (or entire names)";
@@ -196,14 +201,24 @@ const Search = Vue.extend({
                 this.errorMessage = "";
                 this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
               }
+            } else if (this.searchBy == "Interests") {
+              this.errorMessage = "";
+              let searchActivitiesString = "";
+              for (let activity in this.selectedActivityTypes) {
+                searchActivitiesString += this.selectedActivityTypes[activity] + " ";
+              }
+              this.searchTerms = {"activity": searchActivitiesString.trim(), "method": this.methodRadioGroup}
             } else {
               this.errorMessage = "";
               this.searchTerms = {};
               this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
             }
-          } else {
+
+          }  else {
             if (this.searchBy == "Name") {
               this.errorMessage = "Must enter at least 1 character for both first and last names";
+            } else if (this.searchBy == "Interests") {
+              this.errorMessage = "Must select at least 1 activity";
             } else {
               this.errorMessage = "Must enter a search string";
             }
