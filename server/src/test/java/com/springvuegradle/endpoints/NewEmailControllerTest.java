@@ -170,7 +170,7 @@ public class NewEmailControllerTest {
                 .requestAttr("authenticatedid", editedUser.getUserId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isConflict());
 
     }
     
@@ -344,7 +344,7 @@ public class NewEmailControllerTest {
                 .requestAttr("authenticatedid", editedUser.getUserId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isConflict());
 
     }
     
