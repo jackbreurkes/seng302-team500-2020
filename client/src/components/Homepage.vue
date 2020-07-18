@@ -104,13 +104,11 @@ import ActivitiesList from "./ActivitiesList.vue";
 import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
-  fetchProfileWithId,
-  getPermissionLevel
+  fetchProfileWithId
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
-import { getCurrentUser } from '../models/user.model';
 import { 
   getActivitiesByCreator,
   getDurationActivities,
@@ -119,6 +117,7 @@ import {
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
 import * as PropertiesService from '../services/properties.service';
+import * as authService from "../services/auth.service"
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -180,20 +179,18 @@ const Homepage = Vue.extend({
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
-    const permissionLevel: number = getPermissionLevel();
+    const permissionLevel: number = authService.getMyPermissionLevel();
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
     
     if (permissionLevel < 120) {
-      getCurrentUser()
-        .then(user => {
-          if (user.profile_id == profileId) {
-            //if we're editing ourself
-            this.currentlyHasAuthority = true;
-          }
-        })
+      let myProfileId = authService.getMyUserId()
+      if (myProfileId == profileId) {
+        //if we're editing ourself
+        this.currentlyHasAuthority = true;
+      }
     } else if(PropertiesService.getAdminMode()) {
       this.currentlyHasAuthority = true;
     }
@@ -201,10 +198,21 @@ const Homepage = Vue.extend({
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;
+        if (user.profile_id == profileId) {
+            //if we're editing ourself
+            this.currentlyHasAuthority = true;
+          }
       })
       .catch(err => {
+        if (err.response && err.response.status === 401) {
+          this.$router.push({ name: "login" });
+        }
         console.error(err);
       });
+
+    if (permissionLevel >= 120) {
+      this.currentlyHasAuthority = true;
+    }
 
     getActivitiesByCreator(profileId)
       .then(res => {
@@ -219,7 +227,7 @@ const Homepage = Vue.extend({
   },
 
   methods: {
-    //click login button
+    //click logout button
     logoutButtonClicked: function() {
       logoutCurrentUser()
         .then(() => {
