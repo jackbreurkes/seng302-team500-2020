@@ -251,7 +251,7 @@
           <br />
           <v-card>
             <v-toolbar color="primary" dark flat> 
-              <v-toolbar-title>Delete Account</v-toolbar-title>
+              <!-- <v-toolbar-title>Delete Account</v-toolbar-title> -->
             </v-toolbar>
             <v-card-text>
               <v-dialog v-model="confirmDeleteModal" width="290">
