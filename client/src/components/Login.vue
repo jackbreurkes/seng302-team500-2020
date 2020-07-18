@@ -49,7 +49,7 @@
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
-  import * as profileController from "../controllers/profile.controller";
+  import * as auth from "../services/auth.service";
 
   // app Vue instance
   const Login = Vue.extend({
@@ -89,7 +89,7 @@
       goToCurrentUsersPageIfPossible() {
         const currentlyStoredToken = localStorage.getItem("token");
         const currentlyStoredUserId = localStorage.getItem("userId");
-        const currentlyStoredPermissionLevel = profileController.getPermissionLevel();
+        const currentlyStoredPermissionLevel = auth.getMyPermissionLevel();
         if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
           this.errorMessage = "Logging you in...";
           if (currentlyStoredPermissionLevel === 0) {

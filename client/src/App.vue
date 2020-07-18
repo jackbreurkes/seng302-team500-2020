@@ -74,10 +74,10 @@
   import Vue from "vue"
   import {
     logoutCurrentUser,
-    fetchCurrentUser,
-    getPermissionLevel
+    fetchCurrentUser
   } from "./controllers/profile.controller";
   import * as PropertiesService from './services/properties.service';
+  import * as auth from "./services/auth.service";
 
   // app Vue instance
   const app = Vue.extend({
@@ -165,15 +165,15 @@
       },
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
-          if (/*(!user || !user.firstname) && */getPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
+          if (/*(!user || !user.firstname) && */auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
             this.currentName = "Admin";
           } else {
             this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
           }
         })
         .catch(() => {
-          this.isLoggedIn = getPermissionLevel() >= 120 && PropertiesService.getAdminMode();
-          this.currentName = getPermissionLevel() >= 120 && PropertiesService.getAdminMode() ? "Admin" : "";
+          this.isLoggedIn = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode();
+          this.currentName = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode() ? "Admin" : "";
         });
       }
     }
