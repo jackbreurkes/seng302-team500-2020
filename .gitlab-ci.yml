@@ -61,6 +61,7 @@ release-build:
     - npm install
     - npm run build-prod
     - cd ../server
+    - export spring_profiles_active=prod # use application-prod.properties
     - ./gradlew bootJar
     - cd ..
     - mkdir -p ../client-prod/
