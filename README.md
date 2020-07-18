@@ -26,6 +26,10 @@ Running on: http://localhost:9500/
 
 Running on: http://localhost:9499/
 
+### Accessing Deployed Application
+The production version of the application is accessable via [Clicking Here](https://csse-s302g5.canterbury.ac.nz/prod)
+The test version of the application is accessable via [Clicking Here](https://csse-s302g5.canterbury.ac.nz/test)
+
 
 ### Todo
 - Add team name into `build.gradle` and `package.json`

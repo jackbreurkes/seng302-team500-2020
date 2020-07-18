@@ -1,4 +1,4 @@
-@U9-my-location
+@U9-my-location @testing
 Feature: Create, read, update and delete my location
 
   Background:
@@ -8,28 +8,28 @@ Feature: Create, read, update and delete my location
 
   Scenario Outline: Set my location as a valid location
     Given I have not set my location
-    When I set my location where I am normally based as <city> <state> <country>
-    Then my profile should show my location info as <city> <state> <country>
+    When I set my location where I am normally based as "<city>" "<state>" "<country>"
+    Then my profile should show my location info as "<city>" "<state>" "<country>"
 
     Examples:
-      | city         | state           | country     |
-      | Christchurch | Canterbury      | New Zealand |
-      | Sydney       | New South Wales | Australia   |
-      | Oslo         | null            | Norway      |
-      | The Hague    | null            | Netherlands |
+      | city           | state             | country       |
+      | "Christchurch" | "Canterbury"      | "New Zealand" |
+      | "Sydney"       | "New South Wales" | "Australia"   |
+      | "Oslo"         | "null"            | "Norway"      |
+      | "The Hague"    | "null"            | "Netherlands" |
 
 
   Scenario Outline: Check my location when it is set
-    Given I have set my location where I am normally based as <city> <state> <country>
+    Given I have set my location where I am normally based as "<city>" "<state>" "<country>"
     When I view my profile
-    Then my profile should show my location info as <city> <state> <country>
+    Then my profile should show my location info as "<city>" "<state>" "<country>"
 
     Examples:
-      | city         | state           | country     |
-      | Christchurch | Canterbury      | New Zealand |
-      | Sydney       | New South Wales | Australia   |
-      | Oslo         | null            | Norway      |
-      | The Hague    | null            | Netherlands |
+    | city         | state           | country     |
+    | Christchurch | Canterbury      | New Zealand |
+    | Sydney       | New South Wales | Australia   |
+    | Oslo         | null            | Norway      |
+    | The Hague    | null            | Netherlands |
 
 
   Scenario: Check my location when it is not set
@@ -39,28 +39,28 @@ Feature: Create, read, update and delete my location
 
 
   Scenario Outline: Set my location as an invalid location
-    When I try to set my location where I am normally based as <city> <state> <country>
+    When I try to set my location where I am normally based as "<city>" "<state>" "<country>"
     Then I should receive an error message informing me that a field that I entered was invalid
 
     Examples:
-      | city         | state           | country     |
-      | Christchorch | Canterbury      | New Zealand |
-      | Sydney       | New South Wales | Down Under  |
-      | null         | null            | Norway      |
-      | The Hague    | null            | null        |
+     | city         | state           | country     |
+     | Christchorch | Canterbury      | New Zealand |
+     | Sydney       | New South Wales | Down Under  |
+     | null         | null            | Norway      |
+     | The Hague    | null            | null        |
 
 
   Scenario Outline: Update my location
     Given I have set my location where I am normally based as "Christchurch" "Canterbury" "New Zealand"
-    When I set my location where I am normally based as <city> <state> <country>
-    Then my profile should show my location info as <city> <state> <country>
+    When I set my location where I am normally based as "<city>" "<state>" "<country>"
+    Then my profile should show my location info as "<city>" "<state>" "<country>"
 
     Examples:
-      | city         | state           | country     |
-      | Sydney       | New South Wales | Australia   |
-      | Oslo         | null            | Norway      |
-      | The Hague    | null            | Netherlands |
-      | Christchurch | Canterbury      | New Zealand |
+    | city         | state           | country     |
+    | Sydney       | New South Wales | Australia   |
+    | Oslo         | null            | Norway      |
+    | The Hague    | null            | Netherlands |
+    | Christchurch | Canterbury      | New Zealand |
 
 
   Scenario: Delete my location
