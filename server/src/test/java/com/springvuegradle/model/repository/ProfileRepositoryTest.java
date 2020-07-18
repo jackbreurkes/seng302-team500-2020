@@ -48,18 +48,23 @@ public class ProfileRepositoryTest {
         profile1.setActivityTypes(Arrays.asList(
                 walking
         ));
+        profile1.setNickName("Brillybill");
         profile2.setActivityTypes(Arrays.asList(
                 walking, running
         ));
+        profile2.setNickName("Andyc123");
         profile3.setActivityTypes(Arrays.asList(
                 walking, running, biking
         ));
+        profile3.setNickName("Briecheese");
         profile4.setActivityTypes(Arrays.asList(
                 tramping
         ));
+        profile4.setNickName("JacknJill");
         profile5.setActivityTypes(Arrays.asList(
                 scootering
         ));
+        profile5.setNickName("JacknJill");
         profileRepository.save(profile1);
         profileRepository.save(profile2);
         profileRepository.save(profile3);
@@ -130,4 +135,40 @@ public class ProfileRepositoryTest {
         assertEquals(0, result.size());
     }
 
+    @Test
+    public void retrieveSingleUserWithPartialValidNickname() {
+        String nickName = "And";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(1, result.size());
+    }
+    @Test
+    public void retrieveSingleUserWithFullValidNickname() {
+        String nickName = "Andyc123";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(1, result.size());
+    }
+    @Test
+    public void retrieveMultipleUsersWithPartialValidNickname() {
+        String nickName = "Br";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(2, result.size());
+    }
+    @Test
+    public void retrieveNoUsersWithInvalidNickname() {
+        String nickName = "INVALIDNICKNAME";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(0, result.size());
+    }
+    @Test
+    public void retrieveMultipleUsersWithFullValidNickname() {
+        String nickName = "JacknJill";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(2, result.size());
+    }
+    @Test
+    public void retrieveSingleUserWithPartialInvalidCaseSensitiveNickname() {
+        String nickName = "brILLy";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(0, result.size());
+    }
 }
