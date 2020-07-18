@@ -7,11 +7,14 @@
     :headers="headers"
     :items="users"
     class="elevation-1"
+    @click:row="goToUser"
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
+    <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
     <template #item.short_interests="{ item }">{{getShortenedActivitiesString(item.activities)}}</template>
     <template v-slot:items="users">
       <td class="text-xs-right">{{ users.item.full_name }}</td>
+      <!-- <td class="text-xs-right">{{ users.item.userId }}</td> -->
       <td class="text-xs-right">{{ users.item.nickname }}</td>
       <td class="text-xs-right">{{ users.item.primary_email }}</td>
       <td class="text-xs-right">{{ users.item.short_interests }}</td>
@@ -39,6 +42,7 @@ const UserSearchResults = Vue.extend({
     return {
       headers: [
         { text: 'Name', value: 'full_name' },
+        //{ text: 'User Id', value: 'profile_id'},
         { text: 'Nickname', value: 'nickname' },
         { text: 'Email', value: 'primary_email' },
         { text: 'Interests', sortable: false, value: 'short_interests' }
@@ -53,6 +57,9 @@ const UserSearchResults = Vue.extend({
     this.search("", "", "");
   },
   methods: {
+    goToUser: function(userId: any) {
+      this.$router.push("/profiles/" + userId.profile_id);
+    },
     getShortenedActivitiesString: function(activities: string[]) {
       let activitiesString = "";
       if (activities == undefined || activities.length == 0) {
