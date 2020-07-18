@@ -73,7 +73,7 @@ public class EditPasswordControllerTest {
         request.setAttribute("authenticatedid", 2L);
 
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(new User(2L)));
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
             editPasswordController.editPassword(
                     1L,
                     new UpdatePasswordRequest("oldpassword", "newpassword", "newpassword"),
@@ -85,9 +85,7 @@ public class EditPasswordControllerTest {
     @Test
     public void testOldPasswordIncorrect() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        //mock the return of userRepositroy.findById
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(tempUser));
-        //is authenticated
         request.setAttribute("authenticatedid", 1L);
         assertThrows(ForbiddenOperationException.class, () -> {
             editPasswordController.editPassword(1L, new UpdatePasswordRequest("badOldPassword", "newPassValid", "newPassValid"),

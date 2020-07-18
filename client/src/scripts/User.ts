@@ -2,6 +2,7 @@ import { LocationInterface } from './LocationInteface';
 
 export interface UserApiFormat {
     profile_id?: number,
+    permission_level?: number,
     lastname?: string,
     firstname?: string,
     middlename?: string,

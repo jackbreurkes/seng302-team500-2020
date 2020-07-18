@@ -458,8 +458,6 @@ public class UserProfileController {
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
@@ -516,18 +514,18 @@ public class UserProfileController {
     public void updateUserRole(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody UpdateRoleRequest updateRoleRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, ForbiddenOperationException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException, ForbiddenOperationException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
-        
+
 
         if (authId == null) { // not authenticated
             throw new UserNotAuthenticatedException("you must be authenticated as an admin");
         } else if (editingUser.isPresent()	// the user exists
 				&& !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {	// they are not an admin
-            throw new ForbiddenOperationException("you must be an admin to promote and demote users");
+            throw new UserNotAuthorizedException("you must be an admin to promote and demote users");
         }
 
         // validate request body
@@ -591,7 +589,7 @@ public class UserProfileController {
     @DeleteMapping("/{profileId}")
     @CrossOrigin
     public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
-                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
+                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         // Authenticating the logged in user
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 

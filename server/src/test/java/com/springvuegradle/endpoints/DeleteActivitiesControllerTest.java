@@ -88,7 +88,7 @@ public class DeleteActivitiesControllerTest {
         //mock request
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
-        assertThrows(UserNotAuthenticatedException.class,() -> {
+        assertThrows(UserNotAuthorizedException.class,() -> {
             activitiesController.deleteActivity(3L, 2L, request);
         });
     }

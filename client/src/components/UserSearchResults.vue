@@ -2,13 +2,74 @@
   <div style="text-align: center" id="UserSearchResults">
   <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
+  <v-col v-if="isAdmin" class="d-flex justify-left admin-controls">
+      <div v-if="selectedUsers.length === 1">
+        <v-btn color="primary" @click="editSelectedUser" class="mr-8">edit</v-btn>
+
+        <v-dialog
+      v-model="deleteUserModal"
+      width="500"
+    >
+      <template v-slot:activator="{ on }">
+        <v-btn
+          color="red lighten-2"
+          dark
+          v-on="on"
+          class="mr-8"
+        >
+          delete
+        </v-btn>
+      </template>
+
+      <v-card>
+        <v-card-title
+          class="headline grey lighten-2"
+          primary-title
+        >
+          Delete {{selectedUsers[0].firstname + ' ' + selectedUsers[0].lastname}}?
+        </v-card-title>
+
+        <v-card-text>
+          This will delete the user and all of their information. This operation cannot be undone.
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            text
+            @click="deleteUserModal = false"
+          >
+            cancel
+          </v-btn>
+
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            text
+            @click="deleteSelectedUser"
+          >
+            confirm
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+
+        <v-btn v-if="!selectedUserIsAdmin" color="success" @click="promoteSelectedUser" class="mr-8">promote</v-btn>
+        <v-btn v-if="selectedUserIsAdmin" color="warning" @click="demoteSelectedUser" class="mr-8">demote</v-btn>
+      </div>
+  </v-col>
     <v-data-table
     :no-data-text="noDataText"
     :headers="headers"
     :items="users"
-    class="elevation-1"
+    item-key="profile_id"
     @click:row="goToUser"
-    
+    :show-select="isAdmin"
+    single-select
+    v-model="selectedUsers"
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
     <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
@@ -22,8 +83,13 @@
       <td class="text-xs-right">{{ users.item.nickname }}</td>
       <td class="text-xs-right">{{ users.item.primary_email }}</td>
       <td class="text-xs-right">{{ users.item.short_interests }}</td>
+      <td class="text-xs-right">{{ users.item.primary_email }}</td>
     </template>
   </v-data-table>
+
+
+
+
 
   </div>
 </template>
@@ -35,6 +101,8 @@ import { searchUsers } from '../controllers/userSearch.controller';
 import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
+import * as properties from "../services/properties.service";
+import * as adminController from "../controllers/admin.controller";
 
 // app Vue instance
 const UserSearchResults = Vue.extend({
@@ -57,6 +125,9 @@ const UserSearchResults = Vue.extend({
         { text: 'Email', value: 'primary_email' },
         { text: 'Interests', sortable: false, value: 'short_interests' }
       ],
+      isAdmin: false,
+      selectedUsers: [],
+      deleteUserModal: false,
       users: [] as UserApiFormat[],
       errorMessage: "",
       noDataText: "No users found",
@@ -64,9 +135,25 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: function() {
+    if (properties.getAdminMode()) {
+      this.isAdmin = true;
+    }
     this.search({});
   },
+
+  computed: {
+    selectedUserIsAdmin: function() {
+      if (this.selectedUsers.length !== 1) {
+        return false;
+      }
+
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser.permission_level && selectedUser.permission_level >= 120;
+    }
+  },
+
   methods: {
+
     goToUser: function(userId: any) {
       this.$router.push("/profiles/" + userId.profile_id);
     },
@@ -110,6 +197,37 @@ const UserSearchResults = Vue.extend({
         this.noDataText = this.errorMessage;
         this.users = [];
       });
+    },
+
+    deleteSelectedUser: function() {
+      this.deleteUserModal = false;
+      // let selectedUser: UserApiFormat = this.selectedUsers[0];
+      // TODO add delete button once in repo
+    },
+
+    editSelectedUser: function() {
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      this.$router.push(`/profiles/${selectedUser.profile_id!}/edit`);
+    },
+
+    promoteSelectedUser: async function() {
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      try {
+        await adminController.promoteUserToAdmin(selectedUser.profile_id!);
+        selectedUser.permission_level = 126;
+      } catch (e) {
+        this.errorMessage = e.message;
+      }
+    },
+
+    demoteSelectedUser: async function() {
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      try {
+        await adminController.demoteUserToBasicUser(selectedUser.profile_id!);
+        selectedUser.permission_level = 0;
+      } catch (e) {
+        this.errorMessage = e.message;
+      }
     }
   }
 });
@@ -123,5 +241,9 @@ export default UserSearchResults;
 }
 p {
   display: inline-block;
+}
+
+.admin-controls {
+  height: 50px;
 }
 </style>

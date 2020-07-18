@@ -332,7 +332,7 @@ public class UserProfileControllerMockTest {
         		.requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
         		.andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
     
     @Test
@@ -518,7 +518,7 @@ public class UserProfileControllerMockTest {
                 .requestAttr("authenticatedid", adminId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isConflict());
     }
 
 }
