@@ -28,6 +28,8 @@ import Vue from "vue";
 import { searchUsers } from '../controllers/userSearch.controller';
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "@/scripts/User";
+// eslint-disable-next-line no-unused-vars
+import { Dictionary } from 'vue-router/types/router';
 
 // app Vue instance
 const UserSearchResults = Vue.extend({
@@ -35,7 +37,7 @@ const UserSearchResults = Vue.extend({
   props: ['searchTerms'],
   watch: {
     searchTerms(newValue) {
-      this.search(newValue[0], newValue[1], newValue[2]);
+      this.search(newValue);
     }
   },
   data () {
@@ -54,7 +56,7 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: function() {
-    this.search("", "", "");
+    this.search({});
   },
   methods: {
     goToUser: function(userId: any) {
@@ -80,10 +82,10 @@ const UserSearchResults = Vue.extend({
         return activitiesString+"...";
       }
     },
-    search: function(name: string, nickname: string, email: string) {
+    search: function(searchTerms: Dictionary<string>) {
       this.noDataText = "No users found";
       this.errorMessage = "";
-      searchUsers(name, nickname, email)
+      searchUsers(searchTerms)
       .then((users) => {
         this.users = users as UserApiFormat[];
       })

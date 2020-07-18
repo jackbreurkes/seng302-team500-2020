@@ -20,7 +20,7 @@
                     :placeholder="searchBy"
                     outlined
                     click:append="search('k')"
-                    v-model="searchTerm"
+                    v-model="firstname"
                     @keyup.enter.native="search()"
                   ></v-text-field> </v-col>
                     <v-col xs="12" sm="12" md="4" lg="4">
@@ -29,7 +29,7 @@
                     :placeholder="searchBy"
                     outlined
                     click:append="search('k')"
-                    v-model="searchTerm"
+                    v-model="middlename"
                     @keyup.enter.native="search()"
                   ></v-text-field> </v-col>
                     <v-col xs="12" sm="12" md="4" lg="4">
@@ -38,7 +38,7 @@
                     :placeholder="searchBy"
                     outlined
                     click:append="search('k')"
-                    v-model="searchTerm"
+                    v-model="lastname"
                     @keyup.enter.native="search()"
                   ></v-text-field> </v-col> </v-row>
                 </v-col>
@@ -147,6 +147,8 @@ import Vue from "vue";
 import FormValidator from "../scripts/FormValidator";
 import UserSearchResults from "./UserSearchResults.vue";
 import * as activityController from "../controllers/activity.controller";
+// eslint-disable-next-line no-unused-vars
+import { Dictionary } from 'vue-router/types/router';
 
 // app Vue instance
 const Search = Vue.extend({
@@ -161,7 +163,10 @@ const Search = Vue.extend({
       searchBy: "Name",
       methodRadioGroup: "or",
       searchTerm: "",
-      searchTerms: ["", "", ""],
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      searchTerms: {} as Dictionary<string>,
       availableActivityTypes: [] as string[],
       selectedActivityTypes: [] as string[],
       searchRulesModal: false,
@@ -183,24 +188,25 @@ const Search = Vue.extend({
 
   methods: {
       search: function() {
-          if (this.searchTerm.trim().length >= 1) {
-            if (this.searchBy == this.possibleSearchBys[1]) {
-              this.errorMessage = ""
-              this.searchTerms = ["", this.searchTerm, ""];
-            } else if (this.searchBy == this.possibleSearchBys[2]) {
-              this.errorMessage = ""
-              this.searchTerms = ["", "", this.searchTerm];
-            } else {
-              if (this.searchTerm.trim().includes(" ")) {
-              this.errorMessage = ""
-                this.searchTerms = [this.searchTerm, "", ""];
-              } else {
+          if (this.searchTerm.trim().length >= 1 || (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1)) {
+            if (this.searchBy == "Name") {
+              if (this.firstname == "" || this.lastname == "") {
                 this.errorMessage = "Must enter characters from first and last names (or entire names)";
-                
+              } else {
+                this.errorMessage = "";
+                this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
               }
+            } else {
+              this.errorMessage = "";
+              this.searchTerms = {};
+              this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
             }
           } else {
-            this.errorMessage = "Must enter characters";
+            if (this.searchBy == "Name") {
+              this.errorMessage = "Must enter at least 1 character for both first and last names";
+            } else {
+              this.errorMessage = "Must enter a search string";
+            }
           }
       }
     }

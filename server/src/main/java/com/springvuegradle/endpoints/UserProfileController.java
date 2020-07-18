@@ -201,6 +201,9 @@ public class UserProfileController {
     	    	
     	// The following Strings will simply be null if the associated parameter is not specified
     	String searchedFullname = request.getParameter("fullname");
+    	String searchedFirstname = request.getParameter("firstname");	// First-, middle-, last-name parameters can be used instead of fullname to aid in dealing with names with spaces
+    	String searchedMiddlename = request.getParameter("middlename");
+    	String searchedLastname = request.getParameter("lastname");
     	String searchedNickname = request.getParameter("nickname");
     	String searchedEmail = request.getParameter("email");
         String searchedActivities = request.getParameter("activity");
@@ -210,6 +213,8 @@ public class UserProfileController {
     	
 		if (searchedNickname != null && searchedNickname != "") {
 			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
+		} else if (searchedFirstname != null && searchedFirstname != "") {
+			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
 		} else if (searchedFullname != null && searchedFullname != "") {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && searchedEmail != "") {
@@ -237,7 +242,6 @@ public class UserProfileController {
     		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
     	}
     	
-    	// TODO: Make able to handle names with spaces (e.g. lastname: "van Beethoven")
     	String firstname = "";
     	String middlename = "";
     	String lastname = "";
@@ -255,6 +259,30 @@ public class UserProfileController {
     	
     	List<Profile> profiles = new ArrayList<Profile>();
     	if (middlename.length() == 0) {
+    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    	} else {
+    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    	}
+
+		return profiles;
+    }
+    
+    /**
+     * Function for finding users by the initial portion of their first, middle and last names, each given separately
+     * @param firstname initial (or full) part of the firstname to find
+     * @param middlename initial (or full) part of the middlename to find
+     * @param lastname initial (or full) part of the lastname to find
+     * @return list of profiles whose first, middle and last names match the portions specified
+     * @throws InvalidRequestFieldException if there is not at least one character in both of the first and last names
+     */
+    private List<Profile> getUsersByNamePieces(String firstname, String middlename, String lastname) throws InvalidRequestFieldException {
+
+    	if (lastname == null || lastname.length() == 0) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();
+    	if (middlename == null || middlename.length() == 0) {
     		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
     	} else {
     		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
