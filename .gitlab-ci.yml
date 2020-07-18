@@ -41,6 +41,10 @@ dev-build:
     - cd client
     - npm run build
     - cd ../server
+    - export MYSQL_URL=db2.csse.canterbury.ac.nz
+    - export DEV_DB_NAME=seng302-2020-team500-test
+    - export PROD_DB_NAME=seng302-2020-team500-prod
+    - export MYSQL_PASSWORD=ExceptSamples8435
     - ./gradlew bootJar
     - cd ..
     - mkdir -p ../client-dev/
@@ -61,6 +65,11 @@ release-build:
     - npm install
     - npm run build-prod
     - cd ../server
+    - export MYSQL_URL=db2.csse.canterbury.ac.nz
+    - export DEV_DB_NAME=seng302-2020-team500-test
+    - export PROD_DB_NAME=seng302-2020-team500-prod
+    - export MYSQL_PASSWORD=ExceptSamples8435
+    - export spring_profiles_active=prod # use application-prod.properties
     - ./gradlew bootJar
     - cd ..
     - mkdir -p ../client-prod/
