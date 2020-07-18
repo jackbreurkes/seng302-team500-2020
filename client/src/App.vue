@@ -109,7 +109,7 @@
     methods: {
       loadNavInfo: function() {
           this.items = [
-            {title: 'Search (Not implemented)', icon: 'mdi-magnify'},
+            {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'Home ', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
             {title: 'Activities (Not implemented)', icon: 'mdi-bike' },
             {title: 'Friends (Not implemented)', icon: 'mdi-account-group' },
