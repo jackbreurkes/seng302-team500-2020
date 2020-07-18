@@ -37,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {UserProfileController.class})
 @WebMvcTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled
 class GetUserByActivityTypeTest {
 
     private MockMvc mvc;
