@@ -8,7 +8,7 @@
 
         <v-dialog
       v-model="deleteUserModal"
-      width="500"
+      width="450"
     >
       <template v-slot:activator="{ on }">
         <v-btn
@@ -23,7 +23,7 @@
 
       <v-card>
         <v-card-title
-          class="headline grey lighten-2"
+          class="headline"
           primary-title
         >
           Delete {{selectedUsers[0].firstname + ' ' + selectedUsers[0].lastname}}?
@@ -36,21 +36,19 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-spacer></v-spacer>
           <v-btn
             text
             @click="deleteUserModal = false"
           >
             cancel
           </v-btn>
-
           <v-spacer></v-spacer>
           <v-btn
             color="error"
             text
             @click="deleteSelectedUser"
           >
-            confirm
+            delete
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -101,8 +99,10 @@ import { searchUsers } from '../controllers/userSearch.controller';
 import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
+import * as auth from "../services/auth.service";
 import * as properties from "../services/properties.service";
 import * as adminController from "../controllers/admin.controller";
+import { deleteUserAccount } from "../controllers/profile.controller"
 
 // app Vue instance
 const UserSearchResults = Vue.extend({
@@ -126,7 +126,7 @@ const UserSearchResults = Vue.extend({
         { text: 'Interests', sortable: false, value: 'short_interests' }
       ],
       isAdmin: false,
-      selectedUsers: [],
+      selectedUsers: [] as UserApiFormat[],
       deleteUserModal: false,
       users: [] as UserApiFormat[],
       errorMessage: "",
@@ -142,6 +142,15 @@ const UserSearchResults = Vue.extend({
   },
 
   computed: {
+
+    selectedUser: function() {
+      if (this.selectedUsers.length !== 1) {
+        return null;
+      }
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser;
+    },
+
     selectedUserIsAdmin: function() {
       if (this.selectedUsers.length !== 1) {
         return false;
@@ -199,32 +208,65 @@ const UserSearchResults = Vue.extend({
       });
     },
 
+    /**
+     * deletes the selected user and updates the view accordingly
+     */
     deleteSelectedUser: function() {
       this.deleteUserModal = false;
-      // let selectedUser: UserApiFormat = this.selectedUsers[0];
-      // TODO add delete button once in repo
+      if (this.selectedUser === null) {
+        return;
+      }
+      let deleteId: number = this.selectedUser.profile_id!;
+      deleteUserAccount(deleteId)
+        .then(() => {
+          if (auth.getMyUserId() == deleteId) {
+            properties.removeAdminMode();
+            auth.clearAuthInfo();  
+            this.$router.push({ name: "register" });  
+          } else {
+            this.users = this.users.filter(user => user.profile_id !== deleteId);
+          }
+        })
+        .catch((err) => {
+          this.errorMessage = err.message;
+        })
     },
 
+    /**
+     * takes the user to the edit page for the selected profile
+     */
     editSelectedUser: function() {
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
-      this.$router.push(`/profiles/${selectedUser.profile_id!}/edit`);
+      if (this.selectedUser === null) {
+        return;
+      }
+      this.$router.push(`/profiles/${this.selectedUser.profile_id!}/edit`);
     },
 
+    /**
+     * promotes the selected user to an admin
+     */
     promoteSelectedUser: async function() {
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      if (this.selectedUser === null) {
+        return;
+      }
       try {
-        await adminController.promoteUserToAdmin(selectedUser.profile_id!);
-        selectedUser.permission_level = 126;
+        await adminController.promoteUserToAdmin(this.selectedUser.profile_id!);
+        this.selectedUser.permission_level = 126;
       } catch (e) {
         this.errorMessage = e.message;
       }
     },
 
+    /**
+     * demotes the selected admin user to a regular user
+     */
     demoteSelectedUser: async function() {
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      if (this.selectedUser === null) {
+        return;
+      }
       try {
-        await adminController.demoteUserToBasicUser(selectedUser.profile_id!);
-        selectedUser.permission_level = 0;
+        await adminController.demoteUserToBasicUser(this.selectedUser.profile_id!);
+        this.selectedUser.permission_level = 0;
       } catch (e) {
         this.errorMessage = e.message;
       }
