@@ -10,7 +10,8 @@ Feature: Viewing User Profiles
     Then I will receive a message that I am not logged in
 
   Scenario: User is logged in
-    Given I am logged in as the profile with id 2
+    Given there is a profile in the database with profile id 2
+    And I am logged in as the profile with id 2
     When I try to view the profile with id 1
     Then I will view the profile with id 1
 
@@ -21,7 +22,8 @@ Feature: Viewing User Profiles
     Then the profile with id 1's "bio" will have been updated to "This is my new bio!"
 
   Scenario: User cannot edit other profile
-    Given I am logged in as the profile with id 2
+    Given there is a profile in the database with profile id 2
+    And I am logged in as the profile with id 2
     And I am trying to update the profile with id 1's "bio" information to "This is my new bio!"
     When I try to update the profile information of the profile with id 1
     Then I will receive a message that I am not authenticated as the target user

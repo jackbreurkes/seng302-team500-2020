@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.springvuegradle.AppConfiguration;
+import com.springvuegradle.RESTApplication;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
 import org.junit.jupiter.api.TestInstance;
@@ -23,10 +25,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.stereotype.Repository;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -52,17 +61,18 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-//@ExtendWith(SpringExtension.class)
-//@SpringBootTest
+@EnableAutoConfiguration
+@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+@ContextConfiguration(classes = AppConfiguration.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SearchTestSteps {
-	
-	/*@Autowired
+
     private MockMvc mvc;
 
     @InjectMocks
-	@Autowired
-    private UserProfileController userProfileController;*/
+    private UserProfileController userProfileController;
 
     @Autowired
     private UserRepository userRepository;
@@ -79,10 +89,10 @@ public class SearchTestSteps {
     /*@Mock
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	public class SearchTestSteps {
-	
+
 	@Autowired
     private MockMvc mvc;
-	
+
     @InjectMocks
     private UserProfileController userProfileController;
 
@@ -114,7 +124,7 @@ public class SearchTestSteps {
     private MockHttpServletRequest mockRequest;
     private MvcResult requestResult;
     private Exception errorResponse;
-    
+
     private List<Profile> profiles;
 
 	@Given("the following profiles have been added to the database")
@@ -126,7 +136,7 @@ public class SearchTestSteps {
 	    // Double, Byte, Short, Long, BigInteger or BigDecimal.
 	    //
 	    // For other transformations you can register a DataTableType.
-		
+
 		List<Map<String, String>> profilesToAdd = dataTable.asMaps();
 		profiles = new ArrayList<Profile>();
 
@@ -141,10 +151,11 @@ public class SearchTestSteps {
 			System.out.println("Their last name is: " + person.get("last name"));
 
 			//profile id | first name | middle name | last name   | email                 | nickname     | interests
-			User newUser = new User(Long.parseLong(person.get("profile id")));
+//			User newUser = new User(Long.parseLong(person.get("profile id")));
+			User newUser = new User(); // TODO get this to work with the desired ID, not just `new User();`
 			System.out.println("user: " + newUser);
 			System.out.println("userRepository: " + userRepository);
-			newUser = userRepository.save(newUser);
+//			newUser = userRepository.save(newUser);
 			Profile newProfile = new Profile(newUser, person.get("first name"), person.get("last name"), LocalDate.now(), Gender.NON_BINARY);
 			profileRepository.save(newProfile);
 		}
@@ -159,11 +170,11 @@ public class SearchTestSteps {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
-        
+
         ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(requestResult.getResponse().getContentAsString());
         LinkedHashMap<String, Object> profileFound = body.get(0);
         LinkedHashMap<String, Object> userFound = (LinkedHashMap<String, Object>) profileFound.get("user");
-    	
+
     	assertEquals(BigInteger.valueOf(1l), userFound.get("user_id"));*/
 	}
 
@@ -173,32 +184,8 @@ public class SearchTestSteps {
 	    throw new io.cucumber.java.PendingException();
 	}
 
-	@When("I search for profiles interested in Scootering Skateboarding that are anded together")
-	public void i_search_for_profiles_interested_in_Scootering_Skateboarding_that_are_anded_together() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
-	@When("I search for profiles interested in Running Cycling that are ored together")
-	public void i_search_for_profiles_interested_in_Running_Cycling_that_are_ored_together() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
-	@When("I search for profiles interested in  that are ored together")
-	public void i_search_for_profiles_interested_in_that_are_ored_together() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
-	@When("I search for profiles interested in Running that are anded together")
-	public void i_search_for_profiles_interested_in_Running_that_are_anded_together() {
-	    // Write code here that turns the phrase above into concrete actions
-	    throw new io.cucumber.java.PendingException();
-	}
-
-	@When("I search for profiles interested in Running Cycling that are anded together")
-	public void i_search_for_profiles_interested_in_Running_Cycling_that_are_anded_together() {
+	@When("I search for profiles interested in {string} that are {string} together")
+	public void i_search_for_profiles_interested_in_activities_by_method(String spaceSeparatedActivityTypes, String method) {
 	    // Write code here that turns the phrase above into concrete actions
 	    throw new io.cucumber.java.PendingException();
 	}
