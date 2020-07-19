@@ -58,7 +58,7 @@ public class Activity {
     private String location;
 
     @NotNull
-    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
