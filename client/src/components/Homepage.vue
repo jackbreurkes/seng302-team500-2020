@@ -1,98 +1,100 @@
 <template>
-  <div>
-    <v-container fill-height align-content-center>
-      <v-row align="top" justify="center">
-        <v-col sm="12" md="10" lg="4">
-          <v-card class="elevation-12">
-            <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <div v-if="currentlyHasAuthority">
-                <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
-              </div>
-            </v-toolbar>
-            <v-card-text class="grey lighten-4">
-              <h3>Name</h3>
-              <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
-
-              <div v-if="currentUser.bio">
-                <h3>Bio</h3>
-                <p>{{ currentUser.bio }}</p>
-                <br />
-              </div>
-
-              <h3>Info</h3>
-              <p>Born on {{ currentUser.date_of_birth }}</p>
-              <br />
-              <p>Identifies as {{ currentUser.gender }}</p>
-              <br />
-              <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
-                <p>Fitness level {{ currentUser.fitness }}</p>
-                <br />
-              </div>
-
-              <div v-if="currentUser.location !== undefined && currentUser.location.city !==null && currentUser.location.city.length != 0">
-              <br />
-              <p> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
-              <br />
-              </div>
-
-              <div v-if="currentlyHasAuthority">
-                <p class="mb-0">Primary email: {{ currentUser.primary_email }}</p>
-                <div v-if="currentUser.additional_email && currentUser.additional_email.length > 0">
-                  <p class="mb-0">Secondary Emails {{ currentUser.additional_email.length }} / 4:</p>
-                  <ul>
-                    <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
-                  </ul>
+  <div v-if="currentUser.profile_id">
+    <div>
+      <v-container fill-height align-content-center>
+        <v-row align="top" justify="center">
+          <v-col sm="12" md="10" lg="4">
+            <v-card class="elevation-12">
+              <v-toolbar color="primary" dark flat>
+                <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <div v-if="currentlyHasAuthority">
+                  <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
+                </div>
+              </v-toolbar>
+              <v-card-text class="grey lighten-4">
+                <h3>Name</h3>
+                <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
+  
+                <div v-if="currentUser.bio">
+                  <h3>Bio</h3>
+                  <p>{{ currentUser.bio }}</p>
                   <br />
                 </div>
-              </div>
-
-              <div v-if="currentUser.passports && currentUser.passports.length > 0">
-                <h3>Passport Countries</h3>
-                <v-chip
-                  class="mr-1 mb-2"
-                  v-for="country of currentUser.passports"
-                  v-bind:key="country"
-                  outlined
-                >{{ country }}</v-chip>
-              </div>
-
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col sm="12" md="10" lg="8">
-          <v-card class="elevation-12">
-            <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <div v-if="currentlyHasAuthority">
-                <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
-              </div>
-            </v-toolbar>
-
-            <v-card-text class="grey lighten-4">
-              <div v-if="currentUser.activities && currentUser.activities.length > 0">
-                <h3>Interests</h3>
-                <v-chip
-                  class="mr-2 mb-2"
-                  v-for="activityType of currentUser.activities"
-                  v-bind:key="activityType"
-                >{{ activityType }}</v-chip>
-              </div>
-              <v-tabs v-model="durationTab" grow>
-                <v-tab v-for="item in activityList" :key="item.tab">{{ item.tab }}</v-tab>
-              </v-tabs>
-              <v-tabs-items v-model="durationTab">
-                <v-tab-item v-for="item in activityList" :key="item.tab">
-                  <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
-                </v-tab-item>
-              </v-tabs-items>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
+  
+                <h3>Info</h3>
+                <p>Born on {{ currentUser.date_of_birth }}</p>
+                <br />
+                <p>Identifies as {{ currentUser.gender }}</p>
+                <br />
+                <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
+                  <p>Fitness level {{ currentUser.fitness }}</p>
+                  <br />
+                </div>
+  
+                <div v-if="currentUser.location !== undefined && currentUser.location.city !==null && currentUser.location.city.length != 0">
+                <br />
+                <p> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+                <br />
+                </div>
+  
+                <div v-if="currentlyHasAuthority">
+                  <p class="mb-0">Primary email: {{ currentUser.primary_email }}</p>
+                  <div v-if="currentUser.additional_email && currentUser.additional_email.length > 0">
+                    <p class="mb-0">Secondary Emails {{ currentUser.additional_email.length }} / 4:</p>
+                    <ul>
+                      <li v-for="email in currentUser.additional_email" :key="email">{{ email }}</li>
+                    </ul>
+                    <br />
+                  </div>
+                </div>
+  
+                <div v-if="currentUser.passports && currentUser.passports.length > 0">
+                  <h3>Passport Countries</h3>
+                  <v-chip
+                    class="mr-1 mb-2"
+                    v-for="country of currentUser.passports"
+                    v-bind:key="country"
+                    outlined
+                  >{{ country }}</v-chip>
+                </div>
+  
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col sm="12" md="10" lg="8">
+            <v-card class="elevation-12">
+              <v-toolbar color="primary" dark flat>
+                <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <div v-if="currentlyHasAuthority">
+                  <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
+                </div>
+              </v-toolbar>
+  
+              <v-card-text class="grey lighten-4">
+                <div v-if="currentUser.activities && currentUser.activities.length > 0">
+                  <h3>Interests</h3>
+                  <v-chip
+                    class="mr-2 mb-2"
+                    v-for="activityType of currentUser.activities"
+                    v-bind:key="activityType"
+                  >{{ activityType }}</v-chip>
+                </div>
+                <v-tabs v-model="durationTab" grow>
+                  <v-tab v-for="item in activityList" :key="item.tab">{{ item.tab }}</v-tab>
+                </v-tabs>
+                <v-tabs-items v-model="durationTab">
+                  <v-tab-item v-for="item in activityList" :key="item.tab">
+                    <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
+                  </v-tab-item>
+                </v-tabs-items>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </div>
   </div>
 </template>
 
@@ -195,6 +197,8 @@ const Homepage = Vue.extend({
       .catch(err => {
         if (err.response && err.response.status === 401) {
           this.$router.push({ name: "login" });
+        } else if (err.response && err.response.status === 404) {
+          this.$router.push({ name: "landing" });
         }
         console.error(err);
       });
