@@ -42,6 +42,7 @@ class GetUserByActivityTypeTest {
     private MockMvc mvc;
 
     // all mocks below are required for injection into userProfileController
+    // ################ every single repository used by userProfileController is required #############
     @MockBean
     private UserRepository userRepository;
     @MockBean
@@ -56,6 +57,8 @@ class GetUserByActivityTypeTest {
     private ActivityTypeRepository activityTypeRepository;
     @MockBean
     private LocationRepository locationRepository;
+    @MockBean
+    private SessionRepository sessionRepository;
 
     /**
      * Creates the edit password controller and inserts the mocks we define in the place of the repositories

@@ -10,17 +10,19 @@
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
-      <v-navigation-drawer
+      <v-navigation-drawer 
           v-model= this.bar
           :expand-on-hover= this.collapsible
           :mini-variant = this.smallForm
           :right= this.right
+          color = "rgba(30,30,30, 0.95)"
           absolute
           dark
-          color = "rgba(30, 30, 30, 0.95)"
           overlay-opacity= 0.7
-
+          fixed
+          permanent = true 
           v-if="showNavBar()"
+
         >
           <v-list
             dense
@@ -56,8 +58,9 @@
               </v-list-item-content>
             </v-list-item>
           </v-list>
-        </v-navigation-drawer>
-      <v-content>
+        </v-navigation-drawer >
+      <v-content           
+      :class= "[computedPadding]">
         <transition name="page-transition">
           <router-view></router-view>
         </transition>
@@ -91,6 +94,11 @@
         currentName: ""
       }
     },
+      computed: {
+    computedPadding () {
+      return `p${'l'}-${12}`
+    },
+  },
     
     created() {
     const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
@@ -108,11 +116,9 @@
 
     methods: {
       loadNavInfo: function() {
-          this.items = [
+          this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'Home ', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
-            {title: 'Activities (Not implemented)', icon: 'mdi-bike' },
-            {title: 'Friends (Not implemented)', icon: 'mdi-account-group' },
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
