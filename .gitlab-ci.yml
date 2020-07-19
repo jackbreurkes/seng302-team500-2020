@@ -92,7 +92,7 @@ deploy-prod-server:
     paths:
     - server/out
  
- deploy-prod-client:
+deploy-prod-client:
   stage: deploy
   script:
     # Create artifact
