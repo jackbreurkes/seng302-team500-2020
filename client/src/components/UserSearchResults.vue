@@ -64,7 +64,7 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: function() {
-    this.search({});
+    this.search(this.searchTerms);
   },
   methods: {
     goToUser: function(userId: any) {

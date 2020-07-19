@@ -130,7 +130,7 @@
                 </div>
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <div id="searchResults">
-                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults>
+                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults >
                 </div>
             </v-card>
             </v-col>
@@ -169,10 +169,10 @@ const Search = Vue.extend({
       availableActivityTypes: [] as string[],
       selectedActivityTypes: [] as string[],
       searchRulesModal: false,
-        errorMessage: ""
+        errorMessage: "",
     };
   },
-  
+
   components: { UserSearchResults },
 
   created() {
@@ -185,6 +185,7 @@ const Search = Vue.extend({
         console.error("unable to load activity types");
         console.error(err);
       });
+      this.checkSaved();
   },
 
   methods: {
@@ -224,9 +225,70 @@ const Search = Vue.extend({
               this.errorMessage = "Must enter a search string";
             }
           }
+      },
+      checkSaved: function(){
+        if(localStorage.getItem("searchBy") != undefined){
+          //TODO here check the timer
+          this.searchBy = localStorage.getItem("searchBy")!;
+          if(this.searchBy === "Name"){
+            this.firstname = localStorage.getItem("searchFirstName")!;
+            this.lastname = localStorage.getItem("searchLastName")!;
+            this.middlename = localStorage.getItem("searchMiddleName")!;
+
+            localStorage.removeItem("searchFirstName");
+            localStorage.removeItem("searchLastName");
+            localStorage.removeItem("searchMiddleName");
+
+            this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
+          }else if(this.searchBy === "Nickname"){
+            this.searchTerm = localStorage.getItem("searchNickName")!;
+
+            localStorage.removeItem("searchNickName");
+
+            this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
+          }else if(this.searchBy === "Email"){
+            this.searchTerm = localStorage.getItem("searchEmail")!;
+
+            localStorage.removeItem("searchEmail");
+          
+            this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
+          }else{
+            //activities
+            this.selectedActivityTypes = localStorage.getItem("searchActivityTypes")!.split(",");
+            localStorage.removeItem("searchActivityTypes");
+
+            let searchActivitiesString = "";
+              for (let activity in this.selectedActivityTypes) {
+                searchActivitiesString += this.selectedActivityTypes[activity] + " ";
+              }
+              this.searchTerms = {"activity": searchActivitiesString.trim(), "method": this.methodRadioGroup}
+          }
+          //cleanup
+          localStorage.removeItem("searchBy");
+          
+        }
+      }
+    },
+  beforeRouteLeave (to, from, next){
+    console.log(to);
+    if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
+      //save to local storage
+      localStorage.setItem("searchBy", this.searchBy);
+      if(this.searchBy === "Email"){
+        localStorage.setItem("searchEmail", this.searchTerm)
+      }else if (this.searchBy === "Name"){
+        localStorage.setItem("searchFirstName", this.firstname);
+        localStorage.setItem("searchMiddleName", this.middlename);
+        localStorage.setItem("searchLastName", this.lastname);
+      }else if (this.searchBy === "Nickname"){
+        localStorage.setItem("searchNickName", this.searchTerm)
+      }else{
+        //interests
+        localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
       }
     }
-  
+    next()
+  }
 });
 
 export default Search;
