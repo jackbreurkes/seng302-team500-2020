@@ -59,6 +59,8 @@ class UserProfileControllerTest {
     @MockBean
     private ActivityRepository activityRepository;
     @MockBean
+    private SessionRepository sessionRepository;
+    @MockBean
     private ActivityTypeRepository activityTypeRepository;
     @MockBean
     private LocationRepository locationRepository;

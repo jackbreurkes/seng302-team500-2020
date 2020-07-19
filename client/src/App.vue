@@ -94,8 +94,8 @@
     
     created() {
     const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
-    this.updateUserData();
     this.currentProfileId = profileId;
+    this.updateUserData();
     this.loadNavInfo();
 
 
