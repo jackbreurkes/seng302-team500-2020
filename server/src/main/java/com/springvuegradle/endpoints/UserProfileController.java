@@ -10,40 +10,25 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Country;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Location;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.CountryRepository;
-import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.LocationRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
-import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
-import com.springvuegradle.util.FormValidator;
 
 
 /**
@@ -84,9 +69,14 @@ public class UserProfileController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
+    /**
+     * Repository used for accessing sessions
+     */
+    @Autowired
+    private SessionRepository sessionRepository;
+
     @Autowired
     private LocationRepository locationRepository;
-
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
@@ -100,22 +90,9 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @Valid @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-//        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-//        boolean isTargetUser = authId != null && authId == profileId;
-//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-//        if (!isTargetUser && !isAdmin) {
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
@@ -224,11 +201,6 @@ public class UserProfileController {
 //
 //        Optional<User> editingUser = userRepository.findById(authId);
 //
-//        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-//            //here we check permission level and update the password accordingly
-//            //assuming failure without admin
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
 //
 //        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
 //            throw new InvalidRequestFieldException("location must have a city and a country");
@@ -291,15 +263,11 @@ public class UserProfileController {
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
         if (validationErrors.hasErrors()) {
@@ -335,5 +303,36 @@ public class UserProfileController {
         } else {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
+    }
+
+    /**
+     * Deletes a user and its associated data with a user id by deleting all the profile data
+     * and then deleting the user itself.
+     * @param profileId of the user to be deleted
+     * @throws RecordNotFoundException if the user doesn't exist
+     * @throws UserNotAuthenticatedException if the user isn't the original profile or not an admin
+     */
+    @DeleteMapping("/{profileId}")
+    @CrossOrigin
+    public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
+                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
+        // Authenticating the logged in user
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+
+        // Get relevant profile
+        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+        if (optionalProfile.isEmpty()) {
+            throw new RecordNotFoundException("Profile not found.");
+        }
+        Profile profile = optionalProfile.get();
+        User user = profile.getUser();
+
+        // If deleting user-related data from the database, must be done here and separately
+        // Cascading delete doesn't work
+        sessionRepository.deleteUserSession(user);
+        emailRepository.deleteUserEmails(user);
+        profileRepository.delete(profile);
+        userRepository.delete(user);
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
     }
 }

@@ -1,6 +1,7 @@
 package cucumber.steps;
 
 import com.springvuegradle.endpoints.UserProfileController;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
@@ -12,25 +13,17 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -147,7 +140,8 @@ public class EditProfileStepsTest {
         when(profileRepository.save(testProfile)).thenReturn(testProfile);
         try {
             successReponse = userProfileController.updateProfile(updateProfileRequest, (long) id, mockRequest);
-        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException | RecordNotFoundException e) {
+        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException
+                | RecordNotFoundException | UserNotAuthorizedException e) {
             errorResponse = e;
         }
     }
