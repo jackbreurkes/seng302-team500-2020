@@ -253,7 +253,6 @@ const Search = Vue.extend({
           
             this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
           }else{
-            //activities
             this.selectedActivityTypes = localStorage.getItem("searchActivityTypes")!.split(",");
             localStorage.removeItem("searchActivityTypes");
 
@@ -263,7 +262,6 @@ const Search = Vue.extend({
               }
               this.searchTerms = {"activity": searchActivitiesString.trim(), "method": this.methodRadioGroup}
           }
-          //cleanup
           localStorage.removeItem("searchBy");
           
         }
