@@ -66,22 +66,28 @@ const UserSearchResults = Vue.extend({
     },
     getShortenedActivitiesString: function(activities: string[]) {
       let activitiesString = "";
-      if (activities == undefined || activities.length == 0) {
-        return "";
-      } else if (activities.length <= 3) {
-        for (let activityIndex in activities) {
-          activitiesString = activitiesString + activities[activityIndex] + ", ";
+      //here not working
+      console.log(this.searchTerms["activity"]);
+      if(this.searchTerms["activity"] !== undefined){
+        return this.searchTerms["activity"].replace(/[ ,]+/g, ", ");
+      }else{
+        if (activities == undefined || activities.length == 0) {
+          return "";
+        } else if (activities.length <= 3) {
+          for (let activityIndex in activities) {
+            activitiesString = activitiesString + activities[activityIndex] + ", ";
+          }
+          activitiesString.trim();
+          activitiesString = activitiesString.substring(0, activitiesString.length-2);
+          return activitiesString;
+        } else {
+          for (let i = 0; i < 3; i++) {
+            activitiesString = activitiesString + activities[i] + ", ";
+          }
+          activitiesString.trim();
+          activitiesString = activitiesString.substring(0, activitiesString.length-2);
+          return activitiesString+"...";
         }
-        activitiesString.trim();
-        activitiesString = activitiesString.substring(0, activitiesString.length-2);
-        return activitiesString;
-      } else {
-        for (let i = 0; i < 3; i++) {
-          activitiesString = activitiesString + activities[i] + ", ";
-        }
-        activitiesString.trim();
-        activitiesString = activitiesString.substring(0, activitiesString.length-2);
-        return activitiesString+"...";
       }
     },
     search: function(searchTerms: Dictionary<string>) {

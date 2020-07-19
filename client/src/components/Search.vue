@@ -153,7 +153,6 @@ import { Dictionary } from 'vue-router/types/router';
 // app Vue instance
 const Search = Vue.extend({
   name: "Search",
-  components: { UserSearchResults },
 
   // app initial state
   data: function() {
@@ -173,6 +172,8 @@ const Search = Vue.extend({
         errorMessage: ""
     };
   },
+  
+  components: { UserSearchResults },
 
   created() {
     activityController
