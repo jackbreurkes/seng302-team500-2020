@@ -1,2 +1,2 @@
 fuser -k 8999/tcp || true
-java -jar test-server/libs/server-0.0.1-SNAPSHOT.jar --server.port=8999
+java -jar test-server/libs/server-0.0.1-SNAPSHOT.jar --server.port=8999 --spring.datasource.url=DB_URL --spring.datasource.username=DB_USERNAME --spring.datasource.password=DB_PASSWORD
