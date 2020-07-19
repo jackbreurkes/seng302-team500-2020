@@ -28,6 +28,7 @@ junit:
   script:
     - cd server
     - ./gradlew test
+    - ./gradlew cucumber
     
 jest:
   stage: test

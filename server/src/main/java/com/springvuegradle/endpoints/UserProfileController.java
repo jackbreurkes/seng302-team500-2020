@@ -3,9 +3,7 @@ package com.springvuegradle.endpoints;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -17,6 +15,7 @@ import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.util.FormValidator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -171,6 +170,189 @@ public class UserProfileController {
             }
         }
         return activityTypes;
+    }
+
+    
+    /**
+     * Handle requests to GET a list of users with optional fullname, nickname and email parameters
+     * If multiple parameters are provided, it will search only by one. The priority of parameters is: nickname, full name, email
+     * @param request HTTPServletRequest corresponding to the user's request
+     * @return an HTTP ResponseEntity with the HTTP response containing all users satisfying the query parameters
+     * @throws InvalidRequestFieldException 
+     */
+    @GetMapping
+    @CrossOrigin
+    public List<ProfileResponse> searchUsers(HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException {
+    	    	
+    	// The following Strings will simply be null if the associated parameter is not specified
+    	String searchedFullname = request.getParameter("fullname");
+    	String searchedFirstname = request.getParameter("firstname");	// First-, middle-, last-name parameters can be used instead of fullname to aid in dealing with names with spaces
+    	String searchedMiddlename = request.getParameter("middlename");
+    	String searchedLastname = request.getParameter("lastname");
+    	String searchedNickname = request.getParameter("nickname");
+    	String searchedEmail = request.getParameter("email");
+        String searchedActivities = request.getParameter("activity");
+        String method = request.getParameter("method");
+
+    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
+    	
+		if (searchedNickname != null && searchedNickname != "") {
+			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
+		} else if (searchedFirstname != null && searchedFirstname != "") {
+			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
+		} else if (searchedFullname != null && searchedFullname != "") {
+			profiles = getUsersByFullname(searchedFullname);
+		} else if (searchedEmail != null && searchedEmail != "") {
+			profiles = getUsersByEmail(searchedEmail);
+		} else if (searchedActivities != null) {
+		    profiles = getProfilesByActivityTypes(searchedActivities, method);
+        }
+
+		List<ProfileResponse> responses = new ArrayList<>();
+		for (Profile profile : profiles) {
+		    responses.add(new ProfileResponse(profile, emailRepository));
+        }
+		return responses;
+    }
+    
+    /**
+     * Get all profiles of users with a full name partially or fully matching the full name given according to specified search rules
+     * @param fullname the substring of the full name to search for
+     * @return list of profiles of users with a full name matching that given
+     * @throws InvalidRequestFieldException when full name does not have at least a first and a last name separated by a ' '
+     */
+    private List<Profile> getUsersByFullname(String fullname) throws InvalidRequestFieldException {
+    	String[] names = fullname.strip().split(" ");
+    	if (names.length < 2) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	String firstname = "";
+    	String middlename = "";
+    	String lastname = "";
+    	if (names.length == 3) {
+	    	firstname = names[0];
+	    	middlename = names[1];
+	    	lastname = names[2];
+    	} else if (names.length == 2) {
+    		firstname = names[0];
+	    	lastname = names[1];
+    	}
+    	if (firstname.length() == 0 || lastname.length() == 0) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();
+    	if (middlename.length() == 0) {
+    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    	} else {
+    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    	}
+
+		return profiles;
+    }
+    
+    /**
+     * Function for finding users by the initial portion of their first, middle and last names, each given separately
+     * @param firstname initial (or full) part of the firstname to find
+     * @param middlename initial (or full) part of the middlename to find
+     * @param lastname initial (or full) part of the lastname to find
+     * @return list of profiles whose first, middle and last names match the portions specified
+     * @throws InvalidRequestFieldException if there is not at least one character in both of the first and last names
+     */
+    private List<Profile> getUsersByNamePieces(String firstname, String middlename, String lastname) throws InvalidRequestFieldException {
+
+    	if (lastname == null || lastname.length() == 0) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();
+    	if (middlename == null || middlename.length() == 0) {
+    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    	} else {
+    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    	}
+
+		return profiles;
+    }
+    
+    /**
+     * Get all users with the email matching that given according to the search match rules of the system
+     * @param email the email (potentially a partial email) to search for
+     * @return list of profiles which have associated emails matching that given
+     * @throws InvalidRequestFieldException when email given has more than one '@' symbol
+     */
+    private List<Profile> getUsersByEmail(String email) throws InvalidRequestFieldException {
+    	/* EMAIL SEARCH
+    	  # must match full text before '@' symbol if there is no @ in the search query
+    	  # if there is an @ in the query, match the query string then anything after
+    	  # e.g. test@gmail.co(.*) */
+    	
+    	List<Email> emails = new ArrayList<Email>();
+    	Set<Profile> profileSet = new HashSet<Profile>();
+    	List<Profile> profiles = new ArrayList<Profile>();
+
+    	String[] emailPortions = email.split("@");
+    	if  (!email.contains("@")) {
+    		// Is not an '@' in the search so only try to match up to the '@' symbol in the database
+    		email = email + "@"; 		// Append '@' to the end so the email is forced to match the entire first portion
+    	} else if (emailPortions.length > 2) {
+    		// Will return empty profile list if has more than 1 '@' symbol - is correct outcome as email would violate system rules
+    		throw new InvalidRequestFieldException("Has not provided a valid email (too many '@' symbols).");
+    	}
+    	
+    	emails = emailRepository.findByEmailStartingWith(email);
+    	
+    	for (Email foundEmail: emails) {
+    		User foundUser = foundEmail.getUser();
+    		Profile foundProfile = profileRepository.getOne(foundUser.getUserId());
+    		profileSet.add(foundProfile);
+    	}
+    	
+    	profileSet.forEach((Profile profile) -> {profiles.add(profile);});
+
+    	return profiles;
+    }
+
+    /**
+     * retrieves profiles based on a search by activity types they are interested in.
+     * @param spaceSeparatedActivityTypeNames the space separated search string of activity type names. case sensitive
+     * @param method if multiple activity types are provided, should specify "and" or "or" for how the search should treat them
+     * @return the list of profiles matching the search
+     */
+    private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException, RecordNotFoundException {
+        List<Profile> profiles = new ArrayList<>();
+
+        if (spaceSeparatedActivityTypeNames.isBlank()) {
+            throw new InvalidRequestFieldException("activity search string cannot be empty");
+        }
+
+        List<String> activityTypeNames = Arrays.asList(spaceSeparatedActivityTypeNames.split(" "));
+
+        if (!Arrays.asList("or", "and").contains(method)) {
+            if (activityTypeNames.size() > 1) {
+                if (method == null) {
+                    throw new InvalidRequestFieldException("a 'method' param must be supplied when searching by multiple activity types");
+                } else {
+                    throw new InvalidRequestFieldException("the method provided for activity type search must be either 'and' or 'or'");
+                }
+            } else {
+                method = "or";
+            }
+        }
+
+        for (String name : activityTypeNames) {
+            if (activityTypeRepository.getActivityTypeByActivityTypeName(name).isEmpty()) {
+                throw new RecordNotFoundException(String.format("an activity type named '%s' does not exist", name));
+            }
+        }
+
+        if (method.toLowerCase().equals("or")) {
+            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        } else { // method equals "and"
+            profiles = profileRepository.findByActivityTypesContainsAllOf(activityTypeNames);
+        }
+        return profiles;
     }
 
 
