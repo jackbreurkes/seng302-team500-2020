@@ -332,7 +332,7 @@ public class UserProfileControllerMockTest {
         		.requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
         		.andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
     
     @Test
@@ -425,10 +425,10 @@ public class UserProfileControllerMockTest {
     	Role role = new Role(126, "admin");
     	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
     	
-    	Long adminId = 0l;
+    	Long adminId = 0L;
     	User adminUser = new User(adminId);
     	
-    	Long profileId = 1l;
+    	Long profileId = 1L;
     	User userToEdit = new User(profileId);
     	    	
     	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
@@ -442,7 +442,7 @@ public class UserProfileControllerMockTest {
                 .requestAttr("authenticatedid", adminId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden());
     }
     
     @Test

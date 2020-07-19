@@ -3,8 +3,8 @@
     <v-form ref="adminDashboardForm">
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
-          <v-col cols="12" sm="8" md="4">
-            <v-card class="elevation-12" width="100%">
+          <v-col cols="12">
+            <v-card class="elevation-12">
               <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>Admin Dashboard</v-toolbar-title>
               </v-toolbar>
@@ -18,9 +18,8 @@
                 </v-btn>
       
               </v-btn-toggle>
-              <br /><br /><br /><br /><br /><br /><br /><br /><br />
-              You are logged in as an admin
-              <br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+              <Search></Search>
             </v-card>
           </v-col>
         </v-row>
@@ -32,10 +31,12 @@
 <script lang="ts">
 import Vue from "vue";
 import * as PropertiesService from '../services/properties.service';
+import Search from "./Search.vue"
 
 // app Vue instance
 const AdminDashboard = Vue.extend({
   name: "AdminDashboard",
+  components: { Search },
 
   // app initial state
   data: function() {
@@ -64,3 +65,9 @@ const AdminDashboard = Vue.extend({
 
 export default AdminDashboard;
 </script>
+
+<style>
+[v-cloak] {
+  display: none;
+}
+</style>

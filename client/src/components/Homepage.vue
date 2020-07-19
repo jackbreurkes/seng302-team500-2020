@@ -208,13 +208,8 @@ const Homepage = Vue.extend({
     }
     this.currentProfileId = profileId;
     
-    if (permissionLevel < 120) {
-      let myProfileId = authService.getMyUserId()
-      if (myProfileId == profileId) {
-        //if we're editing ourself
-        this.currentlyHasAuthority = true;
-      }
-    } else if(PropertiesService.getAdminMode()) {
+    let myProfileId = authService.getMyUserId()
+    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
       this.currentlyHasAuthority = true;
     }
 
