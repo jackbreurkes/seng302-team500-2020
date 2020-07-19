@@ -10,6 +10,10 @@ export function setAdminMode(on: boolean) {
       }
 }
 
+export function removeAdminMode() {
+  document.cookie = "adminMode=; expires=Thu, 01 Jan 1970 00:00:01 GMT;"; // Will remove the adminMode cookie if exists
+}
+
 export function getCookie(name: string) {
     let value = `; ${document.cookie}`;
     let parts = value.split(`; ${name}=`);
