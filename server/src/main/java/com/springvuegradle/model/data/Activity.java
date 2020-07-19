@@ -107,6 +107,14 @@ public class Activity {
      */
     public long getId() {
         return activity_id;
+    }	
+        	
+    /**	
+     * Sets the ID of this activity	
+     * @param id ID to set to	
+     */	
+    public void setId(long id) {	
+        this.activity_id = id;
     }
 
     /**

@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class EditPasswordController {
     @CrossOrigin
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
-            @RequestBody UpdatePasswordRequest updatePasswordRequest,
+            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest,
             HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");

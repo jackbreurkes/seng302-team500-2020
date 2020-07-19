@@ -89,7 +89,7 @@ public class UserProfileController {
     @PutMapping("/{profileId}")
     @CrossOrigin
     public ProfileResponse updateProfile(
-            @RequestBody ProfileObjectMapper request,
+            @Valid @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
@@ -179,7 +179,7 @@ public class UserProfileController {
      */
     @PostMapping
     @CrossOrigin
-    public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
+    public Object createprofile(@Valid @RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
 
         User user = null;
         try {
