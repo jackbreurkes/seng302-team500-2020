@@ -280,10 +280,6 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
  * @param profileId ID number of profile to delete
  */
 export async function deleteUserAccount(profileId: number) {
-    let user = await getProfileById(profileId);
-    if (user === null) {
-        throw new Error("No active user found.");
-    }
     await deleteAccount(profileId);
 }
 

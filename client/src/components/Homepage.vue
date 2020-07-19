@@ -134,7 +134,7 @@ import {
   getDurationActivities,
   getContinuousActivities,
 } from '../controllers/activity.controller';
-import { removeAdminCookie } from "../services/properties.service";
+import { removeAdminMode } from "../services/properties.service";
 import { clearAuthInfo } from "../services/auth.service";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
@@ -279,7 +279,7 @@ const Homepage = Vue.extend({
         .then(() => {
           if (authService.getMyUserId() == this.currentProfileId) {
             //if we're editing ourself
-            removeAdminCookie();
+            removeAdminMode();
             clearAuthInfo();  
             this.$router.push({ name: "register" });  
           } else {
