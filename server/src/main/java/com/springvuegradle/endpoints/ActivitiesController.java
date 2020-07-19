@@ -11,9 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +26,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Profile;
@@ -67,7 +68,7 @@ public class ActivitiesController {
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                              @RequestBody CreateActivityRequest updateActivityRequest,
+                                              @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
 
         Long authId = (Long) request.getAttribute("authenticatedid");
@@ -197,7 +198,7 @@ public class ActivitiesController {
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
-            @RequestBody CreateActivityRequest createActivityRequest,
+            @Valid @RequestBody CreateActivityRequest createActivityRequest,
                                    HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");

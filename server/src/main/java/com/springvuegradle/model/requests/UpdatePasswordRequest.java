@@ -1,5 +1,7 @@
 package com.springvuegradle.model.requests;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -12,7 +14,14 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UpdatePasswordRequest {
 
-    private String oldPassword, newPassword, repeatPassword;
+	@NotNull(message = "missing old password field")
+    private String oldPassword;
+    
+	@NotNull(message = "missing new password field")
+    private String newPassword;
+    
+	@NotNull(message = "missing repeat password field")
+    private String repeatPassword;
 
     protected UpdatePasswordRequest() {}
 
