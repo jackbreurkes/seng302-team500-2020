@@ -48,10 +48,12 @@ deploy-test-server:
     # Update bash script and restart service
     - rm -f /home/gitlab-runner/runTestServer.sh || true
     - cp ../deployment-scripts/runTestServer.sh /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/DB_URL/$SQL_URL$SQL_TEST_DATABASE/g" runTestServer.sh
+    - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" runTestServer.sh
+    - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" runTestServer.sh
     - sudo systemctl restart testServer
-  only:
-    refs:
-      - dev
+  except:
+    - tags
 
 deploy-test-client:
   stage: deploy
@@ -67,9 +69,8 @@ deploy-test-client:
     - rm -f /home/gitlab-runner/runTestClient.sh || true
     - cp ../deployment-scripts/runTestClient.sh /home/gitlab-runner/runTestClient.sh
     - sudo systemctl restart testClient
-  only:
-    refs:
-      - dev
+  except:
+    - tags
 
 deploy-prod-server:
   stage: deploy
@@ -84,6 +85,9 @@ deploy-prod-server:
     # Update bash script and restart service
     - rm -f /home/gitlab-runner/runProdServer.sh || true
     - cp ../deployment-scripts/runProdServer.sh /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/DB_URL/$SQL_URL$SQL_PROD_DATABASE/g" runTestServer.sh
+    - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" runTestServer.sh
+    - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" runTestServer.sh
     - sudo systemctl restart prodServer
   only:
     refs:
