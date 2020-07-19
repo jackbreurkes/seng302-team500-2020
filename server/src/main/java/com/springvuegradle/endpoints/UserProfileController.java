@@ -5,11 +5,12 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
@@ -18,16 +19,8 @@ import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
@@ -75,9 +68,14 @@ public class UserProfileController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
+    /**
+     * Repository used for accessing sessions
+     */
+    @Autowired
+    private SessionRepository sessionRepository;
+
     @Autowired
     private LocationRepository locationRepository;
-
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
@@ -91,22 +89,9 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-//        Short permissionLevel = (Short) httpRequest.getAttribute("permissionLevel");
-//        boolean isTargetUser = authId != null && authId == profileId;
-//        boolean isAdmin = permissionLevel != null && permissionLevel > ADMIN_USER_MINIMUM_PERMISSION;
-//        if (!isTargetUser && !isAdmin) {
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
@@ -201,18 +186,23 @@ public class UserProfileController {
     	    	
     	// The following Strings will simply be null if the associated parameter is not specified
     	String searchedFullname = request.getParameter("fullname");
+    	String searchedFirstname = request.getParameter("firstname");	// First-, middle-, last-name parameters can be used instead of fullname to aid in dealing with names with spaces
+    	String searchedMiddlename = request.getParameter("middlename");
+    	String searchedLastname = request.getParameter("lastname");
     	String searchedNickname = request.getParameter("nickname");
     	String searchedEmail = request.getParameter("email");
         String searchedActivities = request.getParameter("activity");
         String method = request.getParameter("method");
 
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
-		
-		if (searchedNickname != null) {
+    	
+		if (searchedNickname != null && searchedNickname != "") {
 			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFullname != null) {
+		} else if (searchedFirstname != null && searchedFirstname != "") {
+			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
+		} else if (searchedFullname != null && searchedFullname != "") {
 			profiles = getUsersByFullname(searchedFullname);
-		} else if (searchedEmail != null) {
+		} else if (searchedEmail != null && searchedEmail != "") {
 			profiles = getUsersByEmail(searchedEmail);
 		} else if (searchedActivities != null) {
 		    profiles = getProfilesByActivityTypes(searchedActivities, method);
@@ -237,7 +227,6 @@ public class UserProfileController {
     		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
     	}
     	
-    	// TODO: Make able to handle names with spaces (e.g. lastname: "van Beethoven")
     	String firstname = "";
     	String middlename = "";
     	String lastname = "";
@@ -255,6 +244,30 @@ public class UserProfileController {
     	
     	List<Profile> profiles = new ArrayList<Profile>();
     	if (middlename.length() == 0) {
+    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    	} else {
+    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    	}
+
+		return profiles;
+    }
+    
+    /**
+     * Function for finding users by the initial portion of their first, middle and last names, each given separately
+     * @param firstname initial (or full) part of the firstname to find
+     * @param middlename initial (or full) part of the middlename to find
+     * @param lastname initial (or full) part of the lastname to find
+     * @return list of profiles whose first, middle and last names match the portions specified
+     * @throws InvalidRequestFieldException if there is not at least one character in both of the first and last names
+     */
+    private List<Profile> getUsersByNamePieces(String firstname, String middlename, String lastname) throws InvalidRequestFieldException {
+
+    	if (lastname == null || lastname.length() == 0) {
+    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    	}
+    	
+    	List<Profile> profiles = new ArrayList<Profile>();
+    	if (middlename == null || middlename.length() == 0) {
     		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
     	} else {
     		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
@@ -370,11 +383,6 @@ public class UserProfileController {
 //
 //        Optional<User> editingUser = userRepository.findById(authId);
 //
-//        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-//            //here we check permission level and update the password accordingly
-//            //assuming failure without admin
-//            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-//        }
 //
 //        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
 //            throw new InvalidRequestFieldException("location must have a city and a country");
@@ -437,15 +445,11 @@ public class UserProfileController {
     public ProfileResponse updateUserActivityTypes(@PathVariable("profileId") long profileId,
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
-                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException {
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
-        Optional<User> editingUser = userRepository.findById(authId);
-
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
         if (validationErrors.hasErrors()) {
@@ -482,6 +486,35 @@ public class UserProfileController {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
     }
-    
-    
+
+    /**
+     * Deletes a user and its associated data with a user id by deleting all the profile data
+     * and then deleting the user itself.
+     * @param profileId of the user to be deleted
+     * @throws RecordNotFoundException if the user doesn't exist
+     * @throws UserNotAuthenticatedException if the user isn't the original profile or not an admin
+     */
+    @DeleteMapping("/{profileId}")
+    @CrossOrigin
+    public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
+                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
+        // Authenticating the logged in user
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+
+        // Get relevant profile
+        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+        if (optionalProfile.isEmpty()) {
+            throw new RecordNotFoundException("Profile not found.");
+        }
+        Profile profile = optionalProfile.get();
+        User user = profile.getUser();
+
+        // If deleting user-related data from the database, must be done here and separately
+        // Cascading delete doesn't work
+        sessionRepository.deleteUserSession(user);
+        emailRepository.deleteUserEmails(user);
+        profileRepository.delete(profile);
+        userRepository.delete(user);
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
+    }
 }

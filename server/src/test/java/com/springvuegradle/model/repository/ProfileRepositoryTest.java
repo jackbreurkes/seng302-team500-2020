@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -48,25 +49,33 @@ public class ProfileRepositoryTest {
         profile1.setActivityTypes(Arrays.asList(
                 walking
         ));
+        profile1.setMiddleName("James");
+        profile1.setNickName("Brillybill");
         profile2.setActivityTypes(Arrays.asList(
                 walking, running
         ));
+        profile2.setMiddleName("Andrew");
+        profile2.setNickName("Andyc123");
         profile3.setActivityTypes(Arrays.asList(
                 walking, running, biking
         ));
+        profile3.setMiddleName("12345");
+        profile3.setNickName("Briecheese");
         profile4.setActivityTypes(Arrays.asList(
                 tramping
         ));
+        profile4.setNickName("JacknJill");
         profile5.setActivityTypes(Arrays.asList(
                 scootering
         ));
+        profile5.setNickName("JacknJill");
         profileRepository.save(profile1);
         profileRepository.save(profile2);
         profileRepository.save(profile3);
         profileRepository.save(profile4);
         profileRepository.save(profile5);
     }
-
+    // TEST FOR ACTIVITIES
     @ParameterizedTest
     @CsvSource({
             "Walking,3",
@@ -129,5 +138,101 @@ public class ProfileRepositoryTest {
         List<Profile> result = profileRepository.findByActivityTypesContainsAllOf(activityTypes);
         assertEquals(0, result.size());
     }
+    //TEST FOR NICKNAMES
+    @Test
+    public void retrieveSingleUserWithPartialValidNickname() {
+        String nickName = "And";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(1, result.size());
+    }
+    @Test
+    public void retrieveSingleUserWithFullValidNickname() {
+        String nickName = "Andyc123";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(1, result.size());
+    }
+    @Test
+    public void retrieveMultipleUsersWithPartialValidNickname() {
+        String nickName = "Br";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(2, result.size());
+    }
+    @Test
+    public void retrieveNoUsersWithInvalidNickname() {
+        String nickName = "INVALIDNICKNAME";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(0, result.size());
+    }
+    @Test
+    public void retrieveMultipleUsersWithFullValidNickname() {
+        String nickName = "JacknJill";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(2, result.size());
+    }
+    @Test
+    public void retrieveSingleUserWithPartialInvalidCaseSensitiveNickname() {
+        String nickName = "brILLy";
+        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        assertEquals(0, result.size());
+    }
+    //TESTS FOR NAMING
+    @ParameterizedTest
+    @CsvSource({
+            "Bill,Testman,8",
+            "Andy,Warshaw,9",
+            "Brie,Calaris,10",
+            "Jack,Sandler,11",
+            "Jill,Sandler,12",
+    })
+    public void searchForUsersGivenFullFirstLastNames(String Fname, String Lname, String userId) {
+        Long userIdNum = Long.parseLong(userId);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        assertEquals(1, result.size());
+        //assertEquals(userIdNum, result.get(0).getUser().getUserId());
+    }
+    @ParameterizedTest
+    @CsvSource({
+            "Bi,Te,8",
+            "A,W,9",
+            "Br,Cal,10",
+            "Jack,San,11",
+            "Ji,Sandler,12",
+    })
+    public void searchForUsersGivenPartialFirstLastNames(String Fname, String Lname, String userId) {
+        Long userIdNum = Long.parseLong(userId);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        assertEquals(1, result.size());
+        //assertEquals(userIdNum, result.get(0).getUser().getUserId());
+    }
+    @Test
+    public void searchForUsersGivenIncorrectPartialFirstLastNames() {
+        String Fname = "QQQ";
+        String Lname = "YYY";
+        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        assertEquals(0, result.size());
+    }
+    @Test
+    public void searchForUsersGivenIncorrectFullFirstLastNames() {
+        String Fname = "Joshua";
+        String Lname = "Joshua";
+        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        assertEquals(0, result.size());
+    }
 
+    @ParameterizedTest
+    @CsvSource({
+            "B,",
+            "Andy,",
+    })
+    public void searchForUsersGivenOnlyFullAndPartialFirstName(String Fname, String Lname) {
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname));
+    }
+    @ParameterizedTest
+    @CsvSource({
+            ",Tes",
+            ",WarShaw",
+    })
+    public void searchForUsersGivenOnlyFullAndPartialLastName(String Fname, String Lname) {
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname));
+    }
 }

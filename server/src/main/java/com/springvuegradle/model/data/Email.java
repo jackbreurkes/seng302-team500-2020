@@ -2,12 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * JPA class for Email addresses in persistent storage
@@ -22,6 +17,7 @@ import javax.persistence.Table;
 @NamedQuery(name = "Email.getNumberOfEmails", query = "select count(user) from Email e where e.user = ?1")
 @NamedQuery(name = "Email.getNonPrimaryEmails", query = "select e from Email e where e.user = ?1 and isPrimary = false")
 @NamedQuery(name = "Email.getPrimaryEmail", query = "select email from Email e where e.user = ?1 and isPrimary = true")
+@NamedQuery(name = "Email.deleteUserEmails", query = "delete from Email e where e.user = ?1")
 public class Email implements Serializable {
 
 	/**
@@ -32,7 +28,7 @@ public class Email implements Serializable {
 	/**
 	 * User this email address belongs to
 	 */
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "user")
 	private User user;
 	

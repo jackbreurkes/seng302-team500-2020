@@ -1,27 +1,48 @@
 <template>
-  <div id="Search">
-    <v-container fill-height align-content-center>
-      <v-row align="center" justify="center">
-        <v-col sm="12" md="12" lg="12">
-          <v-card class="elevation-12">
-            <v-toolbar color="primary" dark flat>
-              <v-toolbar-title>Search Users</v-toolbar-title>
-            </v-toolbar>
+  <div  style="text-align: center" id="Search">
+        <v-container fill-height align-content-center>
+            <v-row justify="center">
+            <v-col sm="12" md="12" lg="12">
+            <v-card class="elevation-12">
+                <v-toolbar color="primary" dark flat>
+                    <v-toolbar-title>Search Users</v-toolbar-title>
+                </v-toolbar>
+            
 
             <div id="searchAndFilter" class="mt-3 mx-2" fill-height fill-width>
               <v-row class="d-flex align-center">
-                <v-col xs="12" sm="12" md="8" lg="8" v-if="searchBy !== 'Interests'">
+
+                <v-col xs="12" sm="12" md="9" lg="9" v-if="searchBy == 'Name'">
+                  <v-row class= "align-center">
+                  <v-col xs="12" sm="12" md="4" lg="4">
                   <v-text-field
-                    label="Search users"
+                    label="Search users by First Name"
                     :placeholder="searchBy"
                     outlined
                     click:append="search('k')"
-                    append-icon="S"
-                    v-model="searchTerm"
+                    v-model="firstname"
                     @keyup.enter.native="search()"
-                  ></v-text-field>
+                  ></v-text-field> </v-col>
+                    <v-col xs="12" sm="12" md="4" lg="4">
+                    <v-text-field
+                    label="Search users by Middle Name"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="middlename"
+                    @keyup.enter.native="search()"
+                  ></v-text-field> </v-col>
+                    <v-col xs="12" sm="12" md="4" lg="4">
+                    <v-text-field
+                    label="Search users by Last Name"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="lastname"
+                    @keyup.enter.native="search()"
+                  ></v-text-field> </v-col> </v-row>
                 </v-col>
-                <v-col xs="12" sm="12" md="9" lg="9" v-else>
+                <v-col xs="12" sm="12" md="9" lg="9" v-else-if="searchBy == 'Interests'">
                   <v-row class="px-5 d-flex flex-nowrap align-center">
                       <v-radio-group v-model="methodRadioGroup" class="pr-5" id="method-radios">
                         <v-radio label="at least one of" value="or"></v-radio>
@@ -40,6 +61,16 @@
                         multiple
                       ></v-autocomplete>
                   </v-row>
+                </v-col>
+                <v-col xs="12" sm="12" md="9" lg="9" v-else>
+                  <v-text-field
+                    label="Search users"
+                    :placeholder="searchBy"
+                    outlined
+                    click:append="search('k')"
+                    v-model="searchTerm"
+                    @keyup.enter.native="search()"
+                  ></v-text-field>
                 </v-col>
                 <v-col xs="12" sm="12" md="3" lg="3">
                   <v-select
@@ -97,8 +128,9 @@
                     </v-row>
 
                 </div>
+                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <div id="searchResults">
-                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults>
+                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults >
                 </div>
             </v-card>
             </v-col>
@@ -112,27 +144,36 @@
 <script lang="ts">
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
+import FormValidator from "../scripts/FormValidator";
 import UserSearchResults from "./UserSearchResults.vue";
 import * as activityController from "../controllers/activity.controller";
+// eslint-disable-next-line no-unused-vars
+import { Dictionary } from 'vue-router/types/router';
 
 // app Vue instance
 const Search = Vue.extend({
   name: "Search",
-  components: { UserSearchResults },
 
   // app initial state
   data: function() {
+    //let formValidator = new FormValidator();
     return {
       possibleSearchBys: ["Name", "Nickname", "Email", "Interests"],
       searchBy: "Name",
       methodRadioGroup: "or",
       searchTerm: "",
-      searchTerms: ["", "", ""],
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      searchTerms: {} as Dictionary<string>,
       availableActivityTypes: [] as string[],
       selectedActivityTypes: [] as string[],
-      searchRulesModal: false
+      searchRulesModal: false,
+        errorMessage: "",
     };
   },
+
+  components: { UserSearchResults },
 
   created() {
     activityController
@@ -144,20 +185,107 @@ const Search = Vue.extend({
         console.error("unable to load activity types");
         console.error(err);
       });
+      this.checkSaved();
   },
 
   methods: {
-    search: function() {
-      if (this.searchBy == this.possibleSearchBys[1]) {
-        this.searchTerms = ["", this.searchTerm, ""];
-      } else if (this.searchBy == this.possibleSearchBys[2]) {
-        this.searchTerms = ["", "", this.searchTerm];
-      } else if (this.searchBy === "Interests") {
-        // TODO
-      } else {
-        this.searchTerms = [this.searchTerm, "", ""];
+      search: function() {
+          if (this.searchTerm.trim().length >= 1 ||
+                (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1) ||
+                (this.searchBy == "Interests" && this.selectedActivityTypes.length != 0)
+          ) {
+              console.log(this.selectedActivityTypes)
+              console.log(this.selectedActivityTypes.length)
+            if (this.searchBy == "Name") {
+              if (this.firstname == "" || this.lastname == "") {
+                this.errorMessage = "Must enter characters from first and last names (or entire names)";
+              } else {
+                this.errorMessage = "";
+                this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
+              }
+            } else if (this.searchBy == "Interests") {
+              this.errorMessage = "";
+              let searchActivitiesString = "";
+              for (let activity in this.selectedActivityTypes) {
+                searchActivitiesString += this.selectedActivityTypes[activity] + " ";
+              }
+              this.searchTerms = {"activity": searchActivitiesString.trim(), "method": this.methodRadioGroup}
+            } else {
+              this.errorMessage = "";
+              this.searchTerms = {};
+              this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
+            }
+
+          }  else {
+            if (this.searchBy == "Name") {
+              this.errorMessage = "Must enter at least 1 character for both first and last names";
+            } else if (this.searchBy == "Interests") {
+              this.errorMessage = "Must select at least 1 activity";
+            } else {
+              this.errorMessage = "Must enter a search string";
+            }
+          }
+      },
+      checkSaved: function(){
+        if(localStorage.getItem("searchBy") != undefined){
+          //TODO here check the timer
+          this.searchBy = localStorage.getItem("searchBy")!;
+          if(this.searchBy === "Name"){
+            this.firstname = localStorage.getItem("searchFirstName")!;
+            this.lastname = localStorage.getItem("searchLastName")!;
+            this.middlename = localStorage.getItem("searchMiddleName")!;
+
+            localStorage.removeItem("searchFirstName");
+            localStorage.removeItem("searchLastName");
+            localStorage.removeItem("searchMiddleName");
+
+            this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
+          }else if(this.searchBy === "Nickname"){
+            this.searchTerm = localStorage.getItem("searchNickName")!;
+
+            localStorage.removeItem("searchNickName");
+
+            this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
+          }else if(this.searchBy === "Email"){
+            this.searchTerm = localStorage.getItem("searchEmail")!;
+
+            localStorage.removeItem("searchEmail");
+          
+            this.searchTerms[this.searchBy.toLowerCase()] = this.searchTerm;
+          }else{
+            this.selectedActivityTypes = localStorage.getItem("searchActivityTypes")!.split(",");
+            localStorage.removeItem("searchActivityTypes");
+
+            let searchActivitiesString = "";
+              for (let activity in this.selectedActivityTypes) {
+                searchActivitiesString += this.selectedActivityTypes[activity] + " ";
+              }
+              this.searchTerms = {"activity": searchActivitiesString.trim(), "method": this.methodRadioGroup}
+          }
+          localStorage.removeItem("searchBy");
+          
+        }
+      }
+    },
+  beforeRouteLeave (to, from, next){
+    console.log(to);
+    if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
+      //save to local storage
+      localStorage.setItem("searchBy", this.searchBy);
+      if(this.searchBy === "Email"){
+        localStorage.setItem("searchEmail", this.searchTerm)
+      }else if (this.searchBy === "Name"){
+        localStorage.setItem("searchFirstName", this.firstname);
+        localStorage.setItem("searchMiddleName", this.middlename);
+        localStorage.setItem("searchLastName", this.lastname);
+      }else if (this.searchBy === "Nickname"){
+        localStorage.setItem("searchNickName", this.searchTerm)
+      }else{
+        //interests
+        localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
       }
     }
+    next()
   }
 });
 
