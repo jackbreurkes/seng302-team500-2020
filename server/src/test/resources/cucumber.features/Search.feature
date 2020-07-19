@@ -81,13 +81,13 @@ Feature: Searching user profiles
 
     @U12-search-interests
     Scenario Outline: Search users by interests
-      When I search for profiles interested in <interests> that are <method>ed together
+      When I search for profiles interested in "<interests>" that are "<method>"ed together
       Then I should receive exactly <count> results
 
       Examples:
         | interests                    | method | count |
         | Scootering Skateboarding     | and    | 1     |
         | Running Cycling              | or     | 3     |
-        |                              | or     | 0     |
+        | Running                      | or     | 2     |
         | Running                      | and    | 2     |
         | Running Cycling              | and    | 0     |
