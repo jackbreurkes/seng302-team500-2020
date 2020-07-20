@@ -124,6 +124,9 @@
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
+          if (auth.getMyPermissionLevel() >= 120) {
+            this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
+          }
 
       },
       goTo: function(pathing : string) {

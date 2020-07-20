@@ -1,5 +1,7 @@
 package com.springvuegradle.model.data;
 
+import org.hibernate.annotations.Cascade;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -107,6 +109,14 @@ public class Activity {
      */
     public long getId() {
         return activity_id;
+    }	
+        	
+    /**	
+     * Sets the ID of this activity	
+     * @param id ID to set to	
+     */	
+    public void setId(long id) {	
+        this.activity_id = id;
     }
 
     /**

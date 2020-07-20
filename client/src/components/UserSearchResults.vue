@@ -81,13 +81,8 @@
       <td class="text-xs-right">{{ users.item.nickname }}</td>
       <td class="text-xs-right">{{ users.item.primary_email }}</td>
       <td class="text-xs-right">{{ users.item.short_interests }}</td>
-      <td class="text-xs-right">{{ users.item.primary_email }}</td>
     </template>
   </v-data-table>
-
-
-
-
 
   </div>
 </template>

@@ -66,6 +66,12 @@ public class UserProfileController {
     private CountryRepository countryRepository;
 
     /**
+     * Repository used for accessing activities
+     */
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    /**
      * Repository used for accessing activity types
      */
     @Autowired
@@ -99,7 +105,7 @@ public class UserProfileController {
     @PutMapping("/{profileId}")
     @CrossOrigin
     public ProfileResponse updateProfile(
-            @RequestBody ProfileObjectMapper request,
+            @Valid @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
@@ -372,7 +378,7 @@ public class UserProfileController {
      */
     @PostMapping
     @CrossOrigin
-    public Object createprofile(@RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
+    public Object createprofile(@Valid @RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
 
         User user = null;
         try {
@@ -458,6 +464,8 @@ public class UserProfileController {
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // authentication
+        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
+
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
@@ -605,6 +613,10 @@ public class UserProfileController {
         // Cascading delete doesn't work
         sessionRepository.deleteUserSession(user);
         emailRepository.deleteUserEmails(user);
+        List<Activity> createdActivities = activityRepository.findActivitiesByCreator(profile);
+        for (Activity activity : createdActivities) {
+            activityRepository.delete(activity);
+        }
         profileRepository.delete(profile);
         userRepository.delete(user);
         return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
