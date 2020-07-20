@@ -14,6 +14,8 @@ import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.model.requests.UpdateRoleRequest;
+import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
@@ -63,10 +66,22 @@ public class UserProfileController {
     private CountryRepository countryRepository;
 
     /**
+     * Repository used for accessing activities
+     */
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    /**
      * Repository used for accessing activity types
      */
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+    
+    /**
+     * Repository used to hold mappings of role names to the role's id
+     */
+    @Autowired
+    private RoleRepository roleRepository;
 
     /**
      * Repository used for accessing sessions
@@ -74,13 +89,15 @@ public class UserProfileController {
     @Autowired
     private SessionRepository sessionRepository;
 
+    /**
+     * Repository used for accessing locations
+     */
     @Autowired
     private LocationRepository locationRepository;
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
     private final short STD_ADMIN_USER_PERMISSION = 126;
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
-
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -196,13 +213,13 @@ public class UserProfileController {
 
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
     	
-		if (searchedNickname != null && searchedNickname != "") {
+		if (searchedNickname != null && !searchedNickname.equals("")) {
 			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFirstname != null && searchedFirstname != "") {
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
-		} else if (searchedFullname != null && searchedFullname != "") {
+		} else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
-		} else if (searchedEmail != null && searchedEmail != "") {
+		} else if (searchedEmail != null && !searchedEmail.equals("")) {
 			profiles = getUsersByEmail(searchedEmail);
 		} else if (searchedActivities != null) {
 		    profiles = getProfilesByActivityTypes(searchedActivities, method);
@@ -486,6 +503,89 @@ public class UserProfileController {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
     }
+    
+    /**
+     * Update the role 
+     * @param profileId id of the user whose permission level should be updated
+     * @param updateRoleRequest the body of the request
+     * @param validationErrors errors with the request
+     * @param httpRequest the HttpServletRequest associated with this request
+     * @return response entity with informative statement about updated role
+     * @throws RecordNotFoundException
+     * @throws UserNotAuthenticatedException
+     * @throws InvalidRequestFieldException
+     * @throws ForbiddenOperationException
+     */
+    @PutMapping("/{profileId}/role")
+    @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
+    public void updateUserRole(@PathVariable("profileId") long profileId,
+                                                          @Valid @RequestBody UpdateRoleRequest updateRoleRequest,
+                                                          Errors validationErrors,
+                                                          HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException, ForbiddenOperationException {
+        // authentication
+        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
+
+        Optional<User> editingUser = userRepository.findById(authId);
+
+
+        if (authId == null) { // not authenticated
+            throw new UserNotAuthenticatedException("you must be authenticated as an admin");
+        } else if (editingUser.isPresent()	// the user exists
+				&& !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {	// they are not an admin
+            throw new UserNotAuthorizedException("you must be an admin to promote and demote users");
+        }
+
+        // validate request body
+        if (validationErrors.hasErrors()) {
+            throw new InvalidRequestFieldException(validationErrors.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        // get relevant profile
+        Optional<User> optionalUser = userRepository.findById(profileId);
+        if (optionalUser.isEmpty()) {
+            throw new RecordNotFoundException("user not found");
+        }
+        User user = optionalUser.get();
+   
+        String roleName = updateRoleRequest.getRole();
+
+        // validate role
+        long permissionLevel = getRolePermissionLevel(roleName);
+        
+        // do not allow admins to increase their privileges
+        if (profileId == authId && permissionLevel > user.getPermissionLevel()) {	// if they are trying to promote themselves
+        	throw new ForbiddenOperationException("cannot promote self");
+        }
+        
+        // do not allow admins to create new superadmins
+        if (permissionLevel == 127) {
+        	throw new ForbiddenOperationException("cannot promote a user to superadmin role");
+        }
+ 
+        // save profile with newly added activity types and return
+        user.setPermissionLevel((int) permissionLevel);
+        userRepository.save(user);
+    }
+    
+    /**
+     * Get the permission level associated with a given role name
+     * @param roleName the string role name to find in the system
+     * @return permission level associated with the provided role name or -1 if no role with the given name exists
+     * @throws RecordNotFoundException there if no role with the supplied rolename
+     */
+    private long getRolePermissionLevel(String roleName) throws RecordNotFoundException {
+    	
+    	Role role = roleRepository.findByRolename(roleName);
+    	    	
+    	if (role == null) {
+    		throw new RecordNotFoundException("Could not find role with name: " + roleName);
+    	}
+    	
+		return role.getRole_id();
+
+    }
+    
 
     /**
      * Deletes a user and its associated data with a user id by deleting all the profile data
@@ -497,7 +597,7 @@ public class UserProfileController {
     @DeleteMapping("/{profileId}")
     @CrossOrigin
     public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
-                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException {
+                                             HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         // Authenticating the logged in user
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
@@ -513,6 +613,10 @@ public class UserProfileController {
         // Cascading delete doesn't work
         sessionRepository.deleteUserSession(user);
         emailRepository.deleteUserEmails(user);
+        List<Activity> createdActivities = activityRepository.findActivitiesByCreator(profile);
+        for (Activity activity : createdActivities) {
+            activityRepository.delete(activity);
+        }
         profileRepository.delete(profile);
         userRepository.delete(user);
         return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());

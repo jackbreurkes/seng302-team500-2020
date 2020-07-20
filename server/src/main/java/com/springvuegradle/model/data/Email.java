@@ -8,7 +8,6 @@ import javax.persistence.*;
  * JPA class for Email addresses in persistent storage
  * @author Alex Hobson
  * @author Riley Symon
- * @author Olivia Mackintosh
  *
  */
 @Entity
@@ -28,7 +27,7 @@ public class Email implements Serializable {
 	/**
 	 * User this email address belongs to
 	 */
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "user")
 	private User user;
 	

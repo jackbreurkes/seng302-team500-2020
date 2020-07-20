@@ -29,7 +29,7 @@ export function getMyPermissionLevel(): number {
 /**
  * clears the stored token, user id and permission level information.
  */
-function clearAuthInfo() {
+export function clearAuthInfo() {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");
   localStorage.removeItem("permissionLevel");

@@ -54,7 +54,7 @@ public class ViewProfilePermissionsTest {
         tempUser.setPermissionLevel(0);
         Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(tempUser));
         request.setAttribute("authenticatedid", 2L);
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
             userProfileController.updateProfile(new ProfileObjectMapper(),1L, request);
         });
     }

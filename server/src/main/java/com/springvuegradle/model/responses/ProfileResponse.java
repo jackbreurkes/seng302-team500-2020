@@ -13,6 +13,7 @@ import java.util.List;
 public class ProfileResponse {
 
     private final long profile_id;
+    private final int permission_level;
     private final String lastname;
     private final String firstname;
     private final String middlename;
@@ -35,6 +36,7 @@ public class ProfileResponse {
      */
     public ProfileResponse(Profile profile, EmailRepository emailRepository) {
         profile_id = profile.getUser().getUserId();
+        permission_level = profile.getUser().getPermissionLevel();
         lastname = profile.getLastName();
         firstname = profile.getFirstName();
         middlename = profile.getMiddleName();
@@ -65,6 +67,8 @@ public class ProfileResponse {
     public long getProfile_id() {
         return profile_id;
     }
+
+    public int getPermission_level() { return permission_level; }
 
     public String getLastname() {
         return lastname;

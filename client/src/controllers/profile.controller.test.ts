@@ -7,7 +7,8 @@ import {
   removeAndSaveActivityType,
   addActivityType,
   deleteActivityType,
-  checkCountryValidity
+  checkCountryValidity,
+  deleteUserAccount
 } from "./profile.controller";
 import { UserApiFormat } from "@/scripts/User";
 import { getAvailableActivityTypes } from './activity.controller';
@@ -49,6 +50,8 @@ const mockActivityTypes: string[] = [
 activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
+
+userModel.deleteAccount = jest.fn();
 
 function getValidCountryNames() {
     return validPassportCountries.map(country => country.name)
@@ -382,3 +385,14 @@ test('expect error when trying to remove activity not in list',
             expect(error.message).toEqual("Activity is not associated with user's profile.");	
         }	
     })
+
+// --------- DELETE ACCOUNT ---------- //
+test('expect delete account model function to be called',
+  async () => {
+    let profileId = 0;
+    var user = {"profile_id": profileId} as UserApiFormat;
+
+    await deleteUserAccount(profileId);
+    expect(userModel.deleteAccount.mock.calls[0][0]).toBe(profileId);
+  }
+)

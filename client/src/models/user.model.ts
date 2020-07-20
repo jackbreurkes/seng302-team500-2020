@@ -149,3 +149,7 @@ export async function updateCurrentPassword(
     repeat_password,
   });
 }
+
+export async function deleteAccount(profileId: number) {
+  let res = await instance.delete("profiles/" + profileId);
+}

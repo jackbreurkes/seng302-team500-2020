@@ -1,6 +1,7 @@
 package com.springvuegradle.auth;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 
@@ -41,7 +42,7 @@ public class UserAuthorizer {
      * @throws UserNotAuthenticatedException if the user is not authenticated
      */
 
-    public long checkIsAuthenticated(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException {
+    public long checkIsAuthenticated(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId != null){
             Optional<User> editingUser = userRepository.findById(authId);
@@ -52,7 +53,7 @@ public class UserAuthorizer {
                 if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION){
                     return authId;
                 }else{
-                    throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
                 }
             }
         }else{
