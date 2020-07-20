@@ -168,6 +168,7 @@
       },
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
+          this.isLoggedIn = true;
           if (/*(!user || !user.firstname) && */auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
             this.currentName = "Admin";
           } else {

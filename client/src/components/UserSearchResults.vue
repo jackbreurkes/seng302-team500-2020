@@ -171,7 +171,6 @@ const UserSearchResults = Vue.extend({
     checkPage: function(){
       if(localStorage.getItem("searchPage")){
         this.page = parseInt(localStorage.getItem("searchPage")!);
-        console.log("What page we should we be on " + this.page);
         localStorage.removeItem("searchPage");
       }
     },
