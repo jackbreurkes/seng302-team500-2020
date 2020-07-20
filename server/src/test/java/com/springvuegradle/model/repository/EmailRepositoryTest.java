@@ -30,6 +30,7 @@ public class EmailRepositoryTest {
     Email email4;
     Email email5;
     Email email6;
+    Email email7;
 
     @BeforeAll
     public void createTestProfiles() {
@@ -38,12 +39,14 @@ public class EmailRepositoryTest {
         User user2 = new User(2);
         User user3 = new User(3);
         User user4 = new User(4);
+        User user5 = new User(5);
 //        User user5 = new User(5);
         //save users
         userRepository.save(user1);
         userRepository.save(user2);
         userRepository.save(user3);
         userRepository.save(user4);
+        userRepository.save(user5);
 
         //create emails and assign them to users
         email1 = new Email(user1, "primary@test.com", true);
@@ -52,6 +55,7 @@ public class EmailRepositoryTest {
         email4 = new Email(user4, "josh@josh.com", true);
         email5 = new Email(user1, "olivia@olivia.com", false);
         email6 = new Email(user1, "olivia@double.com", false);
+        email7 = new Email(user5,"test@test.com", true);
 
         //save users
         emailRepository.save(email1);
@@ -60,6 +64,7 @@ public class EmailRepositoryTest {
         emailRepository.save(email4);
         emailRepository.save(email5);
         emailRepository.save(email6);
+        emailRepository.save(email7);
 
     }
 
@@ -70,7 +75,8 @@ public class EmailRepositoryTest {
             "secondary@test.com,3",
             "josh@josh.com,4",
             "olivia@olivia.com,1",
-            "olivia@double.com,1" // duplicate terms
+            "olivia@double.com,1", // duplicate terms
+            "test@test.com,5"
     })
     public void retrieveSingleUserWithValidFullEmail(String email, String userId) {
         int userIdNum = Integer.parseInt(userId);
@@ -82,7 +88,9 @@ public class EmailRepositoryTest {
     @CsvSource({
             "josh,4",
             "olivia@,1",
-            "olivia,1" // duplicate terms
+            "olivia,1", // duplicate terms
+            "test,5",
+            "test@,5"
     })
     public void retrieveSingleUserWithValidPartialEmail(String email, String userId) {
         int userIdNum = Integer.parseInt(userId);

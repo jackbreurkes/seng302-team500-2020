@@ -207,13 +207,13 @@ public class UserProfileController {
 
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
     	
-		if (searchedNickname != null && searchedNickname != "") {
+		if (searchedNickname != null && !searchedNickname.equals("")) {
 			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFirstname != null && searchedFirstname != "") {
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
-		} else if (searchedFullname != null && searchedFullname != "") {
+		} else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
-		} else if (searchedEmail != null && searchedEmail != "") {
+		} else if (searchedEmail != null && !searchedEmail.equals("")) {
 			profiles = getUsersByEmail(searchedEmail);
 		} else if (searchedActivities != null) {
 		    profiles = getProfilesByActivityTypes(searchedActivities, method);
