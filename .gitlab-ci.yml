@@ -48,7 +48,7 @@ deploy-test-server:
     # Update bash script and restart service
     - rm -f /home/gitlab-runner/runTestServer.sh || true
     - cp ../deployment-scripts/runTestServer.sh /home/gitlab-runner/runTestServer.sh
-    - sed -i "s/DB_URL/$SQL_URL$SQL_TEST_DATABASE/g" runTestServer.sh
+    - sed -i "s/DB_URL/$SQL_URL\\$SQL_TEST_DATABASE/g" runTestServer.sh
     - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" runTestServer.sh
     - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" runTestServer.sh
     - sudo systemctl restart testServer
@@ -85,7 +85,7 @@ deploy-prod-server:
     # Update bash script and restart service
     - rm -f /home/gitlab-runner/runProdServer.sh || true
     - cp ../deployment-scripts/runProdServer.sh /home/gitlab-runner/runProdServer.sh
-    - sed -i "s/DB_URL/$SQL_URL$SQL_PROD_DATABASE/g" runProdServer.sh
+    - sed -i "s/DB_URL/$SQL_URL\\$SQL_PROD_DATABASE/g" runProdServer.sh
     - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" runProdServer.sh
     - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" runProdServer.sh
     - sudo systemctl restart prodServer
