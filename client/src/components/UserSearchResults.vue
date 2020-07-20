@@ -2,13 +2,73 @@
   <div style="text-align: center" id="UserSearchResults">
   <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
+  <v-col v-if="isAdmin" class="d-flex justify-left admin-controls">
+      <div v-if="selectedUsers.length === 1">
+        <v-btn color="primary" @click="editSelectedUser" class="mr-8">edit</v-btn>
+
+        <v-dialog
+      v-model="deleteUserModal"
+      width="450"
+    >
+      <template v-slot:activator="{ on }">
+        <v-btn
+          color="red lighten-2"
+          dark
+          v-on="on"
+          class="mr-8"
+        >
+          delete
+        </v-btn>
+      </template>
+
+      <v-card>
+        <v-card-title
+          class="headline"
+          primary-title
+        >
+          Delete {{selectedUsers[0].firstname + ' ' + selectedUsers[0].lastname}}?
+        </v-card-title>
+
+        <v-card-text>
+          This will delete the user and all of their information. This operation cannot be undone.
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-btn
+            text
+            @click="deleteUserModal = false"
+          >
+            cancel
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            text
+            @click="deleteSelectedUser"
+          >
+            delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+
+        <v-btn v-if="!selectedUserIsAdmin" color="success" @click="promoteSelectedUser" class="mr-8">promote</v-btn>
+        <v-btn v-if="selectedUserIsAdmin" color="warning" @click="demoteSelectedUser" class="mr-8">demote</v-btn>
+      </div>
+  </v-col>
     <v-data-table
     :no-data-text="noDataText"
     :headers="headers"
     :items="users"
-    class="elevation-1"
+    item-key="profile_id"
     @click:row="goToUser"
     :page.sync="page"
+    :show-select="isAdmin"
+    single-select
+    v-model="selectedUsers"
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
     <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
@@ -35,6 +95,10 @@ import { searchUsers, getShortenedActivitiesString } from '../controllers/userSe
 import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
+import * as auth from "../services/auth.service";
+import * as properties from "../services/properties.service";
+import * as adminController from "../controllers/admin.controller";
+import { deleteUserAccount } from "../controllers/profile.controller"
 
 // app Vue instance
 const UserSearchResults = Vue.extend({
@@ -57,6 +121,9 @@ const UserSearchResults = Vue.extend({
         { text: 'Email', value: 'primary_email' },
         { text: 'Interests', sortable: false, value: 'short_interests' }
       ],
+      isAdmin: false,
+      selectedUsers: [] as UserApiFormat[],
+      deleteUserModal: false,
       users: [] as UserApiFormat[],
       errorMessage: "",
       noDataText: "No users found",
@@ -65,9 +132,35 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: async function() {
+    if (properties.getAdminMode()) {
+      this.isAdmin = true;
+    }
     await this.search(this.searchTerms);
     this.checkPage();
+
   },
+
+  computed: {
+
+    selectedUser: function() {
+      if (this.selectedUsers.length !== 1) {
+        return null;
+      }
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser;
+    },
+
+    selectedUserIsAdmin: function() {
+      if (this.selectedUsers.length !== 1) {
+        return false;
+      }
+
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser.permission_level && selectedUser.permission_level >= 120;
+    }
+  },
+
+
   methods: {
     goToUser: function(userId: any) {
       if(this.page != 1){
@@ -104,6 +197,70 @@ const UserSearchResults = Vue.extend({
         this.noDataText = this.errorMessage;
         this.users = [];
       }
+    },
+
+    /**
+     * deletes the selected user and updates the view accordingly
+     */
+    deleteSelectedUser: function() {
+      this.deleteUserModal = false;
+      if (this.selectedUser === null) {
+        return;
+      }
+      let deleteId: number = this.selectedUser.profile_id!;
+      deleteUserAccount(deleteId)
+        .then(() => {
+          if (auth.getMyUserId() == deleteId) {
+            properties.removeAdminMode();
+            auth.clearAuthInfo();  
+            this.$router.push({ name: "register" });  
+          } else {
+            this.users = this.users.filter(user => user.profile_id !== deleteId);
+          }
+        })
+        .catch((err) => {
+          this.errorMessage = err.message;
+        })
+    },
+
+    /**
+     * takes the user to the edit page for the selected profile
+     */
+    editSelectedUser: function() {
+      if (this.selectedUser === null) {
+        return;
+      }
+      this.$router.push(`/profiles/${this.selectedUser.profile_id!}/edit`);
+    },
+
+    /**
+     * promotes the selected user to an admin
+     */
+    promoteSelectedUser: async function() {
+      if (this.selectedUser === null) {
+        return;
+      }
+      try {
+        await adminController.promoteUserToAdmin(this.selectedUser.profile_id!);
+        this.selectedUser.permission_level = 126;
+      } catch (e) {
+        this.errorMessage = e.message;
+      }
+    },
+
+    /**
+     * demotes the selected admin user to a regular user
+     */
+    demoteSelectedUser: async function() {
+      if (this.selectedUser === null) {
+        return;
+      }
+      try {
+        await adminController.demoteUserToBasicUser(this.selectedUser.profile_id!);
+        this.selectedUser.permission_level = 0;
+      } catch (e) {
+        this.errorMessage = e.message;
+      }
     }
   },
 });
@@ -117,5 +274,9 @@ export default UserSearchResults;
 }
 p {
   display: inline-block;
+}
+
+.admin-controls {
+  height: 50px;
 }
 </style>

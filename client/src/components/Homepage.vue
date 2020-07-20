@@ -9,6 +9,25 @@
                 <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
+                <v-dialog v-model="confirmDeleteModal" width="290">
+                  <template v-slot:activator="{ on }">
+                    <v-btn v-on="on" color="error">Delete</v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title class="headline" primary-title>Delete account?</v-card-title>
+
+                    <v-card-text>This operation cannot be undone.</v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                      <v-spacer></v-spacer>
+                      <v-btn color="error" text @click="deleteAccount">Delete</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
                   <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
                 </div>
               </v-toolbar>
@@ -107,7 +126,7 @@ import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId,
-  getPermissionLevel
+  deleteUserAccount
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -117,8 +136,12 @@ import {
   getDurationActivities,
   getContinuousActivities,
 } from '../controllers/activity.controller';
+import { removeAdminMode } from "../services/properties.service";
+import { clearAuthInfo } from "../services/auth.service";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
+import * as PropertiesService from '../services/properties.service';
+import * as authService from "../services/auth.service"
 
 // app Vue instance
 const Homepage = Vue.extend({
@@ -132,6 +155,7 @@ const Homepage = Vue.extend({
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
       currentlyHasAuthority: false as boolean,
+      confirmDeleteModal: false,
       // newEmail: "",
       // email: "",
       editedUser: {} as UserApiFormat,
@@ -180,11 +204,16 @@ const Homepage = Vue.extend({
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
-    const permissionLevel: number = getPermissionLevel();
+    const permissionLevel: number = authService.getMyPermissionLevel();
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
     this.currentProfileId = profileId;
+    
+    let myProfileId = authService.getMyUserId()
+    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
+      this.currentlyHasAuthority = true;
+    }
 
     fetchProfileWithId(profileId)
       .then(user => {
@@ -238,6 +267,34 @@ const Homepage = Vue.extend({
 
     createActivityClicked: function() {
       this.$router.push(`/profiles/${this.currentProfileId}/createActivity`);
+    },
+
+    /**
+     * Delete the account of the user currently being looked at
+     * Can only be done by an admin or the user themself
+     */
+    deleteAccount: function() {
+        deleteUserAccount(this.currentProfileId)
+        .then(() => {
+          if (authService.getMyUserId() == this.currentProfileId) {
+            //if we're editing ourself
+            removeAdminMode();
+            clearAuthInfo();  
+            this.$router.push({ name: "register" });  
+          } else {
+            this.$router.push({ name: "adminDashboard" });
+          }
+        })
+        .catch((err) => {
+          if (!err.response || !err.response.status) {
+            console.log(err)
+          } else {
+            console.log(err.response.status)
+            // May wish to eventually take different actions depending on type of error returned from server (once implemented)
+            // E.g. If the server decides to require a password and returns a 400 when password is wrong
+            // I.e. Basically, warn the user if the type of error means that the account has not actually been deleted
+          }
+        })
     }
   }
 });

@@ -133,7 +133,7 @@ public class PutActivityTest {
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
         Activity activity = new Activity();
         when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, request);
         });
     }

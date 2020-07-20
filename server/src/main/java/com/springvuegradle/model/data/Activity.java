@@ -1,5 +1,7 @@
 package com.springvuegradle.model.data;
 
+import org.hibernate.annotations.Cascade;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -58,7 +60,7 @@ public class Activity {
     private String location;
 
     @NotNull
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -70,6 +72,8 @@ class UserProfileControllerTest {
     private ActivityTypeRepository activityTypeRepository;
     @MockBean
     private LocationRepository locationRepository;
+    @MockBean
+    private RoleRepository roleRepository;
     
     /**
      * Creates the edit password controller and inserts the mocks we define in the place of the repositories
@@ -589,10 +593,12 @@ class UserProfileControllerTest {
         assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
     
-    @Test
-    public void testGetUserByFirstPartOfEmail() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "test"
+    })
+    public void testGetUserByFirstPartOfEmail(String partialEmail) throws Exception {
     	
-    	String partialEmail = "a";
     	List<Profile> profileList = getTestProfileList();
     	User user1 = profileList.get(0).getUser();
     	List<Email> emailList = new ArrayList<Email>();

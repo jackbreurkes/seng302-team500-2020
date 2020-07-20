@@ -74,9 +74,11 @@
   import Vue from "vue"
   import {
     logoutCurrentUser,
-    fetchCurrentUser,
-    getPermissionLevel
+    fetchCurrentUser
   } from "./controllers/profile.controller";
+  import * as PropertiesService from './services/properties.service';
+  import * as auth from "./services/auth.service";
+
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
@@ -122,7 +124,7 @@
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
-          if (getPermissionLevel() >= 120) {
+          if (auth.getMyPermissionLevel() >= 120) {
             this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
           }
 
@@ -166,16 +168,15 @@
       },
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
-          this.isLoggedIn = true;
-          if ((!user || !user.firstname) && getPermissionLevel() >= 120) {
+          if (/*(!user || !user.firstname) && */auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
             this.currentName = "Admin";
           } else {
             this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
           }
         })
         .catch(() => {
-          this.isLoggedIn = getPermissionLevel() >= 120;
-          this.currentName = getPermissionLevel() >= 120 ? "Admin" : "";
+          this.isLoggedIn = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode();
+          this.currentName = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode() ? "Admin" : "";
         });
       }
     }

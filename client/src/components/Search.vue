@@ -130,7 +130,7 @@
                 </div>
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
                 <div id="searchResults">
-                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults >
+                    <UserSearchResults :searchTerms="searchTerms"></UserSearchResults>
                 </div>
             </v-card>
             </v-col>
@@ -153,6 +153,7 @@ import { Dictionary } from 'vue-router/types/router';
 // app Vue instance
 const Search = Vue.extend({
   name: "Search",
+  components: { UserSearchResults },
 
   // app initial state
   data: function() {
@@ -172,8 +173,6 @@ const Search = Vue.extend({
         errorMessage: "",
     };
   },
-
-  components: { UserSearchResults },
 
   created() {
     activityController
@@ -263,25 +262,30 @@ const Search = Vue.extend({
           localStorage.removeItem("searchBy");
           
         }
+      },
+
+      prepareToExit(to: any) {
+        if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
+          //save to local storage
+          localStorage.setItem("searchBy", this.searchBy);
+          if(this.searchBy === "Email"){
+            localStorage.setItem("searchEmail", this.searchTerm)
+          }else if (this.searchBy === "Name"){
+            localStorage.setItem("searchFirstName", this.firstname);
+            localStorage.setItem("searchMiddleName", this.middlename);
+            localStorage.setItem("searchLastName", this.lastname);
+          }else if (this.searchBy === "Nickname"){
+            localStorage.setItem("searchNickName", this.searchTerm)
+          }else{
+            //interests
+            localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
+          }
+        }
       }
     },
   beforeRouteLeave (to, from, next){
-    if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
-      //save to local storage
-      localStorage.setItem("searchBy", this.searchBy);
-      if(this.searchBy === "Email"){
-        localStorage.setItem("searchEmail", this.searchTerm)
-      }else if (this.searchBy === "Name"){
-        localStorage.setItem("searchFirstName", this.firstname);
-        localStorage.setItem("searchMiddleName", this.middlename);
-        localStorage.setItem("searchLastName", this.lastname);
-      }else if (this.searchBy === "Nickname"){
-        localStorage.setItem("searchNickName", this.searchTerm)
-      }else{
-        //interests
-        localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
-      }
-    }
+    console.log(to);
+    this.prepareToExit(to);
     next()
   }
 });
