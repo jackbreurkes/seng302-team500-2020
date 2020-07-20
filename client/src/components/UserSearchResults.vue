@@ -65,6 +65,7 @@
     :items="users"
     item-key="profile_id"
     @click:row="goToUser"
+    :page.sync="page"
     :show-select="isAdmin"
     single-select
     v-model="selectedUsers"
@@ -126,14 +127,17 @@ const UserSearchResults = Vue.extend({
       users: [] as UserApiFormat[],
       errorMessage: "",
       noDataText: "No users found",
-      searchRulesModal: false
+      searchRulesModal: false,
+      page: 1
     }
   },
-  created: function() {
+  created: async function() {
     if (properties.getAdminMode()) {
       this.isAdmin = true;
     }
-    this.search(this.searchTerms);
+    await this.search(this.searchTerms);
+    this.checkPage();
+
   },
 
   computed: {
@@ -159,20 +163,28 @@ const UserSearchResults = Vue.extend({
 
   methods: {
     goToUser: function(userId: any) {
+      if(this.page != 1){
+        localStorage.setItem("searchPage", this.page.toString());
+      }
       this.$router.push("/profiles/" + userId.profile_id);
     },
+    checkPage: function(){
+      if(localStorage.getItem("searchPage")){
+        this.page = parseInt(localStorage.getItem("searchPage")!);
+        console.log("What page we should we be on " + this.page);
+        localStorage.removeItem("searchPage");
+      }
+    },
     getActivitiesString: function(activities : string[]){
-      //does not want to import this
       return getShortenedActivitiesString(activities, this.searchTerms)
     },
-    search: function(searchTerms: Dictionary<string>) {
+    search: async function(searchTerms: Dictionary<string>) {
       this.noDataText = "No users found";
       this.errorMessage = "";
-      searchUsers(searchTerms)
-      .then((users) => {
+      try {
+        let users = await searchUsers(searchTerms)
         this.users = users as UserApiFormat[];
-      })
-      .catch((err) => {
+      } catch (err) {
         if (err.response) {
           if (err.response.status == 400) {
             this.errorMessage = err.message;
@@ -184,7 +196,7 @@ const UserSearchResults = Vue.extend({
         }
         this.noDataText = this.errorMessage;
         this.users = [];
-      });
+      }
     },
 
     /**
@@ -250,7 +262,7 @@ const UserSearchResults = Vue.extend({
         this.errorMessage = e.message;
       }
     }
-  }
+  },
 });
     
 export default UserSearchResults;

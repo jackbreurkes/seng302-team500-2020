@@ -193,8 +193,6 @@ const Search = Vue.extend({
                 (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1) ||
                 (this.searchBy == "Interests" && this.selectedActivityTypes.length != 0)
           ) {
-              console.log(this.selectedActivityTypes)
-              console.log(this.selectedActivityTypes.length)
             if (this.searchBy == "Name") {
               if (this.firstname == "" || this.lastname == "") {
                 this.errorMessage = "Must enter characters from first and last names (or entire names)";
