@@ -1,20 +1,13 @@
 package com.springvuegradle.model.data;
 
+import org.hibernate.annotations.Cascade;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -67,7 +60,7 @@ public class Activity {
     private String location;
 
     @NotNull
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
@@ -116,6 +109,14 @@ public class Activity {
      */
     public long getId() {
         return activity_id;
+    }	
+        	
+    /**	
+     * Sets the ID of this activity	
+     * @param id ID to set to	
+     */	
+    public void setId(long id) {	
+        this.activity_id = id;
     }
 
     /**

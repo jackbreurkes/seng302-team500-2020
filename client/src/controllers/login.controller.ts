@@ -1,4 +1,4 @@
-import { login, getCurrentUser } from '../models/user.model'
+import { login } from '../services/auth.service';
 
 export interface LoginFormData {
     email: string;

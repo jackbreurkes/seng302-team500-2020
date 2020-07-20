@@ -7,13 +7,17 @@ import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
 import EditActivity from "./components/EditActivity.vue";
+import Search from './components/Search.vue';
 
 Vue.config.productionTip = false;
 
 import VueLogger from "vuejs-logger";
 import VueRouter, { Route } from "vue-router";
-import { verifyUserId } from "./models/user.model";
+import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
+import { removeAdminMode } from './services/properties.service';
+
+const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
 
 const routes = [
   { path: "/", name: "landing", component: Login },
@@ -44,10 +48,16 @@ const routes = [
     name: "adminDashboard",
     component: AdminDashboard,
   },
+  {
+    path: "/search",
+    name: "search",
+    component: Search,
+  },
 ];
 
 const router = new VueRouter({
   routes: routes,
+  base: ROUTER_BASE_URL,
   mode: "history",
 });
 
@@ -56,17 +66,23 @@ const unprotectedRoutes = ["login", "register"];
 router.beforeEach((to, from, next) => {
   if (to.name && unprotectedRoutes.includes(to.name)) {
     next();
-  } else {
-    verifyUserId()
-      .then(() => {
-        next();
-      })
-      .catch(() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        next({ name: "login" });
-      });
+    return;
   }
+  
+  if (auth.getMyToken() === null) { // user is not authenticated
+    next({ name: "login" });
+    return;
+  }
+
+  //checking if route is going to admin dashboard, and if it is and 
+  //the permission level is too low then they will be redirected
+  if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
+    removeAdminMode();
+    next({name: "profilePage"});
+    return;
+  }
+
+  next();
 });
 
 const options = {

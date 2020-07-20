@@ -1,3 +1,14 @@
+stages:
+  - install
+  - build
+  - test
+  - deploy
+
+cache:
+  paths:
+    - client/node_modules
+  key: node-modules
+
 tag_checker:
   stage: build
   script:
@@ -5,17 +16,30 @@ tag_checker:
   only:
     - tags
 
+install-dependencies:
+  stage: install
+  script:
+    - cd client
+    - npm install
+    - cd ..
+
 junit:
   stage: test
   script:
     - cd server
     - ./gradlew test
+    - ./gradlew cucumber
+    
+jest:
+  stage: test
+  script:
+    - cd client
+    - npm run test
 
 dev-build:
   stage: deploy
   script:
     - cd client
-    - npm install
     - npm run build
     - cd ../server
     - ./gradlew bootJar
@@ -33,19 +57,19 @@ dev-build:
 release-build:
  stage: deploy
  script:
-    - fuser -k 8999/tcp 9000/tcp
     - cd client
-    - npm install
     - npm run build-prod
     - cd ../server
+    - export spring_profiles_active=prod # use application-prod.properties
     - ./gradlew bootJar
     - cd ..
     - mkdir -p ../client-prod/
     - mkdir -p ../server-prod/
     - cp -r ./client/dist/ ../client-prod/
-    - cp -r ./server/build/libs ../server-prod/
-    # - java -jar ../server-prod/libs/server-0.0.1-SNAPSHOT.jar --server.port=8999 # convert to be run with service
-    # - serve -s ../client-prod/dist -l 9000 # convert to be run with service
+    - cp -r ./server/build/libs ../server-prod
+    - fuser -k 8999/tcp 9000/tcp || if [ $? -eq 1 ]; then echo "Server was not running"; fi
+    - screen -d -m /home/sengstudent/deployclientprod.sh
+    - screen -d -m /home/sengstudent/deployserverprod.sh
  artifacts:
     paths:
     - client/dist

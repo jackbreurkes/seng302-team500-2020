@@ -7,13 +7,11 @@ import {
   removeAndSaveActivityType,
   addActivityType,
   deleteActivityType,
-  checkCountryValidity
+  checkCountryValidity,
+  deleteUserAccount
 } from "./profile.controller";
 import { UserApiFormat } from "@/scripts/User";
-import axios from "axios";
 import { getAvailableActivityTypes } from './activity.controller';
-
-jest.mock("axios");
 
 const userModel = require("../models/user.model");
 const countriesModel = require("../models/countries.model");
@@ -52,6 +50,8 @@ const mockActivityTypes: string[] = [
 activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
+
+userModel.deleteAccount = jest.fn();
 
 function getValidCountryNames() {
     return validPassportCountries.map(country => country.name)
@@ -123,8 +123,8 @@ test.each(getValidCountryNames())(
     expect(profile.passports).toHaveLength(1);
     expect(profile.passports).toContain(validCountry);
 
-    // this expect doesn't work, but will only throw an error if axios.put is called, meaning it does what we need it to. ¯\_(ツ)_/¯
-    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+    // TODO implement expects for axios request calls
+    // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
   }
 );
 
@@ -137,8 +137,8 @@ test.each(getValidCountryNames())(
     expect(profile.passports).toHaveLength(1);
     expect(profile.passports).toContain(validCountry);
 
-    // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
-    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+    // TODO implement expects for axios request calls
+    // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
   }
 );
 
@@ -160,8 +160,8 @@ test.each(["Westeros", "Greendale", "Anywhere"])("expect deletePassportCountry t
   expect(profile.passports).toBeDefined();
   expect(profile.passports).toHaveLength(0);
 
-  // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
-  expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+  // TODO implement expects for axios request calls
+  // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
 });
 
 // --------- ADD ACTIVITY TYPE ---------- //
@@ -197,8 +197,8 @@ test.each(mockActivityTypes)(
     expect(profile.activities).toHaveLength(1);
     expect(profile.activities).toContain(activityType);
 
-    // this expect doesn't work, but will only throw an error if axios.put is called, meaning it does what we need it to. ¯\_(ツ)_/¯
-    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+    // TODO implement expects for axios request calls
+    // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
   }
 );
 
@@ -210,9 +210,9 @@ test.each(mockActivityTypes)(
     expect(profile.activities).not.toBeUndefined();
     expect(profile.activities).toHaveLength(1);
     expect(profile.activities).toContain(activityType);
-
-    // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
-    expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+    
+    // TODO implement expects for axios request calls
+    // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
   }
 );
 
@@ -234,14 +234,14 @@ test.each(["Cooking", "Moonwalking", "Speaking Russian"])("expect deleteActivity
   expect(profile.activities).not.toBeUndefined();
   expect(profile.activities).toHaveLength(0);
 
-  // this expect doesn't work, but will only throw an error if axios.put is called, so it actually still checks what we need it to. ¯\_(ツ)_/¯
-  expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+  // TODO implement expects for axios request calls
+  // expect(axios.put).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
 });
 
 
 
 // --------- PERSIST CHANGES TO PROFILE ---------- //
-test.skip("expect persistChangesToProfile to throw an error when a required field is missing", async () => {
+test("expect persistChangesToProfile to throw an error when a required field is missing", async () => {
   let profile: UserApiFormat = {
     profile_id: 1,
     firstname: "111",
@@ -255,7 +255,8 @@ test.skip("expect persistChangesToProfile to throw an error when a required fiel
   await expect(
     persistChangesToProfile(profile, 1)
   ).rejects.toThrow("Profile is not valid");
-  expect(axios.put).toHaveBeenCalledTimes(0);
+  // TODO implement expects for axios request calls
+  // expect(axios.put).toHaveBeenCalledTimes(0);
 });
 
 test.skip("expect persistChangesToProfile to persist changes when given a valid profile and profile id", async () => {
@@ -275,7 +276,8 @@ test.skip("expect persistChangesToProfile to persist changes when given a valid 
     // TODO this does not work
     persistChangesToProfile(profile, 1)
   ).resolves.toBe(undefined);
-  expect(axios.put).toHaveBeenCalled();
+  // TODO implement expects for axios request calls
+  // expect(axios.put).toHaveBeenCalled();
 });
 
 
@@ -383,3 +385,14 @@ test('expect error when trying to remove activity not in list',
             expect(error.message).toEqual("Activity is not associated with user's profile.");	
         }	
     })
+
+// --------- DELETE ACCOUNT ---------- //
+test('expect delete account model function to be called',
+  async () => {
+    let profileId = 0;
+    var user = {"profile_id": profileId} as UserApiFormat;
+
+    await deleteUserAccount(profileId);
+    expect(userModel.deleteAccount.mock.calls[0][0]).toBe(profileId);
+  }
+)

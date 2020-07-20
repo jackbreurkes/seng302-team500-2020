@@ -1,20 +1,18 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.ChecksumUtils;
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePasswordRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -43,20 +41,14 @@ public class EditPasswordController {
     @CrossOrigin
     public ResponseEntity<Object> editPassword(
             @PathVariable("profileId") long profileId,
-            @RequestBody UpdatePasswordRequest updatePasswordRequest,
-            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException
-    {
+            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest,
+            HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, ForbiddenOperationException, NoSuchAlgorithmException, UserNotAuthenticatedException, UserNotAuthorizedException {
         // check correct authentication
         Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || !(authId == profileId) && (editingUser.isPresent() && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION))) {
-            //here we check permission level and update the password accordingly
-            //assuming failure without admin
-            throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
-        }
-
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {

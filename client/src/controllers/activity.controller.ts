@@ -1,6 +1,5 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
-import { loadAvailableActivityTypes, createActivity } from '../models/activity.model'
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -61,7 +60,7 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   if (isEditing && activityId !== undefined) {
     await editActivity(createActivityRequest, profileId, activityId)
   } else {
-    await createActivity(createActivityRequest, profileId);
+    await activityModel.createActivity(createActivityRequest, profileId);
   }
 }
 
@@ -336,4 +335,24 @@ export function isValidTime(timeString: string): boolean {
   } else {
     return false;
   }
+}
+
+
+/**
+ * Returns a list of duration based activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getDurationActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let durationActivities = activityList.filter(activity => activity.continuous === false);
+  return durationActivities;
+}
+
+
+/**
+ * Returns a list of continuous activities  from a list of activities
+ * @param activityList a list of activities
+ */
+export function getContinuousActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
+  let continuousActivities = activityList.filter(activity => activity.continuous === true);
+  return continuousActivities;
 }

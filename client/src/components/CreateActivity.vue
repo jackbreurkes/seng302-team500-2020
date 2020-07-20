@@ -18,11 +18,17 @@
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
 
-              <v-radio-group v-model="createActivityRequest.continuous" row :rules="inputRules.continuousRules">
-                <v-radio label="Continuous" :value="true"></v-radio>
-                <v-radio label="Duration" :value="false"></v-radio>
-              </v-radio-group>
-                <div v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined">
+                <v-radio-group
+                  v-model="createActivityRequest.continuous"
+                  row
+                  :rules="inputRules.continuousRules"
+                >
+                  <v-radio label="Continuous" :value="true"></v-radio>
+                  <v-radio label="Duration" :value="false"></v-radio>
+                </v-radio-group>
+                <div
+                  v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined"
+                >
                   <v-menu
                     ref="startDateMenu"
                     v-model="startDateMenu"
@@ -116,14 +122,34 @@
                   deletable-chips
                   multiple
                 ></v-autocomplete>
-              <p class="pl-1" style="color: red">{{ errorMessage }}</p>
+                <p class="pl-1" style="color: red">{{ errorMessage }}</p>
               </v-card-text>
               <v-card-actions>
                 <v-btn @click="cancelButtonClicked">Cancel</v-btn>
                 <v-spacer></v-spacer>
+
                 <div v-if="this.isEditing">
-                  <v-btn @click="deleteButtonClicked" color="error">Delete</v-btn>
+                  <v-dialog v-model="confirmDeleteModal" width="290">
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" color="error">Delete</v-btn>
+                    </template>
+
+                    <v-card>
+                      <v-card-title class="headline" primary-title>Delete activity?</v-card-title>
+
+                      <v-card-text>This operation cannot be undone.</v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn color="error" text @click="deleteButtonClicked">Delete</v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
+
                 <v-spacer></v-spacer>
                 <v-btn
                   @click="createButtonClicked"
@@ -162,6 +188,7 @@ const CreateActivity = Vue.extend({
       activityTypes: [] as string[],
       selectedActivityType: "" as string,
       startDateMenu: false,
+      confirmDeleteModal: false,
       errorMessage: "",
       inputRules: {
         activityNameRules: [
@@ -227,10 +254,17 @@ const CreateActivity = Vue.extend({
       this.editingId = parseInt(this.$route.params.activityId);
       this.isEditing = true;
       this.populateFields(this.editingId);
-      if (!this.createActivityRequest.continuous && this.createActivityRequest.start_time !== undefined && this.createActivityRequest.end_time !== undefined) {
-        
-        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
-        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
+      if (
+        !this.createActivityRequest.continuous &&
+        this.createActivityRequest.start_time !== undefined &&
+        this.createActivityRequest.end_time !== undefined
+      ) {
+        this.startDate = activityController.getDateFromISO(
+          this.createActivityRequest.start_time
+        );
+        this.endDate = activityController.getDateFromISO(
+          this.createActivityRequest.end_time
+        );
       }
     }
   },
@@ -259,17 +293,27 @@ const CreateActivity = Vue.extend({
     },
 
     createButtonClicked: async function() {
-      activityController.validateNewActivity(this.startDate, this.startTime, this.endDate, this.endTime,
-        this.createActivityRequest, this.currentProfileId, this.isEditing, this.editingId )
-          .then(() => {
-            this.$router.push({ name: "profilePage" });
-          })
-          .catch(err => {
-            this.errorMessage = err.message;
-          });
+      activityController
+        .validateNewActivity(
+          this.startDate,
+          this.startTime,
+          this.endDate,
+          this.endTime,
+          this.createActivityRequest,
+          this.currentProfileId,
+          this.isEditing,
+          this.editingId
+        )
+        .then(() => {
+          this.$router.push({ name: "profilePage" });
+        })
+        .catch(err => {
+          this.errorMessage = err.message;
+        });
     },
 
     deleteButtonClicked: async function() {
+      this.confirmDeleteModal = false;
       activityController
         .deleteActivity(this.currentProfileId, this.editingId)
         .then(() => {
@@ -286,11 +330,22 @@ const CreateActivity = Vue.extend({
         editingId
       );
       this.createActivityRequest = activityData;
-      if (this.createActivityRequest.start_time && this.createActivityRequest.end_time) {
-        this.startDate = activityController.getDateFromISO(this.createActivityRequest.start_time);
-        this.endDate = activityController.getDateFromISO(this.createActivityRequest.end_time);
-        this.startTime = activityController.getTimeFromISO(this.createActivityRequest.start_time);
-        this.endTime = activityController.getTimeFromISO(this.createActivityRequest.end_time);
+      if (
+        this.createActivityRequest.start_time &&
+        this.createActivityRequest.end_time
+      ) {
+        this.startDate = activityController.getDateFromISO(
+          this.createActivityRequest.start_time
+        );
+        this.endDate = activityController.getDateFromISO(
+          this.createActivityRequest.end_time
+        );
+        this.startTime = activityController.getTimeFromISO(
+          this.createActivityRequest.start_time
+        );
+        this.endTime = activityController.getTimeFromISO(
+          this.createActivityRequest.end_time
+        );
       }
       //TODO populate date fields
     }

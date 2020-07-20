@@ -1,4 +1,5 @@
-import { getMyPermissionLevel, logout, getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails } from '../models/user.model'
+import { getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails, deleteAccount } from '../models/user.model'
+import * as auth from "../services/auth.service";
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
 import FormValidator from '../scripts/FormValidator';
@@ -9,7 +10,7 @@ import { LocationInterface } from '@/scripts/LocationInteface'
 let formValidator = new FormValidator();
 
 export async function logoutCurrentUser() {
-    await logout();
+    await auth.logout();
     loggedInUser = null;
 }
 
@@ -156,10 +157,6 @@ export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
 }
 
-export function getPermissionLevel(): number {
-    return getMyPermissionLevel();
-}
-
 
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string, profileId: number) {
     if (!formValidator.checkPasswordValidity(newPassword)) {
@@ -276,6 +273,14 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
     } else {
         throw new Error("Profile is not valid.");
     }
+}
+
+/**
+ * Delete the user account associated with the given profile number
+ * @param profileId ID number of profile to delete
+ */
+export async function deleteUserAccount(profileId: number) {
+    await deleteAccount(profileId);
 }
 
 

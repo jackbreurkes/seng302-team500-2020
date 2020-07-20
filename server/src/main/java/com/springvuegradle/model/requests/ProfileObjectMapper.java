@@ -1,7 +1,5 @@
 package com.springvuegradle.model.requests;
 
-
-
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,13 +8,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Country;
+import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.LocationRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.util.FormValidator;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -49,6 +61,8 @@ public class ProfileObjectMapper {
 	@JsonProperty(value = "gender", required = false)
     private String gender;
     
+	@Min(-1)
+	@Max(5)
 	@JsonProperty(value = "fitness", required = false)
     private Integer fitness;
 

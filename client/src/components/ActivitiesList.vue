@@ -4,7 +4,11 @@
       <v-card-title>
         {{ activity.activity_name }} ({{ activity.location }})
         <v-spacer></v-spacer>
-        <v-chip class="ml-2" @click="editActivity(`${activity.activity_id}`)" v-if="hasAuthority">Edit</v-chip>
+        <v-chip
+          class="ml-2"
+          @click="editActivity(`${activity.activity_id}`)"
+          v-if="hasAuthority"
+        >Edit</v-chip>
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <div v-on="on">
@@ -14,7 +18,6 @@
           <span>Your role</span>
         </v-tooltip>
       </v-card-title>
-
       <v-card-text>
         <span class="subtitle-1">{{ activity.description }}</span>
         <br />
@@ -45,7 +48,7 @@ import { CreateActivityRequest } from "../scripts/Activity";
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["profileId", "authority"], // props are passed in from the parent component
+  props: ["profileId", "authority", "activities"], // props are passed in from the parent component
 
   // app initial state
   data: function() {
@@ -56,7 +59,6 @@ const ActivitiesList = Vue.extend({
       email: "",
       password: "",
       errorMessage: "",
-      activities: [] as CreateActivityRequest[]
     };
   },
 
@@ -68,21 +70,14 @@ const ActivitiesList = Vue.extend({
     }
   },
 
-  created() {
-    activityController
-      .getActivitiesByCreator(this.profileId)
-      .then(res => (this.activities = res))
-      .catch(err => {
-        console.error(err);
-      });
-  },
-
   methods: {
     getDurationDescription(startTime: string, endTime: string): string {
       return activityController.describeDurationTimeFrame(startTime, endTime);
     },
     editActivity(activityId: number) {
-      this.$router.push(`/profiles/${this.profileId}/editActivity/${activityId}`);
+      this.$router.push(
+        `/profiles/${this.profileId}/editActivity/${activityId}`
+      );
     }
   }
 });

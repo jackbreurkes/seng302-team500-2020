@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,7 +60,7 @@ public class LoginController {
 
 	@PostMapping("/login")
 	@CrossOrigin
-	public ResponseEntity<?> login(@RequestBody(required = true) LoginRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public ResponseEntity<?> login(@Valid @RequestBody LoginRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
 		if (credentials.getEmail() == null || credentials.getPassword() == null) {
 			return ResponseEntity.status(HttpStatus.resolve(400)).body(new ErrorResponse("Missing email and/or password field"));
 		}

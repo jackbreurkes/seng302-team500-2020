@@ -1,10 +1,6 @@
 import * as activityController from "./activity.controller";
 import { CreateActivityRequest } from "../scripts/Activity";
 
-import axios from "axios";
-
-jest.mock("axios");
-
 const activityModel = require("../models/activity.model");
 var today = new Date().toISOString().slice(0, 10);
 activityModel.createActivity = jest.fn();
@@ -68,8 +64,8 @@ test.each(mockActivityTypes)(
       ).resolves.toBe(undefined);
       expect(activityData.activity_type).toHaveLength(1);
       expect(activityData.activity_type).toContain(validActivityType);
-      // this expect doesn't work, but will only throw an error if axios.post is called, meaning it does what we need it to. ¯\_(ツ)_/¯
-      expect(axios.post).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
+      // TODO implement expects for post requests being called
+      // expect(instance.post).toHaveBeenCalledTimes(0); // changes should not be persisted automatically
     }
   );
 
@@ -251,3 +247,56 @@ test.each([["2020-01-01", "", "2020-01-01T00:00:00+1300"], ["2021-01-02", "01:00
     expect(activityController.getApiDateTimeString(dateString, timeString)).toBe(expected);
   }
 )
+
+const continuousCreateActivityRequest: CreateActivityRequest = {
+  activity_name: "Non-stop running",
+  description: "Run without stopping",
+  activity_type: mockActivityTypes,
+  continuous: true,
+  start_time: "",
+  end_time: "",
+  location: "Christchurch, New Zealand", 
+}
+
+const durationCreateActivityRequest: CreateActivityRequest = {
+  activity_name: "One day run ",
+  description: "Run for a full day",
+  activity_type: mockActivityTypes,
+  continuous: false,
+  start_time: "2020-02-20T08:00:00+1300",
+  end_time: "2020-03-20T08:00:00+1300",
+  location: "Christchurch, New Zealand", 
+}
+
+//Result list only contains duration based activities
+test('expect duration activity list to not contain continuous activities', () => {
+  let activityList = [];
+  activityList.push(continuousCreateActivityRequest);
+  activityList.push(durationCreateActivityRequest);
+  let durationActivities = activityController.getDurationActivities(activityList);
+  let hasContiuousActivity = false;
+  for (let i = 0; i < durationActivities.length; i++) {
+    if (durationActivities[i].continuous === true) {
+      hasContiuousActivity = true;
+    }
+  }
+  expect(hasContiuousActivity).toBe(false)
+  }
+)
+
+//Result list only contains continuous activities
+test('expect new continuous activity list to not contain duration based activities', () => {
+  let activityList = [];
+  activityList.push(continuousCreateActivityRequest);
+  activityList.push(durationCreateActivityRequest);
+  let continuousActivities = activityController.getContinuousActivities(activityList);
+  let hasDurationActivity = false;
+  for (let i = 0; i < continuousActivities.length; i++) {
+    if (continuousActivities[i].continuous === false) {
+      hasDurationActivity = true;
+    }
+  }
+  expect(hasDurationActivity).toBe(false)
+  }
+)
+
