@@ -133,7 +133,7 @@ const UserSearchResults = Vue.extend({
     if (properties.getAdminMode()) {
       this.isAdmin = true;
     }
-    this.search({});
+    this.search(this.searchTerms);
   },
 
   computed: {

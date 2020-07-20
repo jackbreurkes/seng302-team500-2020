@@ -19,7 +19,7 @@
       
               </v-btn-toggle>
 
-              <Search></Search>
+              <Search ref="searchSubcomponent"></Search>
             </v-card>
           </v-col>
         </v-row>
@@ -58,6 +58,12 @@ const AdminDashboard = Vue.extend({
       }
     },
     
+  },
+
+  beforeRouteLeave(to, from, next) {
+    let searchSub: any = this.$refs.searchSubcomponent;
+    searchSub.prepareToExit(to);
+    next();
   }
 
 

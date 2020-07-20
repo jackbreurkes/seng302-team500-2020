@@ -264,26 +264,30 @@ const Search = Vue.extend({
           localStorage.removeItem("searchBy");
           
         }
+      },
+
+      prepareToExit(to: any) {
+        if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
+          //save to local storage
+          localStorage.setItem("searchBy", this.searchBy);
+          if(this.searchBy === "Email"){
+            localStorage.setItem("searchEmail", this.searchTerm)
+          }else if (this.searchBy === "Name"){
+            localStorage.setItem("searchFirstName", this.firstname);
+            localStorage.setItem("searchMiddleName", this.middlename);
+            localStorage.setItem("searchLastName", this.lastname);
+          }else if (this.searchBy === "Nickname"){
+            localStorage.setItem("searchNickName", this.searchTerm)
+          }else{
+            //interests
+            localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
+          }
+        }
       }
     },
   beforeRouteLeave (to, from, next){
     console.log(to);
-    if(to.name === "profilePage" && to.params.profileId != localStorage.getItem("userId")){
-      //save to local storage
-      localStorage.setItem("searchBy", this.searchBy);
-      if(this.searchBy === "Email"){
-        localStorage.setItem("searchEmail", this.searchTerm)
-      }else if (this.searchBy === "Name"){
-        localStorage.setItem("searchFirstName", this.firstname);
-        localStorage.setItem("searchMiddleName", this.middlename);
-        localStorage.setItem("searchLastName", this.lastname);
-      }else if (this.searchBy === "Nickname"){
-        localStorage.setItem("searchNickName", this.searchTerm)
-      }else{
-        //interests
-        localStorage.setItem("searchActivityTypes", this.selectedActivityTypes.toString());
-      }
-    }
+    this.prepareToExit(to);
     next()
   }
 });
