@@ -137,7 +137,7 @@
       },
       showNavBar: function(){
         //Dont display the nav bar side menu
-        if(this.$route.path == "/login") {
+        if(this.$route.path == "/login" || this.$route.path == '/register') {
           return false
         }
         return true

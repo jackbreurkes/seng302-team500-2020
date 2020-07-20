@@ -8,6 +8,7 @@
     :items="users"
     class="elevation-1"
     @click:row="goToUser"
+    :page.sync="page"
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
     <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
@@ -60,27 +61,37 @@ const UserSearchResults = Vue.extend({
       errorMessage: "",
       noDataText: "No users found",
       searchRulesModal: false,
+      page: 1
     }
   },
-  created: function() {
-    this.search(this.searchTerms);
+  created: async function() {
+    await this.search(this.searchTerms);
+    this.checkPage();
   },
   methods: {
     goToUser: function(userId: any) {
+      if(this.page != 1){
+        localStorage.setItem("searchPage", this.page.toString());
+      }
       this.$router.push("/profiles/" + userId.profile_id);
     },
+    checkPage: function(){
+      if(localStorage.getItem("searchPage")){
+        this.page = parseInt(localStorage.getItem("searchPage")!);
+        console.log("What page we should we be on " + this.page);
+        localStorage.removeItem("searchPage");
+      }
+    },
     getActivitiesString: function(activities : string[]){
-      //does not want to import this
       return getShortenedActivitiesString(activities, this.searchTerms)
     },
-    search: function(searchTerms: Dictionary<string>) {
+    search: async function(searchTerms: Dictionary<string>) {
       this.noDataText = "No users found";
       this.errorMessage = "";
-      searchUsers(searchTerms)
-      .then((users) => {
+      try {
+        let users = await searchUsers(searchTerms)
         this.users = users as UserApiFormat[];
-      })
-      .catch((err) => {
+      } catch (err) {
         if (err.response) {
           if (err.response.status == 400) {
             this.errorMessage = err.message;
@@ -92,9 +103,9 @@ const UserSearchResults = Vue.extend({
         }
         this.noDataText = this.errorMessage;
         this.users = [];
-      });
+      }
     }
-  }
+  },
 });
     
 export default UserSearchResults;
