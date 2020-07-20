@@ -58,6 +58,10 @@ public class UserProfileControllerMockTest {
 
     @Autowired
     @MockBean
+    private ActivityRepository activityRepository;
+
+    @Autowired
+    @MockBean
     private ActivityTypeRepository activityTypeRepository;
 
     @MockBean
