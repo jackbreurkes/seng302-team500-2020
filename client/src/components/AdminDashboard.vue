@@ -53,8 +53,10 @@ const AdminDashboard = Vue.extend({
     setAdminMode: function() {
       if (this.adminToggleMode == 0) {
         PropertiesService.setAdminMode(true);
+        history.go(0)
       } else {
         PropertiesService.setAdminMode(false);
+        history.go(0)
       }
     },
     
