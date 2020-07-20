@@ -71,7 +71,7 @@
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
     <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
-    <template #item.short_interests="{ item }">{{getShortenedActivitiesString(item.activities)}}</template>
+    <template #item.short_interests="{ item }">{{getActivitiesString(item.activities)}}</template>
     <template v-slot:items="users">
       <!-- <td class="text-xs-right">{{ users.item.full_name }}</td> -->
       <td class="text-xs-right">{{ users.item.firstname }}</td>
@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { searchUsers } from '../controllers/userSearch.controller';
+import { searchUsers, getShortenedActivitiesString } from '../controllers/userSearch.controller';
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
@@ -156,30 +156,14 @@ const UserSearchResults = Vue.extend({
     }
   },
 
-  methods: {
 
+  methods: {
     goToUser: function(userId: any) {
       this.$router.push("/profiles/" + userId.profile_id);
     },
-    getShortenedActivitiesString: function(activities: string[]) {
-      let activitiesString = "";
-      if (activities == undefined || activities.length == 0) {
-        return "";
-      } else if (activities.length <= 3) {
-        for (let activityIndex in activities) {
-          activitiesString = activitiesString + activities[activityIndex] + ", ";
-        }
-        activitiesString.trim();
-        activitiesString = activitiesString.substring(0, activitiesString.length-2);
-        return activitiesString;
-      } else {
-        for (let i = 0; i < 3; i++) {
-          activitiesString = activitiesString + activities[i] + ", ";
-        }
-        activitiesString.trim();
-        activitiesString = activitiesString.substring(0, activitiesString.length-2);
-        return activitiesString+"...";
-      }
+    getActivitiesString: function(activities : string[]){
+      //does not want to import this
+      return getShortenedActivitiesString(activities, this.searchTerms)
     },
     search: function(searchTerms: Dictionary<string>) {
       this.noDataText = "No users found";
