@@ -1,5 +1,6 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.User;

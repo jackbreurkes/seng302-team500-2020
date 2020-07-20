@@ -7,6 +7,7 @@ import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
 import EditActivity from "./components/EditActivity.vue";
+import Search from './components/Search.vue';
 
 Vue.config.productionTip = false;
 
@@ -14,6 +15,7 @@ import VueLogger from "vuejs-logger";
 import VueRouter, { Route } from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
+import { removeAdminMode } from './services/properties.service';
 
 const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
 
@@ -46,6 +48,11 @@ const routes = [
     name: "adminDashboard",
     component: AdminDashboard,
   },
+  {
+    path: "/search",
+    name: "search",
+    component: Search,
+  },
 ];
 
 const router = new VueRouter({
@@ -70,6 +77,7 @@ router.beforeEach((to, from, next) => {
   //checking if route is going to admin dashboard, and if it is and 
   //the permission level is too low then they will be redirected
   if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
+    removeAdminMode();
     next({name: "profilePage"});
     return;
   }

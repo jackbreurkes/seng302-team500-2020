@@ -2,11 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.time.OffsetDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * JPA representation of sessions (token when a user is logged in)
@@ -16,6 +12,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "session")
+@NamedQuery(name = "Session.deleteUserSession", query = "delete from Session s where s.user = ?1")
 public class Session {
 	/**
 	 * Token string for this session

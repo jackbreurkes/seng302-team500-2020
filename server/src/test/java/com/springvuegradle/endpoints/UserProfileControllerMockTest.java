@@ -3,6 +3,7 @@ package com.springvuegradle.endpoints;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import com.springvuegradle.model.repository.*;
@@ -25,6 +26,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Role;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 
 @EnableAutoConfiguration
@@ -48,6 +52,13 @@ public class UserProfileControllerMockTest {
     
     @MockBean
     private CountryRepository countryRepository;
+    
+    @MockBean
+    private SessionRepository sessionRepository;
+
+    @Autowired
+    @MockBean
+    private ActivityRepository activityRepository;
 
     @Autowired
     @MockBean
@@ -55,6 +66,9 @@ public class UserProfileControllerMockTest {
 
     @MockBean
     private LocationRepository locationRepository;
+    
+    @MockBean
+    private RoleRepository roleRepository;
 
 
     @Autowired
@@ -224,6 +238,291 @@ public class UserProfileControllerMockTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+    
+    // ====== Delete User =========================================
+    
+    @Test
+    public void testDeleteUser() throws Exception {
+    	long userId = 1;
+    	User user = new User(userId);
+    	
+    	Profile profile = new Profile(user, "firstName", "lastName", LocalDate.now(), Gender.NON_BINARY);
+    	
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
+        
+        Mockito.doNothing().when(userRepository).delete(user);
+        Mockito.doNothing().when(profileRepository).delete(profile);
+        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
+        
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/{id}", userId)
+        		.requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+        		.andDo(print())
+                .andExpect(status().isOk());
+        
+        Mockito.verify(userRepository).delete(user);
+        Mockito.verify(profileRepository).delete(profile);
+        Mockito.verify(sessionRepository).deleteUserSession(user);
+        Mockito.verify(emailRepository).deleteUserEmails(user);
+    }
+    
+    @Test
+    public void testDeleteUserNotAuthenticated() throws Exception {
+    	long userId = 1;
+    	User user = new User(userId);
+    	
+    	Profile profile = new Profile(user, "firstName", "lastName", LocalDate.now(), Gender.NON_BINARY);
+    	
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
+        
+        Mockito.doNothing().when(userRepository).delete(user);
+        Mockito.doNothing().when(profileRepository).delete(profile);
+        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
+        
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/{id}", userId)
+                .accept(MediaType.APPLICATION_JSON))
+        		.andDo(print())
+                .andExpect(status().isUnauthorized());
+        
+    }
+    
+    @Test
+    public void testDeleteUserDoesNotExist() throws Exception {
+    	long userId = 1;
+    	User user = new User(userId);
+    	Profile profile = new Profile(user, "firstName", "lastName", LocalDate.now(), Gender.NON_BINARY);
 
+    	long authId = 2;
+    	User authUser = new User(authId);
+    	authUser.setPermissionLevel(126);
+    	
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+        Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.empty());
+        
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/{id}", userId)
+        		.requestAttr("authenticatedid", authUser.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+        		.andDo(print())
+                .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    public void testDeleteOtherUser() throws Exception {
+    	long authId = 2;
+    	User authUser = new User(authId);
+    	
+    	long userId = 1;
+    	User user = new User(userId);
+    	
+    	Profile profile = new Profile(user, "firstName", "lastName", LocalDate.now(), Gender.NON_BINARY);
+    	
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+        Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
+        
+        Mockito.doNothing().when(userRepository).delete(user);
+        Mockito.doNothing().when(profileRepository).delete(profile);
+        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
+        
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/{id}", userId)
+        		.requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+        		.andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void testDeleteUserAsAdmin() throws Exception {
+    	long adminId = 1;
+    	User admin = new User(adminId);
+    	admin.setPermissionLevel(126);
+    	
+    	long userId = 2;
+    	User user = new User(userId);
+    	Profile profile = new Profile(user, "firstName", "lastName", LocalDate.now(), Gender.NON_BINARY);
+    	
+        Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
+        
+        Mockito.doNothing().when(userRepository).delete(user);
+        Mockito.doNothing().when(profileRepository).delete(profile);
+        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
+        
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/{id}", userId)
+        		.requestAttr("authenticatedid", admin.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+        		.andDo(print())
+                .andExpect(status().isOk());
+        
+        Mockito.verify(userRepository).delete(user);
+        Mockito.verify(profileRepository).delete(profile);
+        Mockito.verify(sessionRepository).deleteUserSession(user);
+        Mockito.verify(emailRepository).deleteUserEmails(user);
+    }
+
+// ----------------------- Admin promotion/demotion tests ------------------------------------
+    
+    @Test
+    public void testPromoteOtherUserToAdmin() throws Exception {
+    	Role role = new Role(126, "admin");
+    	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testPromoteToNonExistentRole() throws Exception {
+    	String rolename = "ultimateadmin";
+    	String updateRoleJson = "{\"role\": \"" + rolename + "\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(roleRepository.findByRolename(rolename)).thenReturn(null);
+
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    public void testNonAdminPromoting() throws Exception {
+    	Role role = new Role(126, "admin");
+    	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
+    	
+    	Long adminId = 0L;
+    	User adminUser = new User(adminId);
+    	
+    	Long profileId = 1L;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    public void testDemoteSelf() throws Exception {
+    	Role role = new Role(0, "user");
+    	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + adminId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testDemoteOtherUser() throws Exception {
+    	Role role = new Role(0, "user");
+    	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	userToEdit.setPermissionLevel(126);
+    	
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+    	
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void testPromoteToSuperAdmin() throws Exception {
+    	Role role = new Role(127, "superadmin");
+    	String updateRoleJson = "{\"role\": \"" + role.getRolename() + "\"}";
+    	
+    	Long adminId = 0l;
+    	User adminUser = new User(adminId);
+    	adminUser.setPermissionLevel(126);
+    	
+    	Long profileId = 1l;
+    	User userToEdit = new User(profileId);
+    	    	
+    	Mockito.when(roleRepository.findByRolename(role.getRolename())).thenReturn(role);
+
+    	Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+    	Mockito.when(userRepository.findById(profileId)).thenReturn(Optional.of(userToEdit));
+    	
+    	mvc.perform(MockMvcRequestBuilders
+                .put("/profiles/" + profileId + "/role")
+                .content(updateRoleJson).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", adminId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isConflict());
+    }
 
 }

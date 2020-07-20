@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,9 +28,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Profile;
@@ -66,25 +70,17 @@ public class ActivitiesController {
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                              @RequestBody CreateActivityRequest updateActivityRequest,
+                                              @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
-        // check correct authentication
+
         Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
-        //now user is either correct or an admin
-        //then update fields
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
-        //Validate request
         // validate request body
         if (updateActivityRequest.getActivityName() == null) {
             throw new InvalidRequestFieldException("missing activity_name field");
@@ -105,7 +101,6 @@ public class ActivitiesController {
             throw new InvalidRequestFieldException("missing location field");
         }
         if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
-            //checking if the continuous field is there
             throw new InvalidRequestFieldException("Missing continuous field");
         }
 
@@ -124,15 +119,13 @@ public class ActivitiesController {
             for(String activityTypeString : updateActivityRequest.getActivityTypes()){
                 Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
                 if(!activityType.isPresent()){
-                    //the activity type does not exist
                     throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
                 }else{
-                    //it does exist
                     activity.getActivityTypes().add(activityType.get());
                 }
             }
 
-            //check if it is continuous and if not then add date and time
+
             if(!updateActivityRequest.isContinuous()){
 //                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
 //                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
@@ -176,21 +169,15 @@ public class ActivitiesController {
     public ResponseEntity<Object> deleteActivity(@PathVariable("profileId") long profileId,
                                                  @PathVariable("activityId") long activityId,
                                                  HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-        //authenticate
+
         Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
-
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
-        //check if activity exists
+
         if(!activityToDelete.isPresent()){
             throw new RecordNotFoundException("Activity Does not exist");
         }
@@ -213,18 +200,13 @@ public class ActivitiesController {
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
-            @RequestBody CreateActivityRequest createActivityRequest,
+            @Valid @RequestBody CreateActivityRequest createActivityRequest,
                                    HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
-        // check correct authentication
+
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
-        if (authId == null || editingUser.isEmpty()) {
-            throw new UserNotAuthenticatedException("user is not authenticated");
-        }
 
-        if (!(authId == profileId) && !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
 
         // validate request body
         if (createActivityRequest.getActivityName() == null) {
@@ -311,11 +293,9 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-        //No body needed as it is just a get
-        //check auth
+
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId == null){
-            //not authenticated
             throw new UserNotAuthenticatedException("User is not authenticated");
         }
 
@@ -339,10 +319,10 @@ public class ActivitiesController {
     @CrossOrigin
     public List<ActivityResponse> getActivitiesByCreator(@PathVariable("profileId") long profileId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-        //check auth
+
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId == null){
-            //not authenticated
+
             throw new UserNotAuthenticatedException("User is not authenticated");
         }
 

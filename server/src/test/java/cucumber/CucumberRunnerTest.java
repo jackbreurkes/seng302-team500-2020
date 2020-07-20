@@ -1,5 +1,14 @@
 package cucumber;
 
-// TODO add cucumber to gradle
+import io.cucumber.junit.Cucumber;
+import io.cucumber.junit.CucumberOptions;
+import org.junit.runner.RunWith;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+        plugin = {"pretty"},
+        glue = {"cucumber.steps"},
+        features = {"src/test/resources/cucumber.features/"}
+)
 public class CucumberRunnerTest {
 }

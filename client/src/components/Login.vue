@@ -49,7 +49,7 @@
   import { submitForm } from '../controllers/login.controller'
   import Vue from 'vue'
 
-  import * as profileController from "../controllers/profile.controller";
+  import * as auth from "../services/auth.service";
 
   // app Vue instance
   const Login = Vue.extend({
@@ -86,14 +86,19 @@
        * goes to the profile page associated with the currently logged in user
        * if no user info is stored currently, does nothing
        */
-      goToCurrentUsersPageIfPossible() {
-        const currentlyStoredToken = localStorage.getItem("token");
-        const currentlyStoredUserId = localStorage.getItem("userId");
-        const currentlyStoredPermissionLevel = profileController.getPermissionLevel();
-        if (currentlyStoredToken !== null && currentlyStoredUserId !== null) {
+      async goToCurrentUsersPageIfPossible() {
+        let storedUserIdIsValid = false;
+        try {
+          storedUserIdIsValid = await auth.verifyUserId();
+        } catch (e) {
+          console.error(e);
+        }
+
+        if (storedUserIdIsValid) {
+          const myUserId: number = auth.getMyUserId()!;
           this.errorMessage = "Logging you in...";
-          if (currentlyStoredPermissionLevel === 0) {
-            this.$router.push({ name: "profilePage", params: {profileId: currentlyStoredUserId} })
+          if (auth.getMyPermissionLevel() === 0) {
+            this.$router.push({ name: "profilePage", params: {profileId: myUserId.toString()} })
               .catch((err) => {
                 console.error(err);
                 this.errorMessage = "failed to load profile page";
