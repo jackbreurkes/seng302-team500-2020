@@ -90,8 +90,8 @@ deploy-prod-server:
     - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" /home/gitlab-runner/runProdServer.sh
     - sudo systemctl restart prodServer
   only:
-    refs:
-      - master
+    - tags
+
   artifacts:
     paths:
     - server/out
@@ -111,8 +111,8 @@ deploy-prod-client:
     - cp ../deployment-scripts/runProdClient.sh /home/gitlab-runner/runProdClient.sh
     - sudo systemctl restart prodClient
   only:
-    refs:
-      - master
+    - tags
+
   artifacts:
     paths:
     - client/dist
