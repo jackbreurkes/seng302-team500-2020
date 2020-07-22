@@ -36,43 +36,84 @@ jest:
     - cd client
     - npm run test
 
-dev-build:
+deploy-test-server:
   stage: deploy
   script:
-    - cd client
-    - npm run build
-    - cd ../server
+    # Create artifact
+    - cd server
     - ./gradlew bootJar
-    - cd ..
-    - mkdir -p ../client-dev/
-    - mkdir -p ../server-dev/
-    - cp -r ./client/dist/ ../client-dev/
-    - cp -r ./server/build/libs ../server-dev
-    - fuser -k 9499/tcp 9500/tcp || if [ $? -eq 1 ]; then echo "Server was not running"; fi
-    - screen -d -m /home/sengstudent/deployclienttest.sh
-    - screen -d -m /home/sengstudent/deployservertest.sh
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/test-server/
+    - mkdir -p /home/gitlab-runner/test-server/
+    - cp -r ./build/libs /home/gitlab-runner/test-server
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runTestServer.sh || true
+    - cp ../deployment-scripts/runTestServer.sh /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/DB_URL/$SQL_URL\/$SQL_TEST_DATABASE/g" /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" /home/gitlab-runner/runTestServer.sh
+    - sudo systemctl restart testServer
   except:
     - tags
 
-release-build:
- stage: deploy
- script:
+deploy-test-client:
+  stage: deploy
+  script:
+    # Create artifact
+    - cd client
+    - npm run build
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/test-client/
+    - mkdir -p /home/gitlab-runner/test-client/
+    - cp -r ./dist /home/gitlab-runner/test-client
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runTestClient.sh || true
+    - cp ../deployment-scripts/runTestClient.sh /home/gitlab-runner/runTestClient.sh
+    - sudo systemctl restart testClient
+  except:
+    - tags
+
+deploy-prod-server:
+  stage: deploy
+  script:
+    # Create artifact
+    - cd server
+    - ./gradlew bootJar
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/prod-server/
+    - mkdir -p /home/gitlab-runner/prod-server/
+    - cp -r ./build/libs /home/gitlab-runner/prod-server
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runProdServer.sh || true
+    - cp ../deployment-scripts/runProdServer.sh /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/DB_URL/$SQL_URL\/$SQL_PROD_DATABASE/g" /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" /home/gitlab-runner/runProdServer.sh
+    - sudo systemctl restart prodServer
+  only:
+    - tags
+
+  artifacts:
+    paths:
+    - server/out
+ 
+deploy-prod-client:
+  stage: deploy
+  script:
+    # Create artifact
     - cd client
     - npm run build-prod
-    - cd ../server
-    - export spring_profiles_active=prod # use application-prod.properties
-    - ./gradlew bootJar
-    - cd ..
-    - mkdir -p ../client-prod/
-    - mkdir -p ../server-prod/
-    - cp -r ./client/dist/ ../client-prod/
-    - cp -r ./server/build/libs ../server-prod
-    - fuser -k 8999/tcp 9000/tcp || if [ $? -eq 1 ]; then echo "Server was not running"; fi
-    - screen -d -m /home/sengstudent/deployclientprod.sh
-    - screen -d -m /home/sengstudent/deployserverprod.sh
- artifacts:
+    # Move artifact to clean directory
+    - rm -rf /home/gitlab-runner/prod-client/
+    - mkdir -p /home/gitlab-runner/prod-client/
+    - cp -r ./dist /home/gitlab-runner/prod-client
+    # Update bash script and restart service
+    - rm -f /home/gitlab-runner/runProdClient.sh || true
+    - cp ../deployment-scripts/runProdClient.sh /home/gitlab-runner/runProdClient.sh
+    - sudo systemctl restart prodClient
+  only:
+    - tags
+
+  artifacts:
     paths:
     - client/dist
-    - server/out
- only:
-    - tags

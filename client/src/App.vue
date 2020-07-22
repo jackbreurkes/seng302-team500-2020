@@ -139,7 +139,7 @@
       },
       showNavBar: function(){
         //Dont display the nav bar side menu
-        if(this.$route.path == "/login") {
+        if(this.$route.path == "/login" || this.$route.path == '/register') {
           return false
         }
         return true
@@ -168,6 +168,7 @@
       },
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
+          this.isLoggedIn = true;
           if (/*(!user || !user.firstname) && */auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
             this.currentName = "Admin";
           } else {
