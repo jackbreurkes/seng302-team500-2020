@@ -8,6 +8,9 @@
 - server/src Backend source code (Java - Spring)
 - server/out Backend production build
 
+### Super Admin credentials
+- email: `super@admin.com`
+- password: `IncludeActuals5348`
 ### Demo user credentials
 - email: `tessa.testman@gmail.com`
 - password: `password123`
