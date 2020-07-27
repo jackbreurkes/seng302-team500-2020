@@ -29,6 +29,11 @@ junit:
     - cd server
     - ./gradlew test
     - ./gradlew cucumber
+    - ./gradlew jacocoTestReport
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - build/reports/
     
 jest:
   stage: test
