@@ -40,12 +40,14 @@ sonarqube:
   stage: test
   script:
     - cd client
+    - npm run test # generates files needed by sonarqube
     - npm run sonarqube
     - cd ../server
     - ./gradlew sonarqube
   only:
     - dev
     - master
+    - s4-u282-t2334-sonarqube
 
 deploy-test-server:
   stage: deploy
