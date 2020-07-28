@@ -8,6 +8,7 @@ import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
 import EditActivity from "./components/EditActivity.vue";
 import Search from './components/Search.vue';
+import Activity from './components/Activity.vue';
 
 Vue.config.productionTip = false;
 
@@ -52,6 +53,11 @@ const routes = [
     path: "/search",
     name: "search",
     component: Search,
+  },
+  {
+    path: "/activities/:activityId",
+    name: "activity",
+    component: Activity,
   },
 ];
 

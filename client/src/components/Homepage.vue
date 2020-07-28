@@ -2,7 +2,7 @@
   <div v-if="currentUser.profile_id">
     <div>
       <v-container fill-height align-content-center>
-        <v-row align="top" justify="center">
+        <v-row justify="center">
           <v-col sm="12" md="10" lg="4">
             <v-card class="elevation-12">
               <v-toolbar color="primary" dark flat>
