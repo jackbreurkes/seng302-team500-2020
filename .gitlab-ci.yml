@@ -36,6 +36,18 @@ jest:
     - cd client
     - npm run test
 
+sonarqube:
+  stage: test
+  script:
+    - cd client
+    - npm run test # generates files needed by sonarqube
+    - npm run sonarqube
+    - cd ../server
+    - ./gradlew sonarqube
+  only:
+    - dev
+    - master
+
 deploy-test-server:
   stage: deploy
   script:
