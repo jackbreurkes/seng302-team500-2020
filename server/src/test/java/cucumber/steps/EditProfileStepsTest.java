@@ -158,7 +158,7 @@ public class EditProfileStepsTest {
     @Then("I will receive a message that I am not authenticated as the target user")
     public void the_profile_with_id_will_not_be_updated() {
         assertNotNull(errorResponse);
-        assertTrue(errorResponse instanceof UserNotAuthenticatedException);
+        assertTrue(errorResponse instanceof UserNotAuthorizedException);
         assertFalse(errorResponse.getMessage().isBlank());
     }
 
