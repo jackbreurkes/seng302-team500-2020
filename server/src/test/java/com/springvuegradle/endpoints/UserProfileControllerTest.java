@@ -1,5 +1,7 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.ExceptionHandlerController;
 import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Gender;
@@ -32,14 +34,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,7 +53,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserProfileControllerTest {
 
-    @Autowired
     private MockMvc mvc;
 
     @MockBean
@@ -74,23 +73,22 @@ class UserProfileControllerTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
-    
+
     /**
-     * Creates the edit password controller and inserts the mocks we define in the place of the repositories
+     * Creates the user profile controller and inserts the mocks we define in the place of the repositories
      */
     @InjectMocks
     UserProfileController userProfileController;
- 
+
     ActivityType tempActivityType;
-    
-    public void setUp(){
-        //Initialize the mocks we create
-        MockitoAnnotations.initMocks(this);
-    }
+
 
     @BeforeEach
-    public void beforeEach(){
-        //Create a new user and set a password
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mvc = MockMvcBuilders.standaloneSetup(userProfileController)
+                .setControllerAdvice(new ExceptionHandlerController()) // allows us to use our ExceptionHandlerController with MockMvc
+                .build();
         this.tempActivityType = new ActivityType("Running");
     }
     
@@ -295,6 +293,40 @@ class UserProfileControllerTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(0));
+    }
+
+    @Test
+    public void testGetProfile_Authorized_ReturnsProfile() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId)
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId));
+    }
+
+    @Test
+    public void testGetProfile_NoToken_Unauthorised() throws Exception {
+        long profileId = 1;
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(MockMvcResultMatchers
+                        .jsonPath("$.error")
+                        .value("User not authenticated"));
     }
     
     // ==================== Test GET /profiles with parameters ==========================
