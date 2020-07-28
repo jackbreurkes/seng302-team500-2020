@@ -39,3 +39,4 @@ out/
 
 ### Reports ###
 client/coverage/
+!client/coverage/test-reported.xml
