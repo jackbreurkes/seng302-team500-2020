@@ -46,7 +46,6 @@ sonarqube:
   only:
     - dev
     - master
-    - s4-u282-t2334-sonarqube
 
 deploy-test-server:
   stage: deploy
