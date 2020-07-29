@@ -18,6 +18,7 @@ import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -338,6 +339,28 @@ public class ActivitiesController {
         }
 
         return responseActivities;
+    }
+
+    /**
+     *
+     * @param profileId
+     * @param activityId
+     * @param request
+     * @return
+     * @throws UserNotAuthenticatedException
+     * @throws RecordNotFoundException
+     * @throws UserNotAuthorizedException
+     */
+    @GetMapping("/profiles/{profileId}/activities/{activityId}")
+    @CrossOrigin
+    public ActivityResponse activityParticipation(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
+
+        // Authenticating the logged in user
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+
+
+
     }
 
 }
