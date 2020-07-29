@@ -1,6 +1,6 @@
 <template>
   <div v-if="activities.length > 0">
-    <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4">
+    <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4" @click="goToActivity(activity.activity_id)">
       <v-card-title>
         {{ activity.activity_name }} ({{ activity.location }})
         <v-spacer></v-spacer>
@@ -77,6 +77,11 @@ const ActivitiesList = Vue.extend({
     editActivity(activityId: number) {
       this.$router.push(
         `/profiles/${this.profileId}/editActivity/${activityId}`
+      );
+    },
+    goToActivity(activityId: number) {
+      this.$router.push(
+        `/activities/${activityId}`
       );
     }
   }

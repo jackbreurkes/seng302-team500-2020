@@ -11,7 +11,6 @@
         </div>  
       </v-app-bar>
       <v-navigation-drawer 
-          v-model= this.bar
           :expand-on-hover= this.collapsible
           :mini-variant = this.smallForm
           :right= this.right
@@ -20,7 +19,7 @@
           dark
           overlay-opacity= 0.7
           fixed
-          permanent = true 
+          :permanent = "true" 
           v-if="showNavBar()"
 
         >
