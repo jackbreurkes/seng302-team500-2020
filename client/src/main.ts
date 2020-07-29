@@ -65,8 +65,13 @@ const router = new VueRouter({
 const unprotectedRoutes = ["login", "register"];
 router.beforeEach((to, from, next) => {
   if (to.name && unprotectedRoutes.includes(to.name)) {
-    next();
-    return;
+    if (auth.getMyToken() === null) { //user is not authenticated
+      next();
+      return;
+    } else {
+      next({name: "profilePage" })
+      return;
+    }
   }
   
   if (auth.getMyToken() === null) { // user is not authenticated
