@@ -28,11 +28,11 @@
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
-                  <v-btn @click="editProfile" outlined class="mr-1">Edit</v-btn>
+                    <v-btn @click="editProfile" id="editButton" outlined class="mr-1">Edit</v-btn>
                 </div>
               </v-toolbar>
               <v-card-text class="grey lighten-4">
-                <h3>Name</h3>
+                <h3 id="myName">Name</h3>
                 <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
   
                 <div v-if="currentUser.bio">
