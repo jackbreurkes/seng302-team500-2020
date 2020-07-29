@@ -4,7 +4,7 @@ package com.springvuegradle.model.data;
  * For implementing user's roles in relation to activities
  */
 public enum ActivityRole {
-    CREATOR("creator"), ORGANISER("organiser"), PARTICIPANT("participant"), FOLLOWER("follower");
+    ORGANISER("organiser"), PARTICIPANT("participant");
 
     /**
      * Json name for the Role
@@ -15,7 +15,7 @@ public enum ActivityRole {
      * Constructor for Role
      * @param jsonName the name for the role given in the json request
      */
-    private ActivityRole(String jsonName){
+    ActivityRole(String jsonName){
         this.jsonName = jsonName;
     }
 }
