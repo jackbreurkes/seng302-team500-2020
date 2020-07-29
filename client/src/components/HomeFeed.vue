@@ -16,7 +16,6 @@ import Vue from 'vue'
 // app Vue instance
 const Homefeed = Vue.extend({
   name: "Homefeed",
-  el: "#Homefeed",
 
   // app initial state
   data: function() {
