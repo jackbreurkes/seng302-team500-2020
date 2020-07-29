@@ -119,7 +119,8 @@
       loadNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
-            {title: 'Home ', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]

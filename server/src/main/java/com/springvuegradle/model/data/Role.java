@@ -41,20 +41,20 @@ public class Role {
         this.rolename = rolename;
     }
 
-	public long getRole_id() {
-		return role_id;
-	}
+    public long getRole_id() {
+        return role_id;
+    }
 
-	public void setRole_id(long role_id) {
-		this.role_id = role_id;
-	}
+    public void setRole_id(long role_id) {
+        this.role_id = role_id;
+    }
 
-	public String getRolename() {
-		return rolename;
-	}
+    public String getRolename() {
+        return rolename;
+    }
 
-	public void setRolename(String rolename) {
-		this.rolename = rolename;
-	}
+    public void setRolename(String rolename) {
+        this.rolename = rolename;
+    }
 
 }

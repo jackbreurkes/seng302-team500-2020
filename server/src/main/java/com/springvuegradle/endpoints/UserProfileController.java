@@ -567,7 +567,7 @@ public class UserProfileController {
         user.setPermissionLevel((int) permissionLevel);
         userRepository.save(user);
     }
-    
+
     /**
      * Get the permission level associated with a given role name
      * @param roleName the string role name to find in the system
@@ -575,17 +575,17 @@ public class UserProfileController {
      * @throws RecordNotFoundException there if no role with the supplied rolename
      */
     private long getRolePermissionLevel(String roleName) throws RecordNotFoundException {
-    	
+
     	Role role = roleRepository.findByRolename(roleName);
-    	    	
+
     	if (role == null) {
     		throw new RecordNotFoundException("Could not find role with name: " + roleName);
     	}
-    	
+
 		return role.getRole_id();
 
     }
-    
+
 
     /**
      * Deletes a user and its associated data with a user id by deleting all the profile data

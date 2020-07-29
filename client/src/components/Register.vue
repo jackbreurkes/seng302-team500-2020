@@ -67,7 +67,6 @@ import Vue from 'vue'
 // app Vue instance
 const Register = Vue.extend({
   name: "Register",
-  el: "#Register",
 
   // app initial state
   data: function() {
