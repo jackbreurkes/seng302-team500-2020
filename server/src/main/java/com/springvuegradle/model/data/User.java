@@ -1,14 +1,9 @@
 package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.springvuegradle.auth.ChecksumUtils;
@@ -49,6 +44,18 @@ public class User {
 	 */
 	@Column(columnDefinition = "tinyint default 0")
 	private int permissionLevel;
+
+	@OneToMany(
+			fetch = FetchType.LAZY,
+			cascade = CascadeType.REMOVE,
+			mappedBy = "user")
+	private List<Session> sessions;
+
+	@OneToMany(
+			fetch = FetchType.LAZY,
+			cascade = CascadeType.REMOVE,
+			mappedBy = "user")
+	private List<Email> emails;
 
 	/**
 	 * Construct a user and automatically assign their ID
@@ -105,4 +112,19 @@ public class User {
 		this.permissionLevel = permissionLevel;
 	}
 
+	public List<Session> getSessions() {
+		return sessions;
+	}
+
+	public void setSessions(List<Session> session) {
+		this.sessions = session;
+	}
+
+	public List<Email> getEmails() {
+		return emails;
+	}
+
+	public void setEmails(List<Email> emails) {
+		this.emails = emails;
+	}
 }

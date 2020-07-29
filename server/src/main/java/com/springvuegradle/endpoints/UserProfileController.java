@@ -596,7 +596,7 @@ public class UserProfileController {
      */
     @DeleteMapping("/{profileId}")
     @CrossOrigin
-    public ResponseEntity<?> deleteUser(@PathVariable("profileId") long profileId,
+    public String deleteUser(@PathVariable("profileId") long profileId,
                                              HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         // Authenticating the logged in user
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
@@ -609,16 +609,11 @@ public class UserProfileController {
         Profile profile = optionalProfile.get();
         User user = profile.getUser();
 
-        // If deleting user-related data from the database, must be done here and separately
-        // Cascading delete doesn't work
-        sessionRepository.deleteUserSession(user);
-        emailRepository.deleteUserEmails(user);
         List<Activity> createdActivities = activityRepository.findActivitiesByCreator(profile);
         for (Activity activity : createdActivities) {
             activityRepository.delete(activity);
         }
         profileRepository.delete(profile);
-        userRepository.delete(user);
-        return ResponseEntity.status(HttpStatus.OK).body("Deleted profile with id " + user.getUserId());
+        return "Deleted profile with id " + user.getUserId();
     }
 }

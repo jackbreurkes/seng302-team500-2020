@@ -93,7 +93,7 @@
         } catch (e) {
           console.error(e);
         }
-
+        console.log(storedUserIdIsValid)
         if (storedUserIdIsValid) {
           const myUserId: number = auth.getMyUserId()!;
           this.errorMessage = "Logging you in...";
@@ -108,8 +108,8 @@
           }
           
         }
+        }
       }
-    }
 
 
   })
