@@ -5,6 +5,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
@@ -24,6 +26,8 @@ public class Subscription {
 	@GeneratedValue
 	private long id;
 
+	@ManyToOne
+	@JoinColumn(name="subscriber", nullable=false)
 	private Profile subscriber;
 	
 	@Enumerated(EnumType.ORDINAL)
