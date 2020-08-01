@@ -21,12 +21,4 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return List of subscriptions (may be empty)
 	 */
 	public List<Subscription> findSubscriptionsByUser(Profile profile);
-	
-	/**
-	 * Finds all the active subscriptions relevant to a given user
-	 * excluding instances where they have unsubscribed
-	 * @param profile Profile to find subscriptions of
-	 * @return List of subscriptions (may be empty)
-	 */
-	public List<Subscription> findActiveSubscriptionsByUser(Profile profile);
 }

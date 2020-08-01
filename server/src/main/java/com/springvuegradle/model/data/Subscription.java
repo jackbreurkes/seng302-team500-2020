@@ -23,7 +23,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "subscriptions")
 @NamedQuery(name = "Subscription.findSubscriptionsByUser", query = "SELECT s FROM Subscription s WHERE s.subscriber = ?1")
-@NamedQuery(name = "Subscription.findActiveSubscriptionsByUser", query = "SELECT s FROM Subscription s WHERE s.subscriber = ?1 AND s.isCurrentSubscription = true")
 public class Subscription {
 
 	/**
@@ -50,16 +49,9 @@ public class Subscription {
 	 * The unique ID of the subscribed entity 
 	 */
 	private long entityId;
-
-	/**
-	 * true if the subscription hasn't ended
-	 */
-	private boolean isCurrentSubscription;
 	
 	@Column(nullable = false)
 	private LocalDateTime subscribedDate;
-	
-	private LocalDateTime unsubscribedDate;
 
 	/**
 	 * Default JPA constructor
@@ -123,30 +115,5 @@ public class Subscription {
 
 	public void setSubscribedDate(LocalDateTime subscribedDate) {
 		this.subscribedDate = subscribedDate;
-	}
-
-	public LocalDateTime getUnsubscribedDate() {
-		return unsubscribedDate;
-	}
-
-	public void setUnsubscribedDate(LocalDateTime unsubscribedDate) {
-		this.unsubscribedDate = unsubscribedDate;
-	}
-	
-	/**
-	 * Marks this subscription as ended and sets the end date to the
-	 * current system time
-	 */
-	public void unsubscribe() {
-		this.setCurrentSubscription(false);
-		this.setUnsubscribedDate(LocalDateTime.now());
-	}
-	
-	public boolean isCurrentSubscription() {
-		return isCurrentSubscription;
-	}
-
-	public void setCurrentSubscription(boolean isCurrentSubscription) {
-		this.isCurrentSubscription = isCurrentSubscription;
 	}
 }
