@@ -39,3 +39,6 @@ out/
 
 ### Reports ###
 client/coverage/
+
+### Local Test DB ###
+server/src/main/resources/*.db
