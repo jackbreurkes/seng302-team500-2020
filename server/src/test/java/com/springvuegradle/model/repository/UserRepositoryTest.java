@@ -30,6 +30,9 @@ class UserRepositoryTest {
     @Autowired
     SessionRepository sessionRepository;
 
+    @Autowired
+    EmailRepository emailRepository;
+
     private User testUser;
 
     @BeforeAll
@@ -39,15 +42,20 @@ class UserRepositoryTest {
     }
 
     @Test
-    public void deleteUser_CascadesSessions() {
+    public void deleteUser_CascadesSessionsEmails() {
         Session firstSession = new Session(testUser, "testtoken", OffsetDateTime.MAX);
         Session secondSession = new Session(testUser, "othertoken", OffsetDateTime.MAX);
         testUser.setSessions(Arrays.asList(firstSession, secondSession));
+        Email testPrimaryEmail = new Email(testUser, "test@primary.com", true);
+        Email testSecondaryEmail = new Email(testUser, "test@secondary.com", false);
+        testUser.setEmails(Arrays.asList(testPrimaryEmail, testSecondaryEmail));
 
         userRepository.delete(testUser);
         assertFalse(userRepository.existsById(testUser.getUserId()));
         assertFalse(sessionRepository.existsById(firstSession.getToken()));
         assertFalse(sessionRepository.existsById(secondSession.getToken()));
+        assertFalse(emailRepository.existsById(firstSession.getToken()));
+        assertFalse(emailRepository.existsById(secondSession.getToken()));
     }
 
 }
