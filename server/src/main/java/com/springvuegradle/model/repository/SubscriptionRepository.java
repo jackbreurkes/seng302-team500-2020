@@ -15,8 +15,7 @@ import com.springvuegradle.model.data.Subscription;
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
 	/**
-	 * Finds all the subscriptions relevant to a given user including
-	 * instances where they have unsubscribed
+	 * Finds all the subscriptions relevant to a given user
 	 * @param profile Profile to find subscriptions of
 	 * @return List of subscriptions (may be empty)
 	 */
