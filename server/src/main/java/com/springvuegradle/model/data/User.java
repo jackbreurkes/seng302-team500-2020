@@ -1,6 +1,7 @@
 package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
@@ -46,16 +47,15 @@ public class User {
 	private int permissionLevel;
 
 	@OneToMany(
-			fetch = FetchType.LAZY,
-			cascade = CascadeType.REMOVE,
+			cascade = CascadeType.ALL,
+			orphanRemoval = true,
 			mappedBy = "user")
-	private List<Session> sessions;
+	private List<Session> sessions = new ArrayList<>();
 
 	@OneToMany(
-			fetch = FetchType.LAZY,
-			cascade = CascadeType.REMOVE,
+			cascade = CascadeType.ALL,
 			mappedBy = "user")
-	private List<Email> emails;
+	private List<Email> emails = new ArrayList<>();
 
 	/**
 	 * Construct a user and automatically assign their ID
