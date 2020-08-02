@@ -87,7 +87,7 @@
     data: () => {
       return {
         burgerColour: 'white',
-        currentProfileId: NaN as Number,
+        currentProfileId: NaN as Number|null,
         bar: true,
         collapsible: true,
         smallForm: true,
@@ -104,7 +104,7 @@
   },
     
     created() {
-    const profileId: number = auth.getMyUserId()
+    const profileId = auth.getMyUserId()
     this.currentProfileId = profileId;
     this.updateUserData();
     this.loadNavInfo();
