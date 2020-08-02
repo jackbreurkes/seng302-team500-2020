@@ -9,26 +9,43 @@
                 <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
-                <v-dialog v-model="confirmDeleteModal" width="290">
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" color="error">Delete</v-btn>
-                  </template>
+                  <v-menu bottom left offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        dark
+                        icon
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
 
-                  <v-card>
-                    <v-card-title class="headline" primary-title>Delete account?</v-card-title>
-
-                    <v-card-text>This operation cannot be undone.</v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
-                      <v-spacer></v-spacer>
-                      <v-btn color="error" text @click="deleteAccount">Delete</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                    <v-btn @click="editProfile" id="editButton" outlined class="mr-1">Edit</v-btn>
+                    <v-list>
+                      <v-list-item
+                        @click="editProfile"
+                      >
+                        <v-list-item-title>Edit profile</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="confirmDeleteModal = true">
+                        <v-dialog v-model="confirmDeleteModal" width="290">
+                          <template v-slot:activator="{ on }">
+                            <v-list-item-title v-on="on">Delete account</v-list-item-title>
+                          </template>
+                          <v-card>
+                            <v-card-title class="headline" primary-title>Delete account?</v-card-title>
+                            <v-card-text>This operation cannot be undone.</v-card-text>
+                            <v-divider></v-divider>
+                            <v-card-actions>
+                              <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                              <v-spacer></v-spacer>
+                              <v-btn color="error" text @click="deleteAccount">Delete</v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
               </v-toolbar>
               <v-card-text class="grey lighten-4">
@@ -87,6 +104,7 @@
                 <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
+                <!--TODO Menu for this plus make sure admin knows this will create it on their behalf-->
                   <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
                 </div>
               </v-toolbar>
@@ -204,7 +222,6 @@ const Homepage = Vue.extend({
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
-    const permissionLevel: number = authService.getMyPermissionLevel();
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
@@ -218,10 +235,6 @@ const Homepage = Vue.extend({
     fetchProfileWithId(profileId)
       .then(user => {
         this.currentUser = user;
-        if (user.profile_id == profileId) {
-            //if we're editing ourself
-            this.currentlyHasAuthority = true;
-          }
       })
       .catch(err => {
         if (err.response && err.response.status === 401) {
@@ -231,10 +244,6 @@ const Homepage = Vue.extend({
         }
         console.error(err);
       });
-
-    if (permissionLevel >= 120) {
-      this.currentlyHasAuthority = true;
-    }
 
     getActivitiesByCreator(profileId)
       .then(res => {

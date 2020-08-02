@@ -4,7 +4,9 @@
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
         <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
-        <v-toolbar-title>Intitulada</v-toolbar-title>
+        <v-toolbar-title>Intitulada </v-toolbar-title>
+        <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
+
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
@@ -85,7 +87,7 @@
     data: () => {
       return {
         burgerColour: 'white',
-        currentProfileId: NaN as Number,
+        currentProfileId: NaN as Number|null,
         bar: true,
         collapsible: true,
         smallForm: true,
@@ -102,7 +104,7 @@
   },
     
     created() {
-    const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
+    const profileId = auth.getMyUserId()
     this.currentProfileId = profileId;
     this.updateUserData();
     this.loadNavInfo();
@@ -139,7 +141,7 @@
       },
       showNavBar: function(){
         //Dont display the nav bar side menu
-        if(this.$route.path == "/login" || this.$route.path == '/register') {
+        if(this.$route.path == "/login" || this.$route.path == '/register'|| this.$route.path == '/') {
           return false
         }
         return true
