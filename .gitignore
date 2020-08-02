@@ -39,3 +39,5 @@ out/
 
 ### Reports ###
 client/coverage/
+
+server/src/main/resources/\.nfs00000000259417ec00000320
