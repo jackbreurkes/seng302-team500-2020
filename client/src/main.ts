@@ -56,7 +56,7 @@ const routes = [
     component: Search,
   },
   {
-    path: "/activities/:activityId",
+    path: "/profiles/:profileId/activities/:activityId",
     name: "activity",
     component: Activity,
   },
