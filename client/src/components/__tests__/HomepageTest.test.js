@@ -68,6 +68,7 @@ describe("homepageTests", () => {
     })
   
     it('has a edit profile button', async () => {      //test to see if the edit button exists
+      console.log(wrapper.html())
       expect(wrapper.find('#editButton').exists()).toBe(true)
     })
 
