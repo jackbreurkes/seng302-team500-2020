@@ -23,6 +23,7 @@
 
                     <v-list>
                       <v-list-item
+                        id="editButton"
                         @click="editProfile"
                       >
                         <v-list-item-title>Edit profile</v-list-item-title>
