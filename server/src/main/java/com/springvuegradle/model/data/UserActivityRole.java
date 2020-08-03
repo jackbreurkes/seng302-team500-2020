@@ -1,23 +1,22 @@
 package com.springvuegradle.model.data;
 
+import javax.annotation.processing.Generated;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
 public class UserActivityRole {
 
-    @OneToOne()
+    @NotNull
+    @GeneratedValue
+    @Id
+    private long userActivityRoleId;
+
+    @OneToOne
     @JoinColumn(columnDefinition = "activity_id")
     private Activity activity;
 
-    @NotNull
-    @Id
-    private long activity_id;
-
-    @NotNull
-    private long uuid;
-
-    @ManyToOne
+    @OneToOne
     @JoinColumn(columnDefinition = "uuid")
     private User user;
 
@@ -39,22 +38,6 @@ public class UserActivityRole {
 
     public void setActivity(Activity activity) {
         this.activity = activity;
-    }
-
-    public long getActivity_id() {
-        return activity_id;
-    }
-
-    public void setActivity_id(long activity_id) {
-        this.activity_id = activity_id;
-    }
-
-    public long getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(long uuid) {
-        this.uuid = uuid;
     }
 
     public User getUser() {
