@@ -69,10 +69,11 @@ describe("homepageTests", () => {
     })
     
     it('has a edit profile button', async () => {      //test to see if the edit button exists
-      //wrapper.find('#profileDropDown').trigger('click')
+      wrapper.find('#profileDropDown').trigger('click')
+      await wrapper.vm.$nextTick()
       //console.log(wrapper.html())
       console.log(wrapper.html())
-      expect(wrapper.find('#profileDropDown').exists()).toBe(true)
+      expect(wrapper.find('#editButton').exists()).toBe(true)
     })
 
   })
