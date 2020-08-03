@@ -8,7 +8,8 @@
               <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>Profile: {{ currentUser.nickname ? currentUser.nickname : `${currentUser.firstname} ${currentUser.lastname}` }}</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <div v-if="currentlyHasAuthority">
+                <!-- <div v-if="currentlyHasAuthority"> -->
+                <div>
                   <v-menu bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
@@ -16,6 +17,7 @@
                         icon
                         v-bind="attrs"
                         v-on="on"
+                        id="profileDropDown"
                       >
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>

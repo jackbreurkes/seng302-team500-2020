@@ -18,7 +18,8 @@ const mockProfileId = 7001;
 const mocks = { //mock route
     $route: {
       params: {
-        profileId: mockProfileId
+        profileId: mockProfileId,
+        currentlyHasAuthority: true
       }
    },
     $router: { //mocks router, use if checking for directing to another page
@@ -66,10 +67,12 @@ describe("homepageTests", () => {
         stubs
       })
     })
-  
+    
     it('has a edit profile button', async () => {      //test to see if the edit button exists
+      //wrapper.find('#profileDropDown').trigger('click')
+      //console.log(wrapper.html())
       console.log(wrapper.html())
-      expect(wrapper.find('#editButton').exists()).toBe(true)
+      expect(wrapper.find('#profileDropDown').exists()).toBe(true)
     })
 
   })
