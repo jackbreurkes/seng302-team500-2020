@@ -4,7 +4,9 @@
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
         <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
-        <v-toolbar-title>Intitulada</v-toolbar-title>
+        <v-toolbar-title>Intitulada </v-toolbar-title>
+        <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
+
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>

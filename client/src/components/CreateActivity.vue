@@ -6,7 +6,15 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>{{this.isEditing ? "Edit Activity" : "Create Activity"}}</v-toolbar-title>
+                <v-toolbar-title>
+                  <v-btn
+                    dark
+                    icon
+                    @click="cancelButtonClicked"
+                    >
+                    <v-icon>mdi-arrow-left</v-icon>
+                  </v-btn>
+                  {{this.isEditing ? "Edit Activity" : "Create Activity"}}</v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-text-field
@@ -123,39 +131,41 @@
                   multiple
                 ></v-autocomplete>
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
+
+                <v-row justify="end">
+                  <v-btn @click="cancelButtonClicked" class="ma-1" width="100" outlined>Cancel</v-btn>
+
+                  <div v-if="this.isEditing">
+                    <v-dialog v-model="confirmDeleteModal" width="290">
+                      <template v-slot:activator="{ on }">
+                        <v-btn v-on="on" color="error" class="ma-1" width="100" outlined>Delete</v-btn>
+                      </template>
+
+                      <v-card>
+                        <v-card-title class="headline" primary-title>Delete activity?</v-card-title>
+
+                        <v-card-text>This operation cannot be undone.</v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                          <v-spacer></v-spacer>
+                          <v-btn color="error" text @click="deleteButtonClicked">Delete</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+
+                  <v-btn
+                    @click="createButtonClicked"
+                    color="primary"
+                    class="ma-1 mr-3"
+                    width="100"
+                  >{{this.isEditing ? "Save" : "Create"}}</v-btn>
+
+                </v-row>
               </v-card-text>
-              <v-card-actions>
-                <v-btn @click="cancelButtonClicked">Cancel</v-btn>
-                <v-spacer></v-spacer>
-
-                <div v-if="this.isEditing">
-                  <v-dialog v-model="confirmDeleteModal" width="290">
-                    <template v-slot:activator="{ on }">
-                      <v-btn v-on="on" color="error">Delete</v-btn>
-                    </template>
-
-                    <v-card>
-                      <v-card-title class="headline" primary-title>Delete activity?</v-card-title>
-
-                      <v-card-text>This operation cannot be undone.</v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
-                        <v-spacer></v-spacer>
-                        <v-btn color="error" text @click="deleteButtonClicked">Delete</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-
-                <v-spacer></v-spacer>
-                <v-btn
-                  @click="createButtonClicked"
-                  color="primary"
-                >{{this.isEditing ? "Save" : "Create"}}</v-btn>
-              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
