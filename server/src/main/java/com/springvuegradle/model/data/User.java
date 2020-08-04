@@ -3,12 +3,7 @@ package com.springvuegradle.model.data;
 import java.security.NoSuchAlgorithmException;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.springvuegradle.auth.ChecksumUtils;
@@ -37,6 +32,7 @@ public class User {
 	@Id
 	@GeneratedValue
 	private long uuid;
+
 
 	/**
 	 * hashed password of the user
