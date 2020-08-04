@@ -5,7 +5,15 @@
         <v-col cols="12" sm="12" md="6">
           <v-card class="elevation-12" width="100%">
             <v-toolbar color="primary" dark flat> 
-              <v-toolbar-title>Editing profile: {{ titleBarUserName }}</v-toolbar-title>
+              <v-toolbar-title>
+                <v-btn
+                  dark
+                  icon
+                  @click="returnToProfile"
+                  >
+                  <v-icon>mdi-arrow-left</v-icon>
+                </v-btn>
+                Editing profile: {{ titleBarUserName }}</v-toolbar-title>
             </v-toolbar>
 
             <v-card-text>
@@ -154,8 +162,10 @@
                 ></v-autocomplete>
               </v-form>
 
-              <v-btn @click="saveButtonClicked" color="primary">Save profile changes</v-btn>
-              <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
+              <v-row justify="end">
+                <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
+                <v-btn @click="saveButtonClicked" color="primary" class="ma-1 mr-3" width="150">Save profile</v-btn>
+              </v-row>
               <br />
             </v-card-text>
           </v-card>
@@ -204,8 +214,10 @@
                 </v-row>
               </v-container>
               <br /><br />
-              <v-btn id="updateEmail" @click="updateEmail()" color="primary">Save email changes</v-btn>
-              <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
+              <v-row justify="end">
+                <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
+                <v-btn id="updateEmail" @click="updateEmail()" color="primary" class="ma-1 mr-3" width="150">Save emails</v-btn>
+              </v-row>
             </v-card-text>
           </v-card>
           <br />
@@ -243,37 +255,11 @@
                 ></v-text-field>
                 <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
                 <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
-                <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary">Update your password</v-btn>
+                <v-row justify="end">
+                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary" class="mr-3">Update password</v-btn>
+                </v-row>
               </v-form>
               <!-- insert edit email and edit password forms here -->
-            </v-card-text>
-          </v-card>
-          <br />
-          <v-card>
-            <v-toolbar color="primary" dark flat> 
-              <!-- <v-toolbar-title>Delete Account</v-toolbar-title> -->
-            </v-toolbar>
-            <v-card-text>
-              <v-dialog v-model="confirmDeleteModal" width="290">
-                <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" color="error">Delete</v-btn>
-                  <v-btn @click="returnToProfile" class="ml-1">Cancel</v-btn>
-                </template>
-
-                <v-card>
-                  <v-card-title class="headline" primary-title>Delete account?</v-card-title>
-
-                  <v-card-text>This operation cannot be undone.</v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn color="error" text @click="deleteAccount">Delete</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
             </v-card-text>
           </v-card>
         </v-col>

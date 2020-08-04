@@ -4,14 +4,15 @@
 
       <v-app-bar color="primary" dark app clipped-left:true-value="">
         <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
-        <v-toolbar-title>Intitulada</v-toolbar-title>
+        <v-toolbar-title>Intitulada </v-toolbar-title>
+        <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
+
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
         </div>  
       </v-app-bar>
       <v-navigation-drawer 
-          v-model= this.bar
           :expand-on-hover= this.collapsible
           :mini-variant = this.smallForm
           :right= this.right
@@ -20,7 +21,7 @@
           dark
           overlay-opacity= 0.7
           fixed
-          permanent = true 
+          :permanent = "true" 
           v-if="showNavBar()"
 
         >
@@ -120,7 +121,8 @@
       loadNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
-            {title: 'Home ', icon: 'mdi-home', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]

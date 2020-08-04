@@ -8,6 +8,8 @@ import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
 import EditActivity from "./components/EditActivity.vue";
 import Search from './components/Search.vue';
+import HomeFeed from './components/HomeFeed.vue';
+import Activity from './components/Activity.vue';
 
 Vue.config.productionTip = false;
 
@@ -53,6 +55,16 @@ const routes = [
     name: "search",
     component: Search,
   },
+  {
+    path: "/activities/:activityId",
+    name: "activity",
+    component: Activity,
+  },
+  {
+    path: "/homefeed",
+    name: "homefeed",
+    component: HomeFeed,
+  }
 ];
 
 const router = new VueRouter({
@@ -65,8 +77,13 @@ const router = new VueRouter({
 const unprotectedRoutes = ["login", "register"];
 router.beforeEach((to, from, next) => {
   if (to.name && unprotectedRoutes.includes(to.name)) {
-    next();
-    return;
+    if (auth.getMyToken() === null) { //user is not authenticated
+      next();
+      return;
+    } else {
+      next({name: "profilePage" })
+      return;
+    }
   }
   
   if (auth.getMyToken() === null) { // user is not authenticated
