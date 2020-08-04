@@ -10,6 +10,10 @@ import {
   fetchProfileWithId,
 } from "../../controllers/profile.controller.ts";
 jest.mock("../../controllers/profile.controller.ts")
+import {
+  getActivitiesByCreator, getContinuousActivities, getDurationActivities
+} from "../../controllers/activity.controller";
+jest.mock("../../controllers/activity.controller.ts")
 
 Vue.use(Vuetify)
 const localVue = createLocalVue()
@@ -55,8 +59,55 @@ describe("homepageTests", () => {
         "additional_email":[],
         "activities":[]
     }
-    )    
-  
+    )
+    getActivitiesByCreator.mockResolvedValue(
+        {
+          "activity_id":3,
+          "activity_name":"create continuous",
+          "continuous":true,
+          "description":"wadawdadwwad",
+          "location":"wad",
+          "creator_id":2,
+          "activity_type":["Running"]
+        },
+
+        {
+          "activity_id":4,
+          "activity_name":"durationboi",
+          "continuous":false,
+          "start_time":"2020-08-05T11:11:00+1200",
+          "end_time":"2020-08-07T11:11:00+1200",
+          "description":"awdawdadw",
+          "location":"awd",
+          "creator_id":2,
+          "activity_type":["Running"]
+        }
+      
+      )   
+    getDurationActivities.mockResolvedValue(
+      {
+        "activity_id":4,
+        "activity_name":"durationboi",
+        "continuous":false,
+        "start_time":"2020-08-05T11:11:00+1200",
+        "end_time":"2020-08-07T11:11:00+1200",
+        "description":"awdawdadw",
+        "location":"awd",
+        "creator_id":2,
+        "activity_type":["Running"]
+      }
+    )
+    getContinuousActivities.mockResolvedValue(
+        {
+          "activity_id":3,
+          "activity_name":"create continuous",
+          "continuous":true,
+          "description":"wadawdadwwad",
+          "location":"wad",
+          "creator_id":2,
+          "activity_type":["Running"]
+        }
+    )
     beforeEach(async function() {
       let vuetify = new Vuetify()
         wrapper = mount(Homepage, { 
@@ -68,13 +119,18 @@ describe("homepageTests", () => {
       })
     })
     
-    it('has a edit profile button', async () => {      //test to see if the edit button exists
-      wrapper.find('#profileDropDown').trigger('click')
-      await wrapper.vm.$nextTick()
-      //console.log(wrapper.html())
-      console.log(wrapper.html())
-      expect(wrapper.find('#editButton').exists()).toBe(true)
+    it('has a edit profile button', async () => { 
+      wrapper.find('#profileDropDown').trigger('click') //open the profile option dropdown
+      await wrapper.vm.$nextTick() //wait for the dropdown to be rendered.
+      // console.log(wrapper.html()) //how to view the wrapper
+      expect(wrapper.find('#editButton').exists()).toBe(true) 
+    })
+    it('Activities are loaded, and the homepage has a duration button', async () => { 
+      expect(wrapper.find('#Duration').exists()).toBe(true) 
+
+    })
+    it('Activities are loaded, and the homepage has a continuous button', async () => { 
+      expect(wrapper.find('#Continuous').exists()).toBe(true) 
     })
 
   })
-  

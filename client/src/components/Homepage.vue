@@ -122,7 +122,7 @@
                   >{{ activityType }}</v-chip>
                 </div>
                 <v-tabs v-model="durationTab" grow>
-                  <v-tab v-for="item in activityList" :key="item.tab">{{ item.tab }}</v-tab>
+                  <v-tab v-for="item in activityList" :key="item.tab" :id= item.tab >{{ item.tab}}</v-tab>
                 </v-tabs>
                 <v-tabs-items v-model="durationTab">
                   <v-tab-item v-for="item in activityList" :key="item.tab">
