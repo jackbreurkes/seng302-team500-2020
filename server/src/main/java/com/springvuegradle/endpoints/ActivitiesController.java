@@ -291,6 +291,7 @@ public class ActivitiesController {
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
+    @Deprecated
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
@@ -364,33 +365,6 @@ public class ActivitiesController {
         }
 
         return responseActivities;
-    }
-
-    @GetMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
-    @CrossOrigin
-    public ResponseEntity<Object> checkActivityFollower(@PathVariable("profileId") long profileId,
-                                                 @PathVariable("activityId") long activityId,
-                                                 HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-        // Placeholder implementation to test that frontend is sending requests correctly
-        return ResponseEntity.status(HttpStatus.OK).body("{\"subscribed\": true}");
-    }
-
-    @PostMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
-    @CrossOrigin
-    public ResponseEntity<Object> followActivity(@PathVariable("profileId") long profileId,
-                                                  @PathVariable("activityId") long activityId,
-                                                  HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-        // Placeholder implementation to test that frontend is sending requests correctly
-        return ResponseEntity.status(HttpStatus.OK).body("Followed");
-    }
-
-    @DeleteMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
-    @CrossOrigin
-    public ResponseEntity<Object> removeActivityFollower(@PathVariable("profileId") long profileId,
-                                                  @PathVariable("activityId") long activityId,
-                                                  HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-        // Placeholder implementation to test that frontend is sending requests correctly
-        return ResponseEntity.status(HttpStatus.OK).body("Unfollowed");
     }
 
 }
