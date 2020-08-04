@@ -20,4 +20,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return List of subscriptions (may be empty)
 	 */
 	public List<Subscription> findSubscriptionsByUser(Profile profile);
+
+	/**
+	 * Checks if uesr is subscribed to activity
+	 * @param entityId Id of the activity
+	 * @param profile User to check if subscribed
+	 * @return boolean true if subscibed
+	 */
+	public boolean isSubscribedToActivity(long entityId, Profile profile);
 }
