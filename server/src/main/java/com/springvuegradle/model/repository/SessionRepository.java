@@ -14,6 +14,6 @@ public interface SessionRepository extends JpaRepository<Session, String> {
 
 	@Transactional
     @Modifying
-    public void deleteUserSession(User user);
+    public void deleteAllByUser(User user);
 
 }

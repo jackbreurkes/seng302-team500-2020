@@ -2,6 +2,7 @@ package com.springvuegradle.auth;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,8 +43,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
 		String token = request.getHeader("X-Auth-Token");
 		if (token != null) {
-			if (sessionRepo.existsById(token)) {
-				Session session = sessionRepo.findById(token).get();
+			Optional<Session> optionalSession = sessionRepo.findById(token);
+			if (optionalSession.isPresent()) {
+				Session session = optionalSession.get();
 				if (session.getExpiry().isBefore(Instant.now().atOffset(ZoneOffset.UTC))) {
 					sessionRepo.delete(session);
 				} else {
