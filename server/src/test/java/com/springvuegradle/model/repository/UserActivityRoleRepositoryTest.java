@@ -1,6 +1,7 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.*;
+import org.apache.catalina.util.ToStringUtil;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,17 +37,11 @@ public class UserActivityRoleRepositoryTest {
     @Autowired
     ActivityTypeRepository activityTypeRepository;
 
+    Profile profile1, profile2, profile3;
+    Activity activity1, activity2, activity3;
+
     @BeforeAll
     public void populateUsersAndActivities(){
-        User user1 = new User(1L);
-        User user2 = new User(2L);
-        User user3 = new User(3L);
-
-        //save users
-        userRepository.save(user1);
-        userRepository.save(user2);
-        userRepository.save(user3);
-
         ActivityType walking = new ActivityType("Walking");
         ActivityType running = new ActivityType("Running");
         ActivityType biking = new ActivityType("Biking");
@@ -55,29 +50,26 @@ public class UserActivityRoleRepositoryTest {
         activityTypeRepository.save(running);
         activityTypeRepository.save(biking);
 
-        Profile profile1 = new Profile(user1, "Bill", "Testman", LocalDate.EPOCH, Gender.NON_BINARY);
-        Profile profile2 = new Profile(user2, "Andy", "Warshaw", LocalDate.EPOCH, Gender.NON_BINARY);
-        Profile profile3 = new Profile(user3, "Brie", "Calaris", LocalDate.EPOCH, Gender.NON_BINARY);
+        profile1 = new Profile(new User(), "Bill", "Testman", LocalDate.EPOCH, Gender.NON_BINARY);
+        profile2 = new Profile(new User(), "Andy", "Warshaw", LocalDate.EPOCH, Gender.NON_BINARY);
+        profile3 = new Profile(new User(), "Brie", "Calaris", LocalDate.EPOCH, Gender.NON_BINARY);
 
         profileRepository.save(profile1);
         profileRepository.save(profile2);
         profileRepository.save(profile3);
 
-        Activity activity1 = new Activity("Test Activity", false, "New Zealand", profileRepository.getOne(1L), Collections.singleton(walking));
-        Activity activity2 = new Activity("Test Activity2", false, "New Zealand", profileRepository.getOne(2L), Collections.singleton(running));
-        Activity activity3 = new Activity("Test Activity3", false, "New Zealand", profileRepository.getOne(3L), Collections.singleton(biking));
+        activity1 = new Activity("Test Activity", false, "New Zealand", profile1, Collections.singleton(walking));
+        activity2 = new Activity("Test Activity2", false, "New Zealand", profile2, Collections.singleton(running));
+        activity3 = new Activity("Test Activity3", false, "New Zealand", profile3, Collections.singleton(biking));
 
         activityRepository.save(activity1);
         activityRepository.save(activity2);
         activityRepository.save(activity3);
 
-        //Adding associations
-        UserActivityRole userActivityRole1 = new UserActivityRole(activity1, user1, ActivityRole.ORGANISER);
-
-        UserActivityRole userActivityRole2 = new UserActivityRole(activity2, user2, ActivityRole.PARTICIPANT);
-        UserActivityRole userActivityRole3 = new UserActivityRole(activity1, user2, ActivityRole.PARTICIPANT);
-
-        UserActivityRole userActivityRole4 = new UserActivityRole(activity2, user3, ActivityRole.PARTICIPANT);
+        UserActivityRole userActivityRole1 = new UserActivityRole(activity1, profile1.getUser(), ActivityRole.ORGANISER);
+        UserActivityRole userActivityRole2 = new UserActivityRole(activity2, profile2.getUser(), ActivityRole.PARTICIPANT);
+        UserActivityRole userActivityRole3 = new UserActivityRole(activity1, profile2.getUser(), ActivityRole.PARTICIPANT);
+        UserActivityRole userActivityRole4 = new UserActivityRole(activity3, profile3.getUser(), ActivityRole.PARTICIPANT);
 
         userActivityRoleRepository.save(userActivityRole1);
         userActivityRoleRepository.save(userActivityRole2);
@@ -87,8 +79,40 @@ public class UserActivityRoleRepositoryTest {
 
     @Test
     public void testGetInvolvedActivitiesByUserId() {
-        List<Activity> result = userActivityRoleRepository.getInvolvedActivitiesByUserId(2);
+        List<Activity> result = userActivityRoleRepository.getInvolvedActivitiesByUserId(profile2.getUser().getUserId());
         assertEquals(2, result.size());
     }
+
+    @Test
+    public void testGetSingleInvolvedActivityByUserId() {
+        List<Activity> result = userActivityRoleRepository.getInvolvedActivitiesByUserId(profile3.getUser().getUserId());
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testGetInvolvedActivitiesByInvalidUserId() {
+        List<Activity> result = userActivityRoleRepository.getInvolvedActivitiesByUserId(700);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testGetInvolvedUsersByActivityId(){
+        List<User> result = userActivityRoleRepository.getInvolvedUsersByActivityId(activity1.getId());
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    public void testGetSingleInvolvedUserByActivityId(){
+        List<User> result = userActivityRoleRepository.getInvolvedUsersByActivityId(activity3.getId());
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testGetInvolvedUsersByInvalidActivityId(){
+        List<User> result = userActivityRoleRepository.getInvolvedUsersByActivityId(1000);
+        assertEquals(0, result.size());
+    }
+
+
 
 }

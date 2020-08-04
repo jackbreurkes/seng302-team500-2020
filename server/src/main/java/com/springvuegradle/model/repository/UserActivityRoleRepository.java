@@ -10,9 +10,7 @@ import java.util.List;
 
 
 /**
- * INSERT INTO USER_ACTIVITY_ROLE (USER_UUID, ACTIVITY_ACTIVITY_ID, ACTIVITY_ROLE, USER_ACTIVITY_ROLE_ID) VALUES (5, 3, 6, 11)
- * SELECT u FROM UserActivityRole u JOIN Activity ON Activity.activity_id = u.activity.activity_id WHERE u.user.uuid = ?1
- * SELECT a FROM UserActivityRole a JOIN User ON User.uuid = a.user.uuid WHERE a.activity.activity_id = ?1
+ * JPA Repository of user_activity_roles
  */
 public interface UserActivityRoleRepository extends JpaRepository<UserActivityRole, Long> {
 
@@ -22,7 +20,7 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
      * @return list of activities that user is involved in
      */
     @Query(
-            value= "SELECT a FROM Activity a JOIN UserActivityRole u ON u.activity.activity_id = a.activity_id WHERE u.activity.activity_id= ?1"
+            value= "SELECT a FROM Activity a JOIN UserActivityRole r ON a.activity_id = r.activity.activity_id WHERE r.user.uuid = ?1"
     )
     public List<Activity> getInvolvedActivitiesByUserId(long uuid);
 
