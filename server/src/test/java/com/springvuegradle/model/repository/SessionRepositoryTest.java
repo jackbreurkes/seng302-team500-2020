@@ -23,7 +23,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled // required understanding of how to handle persistance in tests of Hibernate
+@Disabled
+// these tests fail because of the following exception when trying to call `testUser.getSessions()`
+// org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: com.springvuegradle.model.data.User.sessions, could not initialize proxy - no Session
+//    i.e. the problem appears like it may be something to do with how our tests handle hibernate sessions?
+// the getSessions() and getEmails() methods are asserted to work in UserRepositoryTest
 class SessionRepositoryTest {
 
     @Autowired
