@@ -23,8 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * REST controller for subscription status
  *
- * @author Alex Hobson
- * @author James Auman
  */
 @RestController
 public class SubscriptionController {
@@ -41,6 +39,9 @@ public class SubscriptionController {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
+    /**
+     * Repository of profiles in the database
+     */
     @Autowired
     private ProfileRepository profileRepository;
 
@@ -49,6 +50,8 @@ public class SubscriptionController {
      * Returns a boolean of whether user is subscribed
      *
      * @return Boolean of subscription status
+     * @throws UserNotAuthenticatedException
+     * @throws RecordNotFoundException
      */
     @GetMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
     @CrossOrigin
