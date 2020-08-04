@@ -9,6 +9,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
@@ -42,9 +43,9 @@ public class UserActivityRoleRepositoryTest {
 
     @BeforeAll
     public void populateUsersAndActivities(){
-        ActivityType walking = new ActivityType("Walking");
-        ActivityType running = new ActivityType("Running");
-        ActivityType biking = new ActivityType("Biking");
+        ActivityType walking = new ActivityType("A");
+        ActivityType running = new ActivityType("B");
+        ActivityType biking = new ActivityType("D");
 
         activityTypeRepository.save(walking);
         activityTypeRepository.save(running);
