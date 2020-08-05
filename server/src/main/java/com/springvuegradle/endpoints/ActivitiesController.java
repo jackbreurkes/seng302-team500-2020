@@ -15,6 +15,8 @@ import javax.validation.Valid;
 
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +35,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
@@ -64,6 +58,9 @@ public class ActivitiesController {
 
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+
+    @Autowired
+    private ChangeLogRepository changeLogRepository;
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 

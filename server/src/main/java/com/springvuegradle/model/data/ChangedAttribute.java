@@ -4,7 +4,11 @@ package com.springvuegradle.model.data;
  * Enum for changed attribute types used in the change log
  */
 public enum ChangedAttribute {
-	ACTIVITY_TIME_FRAME("activity_time_frame"), ACTIVITY_NAME("activity_name"), ACTIVITY_DESCRIPTION("activity_description"), ACTIVITY_LOCATION("activity_location");
+	ACTIVITY_TIME_FRAME("activity_time_frame"),
+	ACTIVITY_NAME("activity_name"),
+	ACTIVITY_DESCRIPTION("activity_description"),
+	ACTIVITY_LOCATION("activity_location"),
+	ACTIVITY_EXISTENCE("activity_existence");
 	
 	/**
 	 * Name of the attribute changed when sent by json
