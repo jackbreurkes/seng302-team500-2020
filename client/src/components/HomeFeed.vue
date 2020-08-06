@@ -5,6 +5,7 @@
             <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>Home Feed</v-toolbar-title>
             </v-toolbar>
+            <HomeFeedCard></HomeFeedCard>
         </v-card>
     </v-layout>
   </div>
@@ -12,11 +13,12 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import HomeFeedCard from "./HomeFeedCard.vue"
 
 // app Vue instance
 const Homefeed = Vue.extend({
   name: "Homefeed",
-
+  components: {HomeFeedCard},
   // app initial state
   data: function() {
     return {
