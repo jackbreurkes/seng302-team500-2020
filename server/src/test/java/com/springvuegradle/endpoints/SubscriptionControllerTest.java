@@ -2,6 +2,7 @@ package com.springvuegradle.endpoints;
 
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.responses.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -114,7 +115,7 @@ public class SubscriptionControllerTest {
     @Test
     public void testSubscribeActivityDoesntExist() throws Exception{
         this.mvc.perform(post("/profiles/1/subscriptions/activities/100").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
     }
 
     @Test

@@ -96,18 +96,17 @@ public class SubscriptionController {
      */
     @PostMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
     @CrossOrigin
-    public Object postSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId, HttpServletRequest request)
-            throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+    public ResponseEntity<String> postSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
 
         Optional<Activity> optionalActivity = activityRepo.findById(activityId);
         if(!optionalActivity.isPresent()){
             throw new RecordNotFoundException("Activity doesnt exist");
         }
 
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+
         subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), HomefeedEntityType.ACTIVITY, activityId));
-        return ResponseEntity.status(HttpStatus.resolve(201));
+        return ResponseEntity.status(HttpStatus.CREATED).body("{\"subscribed\": true}");
     }
 
 }
