@@ -251,10 +251,7 @@ public class UserProfileControllerMockTest {
         Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
         
-        Mockito.doNothing().when(userRepository).delete(user);
         Mockito.doNothing().when(profileRepository).delete(profile);
-        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
-        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
         
         mvc.perform(MockMvcRequestBuilders
                 .delete("/profiles/{id}", userId)
@@ -263,10 +260,7 @@ public class UserProfileControllerMockTest {
         		.andDo(print())
                 .andExpect(status().isOk());
         
-        Mockito.verify(userRepository).delete(user);
         Mockito.verify(profileRepository).delete(profile);
-        Mockito.verify(sessionRepository).deleteUserSession(user);
-        Mockito.verify(emailRepository).deleteUserEmails(user);
     }
     
     @Test
@@ -281,7 +275,7 @@ public class UserProfileControllerMockTest {
         
         Mockito.doNothing().when(userRepository).delete(user);
         Mockito.doNothing().when(profileRepository).delete(profile);
-        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(sessionRepository).deleteAllByUser(user);
         Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
         
         mvc.perform(MockMvcRequestBuilders
@@ -328,7 +322,7 @@ public class UserProfileControllerMockTest {
         
         Mockito.doNothing().when(userRepository).delete(user);
         Mockito.doNothing().when(profileRepository).delete(profile);
-        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
+        Mockito.doNothing().when(sessionRepository).deleteAllByUser(user);
         Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
         
         mvc.perform(MockMvcRequestBuilders
@@ -352,10 +346,7 @@ public class UserProfileControllerMockTest {
         Mockito.when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
         Mockito.when(profileRepository.findById(userId)).thenReturn(Optional.of(profile));
         
-        Mockito.doNothing().when(userRepository).delete(user);
         Mockito.doNothing().when(profileRepository).delete(profile);
-        Mockito.doNothing().when(sessionRepository).deleteUserSession(user);
-        Mockito.doNothing().when(emailRepository).deleteUserEmails(user);
         
         mvc.perform(MockMvcRequestBuilders
                 .delete("/profiles/{id}", userId)
@@ -364,10 +355,7 @@ public class UserProfileControllerMockTest {
         		.andDo(print())
                 .andExpect(status().isOk());
         
-        Mockito.verify(userRepository).delete(user);
         Mockito.verify(profileRepository).delete(profile);
-        Mockito.verify(sessionRepository).deleteUserSession(user);
-        Mockito.verify(emailRepository).deleteUserEmails(user);
     }
 
 // ----------------------- Admin promotion/demotion tests ------------------------------------

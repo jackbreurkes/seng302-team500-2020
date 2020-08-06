@@ -9,7 +9,6 @@ import com.springvuegradle.model.data.User;
 
 /**
  * JPA Repository of users
- * @author Alex Hobson
  *
  */
 public interface UserRepository extends JpaRepository<User, Long> {
