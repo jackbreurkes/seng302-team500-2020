@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.LocalDate;
 import java.util.*;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -56,6 +57,7 @@ public class SubscriptionControllerTest {
     User user2;
     Profile profile;
     Profile profile2;
+    Activity activity;
     Map<String, ActivityType> activityTypes;
     boolean isSubscribed;
 
@@ -88,9 +90,31 @@ public class SubscriptionControllerTest {
         Set<ActivityType> activityTypeSet = new HashSet<ActivityType>();
         activityTypeSet.add(activityTypes.get("walking"));
 
-        Activity activity =new Activity("Running around", false, "Hagley Park", profile, activityTypeSet);
+        activity =new Activity("Running around", false, "Hagley Park", profile, activityTypeSet);
         activity.setId(1);
         Mockito.when(repo.findById(1L)).thenReturn(Optional.of(activity));
+    }
+
+    @Test
+    public void testPostValidSubscription() throws Exception {
+        Mockito.when(repo.findById(1L)).thenReturn(Optional.of(activity));
+
+        this.mvc.perform(MockMvcRequestBuilders.post("/profiles/1/subscriptions/activities/1")
+                .requestAttr("authenticatedid", user.getUserId())
+                .header("authenticatedid", user.getUserId()))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void testPostUnauthorizedSubscription() throws Exception {
+        this.mvc.perform(post("/profiles/1/subscriptions/activities/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testSubscribeActivityDoesntExist() throws Exception{
+        this.mvc.perform(post("/profiles/1/subscriptions/activities/100").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
