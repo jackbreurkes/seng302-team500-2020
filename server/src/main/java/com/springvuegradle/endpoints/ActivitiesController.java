@@ -340,27 +340,4 @@ public class ActivitiesController {
 
         return responseActivities;
     }
-
-    /**
-     *
-     * @param profileId
-     * @param activityId
-     * @param request
-     * @return
-     * @throws UserNotAuthenticatedException
-     * @throws RecordNotFoundException
-     * @throws UserNotAuthorizedException
-     */
-    @GetMapping("/profiles/{profileId}/activities/{activityId}")
-    @CrossOrigin
-    public ActivityResponse activityParticipation(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
-
-        // Authenticating the logged in user
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
-
-
-
-    }
-
 }
