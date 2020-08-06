@@ -9,6 +9,6 @@ import instance from "@/services/axios.service";
  */
 export async function setRole(data: UpdateRoleRequest, profileId: number,
                               activityId: number) {
-    let res = await instance.put(``)
+    let res = await instance.put(`activities/${activityId}/roles/${profileId}`)
     return res.data;
 }
