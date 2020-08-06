@@ -28,4 +28,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return Number of users following the given activity
 	 */
 	public Long getFollowerCount(Activity activity);
+
+	/**
+	 * Checks if uesr is subscribed to activity
+	 * @param entityId Id of the activity
+	 * @param profile User to check if subscribed
+	 * @return boolean true if subscibed
+	 */
+	public boolean isSubscribedToActivity(long entityId, Profile profile);
 }

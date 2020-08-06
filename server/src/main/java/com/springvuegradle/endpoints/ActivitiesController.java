@@ -293,6 +293,7 @@ public class ActivitiesController {
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
+    @Deprecated
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
@@ -309,6 +310,32 @@ public class ActivitiesController {
         Activity activity = optionalActivity.get();
 
         return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+    }
+
+    /**
+     * Returns the information for a single activity as identified by its ID only
+     * @param activityId id of the activity to return
+     * @param request http request made
+     * @return json body giving information about the activity
+     * @throws UserNotAuthenticatedException if no authentication information is provided
+     * @throws RecordNotFoundException if the activity does not exist
+     */
+    @GetMapping("/activities/{activityId}")
+    @CrossOrigin
+    public ActivityResponse getSingleActivity(@PathVariable("activityId") long activityId,
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        if(authId == null){
+            throw new UserNotAuthenticatedException("User is not authenticated");
+        }
+
+        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+        if(!optionalActivity.isPresent()){
+            throw new RecordNotFoundException("Activity doesnt exist");
+        }
+
+        return new ActivityResponse(optionalActivity.get());
     }
 
     /**
