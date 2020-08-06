@@ -23,6 +23,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "subscriptions")
 @NamedQuery(name = "Subscription.findSubscriptionsByUser", query = "SELECT s FROM Subscription s WHERE s.subscriber = ?1")
+@NamedQuery(name = "Subscription.getFollowerCount", query = "SELECT COUNT(s) FROM Subscription s WHERE s.entityId = ?1 AND "
+		+ "entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY")
 public class Subscription {
 
 	/**

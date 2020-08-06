@@ -28,15 +28,18 @@ public class ActivityResponse {
     private String description;
     private String location;
     private Long creatorId;
+    
+    private Long numFollowers;
+    private Long numParticipants;
 
-    @JsonProperty("activity_type")
+	@JsonProperty("activity_type")
     private List<String> activityTypes;
 
     /**
      * default constructor
      * @param activity the activity whose data should be used to populate the JSON response data
      */
-    public ActivityResponse(Activity activity) {
+    public ActivityResponse(Activity activity, Long numFollowers, Long numParticipants) {
         this.activityId = activity.getId();
         this.activityName = activity.getActivityName();
         this.continuous = !activity.isDuration();
@@ -55,6 +58,9 @@ public class ActivityResponse {
                 .stream()
                 .map(ActivityType::getActivityTypeName)
                 .collect(Collectors.toList());
+        
+        this.numFollowers = numFollowers;
+        this.numParticipants = numParticipants;
     }
 
     /**
@@ -119,4 +125,18 @@ public class ActivityResponse {
     public List<String> getActivityTypes() {
         return activityTypes;
     }
+    
+    /**
+     * @return the number of users following this activity
+     */
+    public Long getNumFollowers() {
+		return numFollowers;
+	}
+
+    /**
+     * @return the number of users marked as participating in this activity
+     */
+	public Long getNumParticipants() {
+		return numParticipants;
+	}
 }

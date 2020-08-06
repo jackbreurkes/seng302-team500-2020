@@ -13,8 +13,6 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +38,7 @@ import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
@@ -64,6 +63,9 @@ public class ActivitiesController {
 
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+    
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
@@ -142,7 +144,7 @@ public class ActivitiesController {
             } else {
             	activity.setIsDuration(false);
             }
-            return new ActivityResponse(activityRepository.save(activity));
+            return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
         }
     }
 
@@ -286,7 +288,7 @@ public class ActivitiesController {
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
 
-        return new ActivityResponse(activityRepository.save(activity));
+        return new ActivityResponse(activityRepository.save(activity), 1L, 1L);
     }
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
@@ -303,8 +305,10 @@ public class ActivitiesController {
         if(!optionalActivity.isPresent()){
             throw new RecordNotFoundException("Activity doesnt exist");
         }
+        
+        Activity activity = optionalActivity.get();
 
-        return new ActivityResponse(optionalActivity.get());
+        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
     /**
@@ -334,10 +338,26 @@ public class ActivitiesController {
         List<Activity> activities = activityRepository.findActivitiesByCreator(optionalCreator.get());
         List<ActivityResponse> responseActivities = new ArrayList<>();
         for (Activity activity : activities) {
-            responseActivities.add(new ActivityResponse(activity));
+            responseActivities.add(new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity)));
         }
 
         return responseActivities;
+    }
+    
+    /**
+     * Gets the amount of users following the given activity
+     * @param activity Activity to get the follower count of
+     */
+    private Long getActivityFollowerCount(Activity activity) {
+    	return subscriptionRepository.getFollowerCount(activity);
+    }
+    
+    /**
+     * Gets the amount of users participating in the given activity
+     * @param activity Activity to get the participant count of
+     */
+    private Long getActivityParticipantCount(Activity activity) {
+    	return 10L; //TODO BLOCKED by S5-U378-T3099
     }
 
 }
