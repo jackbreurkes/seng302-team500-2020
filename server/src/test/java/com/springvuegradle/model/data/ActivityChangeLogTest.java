@@ -13,7 +13,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
 public class ActivityChangeLogTest {
 
 	final String TIME_FRAME_FORMAT = "{\"start_time\": \"%s\", \"end_time\": \"%s\"}";
@@ -114,14 +113,14 @@ public class ActivityChangeLogTest {
 		assertTrue(changes.stream().allMatch(changeLog -> changeLog.getEditingUser().getUserId() == updatingUser.getUserId()));
 
 		assertEquals(oldActivityInfo.getActivityName(), nameChange.getOldValue());
-		assertEquals(durationCreateActivityRequest.getActivityName(), nameChange.getNewValue());
+		assertEquals(continuousCreateActivityRequest.getActivityName(), nameChange.getNewValue());
 	}
 
 	@Test
 	void testGetLogsUpdateActivity_ChangedName() {
 		// below ensures that only the name is updated
 		CreateActivityRequest newInfo = continuousCreateActivityRequest;
-		Activity oldActivityInfo = new Activity("Old Activity Name", newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
+		Activity oldActivityInfo = new Activity("Old Activity Name", !newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
 		oldActivityInfo.setId(3L);
 		oldActivityInfo.setDescription(newInfo.getDescription());
 		newInfo.setActivityTypes(Collections.singletonList(testWalkingActivityType.getActivityTypeName()));
@@ -139,7 +138,7 @@ public class ActivityChangeLogTest {
 	void testGetLogsUpdateActivity_ChangedDescription() {
 		// below ensures that only the description is updated
 		CreateActivityRequest newInfo = continuousCreateActivityRequest;
-		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
+		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), !newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
 		oldActivityInfo.setId(3L);
 		oldActivityInfo.setDescription("this is the old description");
 		newInfo.setActivityTypes(Collections.singletonList(testWalkingActivityType.getActivityTypeName()));
@@ -157,7 +156,7 @@ public class ActivityChangeLogTest {
 	void testGetLogsUpdateActivity_ChangedLocation() {
 		// below ensures that only the location is updated
 		CreateActivityRequest newInfo = continuousCreateActivityRequest;
-		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), newInfo.isContinuous(), "Old Location", Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
+		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), !newInfo.isContinuous(), "Old Location", Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
 		oldActivityInfo.setId(3L);
 		oldActivityInfo.setDescription(newInfo.getDescription());
 		newInfo.setActivityTypes(Collections.singletonList(testWalkingActivityType.getActivityTypeName()));
@@ -240,7 +239,7 @@ public class ActivityChangeLogTest {
 	void testGetLogsUpdateActivity_ChangedActivityTypes() {
 		// below ensures that only the activity types is updated
 		CreateActivityRequest newInfo = continuousCreateActivityRequest;
-		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
+		Activity oldActivityInfo = new Activity(newInfo.getActivityName(), !newInfo.isContinuous(), newInfo.getLocation(), Mockito.mock(Profile.class), Set.of(testWalkingActivityType));
 		oldActivityInfo.setId(3L);
 		oldActivityInfo.setDescription(newInfo.getDescription());
 		newInfo.setActivityTypes(Arrays.asList("Running", "ListeningToDnB"));
@@ -250,8 +249,8 @@ public class ActivityChangeLogTest {
 		assertEquals(1, changes.size());
 		ChangeLog activityTypeChange = changes.get(0);
 		assertEquals(ChangedAttribute.ACTIVITY_ACTIVITY_TYPES, activityTypeChange.getChangedAttribute());
-		assertEquals(String.format("{ \"activity_types\": [%s] }", testWalkingActivityType.getActivityTypeName()), activityTypeChange.getOldValue());
-		assertEquals("{ \"activity_types\": [\"Running\", \"ListeningToDnB\"] }", activityTypeChange.getNewValue());
+		assertEquals(String.format("[\"%s\"]", testWalkingActivityType.getActivityTypeName()), activityTypeChange.getOldValue());
+		assertEquals("[\"Running\",\"ListeningToDnB\"]", activityTypeChange.getNewValue());
 	}
 
 	@Test
