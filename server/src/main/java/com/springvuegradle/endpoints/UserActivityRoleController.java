@@ -31,7 +31,16 @@ public class UserActivityRoleController {
     private UserActivityRoleRepository userActivityRoleRepository;
 
 
-
+    /**
+     * Endpoint for deleting a UserActivityRole entry from the database table
+     * @param activityId the id of the activity that the role is associated with
+     * @param profileId the id of the profile that the role is associated with
+     * @param request  the request object associated with the request
+     * @return a response
+     * @throws UserNotAuthorizedException if the user does not have the right permissions
+     * @throws UserNotAuthenticatedException if the user is not logged in
+     * @throws RecordNotFoundException If there is no UserActivityRole related to the user specified
+     */
     @DeleteMapping("/activities/{activityId}/roles/{profileId}")
     @CrossOrigin
     public ResponseEntity<Object> deleteUserActivityRole(@PathVariable("activityId") long activityId,
