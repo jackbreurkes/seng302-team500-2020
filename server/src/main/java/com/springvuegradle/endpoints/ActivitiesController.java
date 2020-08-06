@@ -39,6 +39,7 @@ import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
@@ -66,6 +67,9 @@ public class ActivitiesController {
     
     @Autowired
     private SubscriptionRepository subscriptionRepository;
+    
+    @Autowired
+    private UserActivityRoleRepository userActivityRoleRepository;
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
@@ -378,7 +382,7 @@ public class ActivitiesController {
      * @param activity Activity to get the follower count of
      */
     private Long getActivityFollowerCount(Activity activity) {
-    	return subscriptionRepository.getFollowerCount(activity);
+    	return subscriptionRepository.getFollowerCount(activity.getId());
     }
     
     /**
@@ -386,7 +390,7 @@ public class ActivitiesController {
      * @param activity Activity to get the participant count of
      */
     private Long getActivityParticipantCount(Activity activity) {
-    	return 10L; //TODO BLOCKED by S5-U378-T3099
+    	return this.userActivityRoleRepository.getParticipantCountByActivityId(activity.getId());
     }
 
 }

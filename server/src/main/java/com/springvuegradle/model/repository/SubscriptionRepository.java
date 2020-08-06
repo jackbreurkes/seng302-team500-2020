@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.Subscription;
 
@@ -24,10 +23,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	
 	/**
 	 * Gets the number of followers of an activity
-	 * @param activity Activity to get followers of
+	 * @param activityId Activity ID to get followers of
 	 * @return Number of users following the given activity
 	 */
-	public Long getFollowerCount(Activity activity);
+	public Long getFollowerCount(long activityId);
 
 	/**
 	 * Checks if uesr is subscribed to activity
