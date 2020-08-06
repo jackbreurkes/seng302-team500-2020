@@ -335,7 +335,9 @@ public class ActivitiesController {
             throw new RecordNotFoundException("Activity doesnt exist");
         }
 
-        return new ActivityResponse(optionalActivity.get());
+        Activity activity = optionalActivity.get();
+
+        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
     /**
