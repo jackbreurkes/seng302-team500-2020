@@ -1,17 +1,13 @@
 <template>
   <div id="HomeFeedCard">
     <v-layout justify-center class="pt-1">
-        <v-card width='600' height='400'>
-            <v-toolbar color="red" dark flat height='80'>
-                <div> 
-                    <v-toolbar-title >Created by {{creatorName}} on {{createdTimestamp}}  </v-toolbar-title>
-                </div>
-                <div >
-                    <!-- <v-card-title >{{activityName}}</v-card-title> -->
-                </div>
-
+        <v-card width='600' height='150'>
+            <v-toolbar color="blue" dark flat height='50'>
+                <v-card-title >{{activityName}}</v-card-title>
             </v-toolbar>
-            <v-card-text >AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaa</v-card-text>
+            <v-toolbar-title class="pl-7 pt-3">Created by {{creatorName}} on {{createdTimestamp}}  </v-toolbar-title>
+                <v-spacer></v-spacer>
+            <v-card-text class="pl-7">{{userActionName}}, {{userRole}} performed {{userAction}} on {{userActionTimeStamp}}</v-card-text>
         </v-card>
     </v-layout>
   </div>
@@ -26,18 +22,27 @@ const HomeFeedCard = Vue.extend({
         return{
             activityName: "Activity Name",
             creatorName: "Creator Name",
-            createdTimestamp: "11/06/1000 @ 10pm",
-            userRole: "Role",
-            userAction: "Action",
-            userActionTimeStamp: "12.44.2222.333.4444"   
+            createdTimestamp: "01/01/1970; 24:70",
+            userActionName: "Users Name",
+            userRole: "Users Role",
+            userAction: "Users Action",
+            userActionTimeStamp: "01/01/1970; 24:70"   
         };
     },
     created(){
-        //todo, get data to populate card
+        this.getCardData();
     },
 
     methods: {
+        getCardData: function(){
 
+        },
+        activityClicked: function(){
+
+        },
+        creatorClicked: function(){
+
+        }
     }
 })
 export default HomeFeedCard;
