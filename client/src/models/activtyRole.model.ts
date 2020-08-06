@@ -1,4 +1,4 @@
-import { UpdateRoleRequest } from "../scripts/ActivityRole";
+import { UpdateUserActivityRoleRequest } from "../scripts/ActivityRole";
 import instance from "@/services/axios.service";
 
 /**
@@ -7,7 +7,7 @@ import instance from "@/services/axios.service";
  * @param profileId the id of the profile to be toggled
  * @param activityId The id of the activity to change the role for
  */
-export async function setRole(data: UpdateRoleRequest, profileId: number,
+export async function setRole(data: UpdateUserActivityRoleRequest, profileId: number,
                               activityId: number) {
     let res = await instance.put(`activities/${activityId}/roles/${profileId}`)
     return res.data;

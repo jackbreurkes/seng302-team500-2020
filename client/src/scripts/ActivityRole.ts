@@ -1,3 +1,3 @@
-export interface UpdateRoleRequest {
+export interface UpdateUserActivityRoleRequest {
     role?: string;
 }
