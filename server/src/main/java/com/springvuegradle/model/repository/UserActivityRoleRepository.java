@@ -1,9 +1,11 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.data.UserActivityRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -45,4 +47,24 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
             value = "SELECT a FROM UserActivityRole a WHERE a.user.uuid = ?1 AND a.activity.activity_id = ?2"
     )
     public Optional<UserActivityRole> getRoleEntryByUserId(long uuid, long activity_id);
+
+    /**
+     * Updates the role for a given user in a given activity
+     * @param activityRole The new role of the user
+     * @param uuid The users id
+     * @param activity_id The activity id
+     */
+    @Query(
+            value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
+    )
+    public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+
+    @Modifying
+    @Query(
+            value = "INSERT INTO UserActivityRole (activityRole, user.uuid, activity.activity_id) VALUES (?1, ?2, ?3)",
+            nativeQuery=true
+    )
+    public void createUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+
 }
+

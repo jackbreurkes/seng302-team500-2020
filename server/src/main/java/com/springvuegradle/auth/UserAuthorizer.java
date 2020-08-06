@@ -2,7 +2,10 @@ package com.springvuegradle.auth;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.data.UserActivityRole;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,5 +64,26 @@ public class UserAuthorizer {
         }
     }
 
+    public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        if(authId != null){
+            Optional<User> editingUser = userRepository.findById(authId);
+            if(authId.equals(profileId)){
+
+                return authId;
+            }else{
+                System.out.println(userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().toString());
+                if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION){
+                    return authId;
+                }else if (userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().equals(ActivityRole.ORGANISER)) {
+                    return authId;
+                } else {
+                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+                }
+            }
+        }else{
+            throw new UserNotAuthenticatedException("You are not authenticated");
+        }
+    }
 
 }
