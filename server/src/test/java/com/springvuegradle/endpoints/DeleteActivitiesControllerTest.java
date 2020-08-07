@@ -3,10 +3,8 @@ package com.springvuegradle.endpoints;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,9 +34,6 @@ public class DeleteActivitiesControllerTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private ChangeLogRepository changeLogRepository;
-
     @BeforeAll
     void beforeAll(){
         activitiesController = new ActivitiesController();
@@ -48,8 +43,8 @@ public class DeleteActivitiesControllerTest {
     @Test
     void testDeleteActivity() throws Exception {
         //Mock user
-        User testDeleter = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(testDeleter));
+        User self = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
 
         //Mock activity
         Activity activity = new Activity();
@@ -57,12 +52,10 @@ public class DeleteActivitiesControllerTest {
 
         //mock request
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 1L);
+        request.setAttribute("authenticatedid", 1l);
 
         ResponseEntity<Object> response = activitiesController.deleteActivity(1L, 2L, request);
         assertEquals(response.getStatusCode(), HttpStatus.OK);
-
-        Mockito.when(changeLogRepository.save(Mockito.any(ChangeLog.class))).thenReturn(null);
     }
 
     @Test
