@@ -10,6 +10,7 @@ import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class UserAuthorizer {
@@ -77,17 +78,22 @@ public class UserAuthorizer {
      */
     public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId != null){
+        if(authId != null) {
             Optional<User> editingUser = userRepository.findById(authId);
-                if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
+            try {
+                if (editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
                     return authId;
-                }else if (activityRepository.findById(activityId).get().getCreator().getUser().getUserId() == profileId) { // Checks if the editing user is the Creator of the activity
+                } else if (activityRepository.findById(activityId).get().getCreator().getUser().getUserId() == authId) { // Checks if the editing user is the Creator of the activity
                     return authId;
-                }else if (userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().getActivityRole().equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
+                } else if (userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().getActivityRole().equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
                     return authId;
                 } else {
                     throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
                 }
+            }
+            catch (NoSuchElementException e) {
+                throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+            }
             } else{
             throw new UserNotAuthenticatedException("You are not authenticated");
         }
