@@ -10,6 +10,7 @@ import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Null;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
