@@ -153,15 +153,14 @@ const Activity = Vue.extend({
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        getIsFollowingActivity(this.currentProfileId, this.activityId)
+        .then((following) => {
+          this.following = following;
+        })
       })
       .catch(() => {
         this.$router.back();
       });
-
-      getIsFollowingActivity(this.currentProfileId, this.activityId)
-      .then((following) => {
-        this.following = following;
-      })
     }
 },
 
