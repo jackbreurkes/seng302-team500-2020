@@ -7,6 +7,7 @@ import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.UserActivityRole;
+import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdateUserActivityRoleRequest;
@@ -27,9 +28,12 @@ public class UserActivityRoleController {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private UserActivityRoleRepository userActivityRoleRepository;
 
+    @Autowired
+    private ActivityRepository activityRepository;
 
     /**
      * Endpoint for deleting a UserActivityRole entry from the database table
@@ -46,7 +50,7 @@ public class UserActivityRoleController {
     public ResponseEntity<Object> deleteUserActivityRole(@PathVariable("activityId") long activityId,
                                                          @PathVariable("profileId") long profileId,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository);
+        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
         Optional <UserActivityRole> roleToDelete = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId);
         if(!roleToDelete.isPresent()){
@@ -75,7 +79,7 @@ public class UserActivityRoleController {
                                                         @Valid @RequestBody UpdateUserActivityRoleRequest updateUserActivityRoleRequest,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException {
 
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository);
+        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
         ActivityRole userRole = updateUserActivityRoleRequest.getRole();
 

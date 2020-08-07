@@ -1,9 +1,6 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityRole;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
@@ -20,7 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -103,6 +104,9 @@ public class PutUserActivityRoleControllerTest {
 
     @Test
     void testUpdateUserActivityRoleAsOrganiser() throws Exception {
+        //Mock Creator
+        User creator = new User(65L);
+        Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -112,7 +116,11 @@ public class PutUserActivityRoleControllerTest {
 
 
         //Mock activity
-        Activity activity = new Activity();
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
+        Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         // Set organiser
