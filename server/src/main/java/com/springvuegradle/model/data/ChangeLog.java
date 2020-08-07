@@ -1,16 +1,11 @@
 package com.springvuegradle.model.data;
 
-import java.time.LocalDate;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 /**
  * JPA representation of a change log entry
@@ -26,27 +21,30 @@ public class ChangeLog {
 	private long changeId;
 
 	@NotNull
-	private ChangeLogEntity entity;
+	@Enumerated(EnumType.STRING)
+	protected ChangeLogEntity entity;
 
 	@NotNull
 	private long entityId;
 
 	@NotNull
-	private ChangedAttribute changedAttribute;
+	@Enumerated(EnumType.STRING)
+	protected ChangedAttribute changedAttribute;
 
 	@ManyToOne
 	@JoinColumn(name = "uuid")
 	private User editingUser;
 
 	@NotNull
-	private ActionType actionType;
+	@Enumerated(EnumType.STRING)
+	protected ActionType actionType;
 
 	private String oldValue;
 
 	private String newValue;
 
 	@CreationTimestamp
-	private LocalDate timestamp;
+	private LocalDateTime timestamp;
 
 	/**
 	 * Construct a change log entry object and automatically assign their ID
@@ -141,7 +139,7 @@ public class ChangeLog {
 		this.newValue = newValue;
 	}
 
-	public LocalDate getTimestamp() {
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
