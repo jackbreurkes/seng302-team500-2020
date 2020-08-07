@@ -5,15 +5,16 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,14 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
@@ -56,9 +65,6 @@ public class ActivitiesController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
-    @Autowired
-    private ChangeLogRepository changeLogRepository;
-
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
@@ -82,7 +88,7 @@ public class ActivitiesController {
         if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
             throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
         }
-        if (updateActivityRequest.getActivityTypes() == null) {
+        if (updateActivityRequest.getActivityTypes() == null || updateActivityRequest.getActivityTypes().size() == 0) {
             throw new InvalidRequestFieldException("missing activity_type field");
         }
         if (updateActivityRequest.getActivityTypes().size() == 0) {
@@ -94,47 +100,50 @@ public class ActivitiesController {
         if (updateActivityRequest.getLocation() == null) {
             throw new InvalidRequestFieldException("missing location field");
         }
-        if(!updateActivityRequest.isContinuous() && updateActivityRequest.isContinuous()){
+        if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
             throw new InvalidRequestFieldException("Missing continuous field");
         }
 
-        if(activityToEdit.isEmpty()){
+
+        if(!activityToEdit.isPresent()){
             throw new RecordNotFoundException("Activity does not exist");
-        }
+        }else{
+            Activity activity = activityToEdit.get();
 
-        Set<ActivityType> activityTypesToAdd = new HashSet<>();
-        for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-            Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-            if(!activityType.isPresent()){
-                throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-            }else{
-                activityTypesToAdd.add(activityType.get());
+            activity.setActivityName(updateActivityRequest.getActivityName());
+            activity.setDescription(updateActivityRequest.getDescription());
+            activity.setIsDuration(updateActivityRequest.isContinuous());
+            activity.setLocation(updateActivityRequest.getLocation());
+            activity.getActivityTypes().clear();
+            
+            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+                if(!activityType.isPresent()){
+                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+                }else{
+                    activity.getActivityTypes().add(activityType.get());
+                }
             }
+
+
+            if(!updateActivityRequest.isContinuous()){
+//                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
+//                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
+
+                activity.setIsDuration(true);
+//                activity.setStartDate(startDateTime.toLocalDate());
+//                activity.setEndDate(endDateTime.toLocalDate());
+//
+//                activity.setStartTime(startDateTime.toLocalTime());
+//                activity.setEndTime(startDateTime.toLocalTime());
+
+                activity.setStartTime(updateActivityRequest.getStartTime());
+                activity.setEndTime(updateActivityRequest.getEndTime());
+            } else {
+            	activity.setIsDuration(false);
+            }
+            return new ActivityResponse(activityRepository.save(activity));
         }
-
-
-        Activity activity = activityToEdit.get();
-        for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser.get())) {
-            changeLogRepository.save(change);
-        }
-
-        activity.setActivityName(updateActivityRequest.getActivityName());
-        activity.setDescription(updateActivityRequest.getDescription());
-        activity.setIsDuration(updateActivityRequest.isContinuous());
-        activity.setLocation(updateActivityRequest.getLocation());
-        activity.getActivityTypes().clear();
-        activity.getActivityTypes().addAll(activityTypesToAdd);
-
-
-        if(!updateActivityRequest.isContinuous()){
-            activity.setIsDuration(true);
-
-            activity.setStartTime(updateActivityRequest.getStartTime());
-            activity.setEndTime(updateActivityRequest.getEndTime());
-        } else {
-            activity.setIsDuration(false);
-        }
-        return new ActivityResponse(activityRepository.save(activity));
     }
 
     /**
@@ -169,12 +178,11 @@ public class ActivitiesController {
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
-        if(activityToDelete.isEmpty()){
+        if(!activityToDelete.isPresent()){
             throw new RecordNotFoundException("Activity Does not exist");
         }
 
         activityRepository.delete(activityToDelete.get());
-        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(activityToDelete.get(), editingUser.get()));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -232,10 +240,29 @@ public class ActivitiesController {
             activityTypeList.add(optionalActivityType.get());
         }
 
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        LocalTime startTime = null;
+        LocalTime endTime = null;
         if (!createActivityRequest.isContinuous()) {
             if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
                 throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
             }
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+//
+//            LocalDateTime startDateTime, endDateTime;
+//            try {
+//                startDateTime = LocalDateTime.parse(createActivityRequest.getStartTime(), formatter);
+//                endDateTime = LocalDateTime.parse(createActivityRequest.getEndTime(), formatter);
+//            } catch (DateTimeParseException e) {
+//                throw new InvalidRequestFieldException("invalid time string " + e.getParsedString());
+//            }
+//            LocalDateTime startDateTime = parseDateString(createActivityRequest.getStartTime());
+//            LocalDateTime endDateTime = parseDateString(createActivityRequest.getEndTime());
+//            startDate = startDateTime.toLocalDate();
+//            endDate = endDateTime.toLocalDate();
+//            startTime = startDateTime.toLocalTime();
+//            endTime = endDateTime.toLocalTime();
         }
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
@@ -251,12 +278,15 @@ public class ActivitiesController {
                 optionalCreator.get(),
                 new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
+//        activity.setStartDate(startDate);
+//        activity.setEndDate(endDate);
+//        activity.setStartTime(startTime);
+//        activity.setEndTime(endTime);
         activity.setStartTime(createActivityRequest.getStartTime());
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
-        activity = activityRepository.save(activity);
-        changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
-        return new ActivityResponse(activity);
+
+        return new ActivityResponse(activityRepository.save(activity));
     }
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
