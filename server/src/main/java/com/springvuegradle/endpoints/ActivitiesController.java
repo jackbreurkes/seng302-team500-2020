@@ -5,10 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -85,7 +82,7 @@ public class ActivitiesController {
         if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
             throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
         }
-        if (updateActivityRequest.getActivityTypes() == null || updateActivityRequest.getActivityTypes().size() == 0) {
+        if (updateActivityRequest.getActivityTypes() == null) {
             throw new InvalidRequestFieldException("missing activity_type field");
         }
         if (updateActivityRequest.getActivityTypes().size() == 0) {
@@ -97,50 +94,55 @@ public class ActivitiesController {
         if (updateActivityRequest.getLocation() == null) {
             throw new InvalidRequestFieldException("missing location field");
         }
-        if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
+        if(!updateActivityRequest.isContinuous() && updateActivityRequest.isContinuous()){
             throw new InvalidRequestFieldException("Missing continuous field");
         }
 
-
-        if(!activityToEdit.isPresent()){
+        if(activityToEdit.isEmpty()){
             throw new RecordNotFoundException("Activity does not exist");
-        }else{
-            Activity activity = activityToEdit.get();
+        }
 
-            activity.setActivityName(updateActivityRequest.getActivityName());
-            activity.setDescription(updateActivityRequest.getDescription());
-            activity.setIsDuration(updateActivityRequest.isContinuous());
-            activity.setLocation(updateActivityRequest.getLocation());
-            activity.getActivityTypes().clear();
-            
-            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-                if(!activityType.isPresent()){
-                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-                }else{
-                    activity.getActivityTypes().add(activityType.get());
-                }
+        Set<ActivityType> activityTypesToAdd = new HashSet<>();
+        for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+            Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+            if(!activityType.isPresent()){
+                throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+            }else{
+                activityTypesToAdd.add(activityType.get());
             }
+        }
 
 
-            if(!updateActivityRequest.isContinuous()){
+        Activity activity = activityToEdit.get();
+        for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser.get())) {
+            changeLogRepository.save(change);
+        }
+
+        activity.setActivityName(updateActivityRequest.getActivityName());
+        activity.setDescription(updateActivityRequest.getDescription());
+        activity.setIsDuration(updateActivityRequest.isContinuous());
+        activity.setLocation(updateActivityRequest.getLocation());
+        activity.getActivityTypes().clear();
+        activity.getActivityTypes().addAll(activityTypesToAdd);
+
+
+        if(!updateActivityRequest.isContinuous()){
 //                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
 //                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
 
-                activity.setIsDuration(true);
+            activity.setIsDuration(true);
 //                activity.setStartDate(startDateTime.toLocalDate());
 //                activity.setEndDate(endDateTime.toLocalDate());
 //
 //                activity.setStartTime(startDateTime.toLocalTime());
 //                activity.setEndTime(startDateTime.toLocalTime());
 
-                activity.setStartTime(updateActivityRequest.getStartTime());
-                activity.setEndTime(updateActivityRequest.getEndTime());
-            } else {
-            	activity.setIsDuration(false);
-            }
-            return new ActivityResponse(activityRepository.save(activity));
+            activity.setStartTime(updateActivityRequest.getStartTime());
+            activity.setEndTime(updateActivityRequest.getEndTime());
+        } else {
+            activity.setIsDuration(false);
         }
+        return new ActivityResponse(activityRepository.save(activity));
     }
 
     /**
@@ -175,11 +177,12 @@ public class ActivitiesController {
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
-        if(!activityToDelete.isPresent()){
+        if(activityToDelete.isEmpty()){
             throw new RecordNotFoundException("Activity Does not exist");
         }
 
         activityRepository.delete(activityToDelete.get());
+        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(activityToDelete.get(), editingUser.get()));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -282,8 +285,9 @@ public class ActivitiesController {
         activity.setStartTime(createActivityRequest.getStartTime());
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
-
-        return new ActivityResponse(activityRepository.save(activity));
+        activity = activityRepository.save(activity);
+        changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
+        return new ActivityResponse(activity);
     }
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")

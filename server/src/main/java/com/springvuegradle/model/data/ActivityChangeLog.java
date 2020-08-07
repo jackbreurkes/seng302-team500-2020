@@ -64,7 +64,7 @@ public class ActivityChangeLog extends ChangeLog {
 					oldActivityInfo.getActivityName(), newActivityInfo.getActivityName()));
 		}
 
-		if (!oldActivityInfo.getDescription().equals(newActivityInfo.getDescription())) {
+		if (!Objects.equals(oldActivityInfo.getDescription(), newActivityInfo.getDescription())) {
 			changes.add(new ActivityChangeLog(entityId,
 					ChangedAttribute.ACTIVITY_DESCRIPTION,
 					editingUser, ActionType.UPDATED,

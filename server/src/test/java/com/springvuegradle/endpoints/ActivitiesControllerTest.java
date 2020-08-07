@@ -273,6 +273,7 @@ public class ActivitiesControllerTest {
 	public void testUpdateActivity_Success_LogsChanges() throws Exception {
 		long activityId = 3L;
 		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
 		testActivity.setId(activityId);
 		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
 		String json = "{\n" +
@@ -294,7 +295,7 @@ public class ActivitiesControllerTest {
 				.andExpect(status().isOk());
 
 		ArgumentCaptor<ChangeLog> changeLogCaptor = ArgumentCaptor.forClass(ChangeLog.class);
-		Mockito.verify(changeLogRepository).save(changeLogCaptor.capture());
+		Mockito.verify(changeLogRepository, Mockito.atLeastOnce()).save(changeLogCaptor.capture());
 		List<ChangeLog> updateLogs = changeLogCaptor.getAllValues();
 		assertTrue(updateLogs.size() > 0);
 		assertTrue(updateLogs.stream().allMatch(changeLog -> changeLog.getEditingUser().getUserId() == profile.getUser().getUserId()));
