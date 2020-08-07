@@ -127,15 +127,7 @@ public class ActivitiesController {
 
 
         if(!updateActivityRequest.isContinuous()){
-//                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
-//                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
-
             activity.setIsDuration(true);
-//                activity.setStartDate(startDateTime.toLocalDate());
-//                activity.setEndDate(endDateTime.toLocalDate());
-//
-//                activity.setStartTime(startDateTime.toLocalTime());
-//                activity.setEndTime(startDateTime.toLocalTime());
 
             activity.setStartTime(updateActivityRequest.getStartTime());
             activity.setEndTime(updateActivityRequest.getEndTime());
@@ -240,29 +232,10 @@ public class ActivitiesController {
             activityTypeList.add(optionalActivityType.get());
         }
 
-        LocalDate startDate = null;
-        LocalDate endDate = null;
-        LocalTime startTime = null;
-        LocalTime endTime = null;
         if (!createActivityRequest.isContinuous()) {
             if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
                 throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
             }
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-//
-//            LocalDateTime startDateTime, endDateTime;
-//            try {
-//                startDateTime = LocalDateTime.parse(createActivityRequest.getStartTime(), formatter);
-//                endDateTime = LocalDateTime.parse(createActivityRequest.getEndTime(), formatter);
-//            } catch (DateTimeParseException e) {
-//                throw new InvalidRequestFieldException("invalid time string " + e.getParsedString());
-//            }
-//            LocalDateTime startDateTime = parseDateString(createActivityRequest.getStartTime());
-//            LocalDateTime endDateTime = parseDateString(createActivityRequest.getEndTime());
-//            startDate = startDateTime.toLocalDate();
-//            endDate = endDateTime.toLocalDate();
-//            startTime = startDateTime.toLocalTime();
-//            endTime = endDateTime.toLocalTime();
         }
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
@@ -278,10 +251,6 @@ public class ActivitiesController {
                 optionalCreator.get(),
                 new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
-//        activity.setStartDate(startDate);
-//        activity.setEndDate(endDate);
-//        activity.setStartTime(startTime);
-//        activity.setEndTime(endTime);
         activity.setStartTime(createActivityRequest.getStartTime());
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
