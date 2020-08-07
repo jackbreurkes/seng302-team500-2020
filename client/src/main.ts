@@ -64,6 +64,11 @@ const routes = [
     path: "/homefeed",
     name: "homefeed",
     component: HomeFeed,
+  },
+  {
+    path: "/homepage",
+    name: "homepage",
+    component: HomeFeed,
   }
 ];
 
@@ -81,7 +86,7 @@ router.beforeEach((to, from, next) => {
       next();
       return;
     } else {
-      next({name: "profilePage" })
+      next({name: "homepage" })
       return;
     }
   }
@@ -95,7 +100,7 @@ router.beforeEach((to, from, next) => {
   //the permission level is too low then they will be redirected
   if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
     removeAdminMode();
-    next({name: "profilePage"});
+    next({name: "homepage"});
     return;
   }
 

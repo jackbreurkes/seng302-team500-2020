@@ -77,4 +77,38 @@ public class GetActivityTest {
         });
     }
 
+    // --------- Test for GET /activities/activityId -------------------------
+
+    @Test
+    void testAuthorisedUserGetActivityWithoutCreatorId() throws Exception{
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        ActivityResponse response = activitiesController.getSingleActivity(2L, request);
+        assertEquals(response.getActivityName(), "Test");
+    }
+
+
+    @Test
+    void testUnauthorisedUserGetActivityWithoutCreatorId(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        assertThrows(UserNotAuthenticatedException.class, () -> {
+            activitiesController.getSingleActivity(2L, request);
+        });
+    }
+
+    @Test
+    void testGetNonexistentActivityWithoutCreatorId(){
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(RecordNotFoundException.class, () -> {
+            activitiesController.getSingleActivity(2L, request);
+        });
+    }
+
 }
