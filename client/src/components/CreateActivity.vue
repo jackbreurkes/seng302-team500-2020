@@ -298,7 +298,7 @@ const CreateActivity = Vue.extend({
     },
 
     cancelButtonClicked() {
-      this.$router.push({ name: "profilePage" });
+      this.$router.back();
     },
 
     createButtonClicked: async function() {

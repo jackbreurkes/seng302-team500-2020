@@ -5,18 +5,59 @@
         <v-col cols="12" sm="8" md="8">
           <v-card>
             <v-toolbar color="primary" dark flat>
-              <v-toolbar-title> {{ activity.activity_name }} </v-toolbar-title>
+              <v-toolbar-title>
+                <v-btn
+                  dark
+                  icon
+                  @click="backButtonClicked"
+                  >
+                  <v-icon>mdi-arrow-left</v-icon>
+                </v-btn>
+                {{ activity.activity_name }} 
+                </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <div v-if="creatorId == currentProfileId">
-                  <v-btn outlined class="mr-1"> Share </v-btn>
-                  <v-btn @click="edit()" outlined class="mr-1"> Edit </v-btn>
+                <div>
+                  <v-menu bottom left offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        dark
+                        icon
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-list>
+                      <v-list-item
+                        @click="edit()"
+                      >
+                        <v-list-item-title>Edit Activity</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="confirmDeleteModal = true">
+                        <v-dialog v-model="confirmDeleteModal" width="290">
+                          <template v-slot:activator="{ on }">
+                            <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
+                          </template>
+                          <v-card>
+                            <v-card-title class="headline" primary-title>Delete activity?</v-card-title>
+                            <v-card-text>This operation cannot be undone.</v-card-text>
+                            <v-divider></v-divider>
+                            <v-card-actions>
+                              <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                              <v-spacer></v-spacer>
+                              <v-btn color="error" text @click="deleteActivity">Delete</v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
-                <v-btn outlined class="mr-1"> Back </v-btn>
             </v-toolbar>
 
             <v-card-text class="grey lighten-4">
-              <h3>Followers: {{ followerCount }} </h3>
-              <br>
               <h3>Activity Information</h3>
               <br>
               <p> Description: {{ activity.description }} </p>
@@ -37,9 +78,10 @@
                 v-for="activityType of activity.activity_type"
                 v-bind:key="activityType"
                 outlined
-              >{{ activityType }}</v-chip>  
+              >{{ activityType }}</v-chip> 
+              <br>
 
-              <br><v-divider></v-divider><br>
+              <v-divider></v-divider><br>
 
               <p> Please insert a UserRoleList component here! </p>
 
@@ -73,6 +115,7 @@ import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity }
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
+import * as activityController from '../controllers/activity.controller';
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -85,9 +128,9 @@ const Activity = Vue.extend({
       activityId: NaN as number,
       creatorId: NaN as number,
       activity: [] as CreateActivityRequest,
-      followerCount: -1,
       participating: false,
-      following: false
+      following: false,
+      confirmDeleteModal: false
     };
   },
 
@@ -155,7 +198,20 @@ const Activity = Vue.extend({
       .then((following) => {
         this.following = following;
       })
-    }
+    },
+    backButtonClicked() {
+      this.$router.back();
+    },
+    deleteActivity: async function() {
+      this.confirmDeleteModal = false;
+      activityController.deleteActivity(this.currentProfileId, this.activityId)
+        .then(() => {
+          this.$router.back();
+        })
+        .catch(err => {
+          alert("An error occured while deleting the activity:\n" + err);
+        });
+    },
   }
 
 });

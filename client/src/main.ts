@@ -6,7 +6,6 @@ import Homepage from "./components/Homepage.vue";
 import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
-import EditActivity from "./components/EditActivity.vue";
 import Search from './components/Search.vue';
 import HomeFeed from './components/HomeFeed.vue';
 import Activity from './components/Activity.vue';
@@ -14,7 +13,7 @@ import Activity from './components/Activity.vue';
 Vue.config.productionTip = false;
 
 import VueLogger from "vuejs-logger";
-import VueRouter, { Route } from "vue-router";
+import VueRouter from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
 import { removeAdminMode } from './services/properties.service';
