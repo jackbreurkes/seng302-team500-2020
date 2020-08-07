@@ -78,7 +78,6 @@ public class UserAuthorizer {
     public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId != null){
-            System.out.println(userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).toString());
             Optional<User> editingUser = userRepository.findById(authId);
                 if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
                     return authId;
