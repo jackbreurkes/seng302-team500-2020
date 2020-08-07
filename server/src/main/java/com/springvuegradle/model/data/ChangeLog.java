@@ -25,7 +25,7 @@ public class ChangeLog {
 	protected ChangeLogEntity entity;
 
 	@NotNull
-	private long entityId;
+	protected long entityId;
 
 	@NotNull
 	@Enumerated(EnumType.STRING)
@@ -33,15 +33,15 @@ public class ChangeLog {
 
 	@ManyToOne
 	@JoinColumn(name = "uuid")
-	private User editingUser;
+	protected User editingUser;
 
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	protected ActionType actionType;
 
-	private String oldValue;
+	protected String oldValue;
 
-	private String newValue;
+	protected String newValue;
 
 	@CreationTimestamp
 	private LocalDateTime timestamp;
@@ -49,7 +49,7 @@ public class ChangeLog {
 	/**
 	 * Construct a change log entry object and automatically assign their ID
 	 */
-	public ChangeLog() {
+	protected ChangeLog() {
 	}
 
 	/**
@@ -63,8 +63,8 @@ public class ChangeLog {
 	 * @param newValue (if present) the new value that the changed attribute was set to
 	 */
 	public ChangeLog(@NotNull ChangeLogEntity entity, @NotNull long entityId,
-			@NotNull ChangedAttribute changedAttribute, User editingUser, @NotNull ActionType actionType,
-			String oldValue, String newValue) {
+					 @NotNull ChangedAttribute changedAttribute, User editingUser, @NotNull ActionType actionType,
+					 String oldValue, String newValue) {
 		super();
 		this.entity = entity;
 		this.entityId = entityId;
