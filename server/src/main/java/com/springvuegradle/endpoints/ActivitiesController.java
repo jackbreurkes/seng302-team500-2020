@@ -66,10 +66,10 @@ public class ActivitiesController {
 
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
-    
+
     @Autowired
     private SubscriptionRepository subscriptionRepository;
-    
+
     @Autowired
     private UserActivityRoleRepository userActivityRoleRepository;
 
@@ -292,7 +292,7 @@ public class ActivitiesController {
         if(!optionalActivity.isPresent()){
             throw new RecordNotFoundException("Activity doesnt exist");
         }
-        
+
         Activity activity = optionalActivity.get();
 
         return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
@@ -358,7 +358,7 @@ public class ActivitiesController {
 
         return responseActivities;
     }
-    
+
     /**
      * Gets the amount of users following the given activity
      * @param activity Activity to get the follower count of
@@ -366,7 +366,7 @@ public class ActivitiesController {
     private Long getActivityFollowerCount(Activity activity) {
     	return subscriptionRepository.getFollowerCount(activity.getId());
     }
-    
+
     /**
      * Gets the amount of users participating in the given activity
      * @param activity Activity to get the participant count of
