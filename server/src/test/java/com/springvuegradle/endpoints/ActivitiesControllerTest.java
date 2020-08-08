@@ -32,6 +32,8 @@ import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
 @EnableAutoConfiguration
@@ -54,6 +56,12 @@ public class ActivitiesControllerTest {
     
     @MockBean
     private UserRepository userRepo;
+    
+    @MockBean
+    private SubscriptionRepository subscriptionRepo;
+    
+    @MockBean
+    private UserActivityRoleRepository userActivityRoleRepository;
     
     @MockBean
     private ProfileRepository profileRepo;

@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.springvuegradle.exceptions.RecordNotFoundException;
@@ -25,6 +26,8 @@ import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.responses.ActivityResponse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,6 +38,12 @@ public class GetActivityTest {
 
     @Mock
     private ActivityRepository activityRepository;
+    
+    @Mock
+    private SubscriptionRepository subscriptionRepo;
+    
+    @Mock
+    private UserActivityRoleRepository userActivityRoleRepository;
 
     private Profile profile;
 
@@ -43,6 +52,9 @@ public class GetActivityTest {
         //Initialize the mocks we create
         MockitoAnnotations.initMocks(this);
         profile = new Profile(new User(1L), "David", "Clarke", LocalDate.now(), Gender.FEMALE);
+        
+        Mockito.when(subscriptionRepo.getFollowerCount(Mockito.anyLong())).thenReturn(0L);
+        Mockito.when(userActivityRoleRepository.getParticipantCountByActivityId(Mockito.anyLong())).thenReturn(0L);
     }
 
     @Test
