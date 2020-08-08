@@ -24,6 +24,11 @@ public class EmailRepositoryTest {
     @Autowired
     EmailRepository emailRepository;
 
+    User user1;
+    User user2;
+    User user3;
+    User user4;
+    User user5;
     Email email1;
     Email email2;
     Email email3;
@@ -35,12 +40,11 @@ public class EmailRepositoryTest {
     @BeforeAll
     public void createTestProfiles() {
         //create users
-        User user1 = new User(1);
-        User user2 = new User(2);
-        User user3 = new User(3);
-        User user4 = new User(4);
-        User user5 = new User(5);
-//        User user5 = new User(5);
+        user1 = new User();
+        user2 = new User();
+        user3 = new User();
+        user4 = new User();
+        user5 = new User();
         //save users
         userRepository.save(user1);
         userRepository.save(user2);
@@ -68,6 +72,23 @@ public class EmailRepositoryTest {
 
     }
 
+    public long getExpectedUserIdFromUserNumber(int userNumber) {
+        switch (userNumber) {
+            case 1:
+                return user1.getUserId();
+            case 2:
+                return user2.getUserId();
+            case 3:
+                return user3.getUserId();
+            case 4:
+                return user4.getUserId();
+            case 5:
+                return user5.getUserId();
+            default:
+                throw new IllegalArgumentException("bad user number");
+        }
+    }
+
     @ParameterizedTest
     @CsvSource({
             "primary@test.com,1",
@@ -78,10 +99,10 @@ public class EmailRepositoryTest {
             "olivia@double.com,1", // duplicate terms
             "test@test.com,5"
     })
-    public void retrieveSingleUserWithValidFullEmail(String email, String userId) {
-        int userIdNum = Integer.parseInt(userId);
+    public void retrieveSingleUserWithValidFullEmail(String email, String userNum) {
+        long userId = getExpectedUserIdFromUserNumber(Integer.parseInt(userNum));
         List<Email> result = emailRepository.findByEmailStartingWith(email);
-        assertEquals(userIdNum, result.get(0).getUser().getUserId());
+        assertEquals(userId, result.get(0).getUser().getUserId());
     }
 
     @ParameterizedTest
@@ -92,10 +113,10 @@ public class EmailRepositoryTest {
             "test,5",
             "test@,5"
     })
-    public void retrieveSingleUserWithValidPartialEmail(String email, String userId) {
-        int userIdNum = Integer.parseInt(userId);
+    public void retrieveSingleUserWithValidPartialEmail(String email, String userNum) {
+        long userId = getExpectedUserIdFromUserNumber(Integer.parseInt(userNum));
         List<Email> result = emailRepository.findByEmailStartingWith(email);
-        assertEquals(userIdNum, result.get(0).getUser().getUserId());
+        assertEquals(userId, result.get(0).getUser().getUserId());
     }
     @ParameterizedTest
     @CsvSource({
@@ -106,10 +127,10 @@ public class EmailRepositoryTest {
 
 
     })
-    public void retrieveMultipleUsersWithSimilarValidPartialEmail(String email, String userId) {
-        int userIdNum = Integer.parseInt(userId);
+    public void retrieveMultipleUsersWithSimilarValidPartialEmail(String email, String userNum) {
+        long userId = getExpectedUserIdFromUserNumber(Integer.parseInt(userNum));
         List<Email> result = emailRepository.findByEmailStartingWith(email);
-        assertEquals(userIdNum, result.get(0).getUser().getUserId());
+        assertEquals(userId, result.get(0).getUser().getUserId());
     }
 
     @Test

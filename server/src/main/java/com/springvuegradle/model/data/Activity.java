@@ -34,18 +34,6 @@ public class Activity {
     @Column(columnDefinition = "boolean")
     private boolean isDuration;
 
-//    @Column(columnDefinition = "date")
-//    private LocalDate startDate;
-//
-//    @Column(columnDefinition = "date")
-//    private LocalDate endDate;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime startTime;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime endTime;
-
     @Column(columnDefinition = "varchar(30)", name = "start_time_string")
     private String startTime;
 
@@ -60,7 +48,7 @@ public class Activity {
     private String location;
 
     @NotNull
-    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 

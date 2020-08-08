@@ -8,6 +8,10 @@ import java.time.temporal.ChronoUnit;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +49,7 @@ public class LoginController {
 	 */
 	@Autowired
 	private EmailRepository emailRepo;
-	
+
 	@Autowired
 	private SessionRepository sessionRepo;
 
@@ -60,13 +64,13 @@ public class LoginController {
 
 	@PostMapping("/login")
 	@CrossOrigin
-	public ResponseEntity<?> login(@Valid @RequestBody LoginRequest credentials, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public LoginSuccessResponse login(@Valid @RequestBody LoginRequest credentials, HttpServletResponse response) throws InvalidRequestFieldException, RecordNotFoundException, NoSuchAlgorithmException, UserNotAuthenticatedException {
 		if (credentials.getEmail() == null || credentials.getPassword() == null) {
-			return ResponseEntity.status(HttpStatus.resolve(400)).body(new ErrorResponse("Missing email and/or password field"));
+			throw new InvalidRequestFieldException("Missing email and/or password field");
 		}
 		
 		if (!emailRepo.existsById(credentials.getEmail())) {
-			return ResponseEntity.status(HttpStatus.resolve(403)).body(new ErrorResponse("Email address is not registered"));
+			throw new RecordNotFoundException("Email address is not registered");
 		}
 		
 		Email email = emailRepo.findByEmail(credentials.getEmail());
@@ -80,9 +84,9 @@ public class LoginController {
 					Instant.now().plus(loginSeconds, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
 			sessionRepo.save(session);
 			
-			return ResponseEntity.status(HttpStatus.resolve(201)).body(new LoginSuccessResponse(token, user.getUserId(), user.getPermissionLevel()));
+			return new LoginSuccessResponse(token, user.getUserId(), user.getPermissionLevel());
 		} else {
-			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("Password is not correct"));
+			throw new UserNotAuthenticatedException("Password is not correct");
 		}
 	}
 }

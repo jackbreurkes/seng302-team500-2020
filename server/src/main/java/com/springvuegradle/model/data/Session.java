@@ -24,7 +24,7 @@ public class Session {
 	 * User that the session belongs to
 	 */
 	@ManyToOne
-	@JoinColumn(name = "uuid")
+	@JoinColumn(name = "uuid", nullable = false)
 	private User user;
 
 	/**
@@ -45,7 +45,7 @@ public class Session {
 	 *            User to create session for
 	 * @param token
 	 *            Token that each subsequent request should contain
-	 * @param instant
+	 * @param expiry
 	 *            When this session should expire
 	 */
 	public Session(User user, String token, OffsetDateTime expiry) {
