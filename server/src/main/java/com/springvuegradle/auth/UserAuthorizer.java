@@ -81,12 +81,14 @@ public class UserAuthorizer {
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId != null) {
             Optional<User> editingUser = userRepository.findById(authId);
+            Long userId = activityRepository.findById(activityId).get().getCreator().getUser().getUserId();
+            ActivityRole activityRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().getActivityRole();
             try {
                 if (editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
                     return authId;
-                } else if (activityRepository.findById(activityId).get().getCreator().getUser().getUserId() == authId) { // Checks if the editing user is the Creator of the activity
+                } else if (userId == authId) { // Checks if the editing user is the Creator of the activity
                     return authId;
-                } else if (userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).get().getActivityRole().equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
+                } else if (activityRole.equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
                     return authId;
                 } else {
                     throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");

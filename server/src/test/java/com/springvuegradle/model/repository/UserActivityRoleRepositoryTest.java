@@ -4,6 +4,7 @@ import com.springvuegradle.model.data.*;
 import org.apache.catalina.util.ToStringUtil;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,7 @@ public class UserActivityRoleRepositoryTest {
     @Autowired
     ActivityTypeRepository activityTypeRepository;
 
-    Profile profile1, profile2, profile3;
+    Profile profile1, profile2, profile3, profile6;
     Activity activity1, activity2, activity3;
 
     @BeforeAll
@@ -56,10 +57,12 @@ public class UserActivityRoleRepositoryTest {
         profile1 = new Profile(new User(), "Bill", "Testman", LocalDate.EPOCH, Gender.NON_BINARY);
         profile2 = new Profile(new User(), "Andy", "Warshaw", LocalDate.EPOCH, Gender.NON_BINARY);
         profile3 = new Profile(new User(), "Brie", "Calaris", LocalDate.EPOCH, Gender.NON_BINARY);
+        profile6 = new Profile(new User(), "New", "Fella", LocalDate.EPOCH, Gender.NON_BINARY);
 
         profileRepository.save(profile1);
         profileRepository.save(profile2);
         profileRepository.save(profile3);
+        profileRepository.save(profile6);
 
         activity1 = new Activity("Test Activity", false, "New Zealand", profile1, Collections.singleton(walking));
         activity2 = new Activity("Test Activity2", false, "New Zealand", profile2, Collections.singleton(running));
@@ -127,6 +130,24 @@ public class UserActivityRoleRepositoryTest {
     public void testGetNoUserActivityRoleByUserId(){
         Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile2.getUser().getUserId(), activity3.getId());
         assertTrue(result.isEmpty());
+    }
+
+
+    @Test
+    public void testUpdateUserActivityRole(){
+        userActivityRoleRepository.updateUserActivityRole(ActivityRole.ORGANISER,profile2.getUser().getUserId(), activity2.getId());
+        Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile2.getUser().getUserId(), activity2.getId());
+        UserActivityRole object = result.get();
+        assertEquals(ActivityRole.ORGANISER, object.getActivityRole());
+    }
+    
+    @Test
+    @Disabled
+    public void testCreateUserActivityRole(){
+        userActivityRoleRepository.createUserActivityRole(ActivityRole.PARTICIPANT, profile6.getUser().getUserId(), activity2.getId());
+        Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile6.getUser().getUserId(), activity2.getId());
+        UserActivityRole object = result.get();
+        assertEquals(ActivityRole.ORGANISER, object.getActivityRole());
     }
 
 }

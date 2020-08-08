@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,11 +64,21 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
      * @param uuid The users id
      * @param activity_id The activity id
      */
+    @Transactional
+    @Modifying
     @Query(
             value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
     )
     public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
 
+
+    /**
+     *
+     * @param activityRole The new role of the user
+     * @param uuid the users id
+     * @param activity_id the activity id
+     */
+    @Transactional
     @Modifying
     @Query(
             value = "INSERT INTO UserActivityRole (activityRole, user.uuid, activity.activity_id) VALUES (?1, ?2, ?3)",

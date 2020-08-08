@@ -72,6 +72,7 @@ public class UserActivityRoleController {
      * @throws UserNotAuthenticatedException if the user is not logged in
      * @throws RecordNotFoundException If there is no UserActivityRole related to the user specified
      */
+
     @PutMapping("/activities/{activityId}/roles/{profileId}")
     @CrossOrigin
     public ResponseEntity<Object> setUserActivityRole(@PathVariable("activityId") long activityId,
