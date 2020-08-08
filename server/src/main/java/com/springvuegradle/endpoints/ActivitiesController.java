@@ -1,19 +1,17 @@
 package com.springvuegradle.endpoints;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +30,19 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
@@ -55,6 +66,12 @@ public class ActivitiesController {
 
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+    
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+    
+    @Autowired
+    private UserActivityRoleRepository userActivityRoleRepository;
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
@@ -67,7 +84,7 @@ public class ActivitiesController {
                                         @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
+    	Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
@@ -134,7 +151,8 @@ public class ActivitiesController {
         } else {
             activity.setIsDuration(false);
         }
-        return new ActivityResponse(activityRepository.save(activity));
+        return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+
     }
 
     /**
@@ -256,7 +274,7 @@ public class ActivitiesController {
         activity.setLocation(createActivityRequest.getLocation());
         activity = activityRepository.save(activity);
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
-        return new ActivityResponse(activity);
+        return new ActivityResponse(activity, 1L, 1L);
     }
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
@@ -274,8 +292,10 @@ public class ActivitiesController {
         if(!optionalActivity.isPresent()){
             throw new RecordNotFoundException("Activity doesnt exist");
         }
+        
+        Activity activity = optionalActivity.get();
 
-        return new ActivityResponse(optionalActivity.get());
+        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
     /**
@@ -301,7 +321,9 @@ public class ActivitiesController {
             throw new RecordNotFoundException("Activity doesnt exist");
         }
 
-        return new ActivityResponse(optionalActivity.get());
+        Activity activity = optionalActivity.get();
+
+        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
     /**
@@ -331,10 +353,26 @@ public class ActivitiesController {
         List<Activity> activities = activityRepository.findActivitiesByCreator(optionalCreator.get());
         List<ActivityResponse> responseActivities = new ArrayList<>();
         for (Activity activity : activities) {
-            responseActivities.add(new ActivityResponse(activity));
+            responseActivities.add(new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity)));
         }
 
         return responseActivities;
+    }
+    
+    /**
+     * Gets the amount of users following the given activity
+     * @param activity Activity to get the follower count of
+     */
+    private Long getActivityFollowerCount(Activity activity) {
+    	return subscriptionRepository.getFollowerCount(activity.getId());
+    }
+    
+    /**
+     * Gets the amount of users participating in the given activity
+     * @param activity Activity to get the participant count of
+     */
+    private Long getActivityParticipantCount(Activity activity) {
+    	return this.userActivityRoleRepository.getParticipantCountByActivityId(activity.getId());
     }
 
 }

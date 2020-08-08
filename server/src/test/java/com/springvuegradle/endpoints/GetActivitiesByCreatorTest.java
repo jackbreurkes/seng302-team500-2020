@@ -30,6 +30,8 @@ import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.responses.ActivityResponse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,6 +44,12 @@ public class GetActivitiesByCreatorTest {
 
     @Mock
     private ActivityRepository activityRepository;
+    
+    @Mock
+    private SubscriptionRepository subscriptionRepo;
+    
+    @Mock
+    private UserActivityRoleRepository userActivityRoleRepository;
 
     private User mockUser;
     private Profile mockProfile;
@@ -51,6 +59,9 @@ public class GetActivitiesByCreatorTest {
     @BeforeAll
     void setup(){
         MockitoAnnotations.initMocks(this);
+        
+        Mockito.when(subscriptionRepo.getFollowerCount(Mockito.anyLong())).thenReturn(0L);
+        Mockito.when(userActivityRoleRepository.getParticipantCountByActivityId(Mockito.anyLong())).thenReturn(0L);
     }
 
     @BeforeEach
