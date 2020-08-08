@@ -11,9 +11,10 @@ import java.time.LocalDateTime;
  * JPA representation of a change log entry
  *
  */
-@NamedQuery(name = "ChangeLog.retrieveUserHomeFeedUpdates", query = "select c from ChangeLog c join Subscription s on c.entityId = s.entityId where s.subscriber = ?1")
+@NamedQuery(name = "ChangeLog.retrieveUserHomeFeedUpdates", query = "select distinct c from ChangeLog c where c.entityId in (select s.entityId from Subscription s where s.subscriber = ?1)")
 @Entity
 @Table(name = "changelog")
+@DiscriminatorValue("null")
 public class ChangeLog {
 
 	@Id

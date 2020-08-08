@@ -1,15 +1,19 @@
 package com.springvuegradle.model.responses;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
 
     private ChangeLogEntity entity_type;
@@ -17,7 +21,7 @@ public class HomeFeedResponse {
     private String entity_name;
     private long creator_id;
     private String creator_name;
-    private LocalDate edited_timestamp;
+    private LocalDateTime edited_timestamp;
     private long editor_id;
     private String editor_name;
     private ChangedAttribute changed_attribute;
@@ -66,4 +70,51 @@ public class HomeFeedResponse {
 
     }
 
+    public ChangeLogEntity getEntity_type() {
+        return entity_type;
+    }
+
+    public long getEntity_id() {
+        return entity_id;
+    }
+
+    public String getEntity_name() {
+        return entity_name;
+    }
+
+    public long getCreator_id() {
+        return creator_id;
+    }
+
+    public String getCreator_name() {
+        return creator_name;
+    }
+
+    public LocalDateTime getEdited_timestamp() {
+        return edited_timestamp;
+    }
+
+    public long getEditor_id() {
+        return editor_id;
+    }
+
+    public String getEditor_name() {
+        return editor_name;
+    }
+
+    public ChangedAttribute getChanged_attribute() {
+        return changed_attribute;
+    }
+
+    public ActionType getAction_type() {
+        return action_type;
+    }
+
+    public String getOld_value() {
+        return old_value;
+    }
+
+    public String getNew_value() {
+        return new_value;
+    }
 }

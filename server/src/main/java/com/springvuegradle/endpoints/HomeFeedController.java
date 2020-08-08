@@ -39,6 +39,16 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
+    /**
+     * Retrieve and respond to a request to get a user's home feed updates
+     * @param profileId id of the user whose home feed it should return
+     * @param httpRequest http request made
+     * @return list of HomeFeedResponse objects which give appropriately formatted information about changes
+     * @throws ForbiddenOperationException if trying to retrieve another user's home feed
+     * @throws UserNotAuthorizedException
+     * @throws UserNotAuthenticatedException
+     * @throws InvalidRequestFieldException
+     */
     @GetMapping("/{profileId}")
     @CrossOrigin
     public List<HomeFeedResponse> getUserHomeFeed(@PathVariable("profileId") long profileId, HttpServletRequest httpRequest)
@@ -46,12 +56,11 @@ public class HomeFeedController {
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
-        if (authId.equals(profileId)) {
+        if (!authId.equals(profileId)) {
             throw new ForbiddenOperationException("cannot retrieve another user's home feed");
         }
 
-        List<ChangeLog> changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profileId); // TODO: Sort out how far back it should go... or leave this to the pagination task :)
-
+        List<ChangeLog> changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profileRepository.getOne(profileId));
         List<HomeFeedResponse> homeFeedResponses = new ArrayList<>();
         for (ChangeLog change : changeLogList) {
             HomeFeedResponse response = new HomeFeedResponse(change, activityRepository, profileRepository);
