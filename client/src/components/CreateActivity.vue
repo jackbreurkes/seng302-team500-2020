@@ -71,7 +71,6 @@
 
                   <v-menu
                     ref="endDateMenu"
-                    v-model="endDateMenu"
                     :close-on-content-click="false"
                     transition="scale-transition"
                     offset-y
@@ -299,7 +298,7 @@ const CreateActivity = Vue.extend({
     },
 
     cancelButtonClicked() {
-      this.$router.push({ name: "profilePage" });
+      this.$router.back();
     },
 
     createButtonClicked: async function() {
@@ -335,7 +334,7 @@ const CreateActivity = Vue.extend({
     },
 
     populateFields: async function(editingId: number) {
-      let activityData: CreateActivityRequest = await activityController.getActivityById(
+      let activityData: CreateActivityRequest = await activityController.getActivity(
         this.currentProfileId,
         editingId
       );

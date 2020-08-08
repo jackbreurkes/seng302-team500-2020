@@ -1,5 +1,6 @@
 import { CreateActivityRequest } from "../scripts/Activity";
 import instance from "../services/axios.service";
+import { AxiosResponse } from 'axios';
 
 /**
  * creates an activity.
@@ -50,10 +51,11 @@ export async function getActivitiesByCreator(creatorId: number): Promise<CreateA
  * @param {number} activityId id of the activity to retrieve
  * @return {CreateActivityRequest} retrieved activity data
  */
-export async function getActivityById(creatorId: number, activityId: number): Promise<CreateActivityRequest> {
+export async function getActivity(creatorId: number, activityId: number): Promise<CreateActivityRequest> {
   let res = await instance.get(`/profiles/${creatorId}/activities/${activityId}`);
   return res.data;
 }
+
 
 /**
  * Deletes an activity by its creator's id and the activity id
@@ -63,3 +65,32 @@ export async function getActivityById(creatorId: number, activityId: number): Pr
 export async function deleteActivityById(creatorId: number, activityId: number) {
   await instance.delete(`/profiles/${creatorId}/activities/${activityId}`);
 }
+
+/**
+ * Gets whether user follows the given activity
+ * @param profileId profile id of the user
+ * @param activityId id of the activity
+ * @returns information about the server's response - data property includes whether the user is subscribed
+ */
+export async function getFollowingActivity(profileId: number, activityId: number): Promise<{"subscribed": boolean}> {
+  let res = await instance.get(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+  return res.data
+} 
+
+/**
+ * Send request to have user follow the given activity
+ * @param profileId profile id of the user
+ * @param activityId id of the activity to follow
+ */
+export async function addActivityFollower(profileId: number, activityId: number) {
+  let res = await instance.post(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+} 
+
+/**
+ * Send request to have user unfollow the given activity
+ * @param profileId profile id of the user
+ * @param activityId id of the activity to unfollow
+ */
+export async function removeActivityFollower(profileId: number, activityId: number) {
+  let res = await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+} 

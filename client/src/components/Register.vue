@@ -185,7 +185,7 @@ const Register = Vue.extend({
           .catch(err => {
             this.errorMessage = err.message;
           });
-        this.errorMessage = "submitting...";
+        this.errorMessage = "Submitting...";
       }
     }
   }

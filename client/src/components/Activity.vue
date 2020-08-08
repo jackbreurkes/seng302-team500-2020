@@ -1,9 +1,121 @@
 <template>
-  <h1> Congrats! You have made it to an activity page! </h1>
+  <div>
+    <v-container class="fill-height" fluid>
+      <v-row align="center" justify="center">
+        <v-col cols="12" sm="8" md="8">
+          <v-card>
+            <v-toolbar color="primary" dark flat>
+              <v-toolbar-title>
+                <v-btn
+                  dark
+                  icon
+                  @click="backButtonClicked"
+                  >
+                  <v-icon>mdi-arrow-left</v-icon>
+                </v-btn>
+                {{ activity.activity_name }} 
+                </v-toolbar-title>
+                <v-spacer></v-spacer>
+                <div>
+                  <v-menu bottom left offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        dark
+                        icon
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-list>
+                      <v-list-item
+                        @click="edit()"
+                      >
+                        <v-list-item-title>Edit Activity</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="confirmDeleteModal = true">
+                        <v-dialog v-model="confirmDeleteModal" width="290">
+                          <template v-slot:activator="{ on }">
+                            <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
+                          </template>
+                          <v-card>
+                            <v-card-title class="headline" primary-title>Delete activity?</v-card-title>
+                            <v-card-text>This operation cannot be undone.</v-card-text>
+                            <v-divider></v-divider>
+                            <v-card-actions>
+                              <v-btn text @click="confirmDeleteModal = false">Cancel</v-btn>
+                              <v-spacer></v-spacer>
+                              <v-btn color="error" text @click="deleteActivity">Delete</v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </div>
+            </v-toolbar>
+
+            <v-card-text class="grey lighten-4">
+              <h3>Activity Information</h3>
+              <br>
+              <p> Description: {{ activity.description }} </p>
+              <br>
+              <p> Location: {{ activity.location }} </p>
+
+              <div v-if="activity.duration == 1"> <!-- Activity has a start and end time -->
+                <p> Starts at: {{ activity.start_time_string }} </p>
+                <br>
+                <p> Ends at: {{ activity.end_time_string }} </p>
+              </div>
+              <div v-else>
+                <p> Activity is continous and ongoing </p>
+              </div>
+
+              <v-chip
+                class="mr-2 mb-2"
+                v-for="activityType of activity.activity_type"
+                v-bind:key="activityType"
+                outlined
+              >{{ activityType }}</v-chip> 
+              <br>
+
+              <v-divider></v-divider><br>
+
+              <p> Please insert a UserRoleList component here! </p>
+
+              <br><v-divider></v-divider><br>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <div>
+                  <v-btn @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
+                </div>
+                <div>
+                  <v-btn @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                </div>
+              </v-card-actions>
+
+              </v-card-text>
+            <v-row>
+            </v-row>
+
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+
+import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
+// eslint-disable-next-line no-unused-vars
+import { CreateActivityRequest } from '../scripts/Activity';
+import * as authService from '../services/auth.service';
+import * as activityController from '../controllers/activity.controller';
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -11,7 +123,94 @@ const Activity = Vue.extend({
 
   // app initial state
   data: function() {
-    return {};
+    return {
+      currentProfileId: NaN as number,
+      activityId: NaN as number,
+      creatorId: NaN as number,
+      activity: [] as CreateActivityRequest,
+      participating: false,
+      following: false,
+      confirmDeleteModal: false
+    };
+  },
+
+  created() {
+    let myProfileId = authService.getMyUserId();
+    if (myProfileId == null) {
+      this.$router.push('login');
+    } else {
+      this.currentProfileId = myProfileId;
+    }
+
+    const activityId: number = parseInt(this.$route.params.activityId);
+    const creatorId: number = parseInt(this.$route.params.profileId);
+    if (isNaN(creatorId) || isNaN(activityId)) {
+      this.$router.back();
+    } else {
+      this.activityId = activityId;
+      this.creatorId = creatorId;
+
+      getActivity(creatorId, activityId)
+      .then((res) => {
+        this.activity = res;
+        getIsFollowingActivity(this.currentProfileId, this.activityId)
+        .then((following) => {
+          this.following = following;
+        })
+      })
+      .catch(() => {
+        this.$router.back();
+      });
+    }
+},
+
+  methods: {
+    edit: function() {
+      this.$router.push(
+        `/profiles/${this.creatorId}/editActivity/${this.activityId}`
+      );
+    },
+    toggleFollowingActivity: function() {
+      if (this.following) {
+        unfollowActivity(this.currentProfileId, this.activityId)
+        .then(() => {
+          console.log("The unfollow functionality has not been implemented yet.")
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+      } else {
+        followActivity(this.currentProfileId, this.activityId)
+        .then(() => {
+          console.log("Follow functionality has not been implemented yet.")
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+      }
+    },
+    toggleParticipation: function() {
+      console.log("Participation functionality has not yet been implemented.")
+    },
+    getFollowingStatus: async function() {
+      getIsFollowingActivity(this.currentProfileId, this.activityId)
+      .then((following) => {
+        this.following = following;
+      })
+    },
+    backButtonClicked() {
+      this.$router.back();
+    },
+    deleteActivity: async function() {
+      this.confirmDeleteModal = false;
+      activityController.deleteActivity(this.currentProfileId, this.activityId)
+        .then(() => {
+          this.$router.back();
+        })
+        .catch(err => {
+          alert("An error occured while deleting the activity:\n" + err);
+        });
+    },
   }
 
 });
