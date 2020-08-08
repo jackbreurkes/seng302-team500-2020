@@ -15,8 +15,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -114,6 +116,17 @@ public class UserActivityRoleRepositoryTest {
         assertEquals(0, result.size());
     }
 
+    @Test
+    public void testGetUserActivityRoleByUserId(){
+        Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile3.getUser().getUserId(), activity3.getId());
+        UserActivityRole object = result.get();
+        assertEquals(profile3.getUser().getUserId(), object.getUser().getUserId());
+    }
 
+    @Test
+    public void testGetNoUserActivityRoleByUserId(){
+        Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile2.getUser().getUserId(), activity3.getId());
+        assertTrue(result.isEmpty());
+    }
 
 }
