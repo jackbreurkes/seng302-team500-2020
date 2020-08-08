@@ -289,8 +289,9 @@ export async function getActivity(creatorId: number, activityId: number) {
  * Registers user's account to follow the activity with the given id
  * @param profileId the id of the user's profile
  * @param activityId the id of the activity to follow
+ * @return whether user is following activity; true if they are, false otherwise
  */
-export async function getIsFollowingActivity(profileId: number, activityId: number) {
+export async function getIsFollowingActivity(profileId: number, activityId: number): Promise<boolean> {
   let res = await activityModel.getFollowingActivity(profileId, activityId);
   return res.data["subscribed"];
 }

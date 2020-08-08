@@ -1,5 +1,6 @@
 import { CreateActivityRequest } from "../scripts/Activity";
 import instance from "../services/axios.service";
+import { AxiosResponse } from 'axios';
 
 /**
  * creates an activity.
@@ -69,8 +70,9 @@ export async function deleteActivityById(creatorId: number, activityId: number) 
  * Gets whether user follows the given activity
  * @param profileId profile id of the user
  * @param activityId id of the activity
+ * @returns information about the server's response - data property includes whether the user is subscribed
  */
-export async function getFollowingActivity(profileId: number, activityId: number) {
+export async function getFollowingActivity(profileId: number, activityId: number): Promise<AxiosResponse<any>> {
   let res = await instance.get(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
   return res
 } 
