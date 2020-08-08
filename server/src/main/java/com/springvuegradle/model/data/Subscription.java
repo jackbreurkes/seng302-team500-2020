@@ -22,10 +22,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "subscriptions")
-@NamedQuery(name = "Subscription.findSubscriptionsByUser", query = "SELECT s FROM Subscription s WHERE s.subscriber = ?1")
-@NamedQuery(name = "Subscription.getFollowerCount", query = "SELECT COUNT(s) FROM Subscription s WHERE s.entityId = ?1 AND "
-		+ "entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY")
-@NamedQuery(name = "Subscription.isSubscribedToActivity", query = "SELECT CASE WHEN (count(s) > 0)  THEN 'TRUE' ELSE 'FALSE' END FROM Subscription s WHERE entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY AND entityId = ?1 AND subscriber = ?2")
 public class Subscription {
 
 	/**
