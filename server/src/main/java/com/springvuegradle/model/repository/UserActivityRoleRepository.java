@@ -37,6 +37,15 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
     )
     public List<User> getInvolvedUsersByActivityId(long activity_id);
 
+	/**
+	 * Named query for getting the number of participants in an activity
+	 * @param activity_id of activity
+	 * @return amount of users with participant role in the given activity
+	 */
+		@Query(
+			value= "SELECT COUNT(a) FROM UserActivityRole a WHERE a.activity.activity_id = ?1 AND a.activityRole = com.springvuegradle.model.data.ActivityRole.PARTICIPANT"
+	)
+	public Long getParticipantCountByActivityId(long activity_id);
 
     /**
      * Named query for getting the table entry to ret
@@ -67,4 +76,3 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
     public void createUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
 
 }
-

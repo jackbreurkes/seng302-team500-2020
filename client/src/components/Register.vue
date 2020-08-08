@@ -180,7 +180,7 @@ const Register = Vue.extend({
             if (user.profile_id === undefined) {
               throw new Error("created profile not returned with an id");
             }
-            this.$router.push({ name: "profilePage", params: { profileId: user.profile_id.toString() } });
+            this.$router.push({ name: "homepage", params: { profileId: user.profile_id.toString() } });
           })
           .catch(err => {
             this.errorMessage = err.message;
