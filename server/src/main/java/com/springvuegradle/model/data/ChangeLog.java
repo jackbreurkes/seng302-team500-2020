@@ -2,12 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.time.LocalDate;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * JPA representation of a change log entry
  *
  */
-
+@NamedQuery(name = "ChangeLog.retrieveUserHomeFeedUpdates", query = "select c from ChangeLog c join Subscription s on c.entityId = s.entityId where s.subscriber = ?1")
 @Entity
 @Table(name = "changelog")
 public class ChangeLog {
