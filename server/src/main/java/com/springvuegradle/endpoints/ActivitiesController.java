@@ -1,19 +1,17 @@
 package com.springvuegradle.endpoints;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +31,14 @@ import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
 import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
@@ -83,7 +84,7 @@ public class ActivitiesController {
                                         @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
+    	Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
@@ -116,42 +117,6 @@ public class ActivitiesController {
 
         if(activityToEdit.isEmpty()){
             throw new RecordNotFoundException("Activity does not exist");
-        }else{
-            Activity activity = activityToEdit.get();
-
-            activity.setActivityName(updateActivityRequest.getActivityName());
-            activity.setDescription(updateActivityRequest.getDescription());
-            activity.setIsDuration(updateActivityRequest.isContinuous());
-            activity.setLocation(updateActivityRequest.getLocation());
-            activity.getActivityTypes().clear();
-            
-            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-                if(!activityType.isPresent()){
-                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-                }else{
-                    activity.getActivityTypes().add(activityType.get());
-                }
-            }
-
-
-            if(!updateActivityRequest.isContinuous()){
-//                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
-//                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
-
-                activity.setIsDuration(true);
-//                activity.setStartDate(startDateTime.toLocalDate());
-//                activity.setEndDate(endDateTime.toLocalDate());
-//
-//                activity.setStartTime(startDateTime.toLocalTime());
-//                activity.setEndTime(startDateTime.toLocalTime());
-
-                activity.setStartTime(updateActivityRequest.getStartTime());
-                activity.setEndTime(updateActivityRequest.getEndTime());
-            } else {
-            	activity.setIsDuration(false);
-            }
-            return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
         }
 
         Set<ActivityType> activityTypesToAdd = new HashSet<>();
@@ -186,7 +151,8 @@ public class ActivitiesController {
         } else {
             activity.setIsDuration(false);
         }
-        return new ActivityResponse(activityRepository.save(activity));
+        return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+
     }
 
     /**
