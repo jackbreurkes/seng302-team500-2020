@@ -1,16 +1,14 @@
 package com.springvuegradle.model.responses;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityType;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 /**
  * class used to return an Activity entity as JSON data
@@ -28,8 +26,11 @@ public class ActivityResponse {
     private String description;
     private String location;
     private Long creatorId;
+    
+    private Long numFollowers;
+    private Long numParticipants;
 
-    @JsonProperty("activity_type")
+	@JsonProperty("activity_type")
     private List<String> activityTypes;
 
     /**
@@ -37,16 +38,22 @@ public class ActivityResponse {
      * @param activity the activity whose data should be used to populate the JSON response data
      */
     public ActivityResponse(Activity activity) {
+    	this(activity, 1L, 1L);
+    }
+    
+    /**
+     * Constructs an ActivityResponse suitable for sending to the client
+     * @param activity Activity to respond with
+     * @param numFollowers Number of followers the activity has
+     * @param numParticipants Number of participants the activity has
+     */
+    public ActivityResponse(Activity activity, Long numFollowers, Long numParticipants) {
         this.activityId = activity.getId();
         this.activityName = activity.getActivityName();
         this.continuous = !activity.isDuration();
         this.description = activity.getDescription();
         this.location = activity.getLocation();
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        TimeZone timeZone = TimeZone.getDefault();
         if (activity.isDuration()) {
-//            this.startTime = activity.getStartDate().toString() + "T" + activity.getStartTime().format(timeFormatter) + "+1300";
-//            this.endTime = activity.getEndDate().toString() + "T" + activity.getEndTime().format(timeFormatter) + "+1300";
             this.startTime = activity.getStartTime();
             this.endTime = activity.getEndTime();
         }
@@ -55,6 +62,9 @@ public class ActivityResponse {
                 .stream()
                 .map(ActivityType::getActivityTypeName)
                 .collect(Collectors.toList());
+        
+        this.numFollowers = numFollowers;
+        this.numParticipants = numParticipants;
     }
 
     /**
@@ -119,4 +129,18 @@ public class ActivityResponse {
     public List<String> getActivityTypes() {
         return activityTypes;
     }
+    
+    /**
+     * @return the number of users following this activity
+     */
+    public Long getNumFollowers() {
+		return numFollowers;
+	}
+
+    /**
+     * @return the number of users marked as participating in this activity
+     */
+	public Long getNumParticipants() {
+		return numParticipants;
+	}
 }

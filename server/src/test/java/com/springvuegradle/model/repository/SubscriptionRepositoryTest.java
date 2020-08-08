@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -194,5 +196,27 @@ public class SubscriptionRepositoryTest {
 		savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile2);
 		Assertions.assertEquals(1, savedSubscriptions.size());
 		Assertions.assertEquals(subscription2.getEntityId(), savedSubscriptions.get(0).getEntityId());
+	}
+	
+	@ParameterizedTest
+	@ValueSource(ints = {0, 1, 2, 3, 10, 100})
+	public void testGetFollowerCount(int numSubscribers) {
+		HashSet<ActivityType> types = new HashSet<ActivityType>();
+		types.add(activityTypes.get("building"));
+		Activity activity = new Activity("Sandcastle javelin throw", 
+				false, "Aoteroa", testProfile, types);
+		
+		activityRepo.save(activity);
+		
+		for (int i = 0; i < numSubscribers; i++) {
+			Profile testProfile2 = new Profile(new User(), "Lisa","Simpson", LocalDate.of(1981, 5, 9), Gender.FEMALE);
+			testProfile2 = profileRepo.save(testProfile2);
+			Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+			subscriptionRepo.save(subscription);
+		}
+		
+		Long subscriberCountResult = subscriptionRepo.getFollowerCount(activity.getId());
+		
+		Assertions.assertEquals(numSubscribers, subscriberCountResult);
 	}
 }
