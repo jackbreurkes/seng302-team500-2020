@@ -72,9 +72,9 @@ export async function deleteActivityById(creatorId: number, activityId: number) 
  * @param activityId id of the activity
  * @returns information about the server's response - data property includes whether the user is subscribed
  */
-export async function getFollowingActivity(profileId: number, activityId: number): Promise<AxiosResponse<any>> {
+export async function getFollowingActivity(profileId: number, activityId: number): Promise<{"subscribed": boolean}> {
   let res = await instance.get(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
-  return res
+  return res.data
 } 
 
 /**
