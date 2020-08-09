@@ -1,7 +1,6 @@
 package com.springvuegradle.endpoints;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,13 +10,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.springvuegradle.exceptions.ExceptionHandlerController;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +32,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.springvuegradle.model.data.ActionType;
@@ -45,6 +50,8 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -53,7 +60,7 @@ import com.springvuegradle.model.repository.UserRepository;
 public class ActivitiesControllerTest {
 
 	@InjectMocks
-	private ActivitiesController activitiesController;
+	ActivitiesController activitiesController;
 
 	@Autowired
 	private MockMvc mvc;
@@ -66,10 +73,10 @@ public class ActivitiesControllerTest {
 
 	@MockBean
 	private UserRepository userRepo;
-	
+
 	@MockBean
     private SubscriptionRepository subscriptionRepo;
-	
+
 	@MockBean
 	private UserActivityRoleRepository userActivityRoleRepository;
 
@@ -86,6 +93,7 @@ public class ActivitiesControllerTest {
 	@BeforeEach
 	void beforeEach() {
 		activitiesController = new ActivitiesController();
+		MockitoAnnotations.initMocks(this);
 
 		user = new User(1);
 		Mockito.when(userRepo.findById(user.getUserId())).thenReturn(Optional.of(user));
@@ -345,4 +353,153 @@ public class ActivitiesControllerTest {
 		assertEquals(ChangedAttribute.ACTIVITY_EXISTENCE, deleteLog.getChangedAttribute());
 		assertEquals(ActionType.DELETED, deleteLog.getActionType());
 	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"test outcome, km/h, other outcome, strokes",
+			"testing min vals, test, 123, 1",
+			"testing max vals, test, this is thirty characters, ok?, this is 10",
+	})
+	public void testCreateActivityWithOutcomes_ValidOutcomes_OutcomesAreCreated(
+			String outcome1Description, String outcome1Units, String outcome2Description, String outcome2Units) throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I really like testing\",\n" +
+				"  \"activity_type\":[ \"coding\" ],\r\n" +
+				"  \"continuous\": true,\n" +
+				"  \"location\": \"Christchurch, NZ\",\n" +
+				"  \"outcomes\": [" +
+				"{\"description\": \"" + outcome1Description + "\", \"units\": \"" + outcome1Units + "\" }," +
+				"{\"description\": \"" + outcome2Description + "\", \"units\": \"" + outcome2Units + "\" }" +
+				"] " +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isCreated());
+
+		ArgumentCaptor<Activity> activityCaptor = ArgumentCaptor.forClass(Activity.class);
+		Mockito.verify(activityRepo).save(activityCaptor.capture());
+		assertEquals(1, activityCaptor.getAllValues().size());
+		Activity createdActivity = activityCaptor.getValue();
+		assertEquals(2, createdActivity.getOutcomes().size());
+	}
+
+
+	/**
+	 * helper method to handle the basic post operation for activity create tests
+	 * @param json the activity json
+	 * @return a ResultActions object that can be used in further .andExpect() or other chaining
+	 */
+	ResultActions postActivityJson(String json) throws Exception {
+		return mvc.perform(MockMvcRequestBuilders
+				.post("/profiles/"+user.getUserId()+"/activities")
+				.contentType(MediaType.APPLICATION_JSON).content(json)
+				.requestAttr("authenticatedid", user.getUserId()))
+				.andDo(print());
+	}
+
+
+	@Test
+	public void testCreateActivityWithOutcomes_MissingOutcomeDesription_400() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I really like testing\",\n" +
+				"  \"activity_type\":[ \"coding\" ],\r\n" +
+				"  \"continuous\": true,\n" +
+				"  \"location\": \"Christchurch, NZ\",\n" +
+				"  \"outcomes\": [" +
+				"{ \"units\": \"km/h\" }" +
+				"] " +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertNotNull(thrown);
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("outcome missing description field", thrown.getMessage());
+				});
+	}
+
+
+	@Test
+	public void testCreateActivityWithOutcomes_MissingOutcomeUnits_400() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I really like testing\",\n" +
+				"  \"activity_type\":[ \"coding\" ],\r\n" +
+				"  \"continuous\": true,\n" +
+				"  \"location\": \"Christchurch, NZ\",\n" +
+				"  \"outcomes\": [" +
+				"{ \"description\": \"this is a description\" }" +
+				"] " +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertNotNull(thrown);
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("outcome missing units field", thrown.getMessage());
+				});
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"1",
+			"12",
+			"this is thirty one characs, ok?",
+	})
+	public void testCreateActivityWithOutcomes_InvalidDescriptionLength_400(String outcomeDescription) throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I really like testing\",\n" +
+				"  \"activity_type\":[ \"coding\" ],\r\n" +
+				"  \"continuous\": true,\n" +
+				"  \"location\": \"Christchurch, NZ\",\n" +
+				"  \"outcomes\": [" +
+				"{\"description\": \"" + outcomeDescription + "\", \"units\": \"km/h\" }" +
+				"] " +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertNotNull(thrown);
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("outcome descriptions must be between 3 and 30 characters", thrown.getMessage());
+				});
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"",
+			"this is 11!"
+	})
+	public void testCreateActivityWithOutcomes_InvalidUnitsLength_400(String outcomeUnits) throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I really like testing\",\n" +
+				"  \"activity_type\":[ \"coding\" ],\r\n" +
+				"  \"continuous\": true,\n" +
+				"  \"location\": \"Christchurch, NZ\",\n" +
+				"  \"outcomes\": [" +
+				"{\"description\": \"this is a description\", \"units\": \"" + outcomeUnits + "\" }" +
+				"] " +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertNotNull(thrown);
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("outcome units must be between 1 and 10 characters", thrown.getMessage());
+				});
+	}
 }
+
+
