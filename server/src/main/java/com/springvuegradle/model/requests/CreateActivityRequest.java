@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +27,9 @@ public class CreateActivityRequest {
     @NotNull(message = "missing activity_type field")
     @Size(min = 1, message = "must include at least one activity_type")
     private List<String> activityTypes;
+
+    @Valid
+    private List<ActivityOutcomeRequest> outcomes = new ArrayList<>();
 
     @NotNull(message = "missing continuous field")
     private Boolean continuous;
@@ -138,5 +143,19 @@ public class CreateActivityRequest {
      */
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    /**
+     * @return json resolution for outcomes given to this activity
+     */
+    public List<ActivityOutcomeRequest> getOutcomes() {
+        return outcomes;
+    }
+
+    /**
+     * @param outcomes the outcomes associated with this activity request
+     */
+    public void setOutcomes(List<ActivityOutcomeRequest> outcomes) {
+        this.outcomes = outcomes;
     }
 }

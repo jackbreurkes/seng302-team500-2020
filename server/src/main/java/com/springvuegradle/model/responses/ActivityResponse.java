@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityOutcome;
 import com.springvuegradle.model.data.ActivityType;
 
 /**
@@ -26,6 +27,7 @@ public class ActivityResponse {
     private String description;
     private String location;
     private Long creatorId;
+    private List<ActivityOutcomeResponse> outcomes;
     
     private Long numFollowers;
     private Long numParticipants;
@@ -65,6 +67,10 @@ public class ActivityResponse {
         
         this.numFollowers = numFollowers;
         this.numParticipants = numParticipants;
+        this.outcomes = activity.getOutcomes()
+                .stream()
+                .map(ActivityOutcomeResponse::new)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -143,4 +149,8 @@ public class ActivityResponse {
 	public Long getNumParticipants() {
 		return numParticipants;
 	}
+
+    public List<ActivityOutcomeResponse> getOutcomes() {
+        return outcomes;
+    }
 }
