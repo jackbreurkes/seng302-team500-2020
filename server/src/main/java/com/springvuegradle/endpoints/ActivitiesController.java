@@ -80,7 +80,12 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         @Valid @RequestBody CreateActivityRequest updateActivityRequest,
+                                        Errors errors,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
 
     	Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -139,7 +144,6 @@ public class ActivitiesController {
         activity.setLocation(updateActivityRequest.getLocation());
         activity.getActivityTypes().clear();
         activity.getActivityTypes().addAll(activityTypesToAdd);
-        List<ActivityOutcomeRequest> outcomeRequests = updateActivityRequest.getOutcomes();
         activity.getOutcomes().clear();
         // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
         for (ActivityOutcomeRequest outcomeRequest : updateActivityRequest.getOutcomes()) {
