@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NamedQuery(name = "ChangeLog.retrieveUserHomeFeedUpdates", query = "select distinct c from ChangeLog c where c.entityId in (select s.entityId from Subscription s where s.subscriber = ?1)")
 @Entity
 @Table(name = "changelog")
-@DiscriminatorValue("null")
 public class ChangeLog {
 
 	@Id
