@@ -239,7 +239,7 @@ export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
 }
 
-export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
+export const INVALID_DATE_MESSAGE = "Date must be at least one day into the future"
 /**
  * Checks if dateString given is a date in the future
  * if it is valid
