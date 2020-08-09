@@ -140,14 +140,5 @@ public class UserActivityRoleRepositoryTest {
         UserActivityRole object = result.get();
         assertEquals(ActivityRole.ORGANISER, object.getActivityRole());
     }
-    
-    @Test
-    @Disabled
-    public void testCreateUserActivityRole(){
-        userActivityRoleRepository.createUserActivityRole(ActivityRole.PARTICIPANT, profile6.getUser().getUserId(), activity2.getId());
-        Optional <UserActivityRole> result = userActivityRoleRepository.getRoleEntryByUserId(profile6.getUser().getUserId(), activity2.getId());
-        UserActivityRole object = result.get();
-        assertEquals(ActivityRole.ORGANISER, object.getActivityRole());
-    }
 
 }

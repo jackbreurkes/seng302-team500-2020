@@ -70,20 +70,5 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
             value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
     )
     public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
-
-
-    /**
-     *
-     * @param activityRole The new role of the user
-     * @param uuid the users id
-     * @param activity_id the activity id
-     */
-    @Transactional
-    @Modifying
-    @Query(
-            value = "INSERT INTO UserActivityRole (activityRole, user.uuid, activity.activity_id) VALUES (?1, ?2, ?3)",
-            nativeQuery=true
-    )
-    public void createUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
-
+    
 }

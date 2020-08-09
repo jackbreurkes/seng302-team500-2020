@@ -1,6 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
@@ -49,13 +50,20 @@ public class PutUserActivityRoleControllerTest {
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
+        //Mock creator
+        User creator = new User(2L);
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(self));
         //Mock admin
         User admin = new User(100L);
         self.setPermissionLevel(126);
         Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(self));
 
         //Mock activity
-        Activity activity = new Activity();
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         UserActivityRole userActivityRole = new UserActivityRole();
@@ -83,8 +91,8 @@ public class PutUserActivityRoleControllerTest {
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
         //Mock admin
         User admin = new User(100L);
-        self.setPermissionLevel(126);
-        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(self));
+        admin.setPermissionLevel(126);
+        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(admin));
 
         //Mock activity
         Activity activity = new Activity();
@@ -109,9 +117,9 @@ public class PutUserActivityRoleControllerTest {
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
-        //Mock admin
+        //Mock organiser
         User organiser = new User(100L);
-        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(self));
+        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(organiser));
 
 
         //Mock activity
@@ -163,6 +171,7 @@ public class PutUserActivityRoleControllerTest {
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+
 
         UserActivityRole userActivityRole = new UserActivityRole();
         userActivityRole.setUser(self);
@@ -216,7 +225,117 @@ public class PutUserActivityRoleControllerTest {
         UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
         updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
 
-        assertThrows(UserNotAuthenticatedException.class, () -> {
+        assertThrows(UserNotAuthorizedException.class, () -> {
+            ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
+        });
+    }
+
+    @Test
+    void testCreateUserActivityRoleAsCreator() throws Exception {
+        //Mock Creator
+        User creator = new User(65L);
+        Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
+        //Mock user
+        User self = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
+
+
+        //Mock activity
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
+        Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+
+
+        // Mock create request
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 65L);
+
+        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
+        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
+
+        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+    }
+    @Test
+    void testCreateUserActivityRoleAsOrganiser() throws Exception {
+        //Mock Creator
+        User creator = new User(65L);
+        Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
+        //Mock user
+        User self = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
+
+
+        //Mock organiser
+        User organiser = new User(100L);
+        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(organiser));
+
+
+        //Mock activity
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
+        Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+
+        // Set organiser
+        UserActivityRole userActivityRoleOrg = new UserActivityRole();
+        userActivityRoleOrg.setUser(organiser);
+        userActivityRoleOrg.setActivity(activity);
+        userActivityRoleOrg.setActivityRole(ActivityRole.ORGANISER);
+        Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(100L,2L)).thenReturn(Optional.of(userActivityRoleOrg));
+
+        // Mock create request
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 100L);
+
+        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
+        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
+
+        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+    }
+    @Test
+    void testCreateUserActivityRoleAsParticipant() throws Exception {
+        //Mock Creator
+        User creator = new User(65L);
+        Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
+        //Mock user
+        User baseUser = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(baseUser));
+
+        //Mock organiser
+        User participant = new User(100L);
+        Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(participant));
+
+
+        //Mock activity
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
+        Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+
+        // Set organiser
+        UserActivityRole userActivityRoleOrg = new UserActivityRole();
+        userActivityRoleOrg.setUser(participant);
+        userActivityRoleOrg.setActivity(activity);
+        userActivityRoleOrg.setActivityRole(ActivityRole.PARTICIPANT);
+        Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(100L,2L)).thenReturn(Optional.of(userActivityRoleOrg));
+
+        // Mock create request
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 100L);
+
+        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
+        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
+
+        assertThrows(UserNotAuthorizedException.class, () -> {
             ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
         });
     }

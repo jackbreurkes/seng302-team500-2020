@@ -148,7 +148,7 @@ public class DeleteUserActivityRoleControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 2L);
 
-        assertThrows(UserNotAuthenticatedException.class,() -> {
+        assertThrows(UserNotAuthorizedException.class,() -> {
             userActivityRoleController.deleteUserActivityRole(2L, 1L, request);
         });
     }

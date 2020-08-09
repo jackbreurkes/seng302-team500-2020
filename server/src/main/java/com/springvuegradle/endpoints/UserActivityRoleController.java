@@ -1,11 +1,14 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.auth.AuthInterceptor;
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityRole;
+import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.data.UserActivityRole;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
@@ -78,7 +81,7 @@ public class UserActivityRoleController {
     public ResponseEntity<Object> setUserActivityRole(@PathVariable("activityId") long activityId,
                                                          @PathVariable("profileId") long profileId,
                                                         @Valid @RequestBody UpdateUserActivityRoleRequest updateUserActivityRoleRequest,
-                                                         HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException {
+                                                         HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
 
         UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
@@ -89,7 +92,15 @@ public class UserActivityRoleController {
             userActivityRoleRepository.updateUserActivityRole(updateUserActivityRoleRequest.getRole(), profileId, activityId);
         } else {
             // Create new entry for user
-            userActivityRoleRepository.createUserActivityRole(updateUserActivityRoleRequest.getRole(), profileId, activityId);
+            Optional<Activity> activity = activityRepository.findById(activityId);
+            if (!activity.isPresent()) {
+                throw new RecordNotFoundException("Activity not found");
+            }
+            else {
+                UserActivityRole userActivityRole = new UserActivityRole(activity.get(), (User) request.getAttribute("authenticateduser"), updateUserActivityRoleRequest.getRole());
+                userActivityRoleRepository.save(userActivityRole);
+            }
+
         }
 
         return ResponseEntity.status(HttpStatus.OK).build();
