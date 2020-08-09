@@ -1,7 +1,9 @@
 package com.springvuegradle.endpoints;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ import java.util.Set;
 
 import com.springvuegradle.exceptions.ExceptionHandlerController;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.model.data.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -35,14 +39,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.springvuegradle.model.data.ActionType;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.ChangedAttribute;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -121,6 +117,20 @@ public class ActivitiesControllerTest {
 
 	}
 
+
+	/**
+	 * helper method to handle the basic post operation for activity create tests
+	 * @param json the activity json
+	 * @return a ResultActions object that can be used in further .andExpect() or other chaining
+	 */
+	ResultActions postActivityJson(String json) throws Exception {
+		return mvc.perform(MockMvcRequestBuilders
+				.post("/profiles/"+user.getUserId()+"/activities")
+				.contentType(MediaType.APPLICATION_JSON).content(json)
+				.requestAttr("authenticatedid", user.getUserId()))
+				.andDo(print());
+	}
+
 	@Test
 	public void testCreateValidActivity() throws Exception {
 		String json = "{\n" +
@@ -135,12 +145,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isCreated());
 
 		ArgumentCaptor<ChangeLog> changeLogCaptor = ArgumentCaptor.forClass(ChangeLog.class);
@@ -169,12 +174,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isBadRequest());
 
 		Mockito.verifyNoInteractions(changeLogRepository);
@@ -197,12 +197,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isBadRequest());
 
 		Mockito.verifyNoInteractions(changeLogRepository);
@@ -225,12 +220,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isCreated());
 
 		ArgumentCaptor<ChangeLog> changeLogCaptor = ArgumentCaptor.forClass(ChangeLog.class);
@@ -259,12 +249,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isNotFound());
 
 		Mockito.verifyNoInteractions(changeLogRepository);
@@ -287,12 +272,7 @@ public class ActivitiesControllerTest {
 				"  \"location\": \"Christchurch, NZ\"\n" +
 				"}";
 
-		mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.content(json).contentType(MediaType.APPLICATION_JSON)
-				.requestAttr("authenticatedid", user.getUserId())
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
+		postActivityJson(json)
 				.andExpect(status().isBadRequest());
 
 		Mockito.verifyNoInteractions(changeLogRepository);
@@ -383,21 +363,6 @@ public class ActivitiesControllerTest {
 		Activity createdActivity = activityCaptor.getValue();
 		assertEquals(2, createdActivity.getOutcomes().size());
 	}
-
-
-	/**
-	 * helper method to handle the basic post operation for activity create tests
-	 * @param json the activity json
-	 * @return a ResultActions object that can be used in further .andExpect() or other chaining
-	 */
-	ResultActions postActivityJson(String json) throws Exception {
-		return mvc.perform(MockMvcRequestBuilders
-				.post("/profiles/"+user.getUserId()+"/activities")
-				.contentType(MediaType.APPLICATION_JSON).content(json)
-				.requestAttr("authenticatedid", user.getUserId()))
-				.andDo(print());
-	}
-
 
 	@Test
 	public void testCreateActivityWithOutcomes_MissingOutcomeDesription_400() throws Exception {
@@ -498,6 +463,49 @@ public class ActivitiesControllerTest {
 					assertNotNull(thrown);
 					assertTrue(thrown instanceof InvalidRequestFieldException);
 					assertEquals("outcome units must be between 1 and 10 characters", thrown.getMessage());
+				});
+	}
+
+	@Test
+	public void testGetActivityWithOutcomes_Exists_200() throws Exception {
+		long activityId = 10;
+		Activity testActivity = new Activity("Test Activity", false, "Test Location", profile, testActivityTypes);
+		testActivity.setId(activityId);
+		ActivityOutcome outcome1 = new ActivityOutcome("first outcome", "km/h");
+		ActivityOutcome outcome2 = new ActivityOutcome("second outcome", "m/s");
+		testActivity.addOutcome(outcome1);
+		testActivity.addOutcome(outcome2);
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+
+		mvc.perform(MockMvcRequestBuilders
+				.get("/activities/" + activityId)
+				.requestAttr("authenticatedid", user.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.activity_id").value(activityId))
+				.andExpect(jsonPath("$.outcomes", hasSize(2)))
+				.andExpect(jsonPath("$.outcomes[0].description").value(outcome1.getDescription()))
+				.andExpect(jsonPath("$.outcomes[0].units").value(outcome1.getUnits()))
+				.andExpect(jsonPath("$.outcomes[1].description").value(outcome2.getDescription()))
+				.andExpect(jsonPath("$.outcomes[1].units").value(outcome2.getUnits()));
+	}
+
+	@Test
+	public void testGetActivity_DoesNotExist_RecordNotFound() throws Exception {
+		long activityId = 10;
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.empty());
+
+		mvc.perform(MockMvcRequestBuilders
+				.get("/activities/" + activityId)
+				.requestAttr("authenticatedid", user.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isNotFound())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof RecordNotFoundException);
+					assertEquals("Activity doesn't exist", thrown.getMessage());
 				});
 	}
 }

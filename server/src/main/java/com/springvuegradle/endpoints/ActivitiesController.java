@@ -312,7 +312,7 @@ public class ActivitiesController {
 
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
+            throw new RecordNotFoundException("Activity doesn't exist");
         }
 
         Activity activity = optionalActivity.get();

@@ -72,7 +72,7 @@ public class SubscriptionController {
         }
         Optional<Activity> optionalActivity = activityRepo.findById(activityId);
         if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
+            throw new RecordNotFoundException("Activity doesn't exist");
         }
         Optional<Profile> optionalUser = profileRepository.findById(authId);
         if (optionalUser.isEmpty()) {
@@ -100,7 +100,7 @@ public class SubscriptionController {
 
         Optional<Activity> optionalActivity = activityRepo.findById(activityId);
         if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
+            throw new RecordNotFoundException("Activity doesn't exist");
         }
 
         UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
