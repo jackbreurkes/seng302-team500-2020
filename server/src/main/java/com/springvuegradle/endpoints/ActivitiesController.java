@@ -139,7 +139,12 @@ public class ActivitiesController {
         activity.setLocation(updateActivityRequest.getLocation());
         activity.getActivityTypes().clear();
         activity.getActivityTypes().addAll(activityTypesToAdd);
-
+        List<ActivityOutcomeRequest> outcomeRequests = updateActivityRequest.getOutcomes();
+        activity.getOutcomes().clear();
+        // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
+        for (ActivityOutcomeRequest outcomeRequest : updateActivityRequest.getOutcomes()) {
+            activity.addOutcome(new ActivityOutcome(outcomeRequest.getDescription(), outcomeRequest.getUnits()));
+        }
 
         if(!updateActivityRequest.isContinuous()){
             activity.setIsDuration(true);
