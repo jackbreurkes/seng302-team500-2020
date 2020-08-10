@@ -3,6 +3,7 @@ package com.springvuegradle.model.responses;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
@@ -29,7 +31,7 @@ public class HomeFeedResponse {
     private String old_value;
     private String new_value;
 
-    public HomeFeedResponse(ChangeLog changeLog, ActivityRepository entityRepository, ProfileRepository profileRepository) throws InvalidRequestFieldException {
+    public HomeFeedResponse(ChangeLog changeLog, ActivityRepository entityRepository, ProfileRepository profileRepository) throws InvalidRequestFieldException, RecordNotFoundException {
 
         //{
         //        "entity_type": "activity",
@@ -52,13 +54,21 @@ public class HomeFeedResponse {
         this.entity_type = changeLog.getEntity();
         this.entity_id = changeLog.getEntityId();
         if (changeLog.getEntity().equals(ChangeLogEntity.ACTIVITY)) {
-            Activity entity = entityRepository.getOne(this.entity_id);
+            Optional<Activity> optionalEntity = entityRepository.findById(this.entity_id);
+            if (optionalEntity.isEmpty()) {
+                throw new RecordNotFoundException("activity in change log does not exist"); // Would cause issues if an activity could be deleted without deleting its change log entries
+            }
+            Activity entity = optionalEntity.get();
             this.entity_name = entity.getActivityName();
             this.creator_id = entity.getCreator().getUser().getUserId();
             this.creator_name = entity.getCreator().getFullName(false);
             this.edited_timestamp = changeLog.getTimestamp();
             this.editor_id = changeLog.getEditingUser().getUserId();
-            this.editor_name = profileRepository.getOne(changeLog.getEditingUser().getUserId()).getFullName(false);
+            Optional<Profile> optionalEditor = profileRepository.findById(changeLog.getEditingUser().getUserId());
+            if (optionalEditor.isEmpty()) {
+                throw new RecordNotFoundException("editor profile does not exist"); //Cause similar issue as described above
+            }
+            this.editor_name = optionalEditor.get().getFullName(false);
             this.changed_attribute = changeLog.getChangedAttribute();
             this.action_type = changeLog.getActionType();
             this.old_value = changeLog.getOldValue();

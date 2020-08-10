@@ -1,11 +1,9 @@
 package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -52,7 +50,7 @@ public class HomeFeedController {
     @GetMapping("/{profileId}")
     @CrossOrigin
     public List<HomeFeedResponse> getUserHomeFeed(@PathVariable("profileId") long profileId, HttpServletRequest httpRequest)
-            throws ForbiddenOperationException, UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException {
+            throws ForbiddenOperationException, UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
@@ -60,7 +58,12 @@ public class HomeFeedController {
             throw new ForbiddenOperationException("cannot retrieve another user's home feed");
         }
 
-        List<ChangeLog> changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profileRepository.getOne(profileId));
+        Optional<Profile> profile = profileRepository.findById(profileId);
+        if (profile.isEmpty()) {
+            throw new RecordNotFoundException("user profile does not exist");
+        }
+
+        List<ChangeLog> changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile.get());
         List<HomeFeedResponse> homeFeedResponses = new ArrayList<>();
         for (ChangeLog change : changeLogList) {
             HomeFeedResponse response = new HomeFeedResponse(change, activityRepository, profileRepository);
