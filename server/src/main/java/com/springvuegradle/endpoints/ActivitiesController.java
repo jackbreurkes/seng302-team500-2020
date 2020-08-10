@@ -12,9 +12,13 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.requests.ActivityOutcomeRequest;
+import com.springvuegradle.model.responses.ActivityOutcomeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,12 +34,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityChangeLog;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -82,7 +80,12 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         @Valid @RequestBody CreateActivityRequest updateActivityRequest,
+                                        Errors errors,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
 
     	Long authId = (Long) request.getAttribute("authenticatedid");
 
@@ -141,7 +144,11 @@ public class ActivitiesController {
         activity.setLocation(updateActivityRequest.getLocation());
         activity.getActivityTypes().clear();
         activity.getActivityTypes().addAll(activityTypesToAdd);
-
+        activity.getOutcomes().clear();
+        // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
+        for (ActivityOutcomeRequest outcomeRequest : updateActivityRequest.getOutcomes()) {
+            activity.addOutcome(new ActivityOutcome(outcomeRequest.getDescription(), outcomeRequest.getUnits()));
+        }
 
         if(!updateActivityRequest.isContinuous()){
             activity.setIsDuration(true);
@@ -211,7 +218,13 @@ public class ActivitiesController {
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
                                            @Valid @RequestBody CreateActivityRequest createActivityRequest,
+                                           Errors errors,
                                            HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
+
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
@@ -272,6 +285,9 @@ public class ActivitiesController {
         activity.setStartTime(createActivityRequest.getStartTime());
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
+        for (ActivityOutcomeRequest outcome : createActivityRequest.getOutcomes()) {
+            activity.addOutcome(new ActivityOutcome(outcome.getDescription(), outcome.getUnits()));
+        }
         activity = activityRepository.save(activity);
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
         return new ActivityResponse(activity, 1L, 1L);
@@ -282,20 +298,7 @@ public class ActivitiesController {
     @Deprecated
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
-
-        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-        if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
-        }
-
-        Activity activity = optionalActivity.get();
-
-        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+        return getSingleActivity(activityId, request);
     }
 
     /**
@@ -318,7 +321,7 @@ public class ActivitiesController {
 
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
+            throw new RecordNotFoundException("Activity doesn't exist");
         }
 
         Activity activity = optionalActivity.get();

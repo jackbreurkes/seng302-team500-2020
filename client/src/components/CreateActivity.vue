@@ -3,7 +3,7 @@
     <v-form ref="createActivityForm">
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
-          <v-col cols="12" sm="8" md="4">
+          <v-col xs="12" sm="10" md="6" lg="4">
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>
@@ -25,83 +25,88 @@
                   v-model="createActivityRequest.activity_name"
                   :rules="inputRules.activityNameRules"
                 ></v-text-field>
+                <v-sheet style="border: 1px solid silver;" class="pa-2 mb-4">
+                  <v-switch
+                    v-model="createActivityRequest.continuous"
+                    label="Activity is continuous"
+                    :true-value="false"
+                    :false-value="true"
+                  ></v-switch>
+                  <v-expand-transition>
+                    <div
+                      v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined"
+                    >
+                      <v-row align="center" justify="center">
+                        <v-col cols="6" sm="12" md="6">
+                          <v-menu
+                            ref="startDateMenu"
+                            v-model="startDateMenu"
+                            :close-on-content-click="false"
+                            transition="scale-transition"
+                            offset-y
+                            max-width="290px"
+                            min-width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="startDate"
+                                v-on="on"
+                                readonly
+                                label="Start Date"
+                                :rules="inputRules.startDateRules"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker no-title v-model="startDate" @input="startDateMenu = false"></v-date-picker>
+                          </v-menu>
+                        </v-col>
+                        <v-col cols="6" sm="12" md="6">
+                          <v-text-field
+                            label="Start Time"
+                            ref="startTime"
+                            id="startTime"
+                            type="time"
+                            v-model="startTime"
+                            :rules="inputRules.startTimeRules"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                      <v-row align="center" justify="center">
+                        <v-col cols="6" sm="12" md="6">
+                          <v-menu
+                            ref="endDateMenu"
+                            :close-on-content-click="false"
+                            transition="scale-transition"
+                            offset-y
+                            max-width="290px"
+                            min-width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="endDate"
+                                v-on="on"
+                                readonly
+                                label="End Date"
+                                :rules="inputRules.endDateRules"
+                              ></v-text-field>
+                            </template>
 
-                <v-radio-group
-                  v-model="createActivityRequest.continuous"
-                  row
-                  :rules="inputRules.continuousRules"
-                >
-                  <v-radio label="Continuous" :value="true"></v-radio>
-                  <v-radio label="Duration" :value="false"></v-radio>
-                </v-radio-group>
-                <div
-                  v-if="!createActivityRequest.continuous & createActivityRequest.continuous !== undefined"
-                >
-                  <v-menu
-                    ref="startDateMenu"
-                    v-model="startDateMenu"
-                    :close-on-content-click="false"
-                    transition="scale-transition"
-                    offset-y
-                    max-width="290px"
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ on }">
-                      <v-text-field
-                        dense
-                        filled
-                        v-model="startDate"
-                        v-on="on"
-                        readonly
-                        label="Start Date"
-                        :rules="inputRules.startDateRules"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker no-title v-model="startDate" @input="startDateMenu = false"></v-date-picker>
-                  </v-menu>
-
-                  <v-text-field
-                    label="Start Time"
-                    ref="startTime"
-                    id="startTime"
-                    type="time"
-                    v-model="startTime"
-                    :rules="inputRules.startTimeRules"
-                  ></v-text-field>
-
-                  <v-menu
-                    ref="endDateMenu"
-                    v-model="endDateMenu"
-                    :close-on-content-click="false"
-                    transition="scale-transition"
-                    offset-y
-                    max-width="290px"
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ on }">
-                      <v-text-field
-                        dense
-                        filled
-                        v-model="endDate"
-                        v-on="on"
-                        readonly
-                        label="End Date"
-                        :rules="inputRules.endDateRules"
-                      ></v-text-field>
-                    </template>
-
-                    <v-date-picker no-title v-model="endDate" @input="endDateMenu = false"></v-date-picker>
-                  </v-menu>
-
-                  <v-text-field
-                    label="End Time"
-                    ref="endTime"
-                    id="endTime"
-                    type="time"
-                    v-model="endTime"
-                    :rules="inputRules.endTimeRules"
-                  ></v-text-field>
-                </div>
+                            <v-date-picker no-title v-model="endDate" @input="endDateMenu = false"></v-date-picker>
+                          </v-menu>
+                        </v-col>
+                        <v-col cols="6" sm="12" md="6">
+                          <v-text-field
+                            label="End Time"
+                            ref="endTime"
+                            id="endTime"
+                            type="time"
+                            v-model="endTime"
+                            :rules="inputRules.endTimeRules"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-expand-transition>
+                </v-sheet>
 
                 <v-textarea
                   label="Describe your activity"
@@ -130,6 +135,56 @@
                   deletable-chips
                   multiple
                 ></v-autocomplete>
+                <v-expansion-panels flat style="border: 1px solid silver;">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <v-sheet>
+                        <v-row
+                          align="start" 
+                          :v-if="createActivityRequest.activity_outcomes.length > 0"
+                          v-for="(item, index) in createActivityRequest.activity_outcomes" 
+                          v-bind:item="item" 
+                          v-bind:index="index"
+                          :key="index"
+                        >
+                          <v-col xs="11" md="5">
+                            <v-text-field 
+                              hide-details
+                              v-model="item.description"
+                              dense
+                              placeholder="e.g. Time to run 4km"
+                              label="Description"
+                              outlined
+                              :rules="[value => !!value]"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col xs="11" md="5">
+                            <v-text-field
+                              hide-details
+                              v-model="item.units"
+                              dense
+                              placeholder="e.g. minutes"
+                              label="Units"
+                              outlined
+                              :rules="[value => !!value]"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="2">
+                            <v-btn icon large color="#ff6666" @click="removeActivityOutcomeRow(index)"><v-icon>mdi-close-circle-outline</v-icon></v-btn>
+                          </v-col>
+                        </v-row>
+                        <v-row align="start">
+                          <v-spacer />
+                          <v-spacer />
+                          <v-col cols="2">
+                            <v-btn icon large color="primary" @click="addNewOutcome()"><v-icon>mdi-plus-circle-outline</v-icon></v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-sheet>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
                 <v-row justify="end">
@@ -178,7 +233,7 @@
 <script lang="ts">
 import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest } from "../scripts/Activity";
+import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -187,6 +242,7 @@ const CreateActivity = Vue.extend({
   // app initial state
   data: function() {
     return {
+      isActivityOutcomesExpanded: false,
       createActivityRequest: {} as CreateActivityRequest,
       isEditing: false as boolean,
       editingId: NaN as number,
@@ -277,9 +333,41 @@ const CreateActivity = Vue.extend({
         );
       }
     }
+    this.checkOutcomesLength();
   },
 
   methods: {
+    checkOutcomesLength: function() {
+      if (this.createActivityRequest.activity_outcomes === undefined ||
+      this.createActivityRequest.activity_outcomes.length == 0) {
+        this.createActivityRequest.activity_outcomes = [
+          {"description": "", "units": ""} as ActivityOutcomes
+        ];
+        this.$forceUpdate();
+      }
+    },
+    addNewOutcome: function() {
+      if (this.createActivityRequest.activity_outcomes !== undefined) {
+        for (let index in this.createActivityRequest.activity_outcomes as ActivityOutcomes[]) {
+          let item = this.createActivityRequest.activity_outcomes[index];
+          if (item.description.length == 0 || item.units.length == 0) {
+            alert("More than one empty outcome is not allowed");
+            return;
+          }
+        }
+        this.createActivityRequest.activity_outcomes.push(
+          {"description": "", "units": ""} as ActivityOutcomes
+        );
+        this.$forceUpdate();
+      }
+    },
+    removeActivityOutcomeRow: function(index: number) {
+      if (this.createActivityRequest.activity_outcomes !== undefined) {
+        this.createActivityRequest.activity_outcomes.splice(index, 1);
+        this.$forceUpdate();
+      }
+      this.checkOutcomesLength();
+    },
     addSelectedActivityType: async function() {
       if (!this.selectedActivityType) {
         return;
@@ -299,7 +387,7 @@ const CreateActivity = Vue.extend({
     },
 
     cancelButtonClicked() {
-      this.$router.push({ name: "profilePage" });
+      this.$router.back();
     },
 
     createButtonClicked: async function() {
@@ -335,7 +423,7 @@ const CreateActivity = Vue.extend({
     },
 
     populateFields: async function(editingId: number) {
-      let activityData: CreateActivityRequest = await activityController.getActivityById(
+      let activityData: CreateActivityRequest = await activityController.getActivity(
         this.currentProfileId,
         editingId
       );

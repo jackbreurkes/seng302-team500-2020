@@ -7,5 +7,11 @@ export interface CreateActivityRequest {
     start_time?: string;
     end_time?: string;
     location?: string;
+    activity_outcomes?: ActivityOutcomes[];
   }
+
+export interface ActivityOutcomes {
+  description: string;
+  units: string;
+}
   

@@ -239,7 +239,7 @@ export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
 }
 
-export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
+export const INVALID_DATE_MESSAGE = "Date must be at least one day into the future"
 /**
  * Checks if dateString given is a date in the future
  * if it is valid
@@ -280,9 +280,42 @@ export function isValidDate(dateString: string) {
  * @param {number} activityId Activity ID
  * @return {CreateActivityRequest} Retrieved activity data
  */
-export async function getActivityById(creatorId: number, activityId: number) {
-  return activityModel.getActivityById(creatorId, activityId);
+export async function getActivity(creatorId: number, activityId: number) {
+  return activityModel.getActivity(creatorId, activityId);
 }
+
+
+/**
+ * Registers user's account to follow the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ * @return whether user is following activity; true if they are, false otherwise
+ */
+export async function getIsFollowingActivity(profileId: number, activityId: number): Promise<boolean> {
+  let data = await activityModel.getFollowingActivity(profileId, activityId);
+  return data["subscribed"];
+}
+
+
+/**
+ * Registers user's account to follow the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ */
+export async function followActivity(profileId: number, activityId: number) {
+  await activityModel.addActivityFollower(profileId, activityId);
+}
+
+
+/**
+ * Removes a follower with the given profile from the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ */
+export async function unfollowActivity(profileId: number, activityId: number) {
+  await activityModel.removeActivityFollower(profileId, activityId);
+}
+
 
 /**
  * returns a reader-friendly description of the duration of a duration activity.
