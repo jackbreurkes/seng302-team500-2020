@@ -6,7 +6,6 @@ import FormValidator from '../scripts/FormValidator';
 import { getAvailableActivityTypes } from './activity.controller';
 import { checkCountryExistence } from '../models/location.model';
 import { LocationInterface } from '@/scripts/LocationInteface'
-import * as PropertiesService from '../services/properties.service';
 
 let formValidator = new FormValidator();
 
@@ -158,17 +157,6 @@ export async function fetchProfileWithId(profileId: number) {
     return await getProfileById(profileId);
 }
 
-/**
- * Small checkAuth function that ive made just so that i can mock the isAuthorised bool for tests
- * @param myProfileId The profile id given by localhost/authoriser
- * @param profileId the profile given given by the browser url
- */
-export async function checkAuth(myProfileId: number,profileId: number) {
-    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
-      return true 
-    }
-    return false
-}
 
 export async function updatePassword(oldPassword: string, newPassword: string, repeatPassword: string, profileId: number) {
     if (!formValidator.checkPasswordValidity(newPassword)) {
