@@ -4,7 +4,9 @@ import org.hibernate.annotations.Cascade;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.*;
@@ -12,8 +14,6 @@ import javax.validation.constraints.NotNull;
 
 /**
  * JPA POJO representing an Activity.
- * @author Jack van Heugten Breurkes
- * @author Riley Symon
  */
 @Entity
 @Table(name = "activity")
@@ -34,18 +34,6 @@ public class Activity {
     @Column(columnDefinition = "boolean")
     private boolean isDuration;
 
-//    @Column(columnDefinition = "date")
-//    private LocalDate startDate;
-//
-//    @Column(columnDefinition = "date")
-//    private LocalDate endDate;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime startTime;
-//
-//    @Column(columnDefinition = "time")
-//    private LocalTime endTime;
-
     @Column(columnDefinition = "varchar(30)", name = "start_time_string")
     private String startTime;
 
@@ -60,7 +48,7 @@ public class Activity {
     private String location;
 
     @NotNull
-    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
@@ -71,7 +59,10 @@ public class Activity {
             joinColumns = {@JoinColumn(name = "activity_id")},
             inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
     )
-    private Set<ActivityType> activityTypes;
+    private Set<ActivityType> activityTypes = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "activity")
+    private List<ActivityOutcome> outcomes = new ArrayList<>();
 
     /**
      * no arg constructor required by JPA
@@ -149,62 +140,6 @@ public class Activity {
         this.isDuration = isDuration;
     }
 
-//    /**
-//     * @return the start date of the activity or null if the activity is not a duration activity
-//     */
-//    public LocalDate getStartDate() {
-//        return startDate;
-//    }
-//
-//    /**
-//     * @param startDate the start date of the activity required for duration activities
-//     */
-//    public void setStartDate(LocalDate startDate) {
-//        this.startDate = startDate;
-//    }
-//
-//    /**
-//     * @return gets the end date of the activity or null if the activity is not a duration activity
-//     */
-//    public LocalDate getEndDate() {
-//        return endDate;
-//    }
-//
-//    /**
-//     * @param endDate the end date of the activity required for duration activities
-//     */
-//    public void setEndDate(LocalDate endDate) {
-//        this.endDate = endDate;
-//    }
-//
-//    /**
-//     * @return the start time of the activity or null if the activity does not have a start time set
-//     */
-//    public LocalTime getStartTime() {
-//        return startTime;
-//    }
-//
-//    /**
-//     * @param startTime the start time which is optionally used by duration activities
-//     */
-//    public void setStartTime(LocalTime startTime) {
-//        this.startTime = startTime;
-//    }
-//
-//    /**
-//     * @return the end time of the activity or null if the activity does not have an end time set
-//     */
-//    public LocalTime getEndTime() {
-//        return endTime;
-//    }
-//
-//    /**
-//     * @param endTime the end time which is optionally used by duration activities
-//     */
-//    public void setEndTime(LocalTime endTime) {
-//        this.endTime = endTime;
-//    }
-
     /**
      * @return the activity start time in API format
      */
@@ -273,5 +208,28 @@ public class Activity {
      */
     public Set<ActivityType> getActivityTypes() {
         return activityTypes;
+    }
+
+    /**
+     * @return the outcomes associated with this activity
+     */
+    public List<ActivityOutcome> getOutcomes() {
+        return outcomes;
+    }
+
+    /**
+     * @param outcomes the list of ActivityOutcomes to associate with this activity
+     */
+    public void setOutcomes(List<ActivityOutcome> outcomes) {
+        this.outcomes = outcomes;
+    }
+
+    /**
+     * helper method to associate an outcome with this activity and add it to the list of outcomes.
+     * @param outcome the outcome to associate with this activity
+     */
+    public void addOutcome(ActivityOutcome outcome) {
+        outcome.setActivity(this);
+        outcomes.add(outcome);
     }
 }

@@ -22,7 +22,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "subscriptions")
-@NamedQuery(name = "Subscription.findSubscriptionsByUser", query = "SELECT s FROM Subscription s WHERE s.subscriber = ?1")
 public class Subscription {
 
 	/**

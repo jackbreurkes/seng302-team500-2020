@@ -27,8 +27,8 @@ public class Email implements Serializable {
 	/**
 	 * User this email address belongs to
 	 */
-	@ManyToOne(cascade = CascadeType.REMOVE)
-	@JoinColumn(name = "user")
+	@ManyToOne
+	@JoinColumn(name = "user", nullable = false)
 	private User user;
 	
 	/**

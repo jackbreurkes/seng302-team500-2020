@@ -81,7 +81,7 @@ const ActivitiesList = Vue.extend({
     },
     goToActivity(activityId: number) {
       this.$router.push(
-        `/activities/${activityId}`
+        `/profiles/${this.profileId}/activities/${activityId}`
       );
     }
   }

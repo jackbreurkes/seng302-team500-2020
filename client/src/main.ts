@@ -6,7 +6,6 @@ import Homepage from "./components/Homepage.vue";
 import EditProfile from "./components/EditProfile.vue";
 import CreateActivity from "./components/CreateActivity.vue";
 import AdminDashboard from "./components/AdminDashboard.vue";
-import EditActivity from "./components/EditActivity.vue";
 import Search from './components/Search.vue';
 import HomeFeed from './components/HomeFeed.vue';
 import Activity from './components/Activity.vue';
@@ -14,7 +13,7 @@ import Activity from './components/Activity.vue';
 Vue.config.productionTip = false;
 
 import VueLogger from "vuejs-logger";
-import VueRouter, { Route } from "vue-router";
+import VueRouter from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
 import { removeAdminMode } from './services/properties.service';
@@ -56,7 +55,7 @@ const routes = [
     component: Search,
   },
   {
-    path: "/activities/:activityId",
+    path: "/profiles/:profileId/activities/:activityId",
     name: "activity",
     component: Activity,
   },
@@ -64,6 +63,11 @@ const routes = [
     path: "/homefeed",
     name: "homefeed",
     component: HomeFeed,
+  },
+  {
+    path: "/homepage",
+    name: "homepage",
+    component: Homepage,
   }
 ];
 
@@ -81,7 +85,7 @@ router.beforeEach((to, from, next) => {
       next();
       return;
     } else {
-      next({name: "profilePage" })
+      next({name: "homepage" })
       return;
     }
   }
@@ -95,7 +99,7 @@ router.beforeEach((to, from, next) => {
   //the permission level is too low then they will be redirected
   if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
     removeAdminMode();
-    next({name: "profilePage"});
+    next({name: "homepage"});
     return;
   }
 
