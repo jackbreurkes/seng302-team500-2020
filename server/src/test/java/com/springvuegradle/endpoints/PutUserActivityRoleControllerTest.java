@@ -9,40 +9,66 @@ import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdateUserActivityRoleRequest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
+@EnableAutoConfiguration
+@AutoConfigureMockMvc(addFilters = false)
+@ContextConfiguration(classes = {UserActivityRoleController.class})
+@WebMvcTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PutUserActivityRoleControllerTest {
+
     @InjectMocks
     private UserActivityRoleController userActivityRoleController;
 
-    @Mock
+    @MockBean
     private UserActivityRoleRepository userActivityRoleRepository;
 
-    @Mock
+    @MockBean
     private ActivityRepository activityRepository;
 
-    @Mock
+    @MockBean
     private UserRepository userRepository;
+
+    @Autowired
+    private MockMvc mvc;
 
     @BeforeAll
     void beforeAll(){
         userActivityRoleController = new UserActivityRoleController();
         MockitoAnnotations.initMocks(this);
+    }
+
+    @BeforeEach
+    void beforeEach(){
+        this.userActivityRoleController = new UserActivityRoleController();
     }
 
     @Test
@@ -63,7 +89,7 @@ public class PutUserActivityRoleControllerTest {
         Set<ActivityType> activitySet = new HashSet<ActivityType>();
         activitySet.add(activityType);
         Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         UserActivityRole userActivityRole = new UserActivityRole();
@@ -72,16 +98,14 @@ public class PutUserActivityRoleControllerTest {
         userActivityRole.setActivityRole(ActivityRole.PARTICIPANT);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(1L,2L)).thenReturn(Optional.of(userActivityRole));
 
-        // Mock update request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 100L);
-
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 100L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -96,17 +120,18 @@ public class PutUserActivityRoleControllerTest {
 
         //Mock activity
         Activity activity = new Activity();
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
-        // Mock create request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 100L);
 
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 100L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -128,6 +153,7 @@ public class PutUserActivityRoleControllerTest {
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         // Set organiser
@@ -137,21 +163,21 @@ public class PutUserActivityRoleControllerTest {
         userActivityRoleOrg.setActivityRole(ActivityRole.ORGANISER);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(100L,2L)).thenReturn(Optional.of(userActivityRoleOrg));
 
+        //set participant
         UserActivityRole userActivityRole = new UserActivityRole();
         userActivityRole.setUser(self);
         userActivityRole.setActivity(activity);
         userActivityRole.setActivityRole(ActivityRole.PARTICIPANT);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(1L,2L)).thenReturn(Optional.of(userActivityRole));
 
-        // Mock update request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 100L);
-
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 100L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -170,6 +196,7 @@ public class PutUserActivityRoleControllerTest {
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
 
@@ -179,15 +206,14 @@ public class PutUserActivityRoleControllerTest {
         userActivityRole.setActivityRole(ActivityRole.PARTICIPANT);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(1L,2L)).thenReturn(Optional.of(userActivityRole));
 
-        // Mock update request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 65L);
-
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 65L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -202,14 +228,13 @@ public class PutUserActivityRoleControllerTest {
         User unathorizedUser = new User(6L);
         Mockito.when(userRepository.findById(6L)).thenReturn(Optional.of(unathorizedUser));
 
-
-
         //Mock activity
         ActivityType activityType = new ActivityType("Running");
         Set<ActivityType> activitySet = new HashSet<ActivityType>();
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         UserActivityRole userActivityRole = new UserActivityRole();
@@ -218,16 +243,14 @@ public class PutUserActivityRoleControllerTest {
         userActivityRole.setActivityRole(ActivityRole.PARTICIPANT);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(1L,2L)).thenReturn(Optional.of(userActivityRole));
 
-        // Mock update request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 6L);
-
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        assertThrows(UserNotAuthorizedException.class, () -> {
-            ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        });
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 6L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -246,19 +269,21 @@ public class PutUserActivityRoleControllerTest {
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
 
-        // Mock create request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 65L);
 
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 65L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
+
     @Test
     void testCreateUserActivityRoleAsOrganiser() throws Exception {
         //Mock Creator
@@ -280,6 +305,7 @@ public class PutUserActivityRoleControllerTest {
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         // Set organiser
@@ -289,15 +315,14 @@ public class PutUserActivityRoleControllerTest {
         userActivityRoleOrg.setActivityRole(ActivityRole.ORGANISER);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(100L,2L)).thenReturn(Optional.of(userActivityRoleOrg));
 
-        // Mock create request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 100L);
-
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + self.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 100L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
     @Test
     void testCreateUserActivityRoleAsParticipant() throws Exception {
@@ -319,6 +344,7 @@ public class PutUserActivityRoleControllerTest {
         activitySet.add(activityType);
         Profile profile = new Profile(creator,"Misha","Josh", null, Gender.MALE);
         Activity activity = new Activity("testActivity", false, "testlocation", profile, activitySet);
+        activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
         // Set organiser
@@ -328,15 +354,14 @@ public class PutUserActivityRoleControllerTest {
         userActivityRoleOrg.setActivityRole(ActivityRole.PARTICIPANT);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(100L,2L)).thenReturn(Optional.of(userActivityRoleOrg));
 
-        // Mock create request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 100L);
+        // Mock json string
+        String json = "{\"role\": \"" + ActivityRole.ORGANISER + "\"}";
+        mvc.perform(MockMvcRequestBuilders
+                .put("/activities/" + activity.getId() + "/roles/" + baseUser.getUserId())
+                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", 100L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
 
-        UpdateUserActivityRoleRequest updateUserActivityRoleRequest = new UpdateUserActivityRoleRequest();
-        updateUserActivityRoleRequest.setRole(ActivityRole.ORGANISER);
-
-        assertThrows(UserNotAuthorizedException.class, () -> {
-            ResponseEntity<Object> response = userActivityRoleController.setUserActivityRole(2L, 1L,updateUserActivityRoleRequest, request);
-        });
     }
 }

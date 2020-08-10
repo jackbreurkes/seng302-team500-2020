@@ -77,12 +77,12 @@ public class UserActivityRoleController {
      */
 
     @PutMapping("/activities/{activityId}/roles/{profileId}")
+    @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
-    public ResponseEntity<Object> setUserActivityRole(@PathVariable("activityId") long activityId,
+    public void setUserActivityRole(@PathVariable("activityId") long activityId,
                                                          @PathVariable("profileId") long profileId,
                                                         @Valid @RequestBody UpdateUserActivityRoleRequest updateUserActivityRoleRequest,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
-
         UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
         ActivityRole userRole = updateUserActivityRoleRequest.getRole();
@@ -103,6 +103,5 @@ public class UserActivityRoleController {
 
         }
 
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

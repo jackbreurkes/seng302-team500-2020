@@ -98,14 +98,17 @@ public class UserAuthorizer {
                 if (activityRole.equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
                     return authId;
                 } else {
-                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin (403)");
                 }
             }
             catch (NoSuchElementException e) {
-                throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin");
+
+                throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin (401)");
             }
             } else{
-            throw new UserNotAuthenticatedException("You are not authenticated");
+
+            throw new UserNotAuthenticatedException("You are not authenticated (401)");
+
         }
     }
 
