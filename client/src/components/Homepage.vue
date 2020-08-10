@@ -108,7 +108,7 @@
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
                 <!--TODO Menu for this plus make sure admin knows this will create it on their behalf-->
-                  <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
+                  <v-btn id="createActivityButton" @click="createActivityClicked" outlined>Create Activity</v-btn>
                 </div>
               </v-toolbar>
   
@@ -147,7 +147,8 @@ import { UserApiFormat } from "../scripts/User";
 import {
   logoutCurrentUser,
   fetchProfileWithId,
-  deleteUserAccount
+  deleteUserAccount,
+  checkAuth
 } from "../controllers/profile.controller";
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
@@ -231,9 +232,13 @@ const Homepage = Vue.extend({
     this.currentProfileId = profileId;
     
     let myProfileId = authService.getMyUserId()
-    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
-      this.currentlyHasAuthority = true;
-    }
+
+    // if (this.checkAuth(myProfileId, profileId)) {
+    //   this.currentlyHasAuthority = true;
+    // };
+    // if (myProfileId == profileId || PropertiesService.getAdminMode()) {
+    //   this.currentlyHasAuthority = true;
+    // }
 
     fetchProfileWithId(profileId)
       .then(user => {
@@ -258,9 +263,25 @@ const Homepage = Vue.extend({
       .catch(err => {
         console.error(err);
       });
+
+    checkAuth(myProfileId,profileId).then(res => {
+      if (res == true) {
+        this.currentlyHasAuthority = true;
+      }
+      else {
+        this.currentlyHasAuthority = false;
+      }
+      
+    })
   },
 
   methods: {
+    checkAuth: function(myProfileId, profileId){
+      if (myProfileId == profileId || PropertiesService.getAdminMode()) {
+        return true
+        // this.currentlyHasAuthority = true;
+      }
+    },
     //click logout button
     logoutButtonClicked: function() {
       logoutCurrentUser()

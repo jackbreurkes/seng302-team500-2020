@@ -3,16 +3,18 @@
 import Vue from 'vue'
 import Vuetify from 'vuetify'
 import Homepage from "../Homepage.vue";
+import CreateActivity from "../CreateActivity.vue";
 
 import {mount, createLocalVue} from '@vue/test-utils'
 
 import {
-  fetchProfileWithId,
+  fetchProfileWithId,checkAuth
 } from "../../controllers/profile.controller.ts";
 jest.mock("../../controllers/profile.controller.ts")
 import {
   getActivitiesByCreator, getContinuousActivities, getDurationActivities
 } from "../../controllers/activity.controller";
+
 jest.mock("../../controllers/activity.controller.ts")
 
 Vue.use(Vuetify)
@@ -41,7 +43,8 @@ const stubs = ['router-link']
 describe("homepageTests", () => {
 
     let wrapper 
-
+    checkAuth.mockResolvedValue(true)
+    
     fetchProfileWithId.mockResolvedValue( //mocks fetchProfileWithId, give fake info to display
       {
         "profile_id":mockProfileId,
@@ -122,15 +125,35 @@ describe("homepageTests", () => {
     it('has a edit profile button', async () => { 
       wrapper.find('#profileDropDown').trigger('click') //open the profile option dropdown
       await wrapper.vm.$nextTick() //wait for the dropdown to be rendered.
-      // console.log(wrapper.html()) //how to view the wrapper
       expect(wrapper.find('#editButton').exists()).toBe(true) 
     })
+
+    // need to sort out how to test routing??!?!?
+
+    // it('Clicking on the create activity button takes you to activity screen', async () => { 
+    //   const button = wrapper.find('#createActivityButton')
+    //   const event = jest.fn()
+    //   wrapper.vm.$on('action-btn:clicked',event)
+    //   expect(event).toHaveBeenCalledTimes(0)
+    //   // wrapper.find('#createActivityButton').trigger('click') //click the createActivityButton
+    //   button.trigger('click')
+    //   await wrapper.vm.$nextTick() //wait for page to load.
+    //   expect(event).toHaveBeenCalledTimes(1)
+    // })
+
+    it('Check that the user is authenticated, can see createActivity Button', async () => { 
+      expect(wrapper.find('#createActivityButton').exists()).toBe(true) 
+    })
+
+
     it('Activities are loaded, and the homepage has a duration button', async () => { 
       expect(wrapper.find('#Duration').exists()).toBe(true) 
+
 
     })
     it('Activities are loaded, and the homepage has a continuous button', async () => { 
       expect(wrapper.find('#Continuous').exists()).toBe(true) 
+
     })
 
   })
