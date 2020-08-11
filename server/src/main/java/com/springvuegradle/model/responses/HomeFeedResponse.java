@@ -2,15 +2,14 @@ package com.springvuegradle.model.responses;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
+import org.apache.tomcat.util.json.JSONParser;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
 
+/**
+ * Response class to present information about an individual activity update to the client
+ */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
 
@@ -19,27 +18,49 @@ public class HomeFeedResponse {
     private String entityName;
     private long creatorId;
     private String creatorName;
-    private LocalDateTime editedTimestamp;
+    private String editedTimestamp;
     private long editorId;
     private String editorName;
     private ChangedAttribute changedAttribute;
     private ActionType actionType;
-    private String oldValue;
-    private String newValue;
+    private Object oldValue;
+    private Object newValue;
 
+    /**
+     * Constructor to present HomeFeed Reponse for individual change to activity to the client
+     * @param changeLog change log entry to present in home feed
+     * @param activity activity in change log
+     * @param editor editor profile that made the change
+     */
     public HomeFeedResponse(ChangeLog changeLog, Activity activity, Profile editor) {
         this.entityType = changeLog.getEntity();
         this.entityId = changeLog.getEntityId();
         this.entityName = activity.getActivityName();
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.creatorName = activity.getCreator().getFullName(false);
-        this.editedTimestamp = changeLog.getTimestamp();
+        this.editedTimestamp = changeLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
         this.editorId = changeLog.getEditingUser().getUserId();
         this.editorName = editor.getFullName(false);
         this.changedAttribute = changeLog.getChangedAttribute();
         this.actionType = changeLog.getActionType();
-        this.oldValue = changeLog.getOldValue();
-        this.newValue = changeLog.getNewValue();
+        this.oldValue = getJsonFromString(changeLog.getOldValue());
+        this.newValue = getJsonFromString(changeLog.getNewValue());
+    }
+
+    /**
+     * Parses a JSON string to an object
+     * @param raw JSON formatted string to parse
+     * @return parsed object if the string was in valid JSON format, returns the raw string if invalid
+     */
+    private Object getJsonFromString(String raw) {
+        JSONParser parser = new JSONParser(raw);
+        try {
+            return parser.parse();
+        } catch (Exception exception) {
+            return raw;
+        } catch (Error error) {
+            return raw;
+        }
     }
 
     public ChangeLogEntity getEntityType() {
@@ -62,7 +83,7 @@ public class HomeFeedResponse {
         return creatorName;
     }
 
-    public LocalDateTime getEditedTimestamp() {
+    public String getEditedTimestamp() {
         return editedTimestamp;
     }
 
@@ -82,11 +103,11 @@ public class HomeFeedResponse {
         return actionType;
     }
 
-    public String getOldValue() {
+    public Object getOldValue() {
         return oldValue;
     }
 
-    public String getNewValue() {
+    public Object getNewValue() {
         return newValue;
     }
 }
