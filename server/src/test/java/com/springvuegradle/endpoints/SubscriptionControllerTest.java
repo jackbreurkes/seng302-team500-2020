@@ -167,21 +167,31 @@ public class SubscriptionControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("subscribed").value(false));
     }
 
-    @Ignore
+
     @Test
     public void testDeleteSubscriptionWhenNotSubscirbed() throws Exception {
-
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(1L, profile2)).thenReturn(false);
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/1")
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(404));
     }
 
-    @Ignore
     @Test
     public void testDeleteSubscriptionNotAuthneticated() throws Exception {
-
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/1/subscriptions/activities/1")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(401));
     }
 
-    @Ignore
     @Test
-    public void testDeleteSubscription(){
-
+    public void testDeleteSubscriptionNoActivity() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/10")
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(404));
     }
 }
