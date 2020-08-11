@@ -7,6 +7,6 @@ import com.springvuegradle.model.data.ActivityParticipantResult;
 /**
  * Repository for ActivityParticipantResults
  */
-public interface ActivityParticipantResultRepository extends JpaRepository<ActivityParticipantResult, Long>{
+public interface ActivityParticipantResultRepository extends JpaRepository<ActivityParticipantResult, Long> {
 
 }
