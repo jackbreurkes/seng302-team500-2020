@@ -16,6 +16,7 @@
                         icon
                         v-bind="attrs"
                         v-on="on"
+                        id="profileDropDown"
                       >
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
@@ -23,6 +24,7 @@
 
                     <v-list>
                       <v-list-item
+                        id="editButton"
                         @click="editProfile"
                       >
                         <v-list-item-title>Edit profile</v-list-item-title>
@@ -49,7 +51,7 @@
                 </div>
               </v-toolbar>
               <v-card-text class="grey lighten-4">
-                <h3>Name</h3>
+                <h3 id="myName">Name</h3>
                 <p>{{ currentUser.firstname }} {{currentUser.middlename}} {{currentUser.lastname}} {{currentUser.nickname ? `(${currentUser.nickname})` : ""}}</p>
   
                 <div v-if="currentUser.bio">
@@ -119,7 +121,7 @@
                   >{{ activityType }}</v-chip>
                 </div>
                 <v-tabs v-model="durationTab" grow>
-                  <v-tab v-for="item in activityList" :key="item.tab">{{ item.tab }}</v-tab>
+                  <v-tab v-for="item in activityList" :key="item.tab" :id= item.tab >{{ item.tab}}</v-tab>
                 </v-tabs>
                 <v-tabs-items v-model="durationTab">
                   <v-tab-item v-for="item in activityList" :key="item.tab">

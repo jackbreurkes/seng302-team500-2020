@@ -88,7 +88,7 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-btn @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
+                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
                   <v-btn @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
@@ -180,7 +180,7 @@ const Activity = Vue.extend({
       if (this.following) {
         unfollowActivity(this.currentProfileId, this.activityId)
         .then(() => {
-          console.log("The unfollow functionality has not been implemented yet.")
+          this.following = false
         })
         .catch((err) => {
           console.log(err)
@@ -188,7 +188,7 @@ const Activity = Vue.extend({
       } else {
         followActivity(this.currentProfileId, this.activityId)
         .then(() => {
-          console.log("Follow functionality has not been implemented yet.")
+          this.following = true
         })
         .catch((err) => {
           console.log(err)
