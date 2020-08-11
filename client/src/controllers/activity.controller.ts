@@ -328,7 +328,7 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
   const dtf = new Intl.DateTimeFormat(undefined, {
     year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
   });
-  return "Starts at: " + dtf.format(start) + "Ends: " + dtf.format(end);
+  return "Starts at: " + dtf.format(start) + " Ends: " + dtf.format(end);
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
