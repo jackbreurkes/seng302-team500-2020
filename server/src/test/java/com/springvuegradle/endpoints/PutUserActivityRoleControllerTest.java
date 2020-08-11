@@ -72,7 +72,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testUpdateUserActivityRoleAsAdmin() throws Exception {
+    void testUpdateUserActivityRoleAsAdmin_Success() throws Exception {
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -109,7 +109,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testCreateUserActivityRoleAsAdmin() throws Exception {
+    void testCreateUserActivityRoleAsAdmin_Success() throws Exception {
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -135,7 +135,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testUpdateUserActivityRoleAsOrganiser() throws Exception {
+    void testUpdateUserActivityRoleAsOrganiser_Success() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
@@ -181,7 +181,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testUpdateUserActivityRoleAsCreator() throws Exception {
+    void testUpdateUserActivityRoleAsCreator_Success() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
@@ -217,7 +217,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testUpdateUserActivityRoleAsUnauthorizedUser() throws Exception {
+    void testUpdateUserActivityRoleAsUnauthorizedUser_FailsForbidden() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
@@ -254,7 +254,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testCreateUserActivityRoleAsCreator() throws Exception {
+    void testCreateUserActivityRoleAsCreator_Success() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
@@ -285,7 +285,7 @@ public class PutUserActivityRoleControllerTest {
     }
 
     @Test
-    void testCreateUserActivityRoleAsOrganiser() throws Exception {
+    void testCreateUserActivityRoleAsOrganiser_Success() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));
@@ -325,7 +325,7 @@ public class PutUserActivityRoleControllerTest {
                 .andExpect(status().isOk());
     }
     @Test
-    void testCreateUserActivityRoleAsParticipant() throws Exception {
+    void testCreateUserActivityRoleAsParticipant_FailsForbidden() throws Exception {
         //Mock Creator
         User creator = new User(65L);
         Mockito.when(userRepository.findById(65L)).thenReturn(Optional.of(creator));

@@ -1,5 +1,6 @@
 package com.springvuegradle.auth;
 
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.ActivityRole;
@@ -77,7 +78,7 @@ public class UserAuthorizer {
      * @throws UserNotAuthenticatedException if the user isn't logged in
      * @throws UserNotAuthorizedException if the user does not have permission
      */
-    public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+    public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
         Long authId = (Long) request.getAttribute("authenticatedid");
         if(authId != null) {
             Optional<User> editingUser = userRepository.findById(authId);
@@ -92,21 +93,19 @@ public class UserAuthorizer {
             if (!optionalActivityRole.isPresent()){
                 throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
             }
-            ActivityRole activityRole = optionalActivityRole.get().getActivityRole();
-            try {
-
-                if (activityRole.equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
-                    return authId;
-                } else {
-                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin (403)");
-                }
+            Optional<UserActivityRole> checkRole = Optional.of(optionalActivityRole.get());
+            if (checkRole.isEmpty()) {
+                throw new RecordNotFoundException("Cannot find this activityRole");
             }
-            catch (NoSuchElementException e) {
-
-                throw new UserNotAuthenticatedException("you must be authenticated as the target user or an admin (401)");
-            }
-            } else{
-
+            else {
+                ActivityRole activityRole = optionalActivityRole.get().getActivityRole();
+                    if (activityRole.equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
+                        return authId;
+                    } else {
+                        throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin ");
+                    }
+                 }
+            } else {
             throw new UserNotAuthenticatedException("You are not authenticated (401)");
 
         }
