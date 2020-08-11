@@ -87,7 +87,7 @@
     data: () => {
       return {
         burgerColour: 'white',
-        currentProfileId: NaN as Number|null,
+        currentProfileId: NaN as Number,
         bar: true,
         collapsible: true,
         smallForm: true,

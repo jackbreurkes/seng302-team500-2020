@@ -15,6 +15,9 @@ import {
 } from "../../controllers/activity.controller";
 jest.mock("../../controllers/activity.controller.ts")
 
+import { getMyUserId } from "../../services/auth.service";
+jest.mock("../../services/auth.service")
+
 Vue.use(Vuetify)
 const localVue = createLocalVue()
 
@@ -23,7 +26,6 @@ const mocks = { //mock route
     $route: {
       params: {
         profileId: mockProfileId,
-        currentlyHasAuthority: true
       }
    },
     $router: { //mocks router, use if checking for directing to another page
@@ -108,6 +110,8 @@ describe("homepageTests", () => {
           "activity_type":["Running"]
         }
     )
+    getMyUserId.mockImplementation(() => mockProfileId)
+
     beforeEach(async function() {
       let vuetify = new Vuetify()
         wrapper = mount(Homepage, { 
