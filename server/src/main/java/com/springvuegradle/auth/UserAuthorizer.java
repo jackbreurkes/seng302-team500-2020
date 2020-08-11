@@ -3,6 +3,7 @@ package com.springvuegradle.auth;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.data.UserActivityRole;
@@ -51,21 +52,24 @@ public class UserAuthorizer {
 
     public long checkIsAuthenticated(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId != null){
-            Optional<User> editingUser = userRepository.findById(authId);
-            if(authId.equals(profileId)){
 
-                return authId;
-            }else{
-                if(editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION){
-                    return authId;
-                }else{
-                    throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-                }
-            }
-        }else{
+        if(authId == null) {
             throw new UserNotAuthenticatedException("You are not authenticated");
         }
+
+        if(authId.equals(profileId)){
+            return authId;
+        }
+        User editingUser = userRepository.findById(authId).orElse(null);
+        if (editingUser == null) {
+            throw new UserNotAuthenticatedException("You are not authenticated");
+        }
+
+        if(editingUser.getPermissionLevel() < ADMIN_USER_MINIMUM_PERMISSION) {
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+        }
+        return authId;
+
     }
 
     /**
@@ -80,35 +84,34 @@ public class UserAuthorizer {
      */
     public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
         Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId != null) {
-            Optional<User> editingUser = userRepository.findById(authId);
-            if (editingUser.get().getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
-                return authId;
-            }
-            Long userId = activityRepository.findById(activityId).get().getCreator().getUser().getUserId();
-            if (userId == authId) { // Checks if the editing user is the Creator of the activity
-                return authId;
-            }
-            Optional<UserActivityRole> optionalActivityRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId);
-            if (!optionalActivityRole.isPresent()){
-                throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
-            }
-            Optional<UserActivityRole> checkRole = Optional.of(optionalActivityRole.get());
-            if (checkRole.isEmpty()) {
-                throw new RecordNotFoundException("Cannot find this activityRole");
-            }
-            else {
-                ActivityRole activityRole = optionalActivityRole.get().getActivityRole();
-                    if (activityRole.equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
-                        return authId;
-                    } else {
-                        throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin ");
-                    }
-                 }
-            } else {
-            throw new UserNotAuthenticatedException("You are not authenticated (401)");
-
+        if (authId == null) {
+            throw new UserNotAuthenticatedException("You are not authenticated");
         }
+
+        User editingUser = userRepository.findById(authId).orElse(null);
+        if (editingUser == null) {
+            throw new UserNotAuthenticatedException("You are not authenticated");
+        }
+        if (editingUser.getPermissionLevel() >= ADMIN_USER_MINIMUM_PERMISSION) { // Checks if the editing user is an admin
+            return authId;
+        }
+        Activity activity = activityRepository.findById(activityId).orElse(null);
+        if (activity == null) {
+            throw new RecordNotFoundException("Cannot find this activity");
+        }
+        Long creatorId = activity.getCreator().getUser().getUserId();
+        if (creatorId.equals(authId)) { // Checks if the editing user is the Creator of the activity
+            return authId;
+        }
+        UserActivityRole activityRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).orElse(null);
+        if (activityRole == null) {
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+        }
+        if (!activityRole.getActivityRole().equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
+            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+        }
+        return authId; //if an organiser
+
     }
 
 }
