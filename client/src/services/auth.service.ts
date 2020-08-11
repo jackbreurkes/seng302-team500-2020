@@ -3,10 +3,10 @@ import instance from "./axios.service";
 /**
  * @returns the currently logged in user's user id, or null if not found
  */
-export function getMyUserId(): number | null {
+export function getMyUserId(): number {
   const profileId = parseInt(localStorage.getItem("userId") || "NaN");
   if (isNaN(profileId)) {
-    return null;
+    return NaN;
   }
   return profileId;
 }

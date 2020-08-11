@@ -42,4 +42,11 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 			+ "WHERE entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY AND "
 			+ "entityId = ?1 AND subscriber = ?2")
 	public boolean isSubscribedToActivity(long entityId, Profile profile);
+
+	/**
+	 * Query for getting subscription id from profile and entity id
+	 */
+	@Query(value = "SELECT DISTINCT s.id FROM Subscription s WHERE s.subscriber = ?2 AND s.entityId = ?1")
+	public long findSubscriptionId(long entityId, Profile profile);
+
 }

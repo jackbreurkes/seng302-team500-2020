@@ -64,13 +64,11 @@
               <br>
               <p> Location: {{ activity.location }} </p>
 
-              <div v-if="activity.duration == 1"> <!-- Activity has a start and end time -->
-                <p> Starts at: {{ activity.start_time_string }} </p>
-                <br>
-                <p> Ends at: {{ activity.end_time_string }} </p>
+              <div v-if="hasTimeFrame(activity)"> <!-- Activity has a start and end time -->
+                <p> {{ getDurationDescription(activity.start_time, activity.end_time) }} </p>
               </div>
               <div v-else>
-                <p> Activity is continous and ongoing </p>
+                <p> Activity is continuous </p>
               </div>
 
               <v-chip
@@ -90,7 +88,7 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-btn @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
+                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
                   <v-btn @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
@@ -130,7 +128,9 @@ const Activity = Vue.extend({
       activity: [] as CreateActivityRequest,
       participating: false,
       following: false,
-      confirmDeleteModal: false
+      confirmDeleteModal: false,
+      startTimeString: '' as string,
+      endTimeString: '' as string
     };
   },
 
@@ -165,16 +165,22 @@ const Activity = Vue.extend({
 },
 
   methods: {
+    /**
+     * Send the user to the activity's edit page
+     */
     edit: function() {
       this.$router.push(
         `/profiles/${this.creatorId}/editActivity/${this.activityId}`
       );
     },
+    /**
+     * Toggle whether the user is following the activity
+     */
     toggleFollowingActivity: function() {
       if (this.following) {
         unfollowActivity(this.currentProfileId, this.activityId)
         .then(() => {
-          console.log("The unfollow functionality has not been implemented yet.")
+          this.following = false
         })
         .catch((err) => {
           console.log(err)
@@ -182,25 +188,29 @@ const Activity = Vue.extend({
       } else {
         followActivity(this.currentProfileId, this.activityId)
         .then(() => {
-          console.log("Follow functionality has not been implemented yet.")
+          this.following = true
         })
         .catch((err) => {
           console.log(err)
         })
       }
     },
+    /** Toggle the user's participation in this activity */
     toggleParticipation: function() {
       console.log("Participation functionality has not yet been implemented.")
     },
+    /** Retrieve whether the user is following the activity from the server and update the appropriate model variable. */
     getFollowingStatus: async function() {
       getIsFollowingActivity(this.currentProfileId, this.activityId)
       .then((following) => {
         this.following = following;
       })
     },
+    /** Navigate back to the last page the user was on. */
     backButtonClicked() {
       this.$router.back();
     },
+    /** Delete the activity */
     deleteActivity: async function() {
       this.confirmDeleteModal = false;
       activityController.deleteActivity(this.currentProfileId, this.activityId)
@@ -211,6 +221,19 @@ const Activity = Vue.extend({
           alert("An error occured while deleting the activity:\n" + err);
         });
     },
+    /** Get a user-readable version of the start and end times
+     *  Returns a string representing activity time frame
+     */
+    getDurationDescription: function(startTime: string, endTime: string): string {
+      return activityController.describeDurationTimeFrame(startTime, endTime);
+    },
+    /**
+     * Get whether activity has start and end times
+     * Returns true if activity has start and end times
+     */
+    hasTimeFrame: function(activity: CreateActivityRequest): boolean {
+      return activity.start_time != undefined && activity.end_time != undefined;
+    }
   }
 
 });

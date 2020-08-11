@@ -3,6 +3,7 @@ package com.springvuegradle.endpoints;
 import java.util.Optional;
 
 import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
@@ -96,7 +97,7 @@ public class SubscriptionController {
      */
     @PostMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
     @CrossOrigin
-    public ResponseEntity<String> postSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
+    public ResponseEntity<String> postSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException, InvalidRequestFieldException {
 
         Optional<Activity> optionalActivity = activityRepo.findById(activityId);
         if(!optionalActivity.isPresent()){
@@ -104,9 +105,43 @@ public class SubscriptionController {
         }
 
         UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
-
-        subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), HomefeedEntityType.ACTIVITY, activityId));
+        if(!subscriptionRepository.isSubscribedToActivity(activityId, profileRepository.getOne(profileId))){
+            subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), HomefeedEntityType.ACTIVITY, activityId));
+        }else{
+            throw new InvalidRequestFieldException("Already subscribed to activity");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body("{\"subscribed\": true}");
     }
 
+    /**
+     * Method for deleting a subscription to an activity
+     * @param profileId profile id of unsubscribing user
+     * @param activityId activity id of activity
+     * @param request request object
+     * @return HTTPS Status 200 Ok
+     * @throws UserNotAuthenticatedException
+     * @throws RecordNotFoundException
+     * @throws UserNotAuthorizedException
+     */
+    @DeleteMapping("/profiles/{profileId}/subscriptions/activities/{activityId}")
+    @CrossOrigin
+    public ResponseEntity<String> deleteSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId, HttpServletRequest request)
+            throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
+
+        Optional<Activity> optionalActivity = activityRepo.findById(activityId);
+        if(!optionalActivity.isPresent()){
+            throw new RecordNotFoundException("Activity doesn't exist");
+        }
+
+        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        Profile userProfile = profileRepository.getOne(profileId);
+
+        if(subscriptionRepository.isSubscribedToActivity(activityId, userProfile)){
+            long subscriptionId = subscriptionRepository.findSubscriptionId(activityId, userProfile);
+            subscriptionRepository.delete(subscriptionRepository.getOne(subscriptionId));
+        }else{
+            throw new RecordNotFoundException("User not subscribed to activity");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("{\"subscribed\": false}");
+    }
 }

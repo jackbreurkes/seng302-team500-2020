@@ -7,14 +7,11 @@
             <v-card class="elevation-12" width="100%">
               <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>
-                  <v-btn
-                    dark
-                    icon
-                    @click="cancelButtonClicked"
-                    >
+                  <v-btn dark icon @click="cancelButtonClicked">
                     <v-icon>mdi-arrow-left</v-icon>
                   </v-btn>
-                  {{this.isEditing ? "Edit Activity" : "Create Activity"}}</v-toolbar-title>
+                  {{this.isEditing ? "Edit Activity" : "Create Activity"}}
+                </v-toolbar-title>
               </v-toolbar>
               <v-card-text>
                 <v-text-field
@@ -28,7 +25,7 @@
                 <v-sheet style="border: 1px solid silver;" class="pa-2 mb-4">
                   <v-switch
                     v-model="createActivityRequest.continuous"
-                    label="Activity is continuous"
+                    label="Time frame"
                     :true-value="false"
                     :false-value="true"
                   ></v-switch>
@@ -56,7 +53,11 @@
                                 :rules="inputRules.startDateRules"
                               ></v-text-field>
                             </template>
-                            <v-date-picker no-title v-model="startDate" @input="startDateMenu = false"></v-date-picker>
+                            <v-date-picker
+                              no-title
+                              v-model="startDate"
+                              @input="startDateMenu = false"
+                            ></v-date-picker>
                           </v-menu>
                         </v-col>
                         <v-col cols="6" sm="12" md="6">
@@ -129,6 +130,7 @@
                   color="white"
                   item-text="name"
                   label="Activity Types"
+                  id="activityTypes"
                   placeholder="Add Activity Types"
                   v-model="createActivityRequest.activity_type"
                   chips
@@ -141,20 +143,21 @@
                     <v-expansion-panel-content>
                       <v-sheet>
                         <v-row
-                          align="start" 
-                          :v-if="createActivityRequest.activity_outcomes.length > 0"
-                          v-for="(item, index) in createActivityRequest.activity_outcomes" 
-                          v-bind:item="item" 
+                          align="start"
+                          :v-if="createActivityRequest.outcomes.length > 0"
+                          v-for="(item, index) in createActivityRequest.outcomes"
+                          v-bind:item="item"
                           v-bind:index="index"
                           :key="index"
                         >
                           <v-col xs="11" md="5">
-                            <v-text-field 
+                            <v-text-field
                               hide-details
                               v-model="item.description"
                               dense
                               placeholder="e.g. Time to run 4km"
                               label="Description"
+                              id="outcomeDescription"
                               outlined
                               :rules="[value => !!value]"
                             ></v-text-field>
@@ -166,19 +169,29 @@
                               dense
                               placeholder="e.g. minutes"
                               label="Units"
+                              id="outcomeUnits"
                               outlined
                               :rules="[value => !!value]"
                             ></v-text-field>
                           </v-col>
                           <v-col cols="2">
-                            <v-btn icon large color="#ff6666" @click="removeActivityOutcomeRow(index)"><v-icon>mdi-close-circle-outline</v-icon></v-btn>
+                            <v-btn
+                              icon
+                              large
+                              color="#ff6666"
+                              @click="removeActivityOutcomeRow(index)"
+                            >
+                              <v-icon>mdi-close-circle-outline</v-icon>
+                            </v-btn>
                           </v-col>
                         </v-row>
                         <v-row align="start">
                           <v-spacer />
                           <v-spacer />
                           <v-col cols="2">
-                            <v-btn icon large color="primary" @click="addNewOutcome()"><v-icon>mdi-plus-circle-outline</v-icon></v-btn>
+                            <v-btn icon large color="primary" @click="addNewOutcome()">
+                              <v-icon>mdi-plus-circle-outline</v-icon>
+                            </v-btn>
                           </v-col>
                         </v-row>
                       </v-sheet>
@@ -214,11 +227,11 @@
 
                   <v-btn
                     @click="createButtonClicked"
+                    id="createButton"
                     color="primary"
                     class="ma-1 mr-3"
                     width="100"
                   >{{this.isEditing ? "Save" : "Create"}}</v-btn>
-
                 </v-row>
               </v-card-text>
             </v-card>
@@ -240,10 +253,12 @@ const CreateActivity = Vue.extend({
   name: "CreateActivity",
 
   // app initial state
-  data: function() {
+  data: function () {
     return {
       isActivityOutcomesExpanded: false,
-      createActivityRequest: {} as CreateActivityRequest,
+      createActivityRequest: {
+        continuous: true,
+      } as CreateActivityRequest,
       isEditing: false as boolean,
       editingId: NaN as number,
       currentProfileId: NaN as number,
@@ -260,7 +275,7 @@ const CreateActivity = Vue.extend({
         activityNameRules: [
           (v: string) =>
             activityController.validateActivityName(v) ||
-            activityController.INVALID_ACTIVITY_NAME_MESSAGE
+            activityController.INVALID_ACTIVITY_NAME_MESSAGE,
         ],
         startDateRules: [
           (v: string) => {
@@ -268,7 +283,7 @@ const CreateActivity = Vue.extend({
               activityController.isFutureDate(v) ||
               activityController.INVALID_DATE_MESSAGE
             );
-          }
+          },
         ],
         startTimeRules: [
           (v: string) => {
@@ -276,7 +291,7 @@ const CreateActivity = Vue.extend({
               activityController.isValidTime(v) ||
               activityController.INVALID_TIME_MESSAGE
             );
-          }
+          },
         ],
         endTimeRules: [
           (v: string) => {
@@ -284,34 +299,33 @@ const CreateActivity = Vue.extend({
               activityController.isValidTime(v) ||
               activityController.INVALID_TIME_MESSAGE
             );
-          }
+          },
         ],
         descriptionRules: [
           (v: string) =>
             activityController.validateDescription(v) ||
-            activityController.INVALID_DESCRIPTION_MESSAGE
+            activityController.INVALID_DESCRIPTION_MESSAGE,
         ],
         locationRules: [
-          (v: string) => true || v //TODO location not implemented
+          (v: string) => true || v, //TODO location not implemented
         ],
         activityTypes: [
-          (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
+          (v: string) => true || v, //TODO currently does not like syntax shown below but logic is there
           // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
-        ]
-      }
+        ],
+      },
     };
   },
 
   created() {
     const profileId: number = parseInt(this.$route.params.profileId);
     this.currentProfileId = profileId;
-    this.createActivityRequest = {};
     activityController
       .getAvailableActivityTypes()
-      .then(activity => {
+      .then((activity) => {
         this.activityTypes = activity;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("unable to load activity types");
         console.error(err);
       });
@@ -337,33 +351,37 @@ const CreateActivity = Vue.extend({
   },
 
   methods: {
-    checkOutcomesLength: function() {
-      if (this.createActivityRequest.activity_outcomes === undefined ||
-      this.createActivityRequest.activity_outcomes.length == 0) {
-        this.createActivityRequest.activity_outcomes = [
-          {"description": "", "units": ""} as ActivityOutcomes
+    checkOutcomesLength: function () {
+      if (
+        this.createActivityRequest.outcomes === undefined ||
+        this.createActivityRequest.outcomes.length == 0
+      ) {
+        this.createActivityRequest.outcomes = [
+          { description: "", units: "" } as ActivityOutcomes,
         ];
         this.$forceUpdate();
       }
     },
-    addNewOutcome: function() {
-      if (this.createActivityRequest.activity_outcomes !== undefined) {
-        for (let index in this.createActivityRequest.activity_outcomes as ActivityOutcomes[]) {
-          let item = this.createActivityRequest.activity_outcomes[index];
+    addNewOutcome: function () {
+      if (this.createActivityRequest.outcomes !== undefined) {
+        for (let index in this.createActivityRequest
+          .outcomes as ActivityOutcomes[]) {
+          let item = this.createActivityRequest.outcomes[index];
           if (item.description.length == 0 || item.units.length == 0) {
             alert("More than one empty outcome is not allowed");
             return;
           }
         }
-        this.createActivityRequest.activity_outcomes.push(
-          {"description": "", "units": ""} as ActivityOutcomes
-        );
+        this.createActivityRequest.outcomes.push({
+          description: "",
+          units: "",
+        } as ActivityOutcomes);
         this.$forceUpdate();
       }
     },
     removeActivityOutcomeRow: function(index: number) {
-      if (this.createActivityRequest.activity_outcomes !== undefined) {
-        this.createActivityRequest.activity_outcomes.splice(index, 1);
+      if (this.createActivityRequest.outcomes !== undefined) {
+        this.createActivityRequest.outcomes.splice(index, 1);
         this.$forceUpdate();
       }
       this.checkOutcomesLength();
@@ -390,18 +408,26 @@ const CreateActivity = Vue.extend({
       this.$router.back();
     },
 
-    createButtonClicked: async function() {
-      activityController
-        .validateNewActivity(
+    createButtonClicked: async function () {
+      if (this.createActivityRequest.outcomes === undefined) {
+        this.createActivityRequest.outcomes = [];
+      }
+      this.createActivityRequest.outcomes = this.createActivityRequest.outcomes.filter(
+        (outcome) => outcome.description && outcome.units
+      );
+      try {
+        activityController.validateNewActivity(
           this.startDate,
           this.startTime,
           this.endDate,
           this.endTime,
-          this.createActivityRequest,
-          this.currentProfileId,
-          this.isEditing,
-          this.editingId
-        )
+          this.createActivityRequest
+        );
+      } catch (err) {
+        this.errorMessage = err.message;
+        return; // don't try to save the activity
+      }
+      activityController.editOrCreateActivity(this.createActivityRequest, this.currentProfileId, this.editingId, this.isEditing)
         .then(() => {
           this.$router.push({ name: "profilePage" });
         })
@@ -446,8 +472,8 @@ const CreateActivity = Vue.extend({
         );
       }
       //TODO populate date fields
-    }
-  }
+    },
+  },
 });
 
 export default CreateActivity;

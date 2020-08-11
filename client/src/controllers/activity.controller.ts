@@ -21,8 +21,8 @@ export async function getAvailableActivityTypes(force = false) {
  * @param createActivityRequest request form consisting of all other elements of the form
  * @param profileId user's id 
  */
-export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
-    createActivityRequest: CreateActivityRequest, profileId: number, isEditing: boolean, activityId: number | undefined) {
+export function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
+    createActivityRequest: CreateActivityRequest) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
   }
@@ -57,11 +57,6 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   if (createActivityRequest.activity_type === [] || createActivityRequest.activity_type === undefined) {
     throw new Error("Please select at least one activity type");
   }
-  if (isEditing && activityId !== undefined) {
-    await editActivity(createActivityRequest, profileId, activityId)
-  } else {
-    await activityModel.createActivity(createActivityRequest, profileId);
-  }
 }
 
 /**
@@ -70,8 +65,12 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
  * @param profileId Profile ID this activity belongs to
  * @param activityId Activity ID to edit
  */
-export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
-  await activityModel.editActivity(createActivityRequest, profileId, activityId);
+export async function editOrCreateActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number | undefined, isEditing: boolean) {
+  if (isEditing && activityId !== undefined && !isNaN(activityId)) {
+    await activityModel.editActivity(createActivityRequest, profileId, activityId);
+  } else {
+    await activityModel.createActivity(createActivityRequest, profileId);
+  }
 }
 
 

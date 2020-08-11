@@ -1,11 +1,14 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.data.UserActivityRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,4 +58,17 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
     )
     public Optional<UserActivityRole> getRoleEntryByUserId(long uuid, long activity_id);
 
+    /**
+     * Updates the role for a given user in a given activity
+     * @param activityRole The new role of the user
+     * @param uuid The users id
+     * @param activity_id The activity id
+     */
+    @Transactional
+    @Modifying
+    @Query(
+            value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
+    )
+    public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+    
 }
