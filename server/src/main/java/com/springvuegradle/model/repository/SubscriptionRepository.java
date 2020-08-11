@@ -46,12 +46,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	/**
 	 * Query for getting subscription id from profile and entity id
 	 */
-
-	//TODO
-	//TODO Change to delete query
-	//TODO
-
-
 	@Query(value = "SELECT DISTINCT s.id FROM Subscription s WHERE s.subscriber = ?2 AND s.entityId = ?1")
 	public long findSubscriptionId(long entityId, Profile profile);
 
