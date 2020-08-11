@@ -144,4 +144,8 @@ public class ChangeLog {
 		return timestamp;
 	}
 
+	public void setOffsetDateTime(OffsetDateTime offsetDateTime) {
+		this.timestamp = offsetDateTime;
+	}
+
 }

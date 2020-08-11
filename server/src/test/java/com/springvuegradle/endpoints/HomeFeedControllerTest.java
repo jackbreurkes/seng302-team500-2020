@@ -23,6 +23,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,6 +89,7 @@ public class HomeFeedControllerTest {
         for (String[] values : changeValues) {
             ChangeLog change = new ChangeLog(ChangeLogEntity.ACTIVITY, swimming.getId(), ChangedAttribute.ACTIVITY_DESCRIPTION,
                     profile.getUser(), ActionType.UPDATED, values[0], values[1]);
+            change.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
             changeLogList.add(change);
             homeFeedJson += getChangeLogResponseJson(change, swimming) + ",";
         }
@@ -93,6 +97,7 @@ public class HomeFeedControllerTest {
         ChangeLog cyclingChangeLog = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_DESCRIPTION,
                 profile.getUser(), ActionType.UPDATED, "Old description", "New description");
         changeLogList.add(cyclingChangeLog);
+        cyclingChangeLog.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
         homeFeedJson += getChangeLogResponseJson(cyclingChangeLog, cycling) + "]";
 
         Mockito.when(changeLogRepository.retrieveUserHomeFeedUpdates(profile)).thenReturn(changeLogList);
@@ -105,7 +110,7 @@ public class HomeFeedControllerTest {
                 "\"entity_name\":\"" + activity.getActivityName() + "\"," +
                 "\"creator_id\":" + activity.getCreator().getUser().getUserId() + "," +
                 "\"creator_name\":\"" + activity.getCreator().getFullName(false) + "\"," +
-                "\"edited_timestamp\":null," +
+                "\"edited_timestamp\":\"" + changeLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")) + "\"," +
                 "\"editor_id\":" + activity.getCreator().getUser().getUserId() + "," +
                 "\"editor_name\":\"" + activity.getCreator().getFullName(false) + "\"," +
                 "\"changed_attribute\":\"ACTIVITY_DESCRIPTION\"," +
