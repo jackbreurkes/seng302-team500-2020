@@ -3,6 +3,7 @@ package com.springvuegradle.endpoints;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.responses.ErrorResponse;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -164,5 +165,33 @@ public class SubscriptionControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("subscribed").value(false));
+    }
+
+
+    @Test
+    public void testDeleteSubscriptionWhenNotSubscirbed() throws Exception {
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(1L, profile2)).thenReturn(false);
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/1")
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    public void testDeleteSubscriptionNotAuthneticated() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/1/subscriptions/activities/1")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(401));
+    }
+
+    @Test
+    public void testDeleteSubscriptionNoActivity() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/10")
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(404));
     }
 }
