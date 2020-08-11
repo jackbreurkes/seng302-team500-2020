@@ -3,6 +3,7 @@ package com.springvuegradle.endpoints;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.responses.ErrorResponse;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -164,5 +165,23 @@ public class SubscriptionControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("subscribed").value(false));
+    }
+
+    @Ignore
+    @Test
+    public void testDeleteSubscriptionWhenNotSubscirbed() throws Exception {
+
+    }
+
+    @Ignore
+    @Test
+    public void testDeleteSubscriptionNotAuthneticated() throws Exception {
+
+    }
+
+    @Ignore
+    @Test
+    public void testDeleteSubscription(){
+
     }
 }
