@@ -94,3 +94,42 @@ export async function addActivityFollower(profileId: number, activityId: number)
 export async function removeActivityFollower(profileId: number, activityId: number) {
   let res = await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
+
+/**
+ * gets the role of a user in a particular activity
+ * @param profileId the profile to get the role of
+ * @param activityId the activity the role is associated with
+ */
+export async function getActivityRole(profileId: number, activityId: number): Promise<string | null> {
+  let res;
+  try {
+    res = await instance.get(`/activities/${activityId}/roles/${profileId}`)
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    } else {
+      throw error;
+    }
+  }
+  return res.data;
+}
+
+/**
+ * sets a users role in an activity
+ * @param profileId the profile to set the role of
+ * @param activityId the activity the role is associated with
+ * @param role the role the profile should have
+ */
+export async function setActivityRole(profileId: number, activityId: number, role: string) {
+  const data = {"role": role.toUpperCase()}
+  await instance.put(`/activities/${activityId}/roles/${profileId}`, data)
+}
+
+/**
+ * clears a user's role in a particular activity
+ * @param profileId the profile whose roles should be cleared
+ * @param activityId the activity the profile should be cleared from
+ */
+export async function removeActivityRole(profileId: number, activityId: number) {
+  await instance.delete(`/activities/${activityId}/roles/${profileId}`)
+}

@@ -12,7 +12,6 @@ import com.springvuegradle.model.data.HomefeedEntityType;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.Subscription;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.responses.ActivitySubscribedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,10 +66,8 @@ public class SubscriptionController {
     @CrossOrigin
     public ResponseEntity<String> getIsSubscribed(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                                   HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
         Optional<Activity> optionalActivity = activityRepo.findById(activityId);
         if(!optionalActivity.isPresent()){
             throw new RecordNotFoundException("Activity doesn't exist");
@@ -104,7 +101,7 @@ public class SubscriptionController {
             throw new RecordNotFoundException("Activity doesn't exist");
         }
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
         if(!subscriptionRepository.isSubscribedToActivity(activityId, profileRepository.getOne(profileId))){
             subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), HomefeedEntityType.ACTIVITY, activityId));
         }else{
@@ -133,7 +130,7 @@ public class SubscriptionController {
             throw new RecordNotFoundException("Activity doesn't exist");
         }
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
         Profile userProfile = profileRepository.getOne(profileId);
 
         if(subscriptionRepository.isSubscribedToActivity(activityId, userProfile)){
