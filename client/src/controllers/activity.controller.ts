@@ -315,6 +315,23 @@ export async function unfollowActivity(profileId: number, activityId: number) {
   await activityModel.removeActivityFollower(profileId, activityId);
 }
 
+/**
+ * sets a user as a participant in an activity
+ * @param profileId the profile to set as a participant
+ * @param activityId the activity the profile should participate in
+ */
+export async function participateInActivity(profileId: number, activityId: number) {
+  await activityModel.setActivityRole(profileId, activityId, "participant");
+}
+
+/**
+ * clears a user's role in a particular activity
+ * @param profileId the profile whose roles should be cleared
+ * @param activityId the activity the profile should be cleared from
+ */
+export async function removeActivityRole(profileId: number, activityId: number) {
+  await activityModel.removeActivityRole(profileId, activityId);
+}
 
 /**
  * returns a reader-friendly description of the duration of a duration activity.
