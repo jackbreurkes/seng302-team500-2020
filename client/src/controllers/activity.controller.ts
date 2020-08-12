@@ -315,6 +315,14 @@ export async function unfollowActivity(profileId: number, activityId: number) {
   await activityModel.removeActivityFollower(profileId, activityId);
 }
 
+export async function getIsParticipating(profileId: number, activityId: number) {
+  let role = await activityModel.getActivityRole(profileId, activityId);
+  if (role == null) {
+    return false;
+  }
+  return role.toLowerCase() == "participant";
+}
+
 /**
  * sets a user as a participant in an activity
  * @param profileId the profile to set as a participant

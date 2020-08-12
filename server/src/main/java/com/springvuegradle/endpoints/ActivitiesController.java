@@ -14,7 +14,6 @@ import javax.validation.Valid;
 
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
-import com.springvuegradle.model.responses.ActivityOutcomeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +90,7 @@ public class ActivitiesController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
@@ -190,7 +189,7 @@ public class ActivitiesController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
@@ -229,7 +228,7 @@ public class ActivitiesController {
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
         // validate request body
         if (createActivityRequest.getActivityName() == null) {
@@ -314,10 +313,7 @@ public class ActivitiesController {
     public ActivityResponse getSingleActivity(@PathVariable("activityId") long activityId,
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if(!optionalActivity.isPresent()){
@@ -342,11 +338,7 @@ public class ActivitiesController {
     public List<ActivityResponse> getActivitiesByCreator(@PathVariable("profileId") long profileId,
                                                          HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
         if (optionalCreator.isEmpty()) {

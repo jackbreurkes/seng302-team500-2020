@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -89,19 +91,15 @@ public class WhoAmIController {
     }
 
 	/**
-	 * Processes a /whoami GET request
+	 * Processes a /whoami GET request.
 	 * @param httpRequest Contains authentication information
-	 * @return ResponseEntity depending on whether the user is logged in or not
+	 * @return the id the sender's token is associated with
+     * @throws UserNotAuthenticatedException if the user's token is invalid
 	 */
 	@GetMapping("/whoami")
 	@CrossOrigin
-	public Object whoAmI(HttpServletRequest httpRequest) {
-		Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-		
-		if (authId == null) {
-			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
-		} else {
-			return ResponseEntity.status(200).body(new UserResponse(authId));
-		}
+	public UserResponse whoAmI(HttpServletRequest httpRequest) throws UserNotAuthenticatedException {
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest);
+        return new UserResponse(authId);
 	}
 }

@@ -11,6 +11,10 @@ public enum ActivityRole {
      */
     private final String jsonName;
 
+    public String toString() {
+        return jsonName.toUpperCase();
+    }
+
     /**
      * Constructor for Role
      * @param jsonName the name for the role given in the json request

@@ -91,7 +91,7 @@
                   <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
-                  <v-btn @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                  <v-btn id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
                 </div>
               </v-card-actions>
 
@@ -156,6 +156,10 @@ const Activity = Vue.extend({
         getIsFollowingActivity(this.currentProfileId, this.activityId)
         .then((following) => {
           this.following = following;
+        })
+        activityController.getIsParticipating(this.currentProfileId, this.activityId)
+        .then((participating) => {
+          this.participating = participating
         })
       })
       .catch(() => {

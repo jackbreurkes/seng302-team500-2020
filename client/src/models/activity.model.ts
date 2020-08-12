@@ -96,6 +96,25 @@ export async function removeActivityFollower(profileId: number, activityId: numb
 } 
 
 /**
+ * gets the role of a user in a particular activity
+ * @param profileId the profile to get the role of
+ * @param activityId the activity the role is associated with
+ */
+export async function getActivityRole(profileId: number, activityId: number): Promise<string | null> {
+  let res;
+  try {
+    res = await instance.get(`/activities/${activityId}/roles/${profileId}`)
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    } else {
+      throw error;
+    }
+  }
+  return res.data;
+}
+
+/**
  * sets a users role in an activity
  * @param profileId the profile to set the role of
  * @param activityId the activity the role is associated with
