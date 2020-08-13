@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-
+import * as HomefeedController from '../controllers/homefeed.controller';
 // app Vue instance
 const Homefeed = Vue.extend({
   name: "Homefeed",
@@ -22,7 +22,9 @@ const Homefeed = Vue.extend({
     return {
     };
   },
-
+  created: function(){
+    HomefeedController.getHomeFeedData();
+  },
   methods: {
   }
 });
