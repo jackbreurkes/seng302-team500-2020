@@ -24,6 +24,7 @@ const Homefeed = Vue.extend({
   },
   created: function(){
     HomefeedController.getHomeFeedData();
+
   },
   methods: {
   }

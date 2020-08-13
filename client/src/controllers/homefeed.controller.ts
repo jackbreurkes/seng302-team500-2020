@@ -7,10 +7,5 @@ import { HomeFeedCardType } from '../scripts/HomeFeedCardType';
  */
 export async function getHomeFeedData(){
     let homefeedData = await homefeedModel.getUsersHomefeed();
-    let processed_home_feed = []
-    console.log("BBBBBBBBBBBB")
-    homefeedData.forEach(function(data : JSON){
-        console.log("AAAAAAAAAAAAAAAA");
-        console.log(data);
-    });
+    return homefeedData;
 }
