@@ -12,9 +12,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.requests.ActivityOutcomeRequest;
-import com.springvuegradle.model.responses.ActivityOutcomeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +31,14 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
+import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -41,6 +46,7 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
@@ -73,6 +79,9 @@ public class ActivitiesController {
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
+    
+    @Autowired
+    private ActivityParticipantResultRepository activityResultRepository;
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
@@ -360,6 +369,40 @@ public class ActivitiesController {
         }
 
         return responseActivities;
+    }
+    
+    /**
+     * endpoint function for POST /profiles/{profileId}/activities
+     * @param profileId the path variable to match to the creator's profile id
+     * @param createActivityRequest request body information
+     * @param httpRequest the HttpRequest object associated with this request
+     * @return a response containing information about the newly created activity
+     * @throws InvalidRequestFieldException if a request field is invalid
+     * @throws RecordNotFoundException if a required object is not found in the database
+     * @throws UserNotAuthenticatedException if the user is not correctly authenticated
+     */
+    @PostMapping("/activities/{activityId}/results")
+    @ResponseStatus(HttpStatus.CREATED)
+    @CrossOrigin
+    public ActivityResponse createActivityResult(@PathVariable("activityId") long activityId,
+    		@Valid @RequestBody CreateActivityRequest createActivityRequest,
+    		Errors errors,
+    		HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
+    	
+		if (errors.hasErrors()) {
+			String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+			throw new InvalidRequestFieldException(errorMessage);
+		}
+		
+		Long authId = (Long) request.getAttribute("authenticatedid");
+		
+		if (authId == null){
+			throw new UserNotAuthenticatedException("User is not authenticated");
+		}
+		
+		
+		
+		return null;
     }
 
     /**
