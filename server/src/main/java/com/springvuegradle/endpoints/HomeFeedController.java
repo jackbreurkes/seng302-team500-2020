@@ -10,6 +10,7 @@ import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Endpoint for the GET /homefeed/{profile_id} request
@@ -44,7 +46,7 @@ public class HomeFeedController {
     /**
      * Retrieve and respond to a request to get a user's home feed updates
      * @param profileId id of the user whose home feed it should return
-     * @param timestamp the timestamp to search for changelog entries from before. should be in ISO8601 format without final colon
+     * @param paginatedChangeId the ID of the last changelog ID the frontend received in the last query (used for pagination)
      * @param httpRequest http request made
      * @return list of HomeFeedResponse objects which give appropriately formatted information about changes
      * @throws ForbiddenOperationException if trying to retrieve another user's home feed
@@ -56,7 +58,7 @@ public class HomeFeedController {
     @GetMapping("/{profileId}")
     @CrossOrigin
     public List<HomeFeedResponse> getUserHomeFeed(@PathVariable("profileId") long profileId,
-                                                  @RequestParam(required = false) String timestamp,
+                                                  @RequestParam(name = "lastId", required = false) Long paginatedChangeId,
                                                   HttpServletRequest httpRequest)
             throws UserNotAuthorizedException, UserNotAuthenticatedException,
                 InvalidRequestFieldException, RecordNotFoundException {
@@ -69,17 +71,25 @@ public class HomeFeedController {
         }
 
         List<ChangeLog> changeLogList;
-        if (timestamp == null) {
-            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile);
+        final Pageable pageable = PageRequest.of(0, 15); // return 15 results
+        if (paginatedChangeId == null) {
+            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile, pageable);
         } else {
-            ZonedDateTime latestTimestamp;
-            try {
-                TemporalAccessor timestampAccessor = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse(timestamp);
-                latestTimestamp = ZonedDateTime.from(timestampAccessor);
-            } catch (DateTimeParseException e) {
-                throw new InvalidRequestFieldException("timestamp " + timestamp + " could not be parsed");
+            ChangeLog lastChangeReceived = changeLogRepository.findById(paginatedChangeId).orElse(null);
+            if (lastChangeReceived == null) {
+                // this should never happen since changelogs shouldn't be deleted, and definitely not between pagination requests
+                throw new NullPointerException("error: a changelog has been deleted while paginating. please reload the homefeed page");
             }
-            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdatesBeforeTime(profile, latestTimestamp);
+            ZonedDateTime latestTimestamp = lastChangeReceived.getTimestamp();
+            latestTimestamp = latestTimestamp.plusSeconds(1); // ensures the change with the paginate ID is included
+            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdatesBeforeTime(profile, latestTimestamp, pageable);
+
+            final List<ChangeLog> finalChangeLogList = changeLogList; // required for use in filter
+            int paginateChangeListIndex = IntStream.range(0, changeLogList.size())
+                    .filter(i -> finalChangeLogList.get(i).getChangeId() == paginatedChangeId)
+                    .findFirst().orElse(-1);
+
+            changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
         }
         return getHomeFeedResponsesFromChanges(changeLogList);
     }

@@ -2,6 +2,7 @@ package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.Profile;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,10 +18,10 @@ public interface ChangeLogRepository extends JpaRepository<ChangeLog, Long> {
      */
     @Query(value = "SELECT DISTINCT c FROM ChangeLog c JOIN Subscription s ON c.entityId = s.entityId AND s.subscriber = ?1 " +
             "ORDER BY c.timestamp DESC")
-    List<ChangeLog> retrieveUserHomeFeedUpdates(Profile profile);
+    List<ChangeLog> retrieveUserHomeFeedUpdates(Profile profile, Pageable pageable);
 
-    @Query(value = "select distinct c from ChangeLog c JOIN Subscription s ON c.entityId = s.entityId AND s.subscriber = ?1 " +
-            "WHERE c.timestamp < ?2 " +
-            "ORDER BY c.timestamp")
-    List<ChangeLog> retrieveUserHomeFeedUpdatesBeforeTime(Profile profile, ZonedDateTime latestTimestamp);
+    @Query(value = "select distinct c from ChangeLog c JOIN Subscription s ON c.entityId = s.entityId AND s.subscriber = :profile " +
+            "WHERE c.timestamp < :latestTimestamp " +
+            "ORDER BY c.timestamp DESC")
+    List<ChangeLog> retrieveUserHomeFeedUpdatesBeforeTime(Profile profile, ZonedDateTime latestTimestamp, Pageable pageable);
 }

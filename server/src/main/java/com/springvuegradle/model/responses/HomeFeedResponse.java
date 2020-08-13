@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
 
+    private final long changeId;
     private ChangeLogEntity entityType;
     private long entityId;
     private String entityName;
@@ -52,6 +53,7 @@ public class HomeFeedResponse {
      * @param editor editor profile that made the change
      */
     public HomeFeedResponse(ChangeLog changeLog, String entityName, Profile editor) {
+        this.changeId = changeLog.getChangeId();
         this.entityType = changeLog.getEntity();
         this.entityId = changeLog.getEntityId();
         this.entityName = entityName;
@@ -80,6 +82,10 @@ public class HomeFeedResponse {
         } catch (Exception | Error e) {
             return raw;
         }
+    }
+
+    public long getChangeId() {
+        return changeId;
     }
 
     public ChangeLogEntity getEntityType() {
