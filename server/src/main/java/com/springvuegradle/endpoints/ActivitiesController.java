@@ -1,11 +1,14 @@
 package com.springvuegradle.endpoints;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -33,6 +36,16 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
+import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityParticipantResult;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityOutcomeRepository;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -40,7 +53,10 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
+import com.springvuegradle.model.requests.RecordActivityResultsRequest;
+import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
 /**
@@ -72,6 +88,12 @@ public class ActivitiesController {
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
+    
+    @Autowired
+    private ActivityOutcomeRepository activityOutcomeRepository;
+    
+    @Autowired
+    private ActivityParticipantResultRepository activityResultRepository;
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
@@ -352,6 +374,79 @@ public class ActivitiesController {
         }
 
         return responseActivities;
+    }
+    
+    /**
+     * endpoint function for POST /profiles/{profileId}/activities
+     * @param activityId Activity ID the results are for
+     * @param createResultRequest request body information
+     * @param errors Anything that went wrong when parsing the body would appear here
+     * @param httpRequest the HttpRequest object associated with this request
+     * @return a response containing a success message
+     * @throws InvalidRequestFieldException if a request field is invalid
+     * @throws RecordNotFoundException if a required object is not found in the database
+     * @throws UserNotAuthenticatedException if the user is not correctly authenticated
+     */
+    @PostMapping("/activities/{activityId}/results")
+    @ResponseStatus(HttpStatus.CREATED)
+    @CrossOrigin
+    public ResponseEntity<String> createActivityResult(@PathVariable("activityId") long activityId,
+    		@Valid @RequestBody RecordActivityResultsRequest createResultRequest,
+    		Errors errors,
+    		HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
+    	
+		if (errors.hasErrors()) {
+			String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+			throw new InvalidRequestFieldException(errorMessage);
+		}
+		
+		Long authId = (Long) request.getAttribute("authenticatedid");
+		
+		if (authId == null){
+			throw new UserNotAuthenticatedException("User is not authenticated");
+		}
+		
+		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<Long, RecordOneActivityResultsRequest>();
+		for (RecordOneActivityResultsRequest outcomeObject : createResultRequest.getOutcomes()) {
+			if (outcomeIds.containsKey(outcomeObject.getOutcomeId())) {
+				throw new InvalidRequestFieldException("Duplicate outcome ID");
+			}
+			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
+		}
+		
+		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
+		
+		if (outcomeList.size() != outcomeIds.size()) {
+			throw new RecordNotFoundException("One or more activity outcome id does not exist");
+		}
+		
+		Optional<User> optionalUser = userRepository.findById(authId);
+		
+		if (optionalUser.isEmpty()) {
+			throw new UserNotAuthenticatedException("User is not authenticated");
+		}
+		
+		User user = optionalUser.get();
+		
+		for (ActivityOutcome outcome : outcomeList) {
+			RecordOneActivityResultsRequest userResult = outcomeIds.get(outcome.getOutcomeId());
+			
+			String value = userResult.getResult();
+			OffsetDateTime completedDate = userResult.getCompletedDate();
+			
+			Optional<ActivityParticipantResult> potentialResult = activityResultRepository.getParticipantResult(authId, outcome); 
+			if (potentialResult.isPresent()) {
+				ActivityParticipantResult result = potentialResult.get();
+				result.setValue(value);
+				result.setCompletedDate(completedDate);
+				activityResultRepository.save(result);
+			} else {
+				ActivityParticipantResult result = new ActivityParticipantResult(user, outcome, value, completedDate);
+				activityResultRepository.save(result);
+			}
+		}
+		
+		return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
