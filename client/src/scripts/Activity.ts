@@ -13,5 +13,6 @@ export interface CreateActivityRequest {
 export interface ActivityOutcomes {
   description: string;
   units: string;
+  outcome_id?: number;
 }
   

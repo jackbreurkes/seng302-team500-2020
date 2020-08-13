@@ -85,6 +85,54 @@
 
               <br><v-divider></v-divider><br>
 
+              <v-expansion-panels flat style="border: 1px solid silver;">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <v-sheet>
+                          <v-card
+                            class="pa-2"
+                            :v-if="activity.outcomes.length > 0"
+                            v-for="(item, index) in activity.outcomes"
+                            v-bind:item="item"
+                            v-bind:index="index"
+                            :key="index"
+                            outlined
+                            >
+                            <v-row align="end">
+                              <v-col sm="12" md="6">
+                                {{item.description}}
+                              </v-col>
+                              <v-col sm="8" md="4">
+                                <v-text-field
+                                  label="Your result"
+                                  type="text"
+                                  v-model="participantOutcomes[item.outcome_id]"
+                                  hide-details
+                                ></v-text-field>
+                              </v-col>
+                              <v-col sm="4" md="2">
+                                {{item.units}}
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col xs="11" md="5">
+                                Date picker
+                              </v-col>
+                              <v-col xs="11" md="5">
+                                Time picker
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col xs="11" md="5">
+                              </v-col>
+                            </v-row>
+                        </v-card>
+                      </v-sheet>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
@@ -130,7 +178,8 @@ const Activity = Vue.extend({
       following: false,
       confirmDeleteModal: false,
       startTimeString: '' as string,
-      endTimeString: '' as string
+      endTimeString: '' as string,
+      participantOutcomes: {}
     };
   },
 
