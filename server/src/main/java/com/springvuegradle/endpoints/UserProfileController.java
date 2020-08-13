@@ -15,7 +15,6 @@ import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.requests.UpdateRoleRequest;
-import com.springvuegradle.model.responses.UserResponse;
 import com.springvuegradle.util.FormValidator;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +107,7 @@ public class UserProfileController {
             @Valid @RequestBody ProfileObjectMapper request,
             @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
 
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);
@@ -466,7 +465,7 @@ public class UserProfileController {
         // authentication
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
         // validate request body
         if (validationErrors.hasErrors()) {
@@ -524,17 +523,7 @@ public class UserProfileController {
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException, ForbiddenOperationException {
         // authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-
-        Optional<User> editingUser = userRepository.findById(authId);
-
-
-        if (authId == null) { // not authenticated
-            throw new UserNotAuthenticatedException("you must be authenticated as an admin");
-        } else if (editingUser.isPresent()	// the user exists
-				&& !(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)) {	// they are not an admin
-            throw new UserNotAuthorizedException("you must be an admin to promote and demote users");
-        }
+        Long authId = UserAuthorizer.getInstance().checkIsAdmin(httpRequest, userRepository);
 
         // validate request body
         if (validationErrors.hasErrors()) {
@@ -599,7 +588,7 @@ public class UserProfileController {
     public String deleteUser(@PathVariable("profileId") long profileId,
                                              HttpServletRequest httpRequest) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
         // Authenticating the logged in user
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
         // Get relevant profile
         Optional<Profile> optionalProfile = profileRepository.findById(profileId);

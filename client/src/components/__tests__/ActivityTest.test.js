@@ -12,7 +12,7 @@ import {
 jest.mock("../../controllers/profile.controller.ts")
 
 import {
-  getActivity, getIsFollowingActivity, followActivity, unfollowActivity
+  getActivity, getIsFollowingActivity, followActivity, unfollowActivity, getIsParticipating, participateInActivity, removeActivityRole
 } from "../../controllers/activity.controller";
 jest.mock("../../controllers/activity.controller.ts")
 
@@ -82,12 +82,18 @@ describe("activityPageTests", () => {
       "activity_type": ["Running"]
     }
   )
-  getMyUserId.mockResolvedValue(mockProfileId);
+  getMyUserId.mockImplementation(() => mockProfileId);
   followActivity.mockResolvedValue(null);
   unfollowActivity.mockResolvedValue(null);
+  participateInActivity.mockResolvedValue(null);
+  removeActivityRole.mockResolvedValue(null);
 
 
   beforeEach(mountFunction)
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  })
 
   function mountFunction() {
     let vuetify = new Vuetify()
@@ -138,6 +144,48 @@ describe("activityPageTests", () => {
     await Vue.nextTick() // wait for click
     expect(unfollowActivity.mock.calls.length).toBe(1)
     expect(wrapper.find('#followBtn').text().toLowerCase()).toBe("follow")
+  })
+
+  it('should say participate if we not a participant', async () => {
+    getIsParticipating.mockResolvedValue(false);
+    mountFunction(); // need to re-mount after changing mock resolve
+    await Vue.nextTick() // resolves getActivity
+    await Vue.nextTick() // resolves getIsFollowingActivity
+    expect(wrapper.find('#participateBtn').text().toLowerCase()).toBe("participate")
+  })
+
+  it('should say unparticipate if we are a participant', async () => {
+    getIsParticipating.mockResolvedValue(true);
+    mountFunction(); // need to re-mount after changing mock resolve
+    await Vue.nextTick() // resolves getActivity
+    await Vue.nextTick() // resolves getIsFollowingActivity
+    expect(wrapper.find('#participateBtn').text().toLowerCase()).toBe("unparticipate")
+  })
+
+  it('should remove us as a participant if we unparticipate', async () => {
+    getIsParticipating.mockResolvedValue(true);
+    mountFunction(); // need to re-mount after changing mock resolve
+    await Vue.nextTick() // resolves getActivity
+    await Vue.nextTick() // resolves getIsFollowingActivity
+    wrapper.find('#participateBtn').trigger('click')
+    await Vue.nextTick()
+
+    expect(removeActivityRole.mock.calls.length).toBe(1)
+    expect(removeActivityRole.mock.calls[0][0]).toBe(mockProfileId);
+    expect(removeActivityRole.mock.calls[0][1]).toBe(mockActivityId);
+  })
+
+  it('should add us as a participant if we participate', async () => {
+    getIsParticipating.mockResolvedValue(false);
+    mountFunction(); // need to re-mount after changing mock resolve
+    await Vue.nextTick() // resolves getActivity
+    await Vue.nextTick() // resolves getIsFollowingActivity
+    wrapper.find('#participateBtn').trigger('click')
+    await Vue.nextTick()
+    
+    expect(participateInActivity.mock.calls.length).toBe(1)
+    expect(participateInActivity.mock.calls[0][0]).toBe(mockProfileId);
+    expect(participateInActivity.mock.calls[0][1]).toBe(mockActivityId);
   })
 
 })
