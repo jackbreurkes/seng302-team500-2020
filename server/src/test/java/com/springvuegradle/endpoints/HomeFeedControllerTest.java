@@ -205,6 +205,6 @@ public class HomeFeedControllerTest {
                 .requestAttr("authenticatedid", user.getUserId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isConflict());
     }
 }
