@@ -2,6 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +28,7 @@ public class ActivityParticipantResult {
 	@JoinColumn(name = "outcome", nullable = false)
 	private ActivityOutcome outcome;
 
+	@Column(columnDefinition = "varchar(30) not null")
 	private String value;
 
 	private LocalDateTime completedDate;

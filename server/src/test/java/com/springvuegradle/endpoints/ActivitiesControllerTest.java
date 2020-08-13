@@ -1,7 +1,9 @@
 package com.springvuegradle.endpoints;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,13 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.springvuegradle.exceptions.ExceptionHandlerController;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.data.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -39,6 +36,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.model.data.ActionType;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.ChangedAttribute;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -46,8 +55,6 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -81,6 +88,9 @@ public class ActivitiesControllerTest {
 
 	@MockBean
 	private ChangeLogRepository changeLogRepository;
+	
+	@MockBean
+	private ActivityParticipantResultRepository activityOutcomeRepo;
 
 	User user;
 	Profile profile;
