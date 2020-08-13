@@ -96,7 +96,7 @@ public class HomeFeedControllerTest {
         // Add change of timeframe
         ChangeLog cyclingChangeLog1 = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_TIME_FRAME,
                 profile.getUser(), ActionType.CREATED,
-                "{\"start_time\":\"2020-08-01T10:06:00+1200\",\"end_time\":\"2020-08-02T10:06:00+1200\"}",
+                null,
                 "{\"start_time\":\"2021-08-02T10:06:00+1200\",\"end_time\":\"2021-08-03T10:06:00+1200\"}");
         changeLogList.add(cyclingChangeLog1);
         cyclingChangeLog1.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));

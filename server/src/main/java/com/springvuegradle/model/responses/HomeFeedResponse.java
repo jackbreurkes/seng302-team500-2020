@@ -43,8 +43,12 @@ public class HomeFeedResponse {
         this.editorName = editor.getFullName(false);
         this.changedAttribute = changeLog.getChangedAttribute();
         this.actionType = changeLog.getActionType();
-        this.oldValue = getJsonFromString(changeLog.getOldValue());
-        this.newValue = getJsonFromString(changeLog.getNewValue());
+        if (changeLog.getOldValue() != null) {
+            this.oldValue = getJsonFromString(changeLog.getOldValue());
+        }
+        if (changeLog.getNewValue() != null) {
+            this.newValue = getJsonFromString(changeLog.getNewValue());
+        }
     }
 
     /**
