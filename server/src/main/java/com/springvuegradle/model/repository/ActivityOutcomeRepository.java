@@ -22,4 +22,5 @@ public interface ActivityOutcomeRepository extends JpaRepository<ActivityOutcome
             value= "SELECT o FROM ActivityOutcome o WHERE o.outcomeId IN ?1"
     )
     public List<ActivityOutcome> getOutcomesById(List<Long> activityOutcomeIds);
+
 }

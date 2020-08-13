@@ -7,6 +7,7 @@ import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ public class DeleteActivitiesControllerTest {
 
     @Mock
     private ChangeLogRepository changeLogRepository;
+
 
     @BeforeAll
     void beforeAll(){
