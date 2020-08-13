@@ -21,8 +21,8 @@ export async function getAvailableActivityTypes(force = false) {
  * @param createActivityRequest request form consisting of all other elements of the form
  * @param profileId user's id 
  */
-export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
-    createActivityRequest: CreateActivityRequest, profileId: number, isEditing: boolean, activityId: number | undefined) {
+export function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
+    createActivityRequest: CreateActivityRequest) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
   }
@@ -57,11 +57,6 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   if (createActivityRequest.activity_type === [] || createActivityRequest.activity_type === undefined) {
     throw new Error("Please select at least one activity type");
   }
-  if (isEditing && activityId !== undefined) {
-    await editActivity(createActivityRequest, profileId, activityId)
-  } else {
-    await activityModel.createActivity(createActivityRequest, profileId);
-  }
 }
 
 /**
@@ -70,8 +65,12 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
  * @param profileId Profile ID this activity belongs to
  * @param activityId Activity ID to edit
  */
-export async function editActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number) {
-  await activityModel.editActivity(createActivityRequest, profileId, activityId);
+export async function editOrCreateActivity(createActivityRequest: CreateActivityRequest, profileId: number, activityId: number | undefined, isEditing: boolean) {
+  if (isEditing && activityId !== undefined && !isNaN(activityId)) {
+    await activityModel.editActivity(createActivityRequest, profileId, activityId);
+  } else {
+    await activityModel.createActivity(createActivityRequest, profileId);
+  }
 }
 
 
@@ -239,7 +238,7 @@ export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
 }
 
-export const INVALID_DATE_MESSAGE = "date must be at least one day into the future"
+export const INVALID_DATE_MESSAGE = "Date must be at least one day into the future"
 /**
  * Checks if dateString given is a date in the future
  * if it is valid
@@ -280,8 +279,66 @@ export function isValidDate(dateString: string) {
  * @param {number} activityId Activity ID
  * @return {CreateActivityRequest} Retrieved activity data
  */
-export async function getActivityById(creatorId: number, activityId: number) {
-  return activityModel.getActivityById(creatorId, activityId);
+export async function getActivity(creatorId: number, activityId: number) {
+  return activityModel.getActivity(creatorId, activityId);
+}
+
+
+/**
+ * Registers user's account to follow the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ * @return whether user is following activity; true if they are, false otherwise
+ */
+export async function getIsFollowingActivity(profileId: number, activityId: number): Promise<boolean> {
+  let data = await activityModel.getFollowingActivity(profileId, activityId);
+  return data["subscribed"];
+}
+
+
+/**
+ * Registers user's account to follow the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ */
+export async function followActivity(profileId: number, activityId: number) {
+  await activityModel.addActivityFollower(profileId, activityId);
+}
+
+
+/**
+ * Removes a follower with the given profile from the activity with the given id
+ * @param profileId the id of the user's profile
+ * @param activityId the id of the activity to follow
+ */
+export async function unfollowActivity(profileId: number, activityId: number) {
+  await activityModel.removeActivityFollower(profileId, activityId);
+}
+
+export async function getIsParticipating(profileId: number, activityId: number) {
+  let role = await activityModel.getActivityRole(profileId, activityId);
+  if (role == null) {
+    return false;
+  }
+  return role.toLowerCase() == "participant";
+}
+
+/**
+ * sets a user as a participant in an activity
+ * @param profileId the profile to set as a participant
+ * @param activityId the activity the profile should participate in
+ */
+export async function participateInActivity(profileId: number, activityId: number) {
+  await activityModel.setActivityRole(profileId, activityId, "participant");
+}
+
+/**
+ * clears a user's role in a particular activity
+ * @param profileId the profile whose roles should be cleared
+ * @param activityId the activity the profile should be cleared from
+ */
+export async function removeActivityRole(profileId: number, activityId: number) {
+  await activityModel.removeActivityRole(profileId, activityId);
 }
 
 /**

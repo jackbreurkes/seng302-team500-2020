@@ -104,7 +104,7 @@
   },
     
     created() {
-    const profileId: number = parseInt(localStorage.getItem("userId")|| "Nan")
+    const profileId = auth.getMyUserId()
     this.currentProfileId = profileId;
     this.updateUserData();
     this.loadNavInfo();
@@ -141,7 +141,7 @@
       },
       showNavBar: function(){
         //Dont display the nav bar side menu
-        if(this.$route.path == "/login" || this.$route.path == '/register') {
+        if(this.$route.path == "/login" || this.$route.path == '/register'|| this.$route.path == '/') {
           return false
         }
         return true

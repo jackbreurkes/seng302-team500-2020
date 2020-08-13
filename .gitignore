@@ -42,3 +42,5 @@ client/coverage/
 
 ### Local Test DB ###
 server/src/main/resources/*.db
+
+server/src/main/resources/\.nfs00000000259417ec00000320

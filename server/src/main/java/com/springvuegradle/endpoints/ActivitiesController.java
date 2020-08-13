@@ -1,23 +1,23 @@
 package com.springvuegradle.endpoints;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,13 +33,12 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
@@ -65,19 +64,33 @@ public class ActivitiesController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
 
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
+    @Autowired
+    private UserActivityRoleRepository userActivityRoleRepository;
+
+    @Autowired
+    private ChangeLogRepository changeLogRepository;
+
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
-                                              @Valid @RequestBody CreateActivityRequest updateActivityRequest,
-                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
+                                        @Valid @RequestBody CreateActivityRequest updateActivityRequest,
+                                        Errors errors,
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
+    	Long authId = (Long) request.getAttribute("authenticatedid");
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
@@ -88,7 +101,7 @@ public class ActivitiesController {
         if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
             throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
         }
-        if (updateActivityRequest.getActivityTypes() == null || updateActivityRequest.getActivityTypes().size() == 0) {
+        if (updateActivityRequest.getActivityTypes() == null) {
             throw new InvalidRequestFieldException("missing activity_type field");
         }
         if (updateActivityRequest.getActivityTypes().size() == 0) {
@@ -100,50 +113,52 @@ public class ActivitiesController {
         if (updateActivityRequest.getLocation() == null) {
             throw new InvalidRequestFieldException("missing location field");
         }
-        if(updateActivityRequest.isContinuous() != true && updateActivityRequest.isContinuous() != false){
+        if(!updateActivityRequest.isContinuous() && updateActivityRequest.isContinuous()){
             throw new InvalidRequestFieldException("Missing continuous field");
         }
 
-
-        if(!activityToEdit.isPresent()){
+        if(activityToEdit.isEmpty()){
             throw new RecordNotFoundException("Activity does not exist");
-        }else{
-            Activity activity = activityToEdit.get();
-
-            activity.setActivityName(updateActivityRequest.getActivityName());
-            activity.setDescription(updateActivityRequest.getDescription());
-            activity.setIsDuration(updateActivityRequest.isContinuous());
-            activity.setLocation(updateActivityRequest.getLocation());
-            activity.getActivityTypes().clear();
-            
-            for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-                Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-                if(!activityType.isPresent()){
-                    throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-                }else{
-                    activity.getActivityTypes().add(activityType.get());
-                }
-            }
-
-
-            if(!updateActivityRequest.isContinuous()){
-//                LocalDateTime startDateTime = parseDateString(updateActivityRequest.getStartTime());
-//                LocalDateTime endDateTime = parseDateString(updateActivityRequest.getEndTime());
-
-                activity.setIsDuration(true);
-//                activity.setStartDate(startDateTime.toLocalDate());
-//                activity.setEndDate(endDateTime.toLocalDate());
-//
-//                activity.setStartTime(startDateTime.toLocalTime());
-//                activity.setEndTime(startDateTime.toLocalTime());
-
-                activity.setStartTime(updateActivityRequest.getStartTime());
-                activity.setEndTime(updateActivityRequest.getEndTime());
-            } else {
-            	activity.setIsDuration(false);
-            }
-            return new ActivityResponse(activityRepository.save(activity));
         }
+
+        Set<ActivityType> activityTypesToAdd = new HashSet<>();
+        for(String activityTypeString : updateActivityRequest.getActivityTypes()){
+            Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
+            if(!activityType.isPresent()){
+                throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
+            }else{
+                activityTypesToAdd.add(activityType.get());
+            }
+        }
+
+
+        Activity activity = activityToEdit.get();
+        for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser.get())) {
+            changeLogRepository.save(change);
+        }
+
+        activity.setActivityName(updateActivityRequest.getActivityName());
+        activity.setDescription(updateActivityRequest.getDescription());
+        activity.setIsDuration(updateActivityRequest.isContinuous());
+        activity.setLocation(updateActivityRequest.getLocation());
+        activity.getActivityTypes().clear();
+        activity.getActivityTypes().addAll(activityTypesToAdd);
+        activity.getOutcomes().clear();
+        // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
+        for (ActivityOutcomeRequest outcomeRequest : updateActivityRequest.getOutcomes()) {
+            activity.addOutcome(new ActivityOutcome(outcomeRequest.getDescription(), outcomeRequest.getUnits()));
+        }
+
+        if(!updateActivityRequest.isContinuous()){
+            activity.setIsDuration(true);
+
+            activity.setStartTime(updateActivityRequest.getStartTime());
+            activity.setEndTime(updateActivityRequest.getEndTime());
+        } else {
+            activity.setIsDuration(false);
+        }
+        return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+
     }
 
     /**
@@ -174,15 +189,16 @@ public class ActivitiesController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
-        if(!activityToDelete.isPresent()){
+        if(activityToDelete.isEmpty()){
             throw new RecordNotFoundException("Activity Does not exist");
         }
 
         activityRepository.delete(activityToDelete.get());
+        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(activityToDelete.get(), editingUser.get()));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -200,13 +216,19 @@ public class ActivitiesController {
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
     public ActivityResponse createActivity(@PathVariable("profileId") long profileId,
-            @Valid @RequestBody CreateActivityRequest createActivityRequest,
-                                   HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
+                                           @Valid @RequestBody CreateActivityRequest createActivityRequest,
+                                           Errors errors,
+                                           HttpServletRequest httpRequest) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
+
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
         // validate request body
         if (createActivityRequest.getActivityName() == null) {
@@ -240,29 +262,10 @@ public class ActivitiesController {
             activityTypeList.add(optionalActivityType.get());
         }
 
-        LocalDate startDate = null;
-        LocalDate endDate = null;
-        LocalTime startTime = null;
-        LocalTime endTime = null;
         if (!createActivityRequest.isContinuous()) {
             if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
                 throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
             }
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-//
-//            LocalDateTime startDateTime, endDateTime;
-//            try {
-//                startDateTime = LocalDateTime.parse(createActivityRequest.getStartTime(), formatter);
-//                endDateTime = LocalDateTime.parse(createActivityRequest.getEndTime(), formatter);
-//            } catch (DateTimeParseException e) {
-//                throw new InvalidRequestFieldException("invalid time string " + e.getParsedString());
-//            }
-//            LocalDateTime startDateTime = parseDateString(createActivityRequest.getStartTime());
-//            LocalDateTime endDateTime = parseDateString(createActivityRequest.getEndTime());
-//            startDate = startDateTime.toLocalDate();
-//            endDate = endDateTime.toLocalDate();
-//            startTime = startDateTime.toLocalTime();
-//            endTime = endDateTime.toLocalTime();
         }
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
@@ -278,15 +281,15 @@ public class ActivitiesController {
                 optionalCreator.get(),
                 new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
-//        activity.setStartDate(startDate);
-//        activity.setEndDate(endDate);
-//        activity.setStartTime(startTime);
-//        activity.setEndTime(endTime);
         activity.setStartTime(createActivityRequest.getStartTime());
         activity.setEndTime(createActivityRequest.getEndTime());
         activity.setLocation(createActivityRequest.getLocation());
-
-        return new ActivityResponse(activityRepository.save(activity));
+        for (ActivityOutcomeRequest outcome : createActivityRequest.getOutcomes()) {
+            activity.addOutcome(new ActivityOutcome(outcome.getDescription(), outcome.getUnits()));
+        }
+        activity = activityRepository.save(activity);
+        changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
+        return new ActivityResponse(activity, 1L, 1L);
     }
 
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
@@ -294,18 +297,7 @@ public class ActivitiesController {
     @Deprecated
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
-
-        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-        if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
-        }
-
-        return new ActivityResponse(optionalActivity.get());
+        return getSingleActivity(activityId, request);
     }
 
     /**
@@ -319,19 +311,18 @@ public class ActivitiesController {
     @GetMapping("/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse getSingleActivity(@PathVariable("activityId") long activityId,
-                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesnt exist");
+            throw new RecordNotFoundException("Activity doesn't exist");
         }
 
-        return new ActivityResponse(optionalActivity.get());
+        Activity activity = optionalActivity.get();
+
+        return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
     /**
@@ -345,13 +336,9 @@ public class ActivitiesController {
     @GetMapping("/profiles/{profileId}/activities")
     @CrossOrigin
     public List<ActivityResponse> getActivitiesByCreator(@PathVariable("profileId") long profileId,
-                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+                                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if(authId == null){
-
-            throw new UserNotAuthenticatedException("User is not authenticated");
-        }
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
         if (optionalCreator.isEmpty()) {
@@ -361,10 +348,26 @@ public class ActivitiesController {
         List<Activity> activities = activityRepository.findActivitiesByCreator(optionalCreator.get());
         List<ActivityResponse> responseActivities = new ArrayList<>();
         for (Activity activity : activities) {
-            responseActivities.add(new ActivityResponse(activity));
+            responseActivities.add(new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity)));
         }
 
         return responseActivities;
+    }
+
+    /**
+     * Gets the amount of users following the given activity
+     * @param activity Activity to get the follower count of
+     */
+    private Long getActivityFollowerCount(Activity activity) {
+    	return subscriptionRepository.getFollowerCount(activity.getId());
+    }
+
+    /**
+     * Gets the amount of users participating in the given activity
+     * @param activity Activity to get the participant count of
+     */
+    private Long getActivityParticipantCount(Activity activity) {
+    	return this.userActivityRoleRepository.getParticipantCountByActivityId(activity.getId());
     }
 
 }

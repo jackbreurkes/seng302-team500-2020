@@ -1,11 +1,14 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.data.UserActivityRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +38,15 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
     )
     public List<User> getInvolvedUsersByActivityId(long activity_id);
 
+	/**
+	 * Named query for getting the number of participants in an activity
+	 * @param activity_id of activity
+	 * @return amount of users with participant role in the given activity
+	 */
+		@Query(
+			value= "SELECT COUNT(a) FROM UserActivityRole a WHERE a.activity.activity_id = ?1 AND a.activityRole = com.springvuegradle.model.data.ActivityRole.PARTICIPANT"
+	)
+	public Long getParticipantCountByActivityId(long activity_id);
 
     /**
      * Named query for getting the table entry to ret
@@ -45,4 +57,18 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
             value = "SELECT a FROM UserActivityRole a WHERE a.user.uuid = ?1 AND a.activity.activity_id = ?2"
     )
     public Optional<UserActivityRole> getRoleEntryByUserId(long uuid, long activity_id);
+
+    /**
+     * Updates the role for a given user in a given activity
+     * @param activityRole The new role of the user
+     * @param uuid The users id
+     * @param activity_id The activity id
+     */
+    @Transactional
+    @Modifying
+    @Query(
+            value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
+    )
+    public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+    
 }

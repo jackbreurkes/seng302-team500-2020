@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
@@ -60,17 +61,13 @@ public class NewEmailController {
 	@PostMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
 	public ResponseEntity<?> updateEmails(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, UserNotAuthenticatedException, AccessDeniedException, InvalidRequestFieldException, ForbiddenOperationException, RecordNotFoundException {
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
 		User user = userRepo.getOne(profileId);
 		if (user == null) {
 			throw new RecordNotFoundException("No user " + profileId);
 		}
-		
-        // check correct authentication
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if (authId == null) {
-            throw new UserNotAuthenticatedException("You must be an authenticated user.");
-        }
-        
+
         Optional<User> userRequesting = userRepo.findById(authId);
         if (userRequesting.isPresent() && (userRequesting.get().getPermissionLevel() > 120 || authId == profileId)) {
 		
@@ -107,17 +104,13 @@ public class NewEmailController {
 	@PutMapping("/profiles/{profileId}/emails")
 	@CrossOrigin
 	public ResponseEntity<?> updatePrimaryEmail(@RequestBody String raw, @PathVariable("profileId") long profileId, HttpServletRequest request) throws NoSuchAlgorithmException, InvalidRequestFieldException, UserNotAuthenticatedException, ForbiddenOperationException, RecordNotFoundException {
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
 		User user = userRepo.getOne(profileId);
 		if (user == null) {
 			throw new RecordNotFoundException("No user " + profileId);
 		}
-		
-        // check correct authentication
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if (authId == null) {
-            throw new UserNotAuthenticatedException("You must be an authenticated user.");
-        }
-        
+
         Optional<User> userRequesting = userRepo.findById(authId);
         
         // Check that the requester is either the user to update or an admin

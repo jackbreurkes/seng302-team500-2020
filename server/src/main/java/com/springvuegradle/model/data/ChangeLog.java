@@ -1,22 +1,18 @@
 package com.springvuegradle.model.data;
 
-import java.time.LocalDate;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * JPA representation of a change log entry
  *
  */
-
 @Entity
 @Table(name = "changelog")
 public class ChangeLog {
@@ -26,32 +22,35 @@ public class ChangeLog {
 	private long changeId;
 
 	@NotNull
-	private ChangeLogEntity entity;
+	@Enumerated(EnumType.STRING)
+	protected ChangeLogEntity entity;
 
 	@NotNull
-	private long entityId;
+	protected long entityId;
 
 	@NotNull
-	private ChangedAttribute changedAttribute;
+	@Enumerated(EnumType.STRING)
+	protected ChangedAttribute changedAttribute;
 
 	@ManyToOne
 	@JoinColumn(name = "uuid")
-	private User editingUser;
+	protected User editingUser;
 
 	@NotNull
-	private ActionType actionType;
+	@Enumerated(EnumType.STRING)
+	protected ActionType actionType;
 
-	private String oldValue;
+	protected String oldValue;
 
-	private String newValue;
+	protected String newValue;
 
 	@CreationTimestamp
-	private LocalDate timestamp;
+	private OffsetDateTime timestamp;
 
 	/**
 	 * Construct a change log entry object and automatically assign their ID
 	 */
-	public ChangeLog() {
+	protected ChangeLog() {
 	}
 
 	/**
@@ -65,8 +64,8 @@ public class ChangeLog {
 	 * @param newValue (if present) the new value that the changed attribute was set to
 	 */
 	public ChangeLog(@NotNull ChangeLogEntity entity, @NotNull long entityId,
-			@NotNull ChangedAttribute changedAttribute, User editingUser, @NotNull ActionType actionType,
-			String oldValue, String newValue) {
+					 @NotNull ChangedAttribute changedAttribute, User editingUser, @NotNull ActionType actionType,
+					 String oldValue, String newValue) {
 		super();
 		this.entity = entity;
 		this.entityId = entityId;
@@ -141,8 +140,12 @@ public class ChangeLog {
 		this.newValue = newValue;
 	}
 
-	public LocalDate getTimestamp() {
+	public OffsetDateTime getTimestamp() {
 		return timestamp;
+	}
+
+	public void setOffsetDateTime(OffsetDateTime offsetDateTime) {
+		this.timestamp = offsetDateTime;
 	}
 
 }
