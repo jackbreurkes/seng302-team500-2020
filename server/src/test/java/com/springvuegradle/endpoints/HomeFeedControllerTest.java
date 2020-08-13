@@ -93,17 +93,33 @@ public class HomeFeedControllerTest {
             changeLogList.add(change);
             homeFeedJson += getChangeLogResponseJson(change, swimming) + ",";
         }
-
-        ChangeLog cyclingChangeLog = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_DESCRIPTION,
-                profile.getUser(), ActionType.UPDATED, "Old description", "New description");
-        changeLogList.add(cyclingChangeLog);
-        cyclingChangeLog.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
-        homeFeedJson += getChangeLogResponseJson(cyclingChangeLog, cycling) + "]";
+        // Add change of timeframe
+        ChangeLog cyclingChangeLog1 = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_TIME_FRAME,
+                profile.getUser(), ActionType.CREATED,
+                "{\"start_time\":\"2020-08-01T10:06:00+1200\",\"end_time\":\"2020-08-02T10:06:00+1200\"}",
+                "{\"start_time\":\"2021-08-02T10:06:00+1200\",\"end_time\":\"2021-08-03T10:06:00+1200\"}");
+        changeLogList.add(cyclingChangeLog1);
+        cyclingChangeLog1.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
+        homeFeedJson += getChangeLogResponseJson(cyclingChangeLog1, cycling) + ",";
+        // Add change of activity types
+        ChangeLog cyclingChangeLog2 = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_ACTIVITY_TYPES,
+                profile.getUser(), ActionType.UPDATED,
+                "[\"Swimming\"]",
+                "[\"Swimming\",\"Cycling\"]");
+        changeLogList.add(cyclingChangeLog2);
+        cyclingChangeLog2.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
+        homeFeedJson += getChangeLogResponseJson(cyclingChangeLog2, cycling) + "]";
 
         Mockito.when(changeLogRepository.retrieveUserHomeFeedUpdates(profile)).thenReturn(changeLogList);
     }
 
     private String getChangeLogResponseJson(ChangeLog changeLog, Activity activity) {
+        String oldValue = changeLog.getOldValue();
+        String newValue = changeLog.getNewValue();
+        if (changeLog.getChangedAttribute() != ChangedAttribute.ACTIVITY_ACTIVITY_TYPES && changeLog.getChangedAttribute() != ChangedAttribute.ACTIVITY_TIME_FRAME) {
+            oldValue = "\"" + oldValue + "\"";
+            newValue = "\"" + newValue + "\"";
+        }
         return "{" +                  // Format taken from api spec for GET /homefeed/profileId on wiki
                 "\"entity_type\":\"ACTIVITY\"," +
                 "\"entity_id\":" + activity.getId() + "," +
@@ -113,10 +129,10 @@ public class HomeFeedControllerTest {
                 "\"edited_timestamp\":\"" + changeLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")) + "\"," +
                 "\"editor_id\":" + activity.getCreator().getUser().getUserId() + "," +
                 "\"editor_name\":\"" + activity.getCreator().getFullName(false) + "\"," +
-                "\"changed_attribute\":\"ACTIVITY_DESCRIPTION\"," +
-                "\"action_type\":\"UPDATED\"," +
-                "\"old_value\":\"" + changeLog.getOldValue() + "\"," +
-                "\"new_value\":\"" + changeLog.getNewValue() + "\"" +
+                "\"changed_attribute\":\"" + changeLog.getChangedAttribute().toString().toUpperCase() + "\"," +
+                "\"action_type\":\"" + changeLog.getActionType().toString().toUpperCase() + "\"," +
+                "\"old_value\":" + oldValue + "," +
+                "\"new_value\":" + newValue + "" +
                 "}";
     }
 
