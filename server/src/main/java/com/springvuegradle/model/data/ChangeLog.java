@@ -6,12 +6,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * JPA representation of a change log entry
  *
  */
-
 @Entity
 @Table(name = "changelog")
 public class ChangeLog {
@@ -44,7 +45,7 @@ public class ChangeLog {
 	protected String newValue;
 
 	@CreationTimestamp
-	private LocalDateTime timestamp;
+	private OffsetDateTime timestamp;
 
 	/**
 	 * Construct a change log entry object and automatically assign their ID
@@ -139,8 +140,12 @@ public class ChangeLog {
 		this.newValue = newValue;
 	}
 
-	public LocalDateTime getTimestamp() {
+	public OffsetDateTime getTimestamp() {
 		return timestamp;
+	}
+
+	public void setOffsetDateTime(OffsetDateTime offsetDateTime) {
+		this.timestamp = offsetDateTime;
 	}
 
 }
