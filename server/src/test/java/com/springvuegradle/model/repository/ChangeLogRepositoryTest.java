@@ -61,7 +61,7 @@ public class ChangeLogRepositoryTest {
     @Test
     public void testRetrieveUserHomeFeedUpdatesWithNoUpdates() {
         // Subscribe to the activity "Walking" which has no updates in the repository
-        Subscription subscription = new Subscription(profile2, HomefeedEntityType.ACTIVITY, activities.get(2).getId());
+        Subscription subscription = new Subscription(profile2, ChangeLogEntity.ACTIVITY, activities.get(2).getId());
         subscriptionRepository.save(subscription);
 
         List<ChangeLog> homeFeedUpdates = changeLogRepository.retrieveUserHomeFeedUpdates(profile2);
@@ -72,7 +72,7 @@ public class ChangeLogRepositoryTest {
     public void testRetrieveUserHomeFeedUpdatesWithUpdates() {
         Activity swimming = activities.get(0);
         // Subscribe to the activity "Swimming"
-        Subscription subscription = new Subscription(profile1, HomefeedEntityType.ACTIVITY, swimming.getId());
+        Subscription subscription = new Subscription(profile1, ChangeLogEntity.ACTIVITY, swimming.getId());
         subscriptionRepository.save(subscription);
 
         Profile editingUser = new Profile(new User(), "Editing", "Man", LocalDate.now(), Gender.NON_BINARY);

@@ -9,12 +9,18 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Endpoint for the GET /homefeed/{profile_id} request
@@ -38,6 +44,7 @@ public class HomeFeedController {
     /**
      * Retrieve and respond to a request to get a user's home feed updates
      * @param profileId id of the user whose home feed it should return
+     * @param timestamp the timestamp to search for changelog entries from before. should be in ISO8601 format without final colon
      * @param httpRequest http request made
      * @return list of HomeFeedResponse objects which give appropriately formatted information about changes
      * @throws ForbiddenOperationException if trying to retrieve another user's home feed
@@ -49,34 +56,78 @@ public class HomeFeedController {
     @GetMapping("/{profileId}")
     @CrossOrigin
     public List<HomeFeedResponse> getUserHomeFeed(@PathVariable("profileId") long profileId,
+                                                  @RequestParam(required = false) String timestamp,
                                                   HttpServletRequest httpRequest)
-            throws ForbiddenOperationException, UserNotAuthorizedException, UserNotAuthenticatedException,
+            throws UserNotAuthorizedException, UserNotAuthenticatedException,
                 InvalidRequestFieldException, RecordNotFoundException {
 
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest);
-        if (!authId.equals(profileId)) {
-            throw new ForbiddenOperationException("cannot retrieve another user's home feed");
-        }
+        UserAuthorizer.getInstance().checkIsTargetUser(httpRequest, profileId);
 
-        Optional<Profile> profile = profileRepository.findById(profileId);
-        if (profile.isEmpty()) {
+        Profile profile = profileRepository.findById(profileId).orElse(null);
+        if (profile == null) {
             throw new RecordNotFoundException("user profile does not exist");
         }
 
-        List<ChangeLog> changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile.get());
-        List<HomeFeedResponse> homeFeedResponses = new ArrayList<>();
-        for (ChangeLog change : changeLogList) {
-            if (change.getEntity().equals(ChangeLogEntity.ACTIVITY)) {
-                Activity activity = getActivityIfExists(change.getEntityId());
-                Profile editingProfile = getProfileIfExists(change.getEditingUser().getUserId());
-                HomeFeedResponse response = new HomeFeedResponse(change, activity, editingProfile);
-                homeFeedResponses.add(response);
-            } else {
-                throw new InvalidRequestFieldException("changes to this type of entity are not supported in the home feed");
+        List<ChangeLog> changeLogList;
+        if (timestamp == null) {
+            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile);
+        } else {
+            ZonedDateTime latestTimestamp;
+            try {
+                TemporalAccessor timestampAccessor = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse(timestamp);
+                latestTimestamp = ZonedDateTime.from(timestampAccessor);
+            } catch (DateTimeParseException e) {
+                throw new InvalidRequestFieldException("timestamp " + timestamp + " could not be parsed");
             }
+            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdatesBeforeTime(profile, latestTimestamp);
+        }
+        return getHomeFeedResponsesFromChanges(changeLogList);
+    }
+
+    /**
+     * returns a list of all the home feed responses that should be generated from a list of changes.
+     * @param changes the list of ChangeLogs to generate HomeFeedReseponses for
+     * @return a list of HomeFeedResponses suited to the given changes
+     */
+    List<HomeFeedResponse> getHomeFeedResponsesFromChanges(List<ChangeLog> changes) {
+        Set<Long> activityIds = changes.stream()
+                .filter(changeLog -> changeLog.getEntity() == ChangeLogEntity.ACTIVITY)
+                .map(ChangeLog::getEntityId).collect(Collectors.toSet());
+        HashMap<Long, Activity> activities = new HashMap<>();
+        for (long activityId : activityIds) {
+            activities.put(activityId, activityRepository.findById(activityId).orElse(null));
+        }
+
+        List<HomeFeedResponse> homeFeedResponses = new ArrayList<>();
+        for (ChangeLog change : changes) {
+            if (change.getEntity().equals(ChangeLogEntity.ACTIVITY)) {
+                HomeFeedResponse response = getActivityChangeLogResponse(change, activities);
+                if (response != null) {
+                    homeFeedResponses.add(response);
+                }
+            }
+            // do nothing if change has an unsupported entity type
         }
         return homeFeedResponses;
+    }
+
+    /**
+     * returns a suitable HomeFeedResponse for an activity changelog
+     * @param change a changelog with an entity type of Activity
+     * @param activities a hashmap mapping changelog entity IDs to activities, or null objects if the activities are deleted
+     * @return a suitable HomeFeedResponse, or null if no home feed entry should be generated for this change
+     */
+    HomeFeedResponse getActivityChangeLogResponse(ChangeLog change, HashMap<Long, Activity> activities) {
+        Activity activity = activities.get(change.getEntityId());
+        Profile editor = profileRepository.findById(change.getEditingUser().getUserId()).orElse(null);
+        if (activity == null) {
+            boolean isDeleteChangeLog = change.getActionType() == ActionType.DELETED
+                    && change.getChangedAttribute() == ChangedAttribute.ACTIVITY_EXISTENCE;
+            return isDeleteChangeLog ? new HomeFeedResponse(change, change.getOldValue(), editor) : null;
+        }
+
+        // activity still exists
+        return new HomeFeedResponse(change, activity, editor);
     }
 
     /**

@@ -42,7 +42,7 @@ public class Subscription {
 	 * The type of entity that entityId represents
 	 */
 	@Enumerated(EnumType.ORDINAL)
-	private HomefeedEntityType entityType;
+	private ChangeLogEntity entityType;
 	
 	/**
 	 * The unique ID of the subscribed entity 
@@ -69,7 +69,7 @@ public class Subscription {
 	 * @param entityType The type of entity this subscription represents
 	 * @param entityId The unique ID of the entity this subscription represents
 	 */
-	public Subscription(Profile subscriber, HomefeedEntityType entityType, long entityId) {
+	public Subscription(Profile subscriber, ChangeLogEntity entityType, long entityId) {
 		this.subscriber = subscriber;
 		this.entityType = entityType;
 		this.entityId = entityId;
@@ -92,11 +92,11 @@ public class Subscription {
 		this.subscriber = subscriber;
 	}
 
-	public HomefeedEntityType getEntityType() {
+	public ChangeLogEntity getEntityType() {
 		return entityType;
 	}
 
-	public void setEntityType(HomefeedEntityType entityType) {
+	public void setEntityType(ChangeLogEntity entityType) {
 		this.entityType = entityType;
 	}
 

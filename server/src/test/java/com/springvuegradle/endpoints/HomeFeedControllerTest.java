@@ -4,13 +4,8 @@ import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -89,7 +85,7 @@ public class HomeFeedControllerTest {
         for (String[] values : changeValues) {
             ChangeLog change = new ChangeLog(ChangeLogEntity.ACTIVITY, swimming.getId(), ChangedAttribute.ACTIVITY_DESCRIPTION,
                     profile.getUser(), ActionType.UPDATED, values[0], values[1]);
-            change.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
+            change.setOffsetDateTime(ZonedDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
             changeLogList.add(change);
             homeFeedJson += getChangeLogResponseJson(change, swimming) + ",";
         }
@@ -99,7 +95,7 @@ public class HomeFeedControllerTest {
                 null,
                 "{\"start_time\":\"2021-08-02T10:06:00+1200\",\"end_time\":\"2021-08-03T10:06:00+1200\"}");
         changeLogList.add(cyclingChangeLog1);
-        cyclingChangeLog1.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
+        cyclingChangeLog1.setOffsetDateTime(ZonedDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
         homeFeedJson += getChangeLogResponseJson(cyclingChangeLog1, cycling) + ",";
         // Add change of activity types
         ChangeLog cyclingChangeLog2 = new ChangeLog(ChangeLogEntity.ACTIVITY, cycling.getId(), ChangedAttribute.ACTIVITY_ACTIVITY_TYPES,
@@ -107,7 +103,7 @@ public class HomeFeedControllerTest {
                 "[\"Swimming\"]",
                 "[\"Swimming\",\"Cycling\"]");
         changeLogList.add(cyclingChangeLog2);
-        cyclingChangeLog2.setOffsetDateTime(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
+        cyclingChangeLog2.setOffsetDateTime(ZonedDateTime.of(2000, 1, 1, 1, 1, 1, 0, ZoneOffset.UTC));
         homeFeedJson += getChangeLogResponseJson(cyclingChangeLog2, cycling) + "]";
 
         Mockito.when(changeLogRepository.retrieveUserHomeFeedUpdates(profile)).thenReturn(changeLogList);
