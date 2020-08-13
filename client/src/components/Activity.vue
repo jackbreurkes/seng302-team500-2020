@@ -88,10 +88,10 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary" :disabled="participating"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
+                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
-                  <v-btn @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                  <v-btn id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
                 </div>
               </v-card-actions>
 
@@ -157,6 +157,10 @@ const Activity = Vue.extend({
         .then((following) => {
           this.following = following;
         })
+        activityController.getIsParticipating(this.currentProfileId, this.activityId)
+        .then((participating) => {
+          this.participating = participating
+        })
       })
       .catch(() => {
         this.$router.back();
@@ -183,7 +187,7 @@ const Activity = Vue.extend({
           this.following = false
         })
         .catch((err) => {
-          console.log(err)
+          console.error(err)
         })
       } else {
         followActivity(this.currentProfileId, this.activityId)
@@ -191,20 +195,21 @@ const Activity = Vue.extend({
           this.following = true
         })
         .catch((err) => {
-          console.log(err)
+          console.error(err)
         })
       }
     },
     /** Toggle the user's participation in this activity */
     toggleParticipation: function() {
-      console.log("Participation functionality has not yet been implemented.")
-    },
-    /** Retrieve whether the user is following the activity from the server and update the appropriate model variable. */
-    getFollowingStatus: async function() {
-      getIsFollowingActivity(this.currentProfileId, this.activityId)
-      .then((following) => {
-        this.following = following;
-      })
+      if (!this.participating) {
+        activityController.participateInActivity(this.currentProfileId, this.activityId)
+          .then(() => this.participating = true)
+          .catch((e) => { console.error(e) });
+      } else {
+        activityController.removeActivityRole(this.currentProfileId, this.activityId)
+          .then(() => this.participating = false)
+          .catch((e) => { console.error(e) });
+      }
     },
     /** Navigate back to the last page the user was on. */
     backButtonClicked() {

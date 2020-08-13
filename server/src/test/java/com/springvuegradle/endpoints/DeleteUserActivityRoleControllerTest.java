@@ -1,7 +1,5 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.ActivityRepository;
@@ -9,6 +7,7 @@ import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
@@ -23,8 +22,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DeleteUserActivityRoleControllerTest {
@@ -46,9 +45,10 @@ public class DeleteUserActivityRoleControllerTest {
         MockitoAnnotations.initMocks(this);
     }
 
-
     @Test
     void testDeleteUserActivityRoleAsCreator() throws Exception {
+        Mockito.reset(userActivityRoleRepository);
+
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -76,12 +76,13 @@ public class DeleteUserActivityRoleControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 65L);
 
-        ResponseEntity<Object> response = userActivityRoleController.deleteUserActivityRole(2L, 1L, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        userActivityRoleController.deleteUserActivityRole(2L, 1L, request);
+        Mockito.verify(userActivityRoleRepository, times(1)).delete(Mockito.any());
     }
 
     @Test
     void testDeleteUserActivityRoleAsAdmin() throws Exception {
+        Mockito.reset(userActivityRoleRepository);
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -113,8 +114,8 @@ public class DeleteUserActivityRoleControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 100L);
 
-        ResponseEntity<Object> response = userActivityRoleController.deleteUserActivityRole(2L, 1L, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        userActivityRoleController.deleteUserActivityRole(2L, 1L, request);
+        Mockito.verify(userActivityRoleRepository, times(1)).delete(Mockito.any());
     }
 
     @Test

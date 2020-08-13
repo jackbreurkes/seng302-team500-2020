@@ -43,29 +43,50 @@ public class UserAuthorizer {
     }
 
     /**
-     * Checks if the user making the request is authorised to perform operation requested
-     * @param request the HttpServletRequest for the operation
-     * @param profileId the ID of the user to be authenticated
-     * @return The user Id if the user is authenticated
+     * checks whether a user's authentication has succeeded.
+     * @param request the request for the operation
+     * @return the user ID if the user is authenticated
      * @throws UserNotAuthenticatedException if the user is not authenticated
      */
-
-    public long checkIsAuthenticated(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+    public long checkIsAuthenticated(HttpServletRequest request) throws UserNotAuthenticatedException {
         Long authId = (Long) request.getAttribute("authenticatedid");
-
-        if(authId == null) {
-            throw new UserNotAuthenticatedException("You are not authenticated");
+        if(authId == null){
+            throw new UserNotAuthenticatedException("you are not authenticated");
         }
+        return authId;
+    }
 
-        if(authId.equals(profileId)){
-            return authId;
+    /**
+     * checks whether a user's token is that of an administrator.
+     * @param request the request for the operation
+     * @return the user ID if the user is authenticated as an admin
+     * @throws UserNotAuthenticatedException if the user is not authenticated as an admin
+     */
+    public long checkIsAdmin(HttpServletRequest request, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+        long authId = checkIsAuthenticated(request);
+        User editingUser = userRepository.findById(authId).orElse(null);
+        if (editingUser != null && editingUser.getPermissionLevel() < ADMIN_USER_MINIMUM_PERMISSION) {
+            throw new UserNotAuthorizedException("user is not an admin");
         }
+        return authId;
+    }
+
+    /**
+     * Checks if the user making the request is authorised as the target user identified by the given ID or as an admin.
+     * @param request the HttpServletRequest for the operation
+     * @param profileId the ID of the target user
+     * @return The user ID if the user is authenticated as the target user or as an admin
+     * @throws UserNotAuthenticatedException if the user is not authenticated as the given profileId
+     */
+    public long checkIsTargetUserOrAdmin(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+        long authId = checkIsAuthenticated(request);
+
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) {
             throw new UserNotAuthenticatedException("You are not authenticated");
         }
 
-        if(editingUser.getPermissionLevel() < ADMIN_USER_MINIMUM_PERMISSION) {
+        if (authId != profileId && editingUser.getPermissionLevel() < ADMIN_USER_MINIMUM_PERMISSION) {
             throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
         }
         return authId;
@@ -83,10 +104,7 @@ public class UserAuthorizer {
      * @throws UserNotAuthorizedException if the user does not have permission
      */
     public long checkIsRoleAuthenticated(HttpServletRequest request, Long profileId, Long activityId, UserRepository userRepository, UserActivityRoleRepository userActivityRoleRepository, ActivityRepository activityRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        if (authId == null) {
-            throw new UserNotAuthenticatedException("You are not authenticated");
-        }
+        long authId = checkIsAuthenticated(request);
 
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) {
@@ -113,5 +131,4 @@ public class UserAuthorizer {
         return authId; //if an organiser
 
     }
-
 }
