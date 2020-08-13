@@ -54,7 +54,7 @@ public class HomeFeedController {
                 InvalidRequestFieldException, RecordNotFoundException {
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsAuthenticated(httpRequest);
         if (!authId.equals(profileId)) {
             throw new ForbiddenOperationException("cannot retrieve another user's home feed");
         }
