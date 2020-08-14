@@ -1,37 +1,7 @@
 <template>
   <div v-if="activities.length > 0">
     <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4" @click="goToActivity(activity.activity_id)">
-      <v-card-title>
-        {{ activity.activity_name }} ({{ activity.location }})
-        <v-spacer></v-spacer>
-        <v-chip
-          class="ml-2"
-          @click="editActivity(`${activity.activity_id}`)"
-          v-if="hasAuthority"
-        >Edit</v-chip>
-        <v-tooltip top>
-          <template v-slot:activator="{ on }">
-            <div v-on="on">
-              <v-chip class="ml-2" id="creatorChip" v-if="activity.creator_id === profileId" outlined>Creator</v-chip>
-            </div>
-          </template>
-          <span>Your role</span>
-        </v-tooltip>
-      </v-card-title>
-      <v-card-text>
-        <span class="subtitle-1">{{ activity.description }}</span>
-        <br />
-        <p
-          class="body-2"
-        >{{ activity.continuous ? 'continuous' : getDurationDescription(activity.start_time, activity.end_time) }}</p>
-        <v-spacer></v-spacer>
-        <v-chip
-          class="mr-2 mb-2"
-          v-for="activityType of activity.activity_type"
-          v-bind:key="activityType"
-          outlined
-        >{{ activityType }}</v-chip>
-      </v-card-text>
+      <ActivityCard :activityName="activity.activity_name" :activityLocation="activity.location" :activityDescription="activity.description" :isContinuous="activity.continuous" :activityStartTime="activity.start_time" :activityEndTime="activity.end_time" :activityType="activity.activity_type" :activityId="activity.activity_id" :creatorId="activity.creator_id" :authority="hasAuthority" ></ActivityCard>
     </v-card>
   </div>
   <div v-else>
@@ -41,24 +11,20 @@
 
 <script lang="ts">
 import Vue from "vue";
-import * as activityController from "../controllers/activity.controller";
+import ActivityCard from "./ActivityCard.vue"
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
 
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["profileId", "authority", "activities"], // props are passed in from the parent component
+  props: ["profileId", "authority", "activities", "myProfileId"], // props are passed in from the parent component
+  components: { ActivityCard },
 
   // app initial state
   data: function() {
     return {
       hasAuthority: this.authority as boolean,
-      isValid: false,
-      mandatoryAttributes: ["email", "password"],
-      email: "",
-      password: "",
-      errorMessage: "",
     };
   },
 
@@ -71,19 +37,7 @@ const ActivitiesList = Vue.extend({
   },
 
   methods: {
-    getDurationDescription(startTime: string, endTime: string): string {
-      return activityController.describeDurationTimeFrame(startTime, endTime);
-    },
-    editActivity(activityId: number) {
-      this.$router.push(
-        `/profiles/${this.profileId}/editActivity/${activityId}`
-      );
-    },
-    goToActivity(activityId: number) {
-      this.$router.push(
-        `/profiles/${this.profileId}/activities/${activityId}`
-      );
-    }
+    
   }
 });
 
