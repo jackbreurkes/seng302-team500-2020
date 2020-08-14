@@ -375,7 +375,46 @@ public class ActivitiesController {
 
         return responseActivities;
     }
-    
+
+    /**
+     * Putmapping for updating a participant result
+     * @param activityId the activity the result is associated to
+     * @param updateActivityResultRequest the new information body
+     * @param errors
+     * @param request
+     * @throws InvalidRequestFieldException if the json is malformed
+     * @throws RecordNotFoundException if the result cannot be found
+     * @throws UserNotAuthenticatedException if the user is not authenticated
+     */
+    @PutMapping("/activities/{activityId}/results")
+    @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
+    public void updateActivityResult(@PathVariable("activityId") long activityId,
+                                     @Valid @RequestBody RecordOneActivityResultsRequest updateActivityResultRequest,
+                                     Errors errors,
+                                     HttpServletRequest request) throws InvalidRequestFieldException,
+            RecordNotFoundException, UserNotAuthenticatedException {
+        if (errors.hasErrors()) {
+            String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
+
+        Long authId = (Long) request.getAttribute("authenticatedid");
+
+        if (authId == null){
+            throw new UserNotAuthenticatedException("User is not authenticated");
+        }
+
+        ActivityParticipantResult result = activityResultRepository.findById(updateActivityResultRequest.getOutcomeId()).orElse(null);
+
+        if(result == null){
+            throw new RecordNotFoundException("Result does not exist");
+        }
+        result.setValue(updateActivityResultRequest.getResult());
+        result.setCompletedDate(updateActivityResultRequest.getCompletedDate());
+        activityResultRepository.save(result);
+    }
+
     /**
      * endpoint function for POST /profiles/{profileId}/activities
      * @param activityId Activity ID the results are for
