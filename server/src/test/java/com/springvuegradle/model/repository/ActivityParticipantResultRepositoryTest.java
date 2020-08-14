@@ -56,12 +56,12 @@ public class ActivityParticipantResultRepositoryTest {
     @BeforeAll
     public void populateData(){
         //create and save Activity types
-        ActivityType walking = new ActivityType("A");
-        ActivityType running = new ActivityType("B");
-        ActivityType biking = new ActivityType("D");
-        activityTypeRepository.save(walking);
-        activityTypeRepository.save(running);
-        activityTypeRepository.save(biking);
+        ActivityType walkingTime = new ActivityType("walking");
+        ActivityType runningTime = new ActivityType("running");
+        ActivityType bikingTime = new ActivityType("biking");
+        activityTypeRepository.save(walkingTime);
+        activityTypeRepository.save(runningTime);
+        activityTypeRepository.save(bikingTime);
 
         //create and save profiles
         profile1 = new Profile(new User(), "Bill", "Testman", LocalDate.EPOCH, Gender.NON_BINARY);
@@ -78,9 +78,9 @@ public class ActivityParticipantResultRepositoryTest {
         profileRepository.save(profile6);
 
         //create and save activities
-        activity1 = new Activity("Run 100m", false, "New Zealand", profile1, Collections.singleton(walking));
-        activity2 = new Activity("top speed ", false, "New Zealand", profile2, Collections.singleton(running));
-        activity3 = new Activity("HOW MANY LEGS YA GOT?!??!", false, "New Zealand", profile3, Collections.singleton(biking));
+        activity1 = new Activity("Run 100m", false, "New Zealand", profile1, Collections.singleton(walkingTime));
+        activity2 = new Activity("top speed ", false, "New Zealand", profile2, Collections.singleton(runningTime));
+        activity3 = new Activity("HOW MANY LEGS YA GOT?!??!", false, "New Zealand", profile3, Collections.singleton(bikingTime));
         activityRepository.save(activity1);
         activityRepository.save(activity2);
         activityRepository.save(activity3);
