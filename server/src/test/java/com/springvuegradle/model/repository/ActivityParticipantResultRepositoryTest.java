@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
+@DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class ActivityParticipantResultRepositoryTest {
@@ -56,9 +57,9 @@ public class ActivityParticipantResultRepositoryTest {
     @BeforeAll
     public void populateData(){
         //create and save Activity types
-        ActivityType walkingTime = new ActivityType("walking");
-        ActivityType runningTime = new ActivityType("running");
-        ActivityType bikingTime = new ActivityType("biking");
+        ActivityType walkingTime = new ActivityType("Frisbeeing");
+        ActivityType runningTime = new ActivityType("Debugging");
+        ActivityType bikingTime = new ActivityType("PooAndPissing");
         activityTypeRepository.save(walkingTime);
         activityTypeRepository.save(runningTime);
         activityTypeRepository.save(bikingTime);
