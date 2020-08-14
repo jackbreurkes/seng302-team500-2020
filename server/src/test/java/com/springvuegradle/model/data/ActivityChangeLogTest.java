@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ActivityChangeLogTest {
 
     final String TIME_FRAME_FORMAT = "{\"start_time\": \"%s\", \"end_time\": \"%s\"}";
+    private final String OUTCOME_CHANGELOG_FORMAT = "{ \"description\": \"%s\", \"unit\": \"%s\" }";
 
     ActivityType testWalkingActivityType;
     ActivityType testJoggingActivityType;
