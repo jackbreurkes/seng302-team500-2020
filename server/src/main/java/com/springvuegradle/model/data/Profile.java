@@ -327,4 +327,17 @@ public class Profile implements Serializable {
 	public void setLocation(Location location) {
 		this.location = location;
 	}
+
+	/**
+	 * Get the full name associated with the profile (with middle name option)
+	 * @param middleNameIncluded whether to include the middle name in the full name retrieved
+	 * @return String representation of the full name associated with the profile (includes middle name only if parameter is true)
+	 */
+	public String getFullName(boolean middleNameIncluded) {
+		if (middleNameIncluded) {
+			return this.firstName + " " + this.middleName + " " + this.lastName;
+		} else {
+			return this.firstName + " " + this.lastName;
+		}
+	}
 }

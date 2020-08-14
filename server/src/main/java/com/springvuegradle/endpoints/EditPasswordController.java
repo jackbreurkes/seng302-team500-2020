@@ -48,7 +48,7 @@ public class EditPasswordController {
 
         Optional<User> editingUser = userRepository.findById(authId);
 
-        UserAuthorizer.getInstance().checkIsAuthenticated(request, profileId, userRepository);
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         // check for missing fields
         if (updatePasswordRequest.getNewPassword() == null) {
