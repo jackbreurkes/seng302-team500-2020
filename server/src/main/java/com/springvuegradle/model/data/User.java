@@ -2,6 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.*;
@@ -128,4 +129,5 @@ public class User {
 	public void setEmails(List<Email> emails) {
 		this.emails = emails;
 	}
+
 }

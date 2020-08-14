@@ -82,11 +82,8 @@ public class UserProfileController {
     @Autowired
     private RoleRepository roleRepository;
 
-    /**
-     * Repository used for accessing sessions
-     */
     @Autowired
-    private SessionRepository sessionRepository;
+    private ChangeLogRepository changeLogRepository;
 
     /**
      * Repository used for accessing locations
@@ -391,31 +388,6 @@ public class UserProfileController {
     }
 
 
-//    @PutMapping("/profiles/{profileId}/location")
-//    @CrossOrigin
-//    public void updateLocation(@PathVariable("profileId") Long profileId, @RequestBody LocationRequest locationRequest, HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
-//        // check correct authentication
-//        Long authId = (Long) request.getAttribute("authenticatedid");
-//
-//        Optional<User> editingUser = userRepository.findById(authId);
-//
-//
-//        if (locationRequest.getLocation().getCity() == null || locationRequest.getLocation().getCountry() == null) {
-//            throw new InvalidRequestFieldException("location must have a city and a country");
-//        }
-//
-//        Optional<Profile> optionalProfile = profileRepository.findById(profileId);
-//        if (optionalProfile.isEmpty()) {
-//            throw new RecordNotFoundException("no profile with given ID found");
-//        }
-//        Profile profile = optionalProfile.get();
-//
-//        Location location = addLocationIfNotExisting(locationRequest.getLocation());
-//        profile.setLocation(location);
-//        profileRepository.save(profile);
-//    }
-
-
     /**
      * adds a location to the database if it doesn't exist, otherwise returns the existing value.
      * @param location the location to find a match for
@@ -462,9 +434,6 @@ public class UserProfileController {
                                                           @Valid @RequestBody PutActivityTypesRequest putActivityTypesRequest,
                                                           Errors validationErrors,
                                                           HttpServletRequest httpRequest) throws RecordNotFoundException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
-        // authentication
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
         // validate request body
@@ -602,6 +571,8 @@ public class UserProfileController {
         for (Activity activity : createdActivities) {
             activityRepository.delete(activity);
         }
+        changeLogRepository.clearEditorInformation(profileId);
+
         profileRepository.delete(profile);
         return "Deleted profile with id " + user.getUserId();
     }
