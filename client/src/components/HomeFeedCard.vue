@@ -5,9 +5,9 @@
             <v-toolbar @click=activityClicked color="blue" dark flat height='50'>
                 <v-card-title>{{activityName}}</v-card-title>
             </v-toolbar>
-            <v-toolbar-title class="pl-7 pt-3" @click=creatorClicked>Created by {{creatorName}} on {{createdTimestamp}}  </v-toolbar-title>
+            <v-toolbar-title class="pl-7 pt-3" @click=creatorClicked>Created by {{creatorName}}</v-toolbar-title>
                 <v-spacer></v-spacer>
-            <v-card-text class="pl-7">{{userActionName}}, {{userRole}} performed {{userAction}} on {{userActionTimeStamp}}</v-card-text>
+            <v-card-text class="pl-7">{{userActionName}}, performed {{userAction}} on {{userActionTimeStamp}}</v-card-text>
         </v-card>
     </v-layout>
   </div>
@@ -18,29 +18,25 @@ import Vue from 'vue'
 
 const HomeFeedCard = Vue.extend({
     name: "HomeFeedCard",
+    props: ['cardData'],
     data: function(){
         return{
-            activityName: "Activity Name",
-            creatorName: "Creator Name",
-            createdTimestamp: "01/01/1970; 24:70",
-            userActionName: "Users Name",
-            userRole: "Users Role",
-            userAction: "Users Action",
+            activityName: this.cardData.entity_name,
+            creatorName: this.cardData.creator_name,
+            userActionName: this.cardData.editor_action,
+            userAction: this.cardData.editor_action,
             userActionTimeStamp: "01/01/1970; 24:70",
-            entity_id: 1,
-            creator_id: 1   
+            entity_id: this.cardData.entity_id,
+            creator_id: this.cardData.creator_id
         };
     },
     created(){
-        this.getCardData();
+
     },
 
     methods: {
-        getCardData: function(){
-            //TODO 
-        },
         activityClicked: function(){
-            this.$router.push("/activities/" + this.entity_id)
+            this.$router.push("/profiles/" + this.creator_id + "/activities/" + this.entity_id)
         },
         creatorClicked: function(){
             this.$router.push("/profiles/" + this.creator_id)

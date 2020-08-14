@@ -5,7 +5,9 @@
             <v-toolbar color="primary" dark flat>
                 <v-toolbar-title>Home Feed</v-toolbar-title>
             </v-toolbar>
-            <HomeFeedCard></HomeFeedCard>
+            <li v-for="item in changeLogList" :key="item.edited_timeStamp">
+            <HomeFeedCard v-bind:cardData="item">item.creatorName</HomeFeedCard>
+            </li>
         </v-card>
     </v-layout>
   </div>
@@ -14,19 +16,22 @@
 <script lang="ts">
 import Vue from 'vue'
 import HomeFeedCard from "./HomeFeedCard.vue"
-
 import * as HomefeedController from '../controllers/homefeed.controller';
-// app Vue instance
+// eslint-disable-next-line no-unused-vars
+import { HomeFeedCardType } from '../scripts/HomeFeedCardType';
+
 const Homefeed = Vue.extend({
   name: "Homefeed",
   components: {HomeFeedCard},
   // app initial state
   data: function() {
     return {
+      changeLogList: [] as HomeFeedCardType[]
     };
   },
-  created: function(){
-    HomefeedController.getHomeFeedData();
+  created: async function(){
+    this.changeLogList = await HomefeedController.getHomeFeedData();
+    console.log(this.changeLogList);
 
   },
   methods: {
