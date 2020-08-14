@@ -9,11 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -88,13 +87,13 @@ public class ActivitiesControllerTest {
 	private ProfileRepository profileRepo;
 
 	@MockBean
+	private ActivityOutcomeRepository activityOutcomeRepository;
+
+	@MockBean
 	private ChangeLogRepository changeLogRepository;
 	
 	@MockBean
-	private ActivityParticipantResultRepository activityParticipantResultsRepository;
-	
-	@MockBean
-    private ActivityOutcomeRepository activityOutcomeRepository;
+	private ActivityParticipantResultRepository activityParticipantResultRepository;
 
 	User user;
 	Profile profile;
@@ -521,6 +520,149 @@ public class ActivitiesControllerTest {
 					assertTrue(thrown instanceof RecordNotFoundException);
 					assertEquals("Activity doesn't exist", thrown.getMessage());
 				});
+	}
+
+	@Test
+	void testPutActivityParticipantResultAsUser_200() throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk());
+
+	}
+	@Test
+	void testPutActivityParticipantResultNullDate_400() throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" null \"}";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().is(400));
+	}
+	@Test
+	void testPutActivityParticipantResultNotLoggedIn_401() throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().is(401));
+	}
+
+	@Test
+	void testPutActivityParticipantResultUnauthorizedUser_404() throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().is(404));
+
 	}
 }
 
