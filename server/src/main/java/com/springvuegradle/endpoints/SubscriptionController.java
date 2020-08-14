@@ -1,5 +1,6 @@
 package com.springvuegradle.endpoints;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.springvuegradle.auth.UserAuthorizer;
@@ -134,8 +135,10 @@ public class SubscriptionController {
         Profile userProfile = profileRepository.getOne(profileId);
 
         if(subscriptionRepository.isSubscribedToActivity(activityId, userProfile)){
-            long subscriptionId = subscriptionRepository.findSubscriptionId(activityId, userProfile);
-            subscriptionRepository.delete(subscriptionRepository.getOne(subscriptionId));
+            List<Long> subscriptionIdList = subscriptionRepository.findSubscriptionIds(activityId, userProfile);
+            for (long subscriptionId : subscriptionIdList) {
+                subscriptionRepository.delete(subscriptionRepository.getOne(subscriptionId));
+            }
         }else{
             throw new RecordNotFoundException("User not subscribed to activity");
         }

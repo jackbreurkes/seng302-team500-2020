@@ -33,10 +33,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	public Long getFollowerCount(long activityId);
 
 	/**
-	 * Checks if uesr is subscribed to activity
+	 * Checks if user is subscribed to activity
 	 * @param entityId Id of the activity
 	 * @param profile User to check if subscribed
-	 * @return boolean true if subscibed
+	 * @return boolean true if subscribed
 	 */
 	@Query(value = "SELECT CASE WHEN (count(s) > 0)  THEN 'TRUE' ELSE 'FALSE' END FROM Subscription s "
 			+ "WHERE entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY AND "
@@ -44,9 +44,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	public boolean isSubscribedToActivity(long entityId, Profile profile);
 
 	/**
-	 * Query for getting subscription id from profile and entity id
+	 * Query for getting a list of subscription ids for a profile on a certain entity id
 	 */
 	@Query(value = "SELECT DISTINCT s.id FROM Subscription s WHERE s.subscriber = ?2 AND s.entityId = ?1")
-	public long findSubscriptionId(long entityId, Profile profile);
+	public List<Long> findSubscriptionIds(long entityId, Profile profile);
 
 }
