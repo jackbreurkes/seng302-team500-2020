@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -88,10 +89,13 @@ public class ActivitiesController {
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
-    
+
     @Autowired
     private ActivityOutcomeRepository activityOutcomeRepository;
     
+    @Autowired
+    private ActivityParticipantResultRepository activityParticipantResultRepository;
+
     @Autowired
     private ActivityParticipantResultRepository activityResultRepository;
 
@@ -497,6 +501,32 @@ public class ActivitiesController {
 				activityResultRepository.save(result);
 			}
 		}
+    }
+
+
+    /**
+     * Delete the activityResult that the user has entered. We only allow the user that set the result
+     * to delete this, creators/admin/organisers will not be able to see these results and therefore cannot delete the result
+     * @param activityId the Id of the activity that the result is associated to
+     * @param request the HttpServelet request
+     * @throws UserNotAuthorizedException thrown if the user is not logged in
+     * @throws UserNotAuthenticatedException thrown if the user does not have permissions to delete this
+     * @throws RecordNotFoundException thrown if the result is not found.
+     */
+    @DeleteMapping("/activities/{activityId}/results")
+    @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
+
+    public void deleteActivityResult(@PathVariable("activityId") long activityId,
+                                                         HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
+        Long authId = (Long) request.getAttribute("authenticatedid");
+        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request,authId, userRepository);
+
+        ActivityParticipantResult participantResult =  activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(authId,activityId).orElse(null);
+        if (participantResult == null) {
+            throw new RecordNotFoundException("Cannot find your result");
+        }
+        activityParticipantResultRepository.delete(participantResult);
     }
 
     /**
