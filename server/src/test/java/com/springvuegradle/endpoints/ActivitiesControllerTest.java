@@ -47,6 +47,7 @@ import com.springvuegradle.model.data.ChangedAttribute;
 import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityOutcomeRepository;
 import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
@@ -90,7 +91,10 @@ public class ActivitiesControllerTest {
 	private ChangeLogRepository changeLogRepository;
 	
 	@MockBean
-	private ActivityParticipantResultRepository activityOutcomeRepo;
+	private ActivityParticipantResultRepository activityParticipantResultsRepository;
+	
+	@MockBean
+    private ActivityOutcomeRepository activityOutcomeRepository;
 
 	User user;
 	Profile profile;
