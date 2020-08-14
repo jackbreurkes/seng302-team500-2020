@@ -96,8 +96,7 @@ public class ActivitiesController {
     @Autowired
     private ActivityParticipantResultRepository activityParticipantResultRepository;
 
-    @Autowired
-    private ActivityParticipantResultRepository activityResultRepository;
+
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
@@ -409,14 +408,14 @@ public class ActivitiesController {
             throw new UserNotAuthenticatedException("User is not authenticated");
         }
 
-        ActivityParticipantResult result = activityResultRepository.findById(updateActivityResultRequest.getOutcomeId()).orElse(null);
+        ActivityParticipantResult result = activityParticipantResultRepository.findById(updateActivityResultRequest.getOutcomeId()).orElse(null);
 
         if(result == null){
             throw new RecordNotFoundException("Result does not exist");
         }
         result.setValue(updateActivityResultRequest.getResult());
         result.setCompletedDate(updateActivityResultRequest.getCompletedDate());
-        activityResultRepository.save(result);
+        activityParticipantResultRepository.save(result);
     }
 
     /**
@@ -424,7 +423,7 @@ public class ActivitiesController {
      * @param activityId Activity ID the results are for
      * @param createResultRequest request body information
      * @param errors Anything that went wrong when parsing the body would appear here
-     * @param httpRequest the HttpRequest object associated with this request
+     * @param request the HttpRequest object associated with this request
      * @return a response containing a success message
      * @throws InvalidRequestFieldException if a request field is invalid
      * @throws RecordNotFoundException if a required object is not found in the database
@@ -490,15 +489,15 @@ public class ActivitiesController {
 			String value = userResult.getResult();
 			OffsetDateTime completedDate = userResult.getCompletedDate();
 			
-			Optional<ActivityParticipantResult> potentialResult = activityResultRepository.getParticipantResult(authId, outcome); 
+			Optional<ActivityParticipantResult> potentialResult = activityParticipantResultRepository.getParticipantResult(authId, outcome);
 			if (potentialResult.isPresent()) {
 				ActivityParticipantResult result = potentialResult.get();
 				result.setValue(value);
 				result.setCompletedDate(completedDate);
-				activityResultRepository.save(result);
+                activityParticipantResultRepository.save(result);
 			} else {
 				ActivityParticipantResult result = new ActivityParticipantResult(user, outcome, value, completedDate);
-				activityResultRepository.save(result);
+                activityParticipantResultRepository.save(result);
 			}
 		}
     }
