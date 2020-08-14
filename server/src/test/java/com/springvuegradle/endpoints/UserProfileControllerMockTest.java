@@ -70,6 +70,9 @@ public class UserProfileControllerMockTest {
     @MockBean
     private RoleRepository roleRepository;
 
+    @MockBean
+    private ChangeLogRepository changeLogRepository;
+
 
     @Autowired
     private MockMvc mvc;

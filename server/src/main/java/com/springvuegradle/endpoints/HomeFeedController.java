@@ -11,15 +11,10 @@ import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -58,12 +53,20 @@ public class HomeFeedController {
     @GetMapping("/{profileId}")
     @CrossOrigin
     public List<HomeFeedResponse> getUserHomeFeed(@PathVariable("profileId") long profileId,
-                                                  @RequestParam(name = "lastId", required = false) Long paginatedChangeId,
+                                                  @RequestParam(name = "lastId", required = false) String lastId,
                                                   HttpServletRequest httpRequest)
             throws UserNotAuthorizedException, UserNotAuthenticatedException,
                 InvalidRequestFieldException, RecordNotFoundException {
 
         UserAuthorizer.getInstance().checkIsTargetUser(httpRequest, profileId);
+        Long paginatedChangeId = null;
+        try {
+            if (lastId != null) {
+                paginatedChangeId = Long.parseLong(lastId);
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidRequestFieldException(lastId + " is not a valid changelog id");
+        }
 
         Profile profile = profileRepository.findById(profileId).orElse(null);
         if (profile == null) {
@@ -80,13 +83,13 @@ public class HomeFeedController {
                 // this should never happen since changelogs shouldn't be deleted, and definitely not between pagination requests
                 throw new NullPointerException("error: a changelog has been deleted while paginating. please reload the homefeed page");
             }
-            ZonedDateTime latestTimestamp = lastChangeReceived.getTimestamp();
-            latestTimestamp = latestTimestamp.plusSeconds(1); // ensures the change with the paginate ID is included
-            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdatesBeforeTime(profile, latestTimestamp, pageable);
+            OffsetDateTime latestTimestamp = lastChangeReceived.getTimestamp();
+            changeLogList = changeLogRepository.retrieveUserHomeFeedUpdatesUpToTime(profile, latestTimestamp, pageable);
 
             final List<ChangeLog> finalChangeLogList = changeLogList; // required for use in filter
+            final Long finalPaginatedChangeId = paginatedChangeId; // required for use in filter
             int paginateChangeListIndex = IntStream.range(0, changeLogList.size())
-                    .filter(i -> finalChangeLogList.get(i).getChangeId() == paginatedChangeId)
+                    .filter(i -> finalChangeLogList.get(i).getChangeId() == finalPaginatedChangeId)
                     .findFirst().orElse(-1);
 
             changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
@@ -129,7 +132,10 @@ public class HomeFeedController {
      */
     HomeFeedResponse getActivityChangeLogResponse(ChangeLog change, HashMap<Long, Activity> activities) {
         Activity activity = activities.get(change.getEntityId());
-        Profile editor = profileRepository.findById(change.getEditingUser().getUserId()).orElse(null);
+        Profile editor = null;
+        if (change.getEditingUser() != null) {
+            editor = profileRepository.findById(change.getEditingUser().getUserId()).orElse(null);
+        }
         if (activity == null) {
             boolean isDeleteChangeLog = change.getActionType() == ActionType.DELETED
                     && change.getChangedAttribute() == ChangedAttribute.ACTIVITY_EXISTENCE;

@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * JPA representation of a change log entry
@@ -43,7 +43,7 @@ public class ChangeLog {
 	protected String newValue;
 
 	@CreationTimestamp
-	private ZonedDateTime timestamp;
+	private OffsetDateTime timestamp;
 
 	/**
 	 * Construct a change log entry object and automatically assign their ID
@@ -138,12 +138,12 @@ public class ChangeLog {
 		this.newValue = newValue;
 	}
 
-	public ZonedDateTime getTimestamp() {
+	public OffsetDateTime getTimestamp() {
 		return timestamp;
 	}
 
-	public void setOffsetDateTime(ZonedDateTime offsetDateTime) {
-		this.timestamp = offsetDateTime;
+	public void setTimestamp(OffsetDateTime timestamp) {
+		this.timestamp = timestamp;
 	}
 
 }

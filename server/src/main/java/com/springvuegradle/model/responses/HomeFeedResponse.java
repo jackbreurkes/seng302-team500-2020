@@ -14,30 +14,36 @@ import java.time.format.DateTimeFormatter;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
 
-    private final long changeId;
+    private long changeId;
     private ChangeLogEntity entityType;
     private long entityId;
     private String entityName;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long creatorId;
-
+    private Long creatorId = null;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String creatorName;
+    private String creatorName = null;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long editorId = null;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String editorName = null;
 
     private String editedTimestamp;
-    private long editorId;
-    private String editorName;
     private ChangedAttribute changedAttribute;
     private ActionType actionType;
     private Object oldValue; // either a string or a JSON object
     private Object newValue; // either a string or a JSON object
 
     /**
+     * default constructor used for serialising response JSON in tests
+     */
+    protected HomeFeedResponse() {}
+
+    /**
      * Constructor to present HomeFeed Reponse for individual change to activity to the client
      * @param changeLog change log entry to present in home feed
      * @param activity activity in change log
-     * @param editor editor profile that made the change
+     * @param editor editor profile that made the change, or null if the profile has since been deleted
      */
     public HomeFeedResponse(ChangeLog changeLog, Activity activity, Profile editor) {
         this(changeLog, activity.getActivityName(), editor);
@@ -50,7 +56,7 @@ public class HomeFeedResponse {
      * and the name of the entity being edited.
      * @param changeLog change log entry to present in home feed
      * @param entityName name of the entity being edited
-     * @param editor editor profile that made the change
+     * @param editor editor profile that made the change, or null if the profile has since been deleted
      */
     public HomeFeedResponse(ChangeLog changeLog, String entityName, Profile editor) {
         this.changeId = changeLog.getChangeId();
@@ -58,8 +64,12 @@ public class HomeFeedResponse {
         this.entityId = changeLog.getEntityId();
         this.entityName = entityName;
         this.editedTimestamp = changeLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        this.editorId = changeLog.getEditingUser().getUserId();
-        this.editorName = editor == null ? "<user deleted>" : editor.getFullName(false);
+        if (editor != null) {
+            this.editorId = editor.getUser().getUserId();
+            this.editorName = editor.getFullName(false);
+        } else {
+            this.editorName = "<deleted user>";
+        }
         this.changedAttribute = changeLog.getChangedAttribute();
         this.actionType = changeLog.getActionType();
         if (changeLog.getOldValue() != null) {
@@ -112,7 +122,7 @@ public class HomeFeedResponse {
         return editedTimestamp;
     }
 
-    public long getEditorId() {
+    public Long getEditorId() {
         return editorId;
     }
 

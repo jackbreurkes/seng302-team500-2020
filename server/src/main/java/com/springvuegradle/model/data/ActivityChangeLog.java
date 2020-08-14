@@ -145,7 +145,7 @@ public class ActivityChangeLog extends ChangeLog {
      * @param oldActivityInfo the deleted activity
      * @param deletingUser the user who has deleted the activity
      */
-    public static ChangeLog getLogForDeleteActivity(Activity oldActivityInfo, User deletingUser) {
+    public static ActivityChangeLog getLogForDeleteActivity(Activity oldActivityInfo, User deletingUser) {
         return new ActivityChangeLog(oldActivityInfo.getId(),
                 ChangedAttribute.ACTIVITY_EXISTENCE,
                 deletingUser,
