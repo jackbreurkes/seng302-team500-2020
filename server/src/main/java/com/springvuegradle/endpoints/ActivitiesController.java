@@ -395,7 +395,7 @@ public class ActivitiesController {
     @PostMapping("/activities/{activityId}/results")
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
-    public ResponseEntity<String> createActivityResult(@PathVariable("activityId") long activityId,
+    public void createActivityResult(@PathVariable("activityId") long activityId,
     		@Valid @RequestBody RecordActivityResultsRequest createResultRequest,
     		Errors errors,
     		HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
@@ -419,12 +419,6 @@ public class ActivitiesController {
 			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
 		}
 		
-		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
-		
-		if (outcomeList.size() != outcomeIds.size()) {
-			throw new RecordNotFoundException("One or more activity outcome id does not exist");
-		}
-		
 		Optional<User> optionalUser = userRepository.findById(authId);
 		
 		if (optionalUser.isEmpty()) {
@@ -432,6 +426,25 @@ public class ActivitiesController {
 		}
 		
 		User user = optionalUser.get();
+		
+		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
+		
+		if (outcomeList.size() != outcomeIds.size()) {
+			throw new RecordNotFoundException("One or more activity outcome id does not exist");
+		}
+		
+		Optional<Activity> optionalActivity = activityRepository.findById(activityId);
+		if (optionalActivity.isEmpty()) {
+			throw new RecordNotFoundException("The activity specified does not exist");
+		}
+		
+		Activity activity = optionalActivity.get();
+		
+		for (ActivityOutcome outcome : outcomeList) {
+			if (outcome.getActivity().getId() != activity.getId()) {
+				throw new InvalidRequestFieldException("One or more outcome ID is not for the requested activity");
+			}
+		}
 		
 		for (ActivityOutcome outcome : outcomeList) {
 			RecordOneActivityResultsRequest userResult = outcomeIds.get(outcome.getOutcomeId());
@@ -450,8 +463,6 @@ public class ActivitiesController {
 				activityResultRepository.save(result);
 			}
 		}
-		
-		return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
