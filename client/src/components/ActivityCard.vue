@@ -7,7 +7,7 @@
             <v-tooltip top>
                 <template v-slot:activator="{ on }">
                 <div v-on="on">
-                    <v-chip class="ml-2" v-if="myProfileId === creatorId" outlined>Creator</v-chip>
+                    <v-chip class="ml-2" id=creatorChip v-if="myProfileId === creatorId" outlined>Creator</v-chip>
                 </div>
                 </template>
                 <span>Your role</span>

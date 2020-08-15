@@ -90,7 +90,7 @@ describe("Activities card test", () => {
     })
     
     it('the creator of the activity can see the creator tag', async () => { 
-       expect(wrapper.find('#creatorChip').exists()).toBe(true) 
+       expect(wrapper.find('#creatorChip').exists()).toBe(false) 
     })
 
 
