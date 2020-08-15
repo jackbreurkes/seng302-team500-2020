@@ -1,5 +1,6 @@
 package com.springvuegradle.model.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.*;
@@ -13,34 +14,62 @@ import java.time.format.DateTimeFormatter;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HomeFeedResponse {
 
+    private long changeId;
     private ChangeLogEntity entityType;
     private long entityId;
     private String entityName;
-    private long creatorId;
-    private String creatorName;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long creatorId = null;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String creatorName = null;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long editorId = null;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String editorName = null;
+
     private String editedTimestamp;
-    private long editorId;
-    private String editorName;
     private ChangedAttribute changedAttribute;
     private ActionType actionType;
-    private Object oldValue;
-    private Object newValue;
+    private Object oldValue; // either a string or a JSON object
+    private Object newValue; // either a string or a JSON object
+
+    /**
+     * default constructor used for serialising response JSON in tests
+     */
+    protected HomeFeedResponse() {}
 
     /**
      * Constructor to present HomeFeed Reponse for individual change to activity to the client
      * @param changeLog change log entry to present in home feed
      * @param activity activity in change log
-     * @param editor editor profile that made the change
+     * @param editor editor profile that made the change, or null if the profile has since been deleted
      */
     public HomeFeedResponse(ChangeLog changeLog, Activity activity, Profile editor) {
-        this.entityType = changeLog.getEntity();
-        this.entityId = changeLog.getEntityId();
-        this.entityName = activity.getActivityName();
+        this(changeLog, activity.getActivityName(), editor);
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.creatorName = activity.getCreator().getFullName(false);
+    }
+
+    /**
+     * constructs a homefeed response given a changelog, the profile that is editing the information
+     * and the name of the entity being edited.
+     * @param changeLog change log entry to present in home feed
+     * @param entityName name of the entity being edited
+     * @param editor editor profile that made the change, or null if the profile has since been deleted
+     */
+    public HomeFeedResponse(ChangeLog changeLog, String entityName, Profile editor) {
+        this.changeId = changeLog.getChangeId();
+        this.entityType = changeLog.getEntity();
+        this.entityId = changeLog.getEntityId();
+        this.entityName = entityName;
         this.editedTimestamp = changeLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"));
-        this.editorId = changeLog.getEditingUser().getUserId();
-        this.editorName = editor.getFullName(false);
+        if (editor != null) {
+            this.editorId = editor.getUser().getUserId();
+            this.editorName = editor.getFullName(false);
+        } else {
+            this.editorName = "<deleted user>";
+        }
         this.changedAttribute = changeLog.getChangedAttribute();
         this.actionType = changeLog.getActionType();
         if (changeLog.getOldValue() != null) {
@@ -60,11 +89,13 @@ public class HomeFeedResponse {
         JSONParser parser = new JSONParser(raw);
         try {
             return parser.parse();
-        } catch (Exception exception) {
-            return raw;
-        } catch (Error error) {
+        } catch (Exception | Error e) {
             return raw;
         }
+    }
+
+    public long getChangeId() {
+        return changeId;
     }
 
     public ChangeLogEntity getEntityType() {
@@ -79,7 +110,7 @@ public class HomeFeedResponse {
         return entityName;
     }
 
-    public long getCreatorId() {
+    public Long getCreatorId() {
         return creatorId;
     }
 
@@ -91,7 +122,7 @@ public class HomeFeedResponse {
         return editedTimestamp;
     }
 
-    public long getEditorId() {
+    public Long getEditorId() {
         return editorId;
     }
 

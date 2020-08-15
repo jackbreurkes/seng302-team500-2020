@@ -45,6 +45,13 @@ public class ActivityOutcome {
     }
 
     /**
+     * @param outcomeId the unique id of this outcome
+     */
+    public void setOutcomeId(long outcomeId) {
+		this.outcomeId = outcomeId;
+	}
+
+	/**
      * @return the activity associated with this outcome
      */
     public Activity getActivity() {

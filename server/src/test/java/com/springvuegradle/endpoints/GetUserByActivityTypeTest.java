@@ -61,6 +61,8 @@ class GetUserByActivityTypeTest {
     private SessionRepository sessionRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private ChangeLogRepository changeLogRepository;
 
     /**
      * Creates the edit password controller and inserts the mocks we define in the place of the repositories
