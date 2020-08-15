@@ -429,6 +429,12 @@ public class ActivitiesController {
         result.setValue(updateActivityResultRequest.getResult());
         result.setCompletedDate(updateActivityResultRequest.getCompletedDate());
         result = activityParticipantResultRepository.save(result);
+
+        //Add a changelog entry
+        Profile profile = profileRepository.findById(authId).orElseThrow(() -> new RecordNotFoundException("profile " + authId + " not found"));
+        ChangeLog createParticipantResultChangeLog = ActivityChangeLog.getLogForCreateParticipantResult(profile, result);
+        changeLogRepository.save(createParticipantResultChangeLog);
+
         return new ParticipantResultResponse(result);
     }
 
@@ -467,14 +473,12 @@ public class ActivitiesController {
             }
 			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
 		}
-		
-		Optional<User> optionalUser = userRepository.findById(authId);
-		
-		if (optionalUser.isEmpty()) {
+
+		Profile profile = profileRepository.findById(authId).orElse(null);
+
+		if (profile == null) {
 			throw new UserNotAuthenticatedException("User is not authenticated");
 		}
-		
-		User user = optionalUser.get();
 		
 		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
 		
@@ -508,10 +512,14 @@ public class ActivitiesController {
 				result.setValue(value);
 				result.setCompletedDate(completedDate);
 			} else {
-				result = new ActivityParticipantResult(user, outcome, value, completedDate);
+				result = new ActivityParticipantResult(profile.getUser(), outcome, value, completedDate);
 			}
             activityParticipantResultRepository.save(result);
             results.add(result);
+
+            //Add a changelog entry
+            ChangeLog createParticipantResultChangeLog = ActivityChangeLog.getLogForCreateParticipantResult(profile, result);
+            changeLogRepository.save(createParticipantResultChangeLog);
 		}
 		return results.stream().map(ParticipantResultResponse::new).collect(Collectors.toList());
     }
