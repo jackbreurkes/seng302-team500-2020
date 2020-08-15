@@ -1,14 +1,11 @@
 <template>
   <div id="Homefeed">
     <v-layout justify-center class="pt-1">
-        <v-card width='900' height='650'>
-            <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>Home Feed</v-toolbar-title>
-            </v-toolbar>
-            <li v-for="item in changeLogList" :key="item.edited_timeStamp">
-            <HomeFeedCard v-bind:cardData="item">item.creatorName</HomeFeedCard>
-            </li>
-        </v-card>
+      <v-col>
+        <div v-for="item in changeLogList" :key="item.edited_timeStamp" class="ma-2">
+          <HomeFeedCard v-bind:cardData="item">item.creatorName</HomeFeedCard>
+        </div>
+      </v-col>
     </v-layout>
   </div>
 </template>

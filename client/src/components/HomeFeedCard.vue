@@ -54,21 +54,36 @@ const HomeFeedCard = Vue.extend({
         parseEditorAction: function(){
             if(this.cardData.changed_attribute == "ACTIVITY_EXISTENCE"){
                 return "created the activity " + this.cardData.entity_name;
-            }else if(this.cardData.changed_attribute == "ACTIVITY_NAME"){
+            } else if (this.cardData.changed_attribute == "ACTIVITY_OUTCOME") {
+                if (this.cardData.action_type === "CREATED") {
+                    return "has created an activity outcome '" + this.cardData.new_value.description + "' where you can log your results. Changed"
+                } else {
+                    return "has removed the activity outcome '" + this.cardData.old_value.description + "'. Changed"
+                }
+            } else if (this.cardData.changed_attribute == "ACTIVITY_RESULT") {
+                if (this.cardData.action_type === "CREATED" || this.cardData.action_type === "UPDATED") {
+                    return "has added their data of '" + this.cardData.new_value.value + "' to '" + this.cardData.new_value.outcome_description + "'. Changed"  
+                } else {
+                    return "has removed their data of '" + this.cardData.old_value.value + "' to '" + this.cardData.old_value.outcome_description + "'. Changed" 
+                }
+            }
+             else if(this.cardData.changed_attribute == "ACTIVITY_NAME"){
                 return "updated the activity name from \"" + this.cardData.old_value + "\" to \"" + this.cardData.new_value + "\"";
-            }else if(this.cardData.changed_attribute == "ACTIVITY_DESCRIPTION"){
+            } else if(this.cardData.changed_attribute == "ACTIVITY_DESCRIPTION"){
                 return "updated the activity description from \"" + this.cardData.old_value + "\" to \"" + this.cardData.new_value + "\"";
-            }else if(this.cardData.changed_attribute == "ACTIVITY_TIME_FRAME"){
+            } else if(this.cardData.changed_attribute == "ACTIVITY_TIME_FRAME"){
                 if(this.cardData.old_value == null){
                     //A timeframe has been added where there was none
                     return "added a time to the activity, now running from " + this.parseTime(this.cardData.new_value.start_time) + " to " +this.parseTime(this.cardData.new_value.end_time) + ". Changed"
-                }else{
+                } else if (this.cardData.new_value === null) {
+                    return "has updated the activity's time from " + this.parseTime(this.cardData.old_value.start_time) + " to a continuous activity. Changed"
+                } else {
                     return "updated the activities time. Used to run from " + this.parseTime(this.cardData.old_value.start_time) + " to " + this.parseTime(this.cardData.old_value.end_time) + ". Now runs from "
                      + this.parseTime(this.cardData.new_value.start_time) + " to " +this.parseTime(this.cardData.new_value.end_time) + ". Changed";
                 }
-            }else if(this.cardData.changed_attribute == "ACTIVITY_LOCATION"){
+            } else if(this.cardData.changed_attribute == "ACTIVITY_LOCATION"){
                 return "updated the activity location from " + this.cardData.old_value + " to " + this.cardData.new_value;
-            }else if(this.cardData.changed_attribute == "ACTIVITY_ACTIVITY_TYPES"){
+            } else if(this.cardData.changed_attribute == "ACTIVITY_ACTIVITY_TYPES"){
                 var activityTypesString =  "updated the activities activity types from ";
                 this.cardData.old_value.forEach((element:string) => {
                     activityTypesString += element + ", "
