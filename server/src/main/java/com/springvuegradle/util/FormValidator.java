@@ -1,10 +1,12 @@
 package com.springvuegradle.util;
 
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.model.data.Gender;
 
 import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
@@ -233,4 +235,18 @@ public class FormValidator {
 		}
 	}
 
+	/**
+	 * validates that a timestamp makes sense in ISO8601 format (without colon after +)
+	 * @param timestamp the timestamp to validate
+	 * @return true if the timestamp is valid, false otherwise
+	 */
+    public static boolean validateTimestamp(String timestamp) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+		try {
+			LocalDateTime.parse(timestamp, formatter);
+		} catch (DateTimeParseException e) {
+			return false;
+		}
+		return true;
+    }
 }

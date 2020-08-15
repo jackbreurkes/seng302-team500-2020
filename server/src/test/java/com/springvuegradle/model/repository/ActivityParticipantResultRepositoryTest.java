@@ -111,14 +111,15 @@ public class ActivityParticipantResultRepositoryTest {
     }
 
     @Test
-    public void testGetResultByUserAndActivityId() {
-        Optional<ActivityParticipantResult> result = activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(profile1.getUser().getUserId(),activity1.getId());
-        ActivityParticipantResult object = result.get();
-        assertEquals(profile1.getUser().getUserId(), object.getUser().getUserId());
+    public void testGetResultsByUserAndActivityId() {
+        List<ActivityParticipantResult> results = activityParticipantResultRepository.getParticipantResultsByUserIdAndActivityId(profile1.getUser().getUserId(), activity1.getId());
+        assertEquals(1, results.size());
+        assertEquals(profile1.getUser().getUserId(), results.get(0).getUser().getUserId());
     }
+
     @Test
-    public void testGetResultByNonExistentUserAndActivityId() {
-        Optional<ActivityParticipantResult> result = activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(profile2.getUser().getUserId(),activity1.getId());
+    public void testGetResultsByNonExistentUserAndActivityId() {
+        List<ActivityParticipantResult> result = activityParticipantResultRepository.getParticipantResultsByUserIdAndActivityId(profile2.getUser().getUserId(),activity1.getId());
         assertTrue(result.isEmpty());
     }
 
