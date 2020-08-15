@@ -1,7 +1,5 @@
 package com.springvuegradle.model.data;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -31,7 +29,7 @@ public class ActivityParticipantResult {
 	@Column(columnDefinition = "varchar(30) not null")
 	private String value;
 
-	private OffsetDateTime completedDate;
+	private String completedDate;
 
 	/**
 	 * default no-arg constructor required by hibernate
@@ -50,7 +48,7 @@ public class ActivityParticipantResult {
 	 * @param completedDate The user specified time on when they completed the
 	 *                      activity
 	 */
-	public ActivityParticipantResult(User user, ActivityOutcome outcome, String value, OffsetDateTime completedDate) {
+	public ActivityParticipantResult(User user, ActivityOutcome outcome, String value, String completedDate) {
 		this.user = user;
 		this.outcome = outcome;
 		this.value = value;
@@ -89,11 +87,11 @@ public class ActivityParticipantResult {
 		this.value = value;
 	}
 
-	public OffsetDateTime getCompletedDate() {
+	public String getCompletedDate() {
 		return completedDate;
 	}
 
-	public void setCompletedDate(OffsetDateTime completedDate) {
+	public void setCompletedDate(String completedDate) {
 		this.completedDate = completedDate;
 	}
 }

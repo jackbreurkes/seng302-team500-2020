@@ -536,6 +536,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
 		List<ActivityOutcome> outcomes = new ArrayList<>();
 		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+
 		outcomes.add(outcome);
 		//Mock activity
 		ActivityType activityType = new ActivityType("Running");
@@ -544,6 +545,7 @@ public class ActivitiesControllerTest {
 		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
 		activity.setId(2L);
 		activity.setOutcomes(outcomes);
+		outcome.setActivity(activity);
 		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
 
 		//Mock participant
@@ -552,10 +554,11 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityOutcomeRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(outcome));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -586,10 +589,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", 1L)
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -621,10 +624,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", 5L)
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -654,10 +657,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().is(401));
@@ -686,10 +689,17 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.save(Mockito.any())).thenAnswer(new Answer<ActivityParticipantResult>() {
+			@Override
+			public ActivityParticipantResult answer(InvocationOnMock invocation) throws Throwable {
+				ActivityParticipantResult saving = invocation.getArgument(0);
+				return saving;
+			}
+		});
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -697,8 +707,59 @@ public class ActivitiesControllerTest {
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk());
-
 	}
+
+
+	@ParameterizedTest
+	@ValueSource(strings = {"thisisbad", "2000-10-10", "15/04/1999", "2000-10-10T02:02:02-X"})
+	void testPutActivityParticipantResultAsUser_BadTimestamp_200(String badTimestamp) throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.save(Mockito.any())).thenAnswer(new Answer<ActivityParticipantResult>() {
+			@Override
+			public ActivityParticipantResult answer(InvocationOnMock invocation) throws Throwable {
+				ActivityParticipantResult saving = invocation.getArgument(0);
+				return saving;
+			}
+		});
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"" + badTimestamp + "\"}";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isBadRequest())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("could not parse timestamp " + badTimestamp, thrown.getMessage());
+				});
+	}
+
+
 	@Test
 	void testPutActivityParticipantResultNullDate_400() throws Exception {
 		//Mock Creator
@@ -722,18 +783,64 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" null \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": null }";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
-				.andExpect(status().is(400));
+				.andExpect(status().is(400))
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("missing completed_date field", thrown.getMessage());
+				});
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"thisisbad", "2000-10-10", "15/04/1999", "2000-10-10T02:02:02-X"})
+	void testPutActivityParticipantResult_InvalidDate_400(String badTimestamp) throws Exception {
+		//Mock Creator
+		User creator = new User(1L);
+		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
+		List<ActivityOutcome> outcomes = new ArrayList<>();
+		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+		outcomes.add(outcome);
+		//Mock activity
+		ActivityType activityType = new ActivityType("Running");
+		Set<ActivityType> activitySet = new HashSet<ActivityType>();
+		activitySet.add(activityType);
+		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+		activity.setId(2L);
+		activity.setOutcomes(outcomes);
+		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
+
+		//Mock participant
+		User participant = new User(50L);
+		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+
+		//Mock activity participant result
+		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
+
+		// Mock json string
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"" + badTimestamp + "\" }";
+		mvc.perform(MockMvcRequestBuilders
+				.put("/activities/{activityId}/results", activity.getId())
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().is(400))
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("could not parse timestamp " + badTimestamp, thrown.getMessage());
+				});
+	}
+
 	@Test
 	void testPutActivityParticipantResultNotLoggedIn_401() throws Exception {
 		//Mock Creator
@@ -760,7 +867,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -770,7 +877,7 @@ public class ActivitiesControllerTest {
 	}
 
 	@Test
-	void testPutActivityParticipantResultUnauthorizedUser_404() throws Exception {
+	void testPutActivityParticipantResult_NonexistentOutcome_404() throws Exception {
 		//Mock Creator
 		User creator = new User(1L);
 		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
@@ -795,14 +902,19 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
-				.andExpect(status().is(404));
+				.andExpect(status().isNotFound())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof RecordNotFoundException);
+					assertEquals("Result does not exist", thrown.getMessage());
+				});
 
 	}
 }

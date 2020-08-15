@@ -1,7 +1,6 @@
 package com.springvuegradle.endpoints;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -10,9 +9,10 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
+import com.springvuegradle.model.requests.RecordActivityResultsRequest;
+import com.springvuegradle.model.responses.ParticipantResultResponse;
+import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +49,7 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
-import com.springvuegradle.model.requests.RecordActivityResultsRequest;
 import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 
@@ -107,14 +105,13 @@ public class ActivitiesController {
             throw new InvalidRequestFieldException(errorMessage);
         }
 
-    	Long authId = (Long) request.getAttribute("authenticatedid");
+        long authId = UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) {
             throw new RecordNotFoundException("user not found"); // shouldn't happen as this is already checked by auth handler
         }
 
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
@@ -194,7 +191,8 @@ public class ActivitiesController {
             ChangeLog deleteOutcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(activityId, outcome, editingUser);
             changeLogRepository.save(deleteOutcomeChangeLog);
         }
-        activity.setOutcomes(outcomesToKeep);
+        activity.getOutcomes().clear();
+        activity.getOutcomes().addAll(outcomesToKeep);
 
         for (String key : descriptionUnits.keySet()) { // iterate over the new outcomes
             String description = key;
@@ -217,23 +215,6 @@ public class ActivitiesController {
 
     }
 
-    /**
-     * takes a string in ISO_OFFSET_DATE_TIME format and converts it to a LocalDateTime object.
-     * @param dateTimeString the date time string to convert
-     * @return a LocalDateTime object representing the given date time string
-     * @throws InvalidRequestFieldException if the given date time string is not valid
-     */
-    public LocalDateTime parseDateString(String dateTimeString) throws InvalidRequestFieldException {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-        LocalDateTime dateTime;
-        try {
-            dateTime = LocalDateTime.parse(dateTimeString, formatter);
-        } catch (DateTimeParseException e) {
-            throw new InvalidRequestFieldException("Time format is invalid");
-        }
-        return dateTime;
-    }
-
 
     @DeleteMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
@@ -241,11 +222,10 @@ public class ActivitiesController {
                                                  @PathVariable("activityId") long activityId,
                                                  HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
+        long authId = UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<User> editingUser = userRepository.findById(authId);
-
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+        assert editingUser.isPresent(); // checked by UserAuthorizer
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
@@ -280,8 +260,6 @@ public class ActivitiesController {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
         }
-
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
@@ -427,7 +405,7 @@ public class ActivitiesController {
     @PutMapping("/activities/{activityId}/results")
     @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
-    public void updateActivityResult(@PathVariable("activityId") long activityId,
+    public ParticipantResultResponse updateActivityResult(@PathVariable("activityId") long activityId,
                                      @Valid @RequestBody RecordOneActivityResultsRequest updateActivityResultRequest,
                                      Errors errors,
                                      HttpServletRequest request) throws InvalidRequestFieldException,
@@ -436,30 +414,30 @@ public class ActivitiesController {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
         }
-
-        Long authId = (Long) request.getAttribute("authenticatedid");
-
-        if (authId == null){
-            throw new UserNotAuthenticatedException("User is not authenticated");
+        if (!FormValidator.validateTimestamp(updateActivityResultRequest.getCompletedDate())) {
+            throw new InvalidRequestFieldException("could not parse timestamp " + updateActivityResultRequest.getCompletedDate());
         }
 
-        ActivityParticipantResult result = activityParticipantResultRepository.findById(updateActivityResultRequest.getOutcomeId()).orElse(null);
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+        activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
 
-        if(result == null){
+        ActivityParticipantResult result = activityParticipantResultRepository.getParticipantResult(authId, updateActivityResultRequest.getOutcomeId()).orElse(null);
+
+        if (result == null){
             throw new RecordNotFoundException("Result does not exist");
         }
         result.setValue(updateActivityResultRequest.getResult());
         result.setCompletedDate(updateActivityResultRequest.getCompletedDate());
-        activityParticipantResultRepository.save(result);
+        result = activityParticipantResultRepository.save(result);
+        return new ParticipantResultResponse(result);
     }
 
     /**
      * endpoint function for POST /profiles/{profileId}/activities
      * @param activityId Activity ID the results are for
-     * @param createResultRequest request body information
+     * @param createResultsRequest request body information
      * @param errors Anything that went wrong when parsing the body would appear here
      * @param request the HttpRequest object associated with this request
-     * @return a response containing a success message
      * @throws InvalidRequestFieldException if a request field is invalid
      * @throws RecordNotFoundException if a required object is not found in the database
      * @throws UserNotAuthenticatedException if the user is not correctly authenticated
@@ -467,27 +445,26 @@ public class ActivitiesController {
     @PostMapping("/activities/{activityId}/results")
     @ResponseStatus(HttpStatus.CREATED)
     @CrossOrigin
-    public void createActivityResult(@PathVariable("activityId") long activityId,
-    		@Valid @RequestBody RecordActivityResultsRequest createResultRequest,
+    public List<ParticipantResultResponse> createActivityResult(@PathVariable("activityId") long activityId,
+    		@Valid @RequestBody RecordActivityResultsRequest createResultsRequest,
     		Errors errors,
-    		HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException {
-    	
+    		HttpServletRequest request) throws InvalidRequestFieldException, RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
+
 		if (errors.hasErrors()) {
 			String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
 			throw new InvalidRequestFieldException(errorMessage);
 		}
-		
-		Long authId = (Long) request.getAttribute("authenticatedid");
-		
-		if (authId == null){
-			throw new UserNotAuthenticatedException("User is not authenticated");
-		}
-		
+
+		long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
 		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<Long, RecordOneActivityResultsRequest>();
-		for (RecordOneActivityResultsRequest outcomeObject : createResultRequest.getOutcomes()) {
+		for (RecordOneActivityResultsRequest outcomeObject : createResultsRequest.getOutcomes()) {
 			if (outcomeIds.containsKey(outcomeObject.getOutcomeId())) {
 				throw new InvalidRequestFieldException("Duplicate outcome ID");
 			}
+            if (!FormValidator.validateTimestamp(outcomeObject.getCompletedDate())) {
+                throw new InvalidRequestFieldException("could not parse timestamp " + outcomeObject.getCompletedDate());
+            }
 			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
 		}
 		
@@ -517,24 +494,44 @@ public class ActivitiesController {
 				throw new InvalidRequestFieldException("One or more outcome ID is not for the requested activity");
 			}
 		}
-		
+		List<ActivityParticipantResult> results = new ArrayList<>();
 		for (ActivityOutcome outcome : outcomeList) {
 			RecordOneActivityResultsRequest userResult = outcomeIds.get(outcome.getOutcomeId());
 			
 			String value = userResult.getResult();
-			OffsetDateTime completedDate = userResult.getCompletedDate();
+			String completedDate = userResult.getCompletedDate();
 			
-			Optional<ActivityParticipantResult> potentialResult = activityParticipantResultRepository.getParticipantResult(authId, outcome);
+			Optional<ActivityParticipantResult> potentialResult = activityParticipantResultRepository.getParticipantResult(authId, outcome.getOutcomeId());
+			ActivityParticipantResult result;
 			if (potentialResult.isPresent()) {
-				ActivityParticipantResult result = potentialResult.get();
+				result = potentialResult.get();
 				result.setValue(value);
 				result.setCompletedDate(completedDate);
-                activityParticipantResultRepository.save(result);
 			} else {
-				ActivityParticipantResult result = new ActivityParticipantResult(user, outcome, value, completedDate);
-                activityParticipantResultRepository.save(result);
+				result = new ActivityParticipantResult(user, outcome, value, completedDate);
 			}
+            activityParticipantResultRepository.save(result);
+            results.add(result);
 		}
+		return results.stream().map(ParticipantResultResponse::new).collect(Collectors.toList());
+    }
+
+    /**
+     * returns a list of outcomes a user has associated with a particular activity.
+     * @param activityId the activity the desired results are associated with
+     * @return a list of response mapper objects representing the desired outcomes
+     * @throws RecordNotFoundException if the activity or the profile requested does not exist
+     */
+    @GetMapping("/activities/{activityId}/results")
+    @CrossOrigin
+    public List<ParticipantResultResponse> getActivityResults(@PathVariable("activityId") long activityId,
+                                                              HttpServletRequest request) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
+        activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
+
+        List<ActivityParticipantResult> results = activityParticipantResultRepository.getParticipantResultsByUserIdAndActivityId(authId, activityId);
+        return results.stream().map(ParticipantResultResponse::new).collect(Collectors.toList());
     }
 
 
@@ -547,16 +544,28 @@ public class ActivitiesController {
      * @throws UserNotAuthenticatedException thrown if the user does not have permissions to delete this
      * @throws RecordNotFoundException thrown if the result is not found.
      */
-    @DeleteMapping("/activities/{activityId}/results")
+    @DeleteMapping("/activities/{activityId}/results/{outcomeId}")
     @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
-
     public void deleteActivityResult(@PathVariable("activityId") long activityId,
+                                                         @PathVariable("outcomeId") long outcomeId,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request,authId, userRepository);
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        ActivityParticipantResult participantResult =  activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(authId,activityId).orElse(null);
+        Activity activity = activityRepository.findById(activityId).orElse(null);
+        if (activity == null) {
+            throw new RecordNotFoundException("activity " + activityId + " not found");
+        }
+        ActivityOutcome outcome = activityOutcomeRepository.findById(outcomeId).orElse(null);
+        if (outcome == null) {
+            throw new RecordNotFoundException("outcome " + outcomeId + " not found");
+        }
+        if (outcome.getActivity().getId() != activityId) {
+            throw new RecordNotFoundException("no outcome with id " + outcomeId + " found for activity " + activityId);
+        }
+
+
+        ActivityParticipantResult participantResult = activityParticipantResultRepository.getParticipantResult(authId, outcomeId).orElse(null);
         if (participantResult == null) {
             throw new RecordNotFoundException("Cannot find your result");
         }
