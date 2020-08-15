@@ -68,6 +68,12 @@ public class PutActivityTest {
     private ProfileRepository profileRepository;
     @MockBean
     private ChangeLogRepository changeLogRepository;
+    @MockBean
+    private ActivityOutcomeRepository activityOutcomeRepository;
+
+
+    @MockBean
+	private ActivityParticipantResultRepository activityOutcomeRepo;
 
     private User user;
     private Profile profile;
