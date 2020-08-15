@@ -85,7 +85,29 @@
 
               <v-divider></v-divider><br>
 
-              <p> Please insert a UserRoleList component here! </p>
+              <v-data-table
+                  :no-data-text="noDataText"
+                  :headers="headers"
+                  :items="users"
+                  item-key="profile_id"
+                  @click:row="goToUser"
+                  single-select
+                  v-model="selectedUsers"
+              >
+                <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
+                <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
+                <template #item.short_interests="{ item }">{{getActivitiesString(item.activities)}}</template>
+                <template v-slot:items="users">
+                  <!-- <td class="text-xs-right">{{ users.item.full_name }}</td> -->
+                  <td class="text-xs-right">{{ users.item.firstname }}</td>
+                  <td class="text-xs-right">{{ users.item.middlename }}</td>
+                  <td class="text-xs-right">{{ users.item.lastname }}</td>
+                  <!-- <td class="text-xs-right">{{ users.item.userId }}</td> -->
+                  <td class="text-xs-right">{{ users.item.nickname }}</td>
+                  <td class="text-xs-right">{{ users.item.primary_email }}</td>
+                  <td class="text-xs-right">{{ users.item.role }}</td>
+                </template>
+              </v-data-table>
 
               <br><v-divider></v-divider><br>
 
@@ -113,11 +135,19 @@
 <script lang="ts">
 import Vue from "vue";
 
-import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
+import {
+  getActivity,
+  followActivity,
+  unfollowActivity,
+  getIsFollowingActivity,
+  getParticipants
+} from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
+// eslint-disable-next-line no-unused-vars
+import { UserApiFormat } from "../scripts/User";
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -135,7 +165,21 @@ const Activity = Vue.extend({
       following: false,
       confirmDeleteModal: false,
       startTimeString: '' as string,
-      endTimeString: '' as string
+      endTimeString: '' as string,
+      headers: [
+        // { text: 'Name', value: 'full_name' },
+        { text: 'First Name', value: 'firstname' },
+        { text: 'Middle Name', value: 'middlename' },
+        { text: 'Last Name', value: 'lastname' },
+        //{ text: 'User Id', value: 'profile_id'},
+        { text: 'Nickname', value: 'nickname' },
+        { text: 'Email', value: 'primary_email' },
+        { text: 'Role', value: 'role' }
+      ],
+      noDataText: "No Participants",
+      selectedUsers: [] as UserApiFormat[],
+      users: [] as UserApiFormat[],
+      errorMessage: "",
     };
   },
 
@@ -146,6 +190,8 @@ const Activity = Vue.extend({
     } else {
       this.currentProfileId = myProfileId;
     }
+
+
 
     const activityId: number = parseInt(this.$route.params.activityId);
     const creatorId: number = parseInt(this.$route.params.profileId);
@@ -176,6 +222,25 @@ const Activity = Vue.extend({
       });
     }
 },
+
+  computed: {
+
+    selectedUser: function() {
+      if (this.selectedUsers.length !== 1) {
+        return null;
+      }
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser;
+    },
+    selectedUserIsAdmin: function() {
+      if (this.selectedUsers.length !== 1) {
+        return false;
+      }
+
+      let selectedUser: UserApiFormat = this.selectedUsers[0];
+      return selectedUser.permission_level && selectedUser.permission_level >= 120;
+    }
+  },
 
   methods: {
     /**
@@ -248,7 +313,30 @@ const Activity = Vue.extend({
      */
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
-    }
+    },
+    goToUser: function(userId: any) {
+      this.$router.push("/profiles/" + userId.profile_id);
+    },
+    search: async function() {
+      this.noDataText = "No participants found";
+      this.errorMessage = "";
+      try {
+        let users = await getParticipants(this.activityId)
+        this.users = users as UserApiFormat[];
+      } catch (err) {
+        if (err.response) {
+          if (err.response.status == 400) {
+            this.errorMessage = err.message;
+          }
+        } else if (err.message) {
+          this.errorMessage = err.message;
+        } else {
+          this.errorMessage = "Unexpected error";
+        }
+        this.noDataText = this.errorMessage;
+        this.users = [];
+      }
+    },
   }
 
 });

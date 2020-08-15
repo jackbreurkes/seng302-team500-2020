@@ -427,3 +427,8 @@ export function getContinuousActivities(activityList: CreateActivityRequest[]): 
   let continuousActivities = activityList.filter(activity => activity.continuous === true);
   return continuousActivities;
 }
+
+// @ts-ignore
+export async function getParticipants(activityId: number) {
+  return await getParticipants(activityId);
+}

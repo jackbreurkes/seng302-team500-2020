@@ -133,3 +133,22 @@ export async function setActivityRole(profileId: number, activityId: number, rol
 export async function removeActivityRole(profileId: number, activityId: number) {
   await instance.delete(`/activities/${activityId}/roles/${profileId}`)
 }
+
+/**
+ * Returns all participants that are a part of an activity
+ * @param activityId The activity ID
+ */
+export async function getParticipants(activityId: number) {
+  let res;
+  try {
+    res = await instance.get(`/activities/${activityId}/participants`)
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return null;
+    } else {
+      throw error;
+    }
+  }
+  return res.data;
+
+}
