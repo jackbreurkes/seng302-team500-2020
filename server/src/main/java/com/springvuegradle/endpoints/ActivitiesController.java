@@ -143,7 +143,7 @@ public class ActivitiesController {
         }
 
         List<ActivityOutcome> outcomesToKeep = new ArrayList<>();
-        List<ActivityOutcome> deletedOutcomes = new ArrayList<>();
+        List<ActivityOutcome> outcomesToDelete = new ArrayList<>();
         for (ActivityOutcome outcome : activity.getOutcomes()) {
             String description = outcome.getDescription();
             boolean shouldKeep = descriptionUnits.containsKey(description) && outcome.getUnits().equals(descriptionUnits.get(description));
@@ -151,12 +151,12 @@ public class ActivitiesController {
             if (shouldKeep) {
                 outcomesToKeep.add(outcome);
             } else {
-                deletedOutcomes.add(outcome);
+                outcomesToDelete.add(outcome);
             }
         }
 
         List<ChangeLog> deleteOutcomeChanges = new ArrayList<>();
-        for (ActivityOutcome outcome : deletedOutcomes) {
+        for (ActivityOutcome outcome : outcomesToDelete) {
             int loggedResultsCount = activityParticipantResultRepository.countActivityParticipantResultByOutcomeOutcomeId(outcome.getOutcomeId());
             if (loggedResultsCount > 0) {
                 throw new ForbiddenOperationException("cannot delete outcome \"" + outcome.getDescription() + "\" as participants have logged results against it");
