@@ -2,8 +2,21 @@
   <div id="Homefeed">
     <v-layout justify-center class="pt-1">
       <v-col>
-        <div v-for="item in changeLogList" :key="item.edited_timeStamp" class="ma-2">
-          <HomeFeedCard v-bind:cardData="item">item.creatorName</HomeFeedCard>
+        <div v-if="changeLogList.length > 0">
+          <div v-for="item in changeLogList" :key="item.edited_timeStamp" class="ma-2">
+            <HomeFeedCard v-bind:cardData="item">item.creatorName</HomeFeedCard>
+          </div>
+        </div>
+        <div v-else>
+          <v-layout justify-center class="pt-1">
+            <v-card width="600" height="100%">
+              <v-toolbar color="blue" dark flat height="50">
+                <v-card-title>Welcome to your Intitulada homefeed</v-card-title>
+              </v-toolbar>
+              <v-spacer></v-spacer>
+              <v-card-text class="pl-7 subtitle-1">To see more here, follow some activities you are interested in!</v-card-text>
+            </v-card>
+          </v-layout>
         </div>
       </v-col>
     </v-layout>
@@ -11,11 +24,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import HomeFeedCard from "./HomeFeedCard.vue"
-import * as HomefeedController from '../controllers/homefeed.controller';
+import Vue from "vue";
+import HomeFeedCard from "./HomeFeedCard.vue";
+import * as HomefeedController from "../controllers/homefeed.controller";
 // eslint-disable-next-line no-unused-vars
-import { HomeFeedCardType } from '../scripts/HomeFeedCardType';
+import { HomeFeedCardType } from "../scripts/HomeFeedCardType";
 
 const Homefeed = Vue.extend({
   name: "Homefeed",
@@ -38,15 +51,15 @@ const Homefeed = Vue.extend({
      */
     setOnScroll: function() {
       window.onscroll = () => {
-        
+
         let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
 
         if (bottomOfWindow) {
           HomefeedController.getAdditionalUsersHomefeed(this.lastId)
-            .then(response => {
+          .then(response => {
               this.changeLogList.push.apply(this.changeLogList, response)
               this.updateLastId();
-            });
+          });
         }
       };
     },
@@ -72,6 +85,6 @@ export default Homefeed;
 }
 
 p {
-    display: inline-block;
-  }
+  display: inline-block;
+}
 </style>
