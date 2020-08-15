@@ -153,20 +153,20 @@ public class ActivitiesControllerOutcomesTest {
 	
 	@Test
 	public void testRecordingTwoResultsOnActivity() throws Exception {
-		String json = "{\r\n" + 
-				"    \"outcomes\": [\r\n" + 
-				"        {\r\n" + 
-				"            \"outcome_id\": 10,\r\n" + 
-				"            \"result\": \"6\",\r\n" + 
-				"            \"completed_date\": \"2020-08-14T00:15:10+00:00\"\r\n" + 
-				"        },\r\n" + 
-				"        {\r\n" + 
-				"            \"outcome_id\": 11,\r\n" + 
-				"            \"result\": \"last place\",\r\n" + 
-				"            \"completed_date\": \"2020-08-14T00:15:10+00:00\"\r\n" + 
-				"        }\r\n" + 
-				"    ]\r\n" + 
-				"}\r\n" + 
+		String json = "{\r\n" +
+				"    \"outcomes\": [\r\n" +
+				"        {\r\n" +
+				"            \"outcome_id\": 10,\r\n" +
+				"            \"result\": \"6\",\r\n" +
+				"            \"completed_date\": \"2020-08-14T00:15:10+0000\"\r\n" +
+				"        },\r\n" +
+				"        {\r\n" +
+				"            \"outcome_id\": 11,\r\n" +
+				"            \"result\": \"last place\",\r\n" +
+				"            \"completed_date\": \"2020-08-14T00:15:10+0000\"\r\n" +
+				"        }\r\n" +
+				"    ]\r\n" +
+				"}\r\n" +
 				"";
 
 		mvc.perform(MockMvcRequestBuilders
@@ -178,16 +178,13 @@ public class ActivitiesControllerOutcomesTest {
 	
 	@Test
 	public void testRecordingSingleResultOnActivity() throws Exception {
-		String json = "{\r\n" + 
-				"    \"outcomes\": [\r\n" + 
+		String json = "{ \"outcomes\": [\r\n" +
 				"        {\r\n" + 
 				"            \"outcome_id\": 10,\r\n" + 
 				"            \"result\": \"6\",\r\n" + 
-				"            \"completed_date\": \"2020-08-14T00:15:10+00:00\"\r\n" + 
+				"            \"completed_date\": \"2020-08-14T00:15:10+0000\"\r\n" +
 				"        }\r\n" +
-				"    ]\r\n" + 
-				"}\r\n" + 
-				"";
+				"    ]}";
 
 		mvc.perform(MockMvcRequestBuilders
 				.post("/activities/1/results")
@@ -198,16 +195,13 @@ public class ActivitiesControllerOutcomesTest {
 	
 	@Test
 	public void testRecordingSingleResultOnOtherActivity() throws Exception {
-		String json = "{\r\n" + 
-				"    \"outcomes\": [\r\n" + 
+		String json = "{ \"outcomes\": [\r\n" +
 				"        {\r\n" + 
 				"            \"outcome_id\": 10,\r\n" + 
 				"            \"result\": \"6\",\r\n" + 
-				"            \"completed_date\": \"2020-08-14T00:15:10+00:00\"\r\n" + 
+				"            \"completed_date\": \"2020-08-14T00:15:10+0000\"\r\n" +
 				"        }\r\n" +
-				"    ]\r\n" + 
-				"}\r\n" + 
-				"";
+				"    ]}";
 
 		mvc.perform(MockMvcRequestBuilders
 				.post("/activities/2/results")

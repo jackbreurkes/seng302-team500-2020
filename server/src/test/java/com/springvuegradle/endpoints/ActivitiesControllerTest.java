@@ -552,10 +552,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -586,10 +586,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", 1L)
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -621,10 +621,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.requestAttr("authenticatedid", 5L)
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
@@ -654,10 +654,10 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.getParticipantResultByUserIdAndActivityId(participant.getUserId(),activity.getId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		mvc.perform(MockMvcRequestBuilders
-				.delete("/activities/{activityId}/results", activity.getId())
+				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().is(401));
@@ -686,10 +686,17 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityParticipantResultRepository.save(Mockito.any())).thenAnswer(new Answer<ActivityParticipantResult>() {
+			@Override
+			public ActivityParticipantResult answer(InvocationOnMock invocation) throws Throwable {
+				ActivityParticipantResult saving = invocation.getArgument(0);
+				return saving;
+			}
+		});
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -722,18 +729,23 @@ public class ActivitiesControllerTest {
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
-		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" null \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": null }";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
-				.andExpect(status().is(400));
+				.andExpect(status().is(400))
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof InvalidRequestFieldException);
+					assertEquals("missing completed_date field", thrown.getMessage());
+				});
 	}
+
 	@Test
 	void testPutActivityParticipantResultNotLoggedIn_401() throws Exception {
 		//Mock Creator
@@ -760,7 +772,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -795,7 +807,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+00:00 \"}";
+		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
