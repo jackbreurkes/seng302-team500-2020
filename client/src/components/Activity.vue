@@ -90,10 +90,10 @@
                     <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
                     <v-expansion-panel-content>
                       <v-sheet>
+                        <div v-if="Object.keys(currentResults) != undefined && Object.keys(currentResults).length > 0">
                         Current results:
                           <v-card
                             class="pa-2"
-                            :v-if="currentResults > 0"
                             v-for="(result, index) in currentResults"
                             v-bind:item="result"
                             v-bind:index="index"
@@ -118,14 +118,20 @@
                             </v-row>
                             <v-row justify="end">
                               <v-spacer></v-spacer>
+                              <div class="mr-3">
+                                <v-btn @click="resultIdToRemove = index; removeResultModal = true" right color="error">
+                                  Remove
+                                </v-btn>
+                              </div>
                             </v-row>
                         </v-card>
+                        </div>
                         <br>
+                        <div v-if="Object.keys(currentResults) == undefined || (activity.outcomes!=undefined && activity.outcomes.length - Object.keys(currentResults).length > 0)">
                         Add new results:
                         <v-card
                             class="pa-2"
-                            :v-if="activity.outcomes.length > 0"
-                            v-for="(item, index) in activity.outcomes"
+                            v-for="(item, index) in activity.outcomes.filter(outcome => !(outcome.outcome_id in currentResults))"
                             v-bind:item="item"
                             v-bind:index="index"
                             :key="index"
@@ -165,6 +171,7 @@
                               </div>
                             </v-row>
                         </v-card>
+                        </div>
                       </v-sheet>
                     </v-expansion-panel-content>
                   </v-expansion-panel>
@@ -188,6 +195,19 @@
         </v-col>
       </v-row>
     </v-container>
+
+    <v-dialog v-model="removeResultModal" width="290">
+      <v-card>
+        <v-card-title class="headline" primary-title>Remove result?</v-card-title>
+        <v-card-text>This operation cannot be undone.</v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-btn text @click="removeResultModal = false">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="error" text @click="removeResult">Remove</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -226,7 +246,8 @@ const Activity = Vue.extend({
         ]
       },
       currentResults: {} as Record<number, ParticipantResultDisplay>,
-      removeResultModal: false
+      removeResultModal: false,
+      resultIdToRemove: NaN as number
     };
   },
 
@@ -281,8 +302,12 @@ const Activity = Vue.extend({
           }
           if (this.activity.outcomes != undefined) {
             for (let outcomeIndex in this.activity.outcomes) {
-              participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].description = this.activity.outcomes[outcomeIndex].description;
-              participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].units = this.activity.outcomes[outcomeIndex].units;
+              // Uses -1 as placeholder which will be undefined
+              if (this.activity.outcomes[outcomeIndex].outcome_id != undefined && 
+                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1] != undefined) {
+                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].description = this.activity.outcomes[outcomeIndex].description;
+                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].units = this.activity.outcomes[outcomeIndex].units;
+                }
             }
           }
 
@@ -377,10 +402,25 @@ const Activity = Vue.extend({
         if (completedDate === undefined) {
           throw new Error("You must select a date");
         }
-        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp);
+        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
+        .then((success) => {
+          if (success) {
+            let results = this.currentResults;
+            results[outcomeId] = this.participantOutcome[outcomeId];
+            this.currentResults = results;
+            // TODO: Check this works once back end is fixed
+          }
+        });
       } catch (err) {
         alert(err.message);
       }
+    },
+
+    /** Remove the selected result from the activity */
+    removeResult: function() {
+      this.removeResultModal = false;
+      console.log(this.resultIdToRemove)
+      // TODO (is a separate task): do the removing and update the lists of current results and outcomes available to add
     }
   }
 
