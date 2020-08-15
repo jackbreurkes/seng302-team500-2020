@@ -192,7 +192,8 @@ const Activity = Vue.extend({
           (v: string) =>
             formValidator.checkResultValidity(v)
         ]
-      }
+      },
+      currentResults: {} as Record<number, ParticipantResult>
     };
   },
 
@@ -211,6 +212,19 @@ const Activity = Vue.extend({
     } else {
       this.activityId = activityId;
       this.creatorId = creatorId;
+
+      activityController.getParticipantResults(this.currentProfileId, this.activityId)
+      .then((results) => {
+        for (let index in results) {
+          let date = results[index].completed_date.split(" ")[0];
+          let time = results[index].completed_date.split(" ")[1];
+          this.currentResults[results[index].outcome_id] = {
+              'score': results[index].result,
+              'date': date,
+              'time': time
+          } as ParticipantResult;
+        }
+      });
 
       getActivity(creatorId, activityId)
       .then((res) => {

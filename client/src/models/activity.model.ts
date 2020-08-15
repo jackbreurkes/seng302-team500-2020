@@ -155,3 +155,13 @@ export async function setActivityRole(profileId: number, activityId: number, rol
 export async function removeActivityRole(profileId: number, activityId: number) {
   await instance.delete(`/activities/${activityId}/roles/${profileId}`)
 }
+
+/**
+ * Get the results a participant has entered for a given activity
+ * @param profileId profile whose results should be retrieved
+ * @param activityId activity to retrieve the results for
+ */
+export async function fetchParticipantResults(profileId: number, activityId: number) {
+  let res = await instance.get(`/activities/${activityId}/results`)
+  return res.data
+}

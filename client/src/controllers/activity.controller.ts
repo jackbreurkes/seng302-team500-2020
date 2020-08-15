@@ -358,6 +358,15 @@ export async function removeActivityRole(profileId: number, activityId: number) 
 }
 
 /**
+ * Get the results that a participant has entered for an activity
+ * @param profileId participant whose results should be retrieved
+ * @param activityId activity to retrieve the results for
+ */
+export async function getParticipantResults(profileId: number, activityId: number) {
+  return await activityModel.fetchParticipantResults(profileId, activityId);
+}
+
+/**
  * returns a reader-friendly description of the duration of a duration activity.
  * @param startTime the ISO datetime string representing the start time
  * @param endTime the ISO datetime string representing the end time
