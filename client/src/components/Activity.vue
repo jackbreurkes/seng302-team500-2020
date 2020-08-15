@@ -17,7 +17,11 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-menu bottom left offset-y>
+                  <v-chip v-if="currentProfileId === creatorId" outlined>Creator</v-chip>
+                  <v-chip v-if="organiser" outlined>Organiser</v-chip>
+                  <v-chip v-if="following" outlined>Following</v-chip>
+                  <v-chip v-if="participating" outlined>Participating</v-chip>
+                  <v-menu v-if="currentProfileId === creatorId || organiser" bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         dark
@@ -35,7 +39,7 @@
                       >
                         <v-list-item-title>Edit Activity</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="confirmDeleteModal = true">
+                      <v-list-item v-if="currentProfileId === creatorId" @click="confirmDeleteModal = true">
                         <v-dialog v-model="confirmDeleteModal" width="290">
                           <template v-slot:activator="{ on }">
                             <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
@@ -183,7 +187,7 @@
                   <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
-                  <v-btn id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                  <v-btn :disabled="organiser" id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
                 </div>
               </v-card-actions>
 
@@ -233,6 +237,7 @@ const Activity = Vue.extend({
       activityId: NaN as number,
       creatorId: NaN as number,
       activity: [] as CreateActivityRequest,
+      organiser: false,
       participating: false,
       following: false,
       confirmDeleteModal: false,
@@ -271,12 +276,16 @@ const Activity = Vue.extend({
       .then((res) => {
         this.activity = res;
         getIsFollowingActivity(this.currentProfileId, this.activityId)
-        .then((following) => {
-          this.following = following;
+        .then((booleanResponse) => {
+          this.following = booleanResponse;
         })
         activityController.getIsParticipating(this.currentProfileId, this.activityId)
-        .then((participating) => {
-          this.participating = participating
+        .then((booleanResponse) => {
+          this.participating = booleanResponse;
+        })
+        activityController.getIsOrganising(this.currentProfileId, this.activityId)
+        .then((booleanResponse) => {
+          this.organiser = booleanResponse;
         })
 
         let outcome_array = this.activity.outcomes as ActivityOutcomes[];
@@ -354,6 +363,7 @@ const Activity = Vue.extend({
     /** Toggle the user's participation in this activity */
     toggleParticipation: function() {
       if (!this.participating) {
+        this.organiser = false;
         activityController.participateInActivity(this.currentProfileId, this.activityId)
           .then(() => this.participating = true)
           .catch((e) => { console.error(e) });

@@ -340,6 +340,20 @@ export async function getIsParticipating(profileId: number, activityId: number) 
 }
 
 /**
+ * Returns true if the user has the role organiser, false otherwise
+ * @param profileId the user id to be checked
+ * @param activityId the activity id to be checked
+ * @returns boolean true or false 
+ */
+export async function getIsOrganising(profileId: number, activityId: number) {
+  let role = await activityModel.getActivityRole(profileId, activityId);
+  if (role == null) {
+    return false;
+  }
+  return role.toLowerCase() == "organiser";
+}
+
+/**
  * sets a user as a participant in an activity
  * @param profileId the profile to set as a participant
  * @param activityId the activity the profile should participate in

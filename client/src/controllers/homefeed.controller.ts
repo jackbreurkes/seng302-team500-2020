@@ -9,3 +9,12 @@ export async function getHomeFeedData(){
     let homefeedData = await homefeedModel.getUsersHomefeed();
     return homefeedData;
 }
+
+/**
+ * Requests additional home feed entries when infinite scrolling
+ * @param lastId the id of the last changelog entry currently loaded
+ */
+export async function getAdditionalUsersHomefeed(lastId: number){
+    let homefeedData = await homefeedModel.getAdditionalUsersHomefeed(lastId);
+    return homefeedData;
+}

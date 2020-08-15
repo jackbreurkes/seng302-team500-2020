@@ -206,6 +206,7 @@ public class UserProfileController {
     	String searchedEmail = request.getParameter("email");
         String searchedActivities = request.getParameter("activity");
         String method = request.getParameter("method");
+        String useExactEmail = request.getParameter("exactEmail"); // if the email should be found exactly
 
     	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
     	
@@ -216,7 +217,8 @@ public class UserProfileController {
 		} else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && !searchedEmail.equals("")) {
-			profiles = getUsersByEmail(searchedEmail);
+		    boolean exact = useExactEmail != null && useExactEmail.equals("true");
+			profiles = getUsersByEmail(searchedEmail, exact);
 		} else if (searchedActivities != null) {
 		    profiles = getProfilesByActivityTypes(searchedActivities, method);
         }
@@ -295,7 +297,7 @@ public class UserProfileController {
      * @return list of profiles which have associated emails matching that given
      * @throws InvalidRequestFieldException when email given has more than one '@' symbol
      */
-    private List<Profile> getUsersByEmail(String email) throws InvalidRequestFieldException {
+    private List<Profile> getUsersByEmail(String email, boolean exact) throws InvalidRequestFieldException, RecordNotFoundException {
     	/* EMAIL SEARCH
     	  # must match full text before '@' symbol if there is no @ in the search query
     	  # if there is an @ in the query, match the query string then anything after
@@ -313,8 +315,16 @@ public class UserProfileController {
     		// Will return empty profile list if has more than 1 '@' symbol - is correct outcome as email would violate system rules
     		throw new InvalidRequestFieldException("Has not provided a valid email (too many '@' symbols).");
     	}
-    	
-    	emails = emailRepository.findByEmailStartingWith(email);
+
+    	if (!exact) {
+            emails = emailRepository.findByEmailStartingWith(email);
+        } else {
+    	    Email exactEmail = emailRepository.findByEmail(email);
+    	    if (exactEmail == null) {
+    	        throw new RecordNotFoundException("cannot find email " + email);
+            }
+    	    emails.add(exactEmail);
+        }
     	
     	for (Email foundEmail: emails) {
     		User foundUser = foundEmail.getUser();
