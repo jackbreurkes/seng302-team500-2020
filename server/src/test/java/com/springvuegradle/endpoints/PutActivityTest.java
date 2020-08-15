@@ -1,45 +1,40 @@
 package com.springvuegradle.endpoints;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.LocalDate;
-import java.util.*;
-
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import com.springvuegradle.model.requests.CreateActivityRequest;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.rest.core.ValidationErrors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
-
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.requests.CreateActivityRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.validation.Errors;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -70,10 +65,8 @@ public class PutActivityTest {
     private ChangeLogRepository changeLogRepository;
     @MockBean
     private ActivityOutcomeRepository activityOutcomeRepository;
-
-
     @MockBean
-	private ActivityParticipantResultRepository activityOutcomeRepo;
+    private ActivityParticipantResultRepository activityParticipantResultRepository;
 
     private User user;
     private Profile profile;
@@ -399,6 +392,39 @@ public class PutActivityTest {
                 });
 
         Mockito.verify(activityRepository, Mockito.never()).save(Mockito.any());
+    }
+
+
+    @Test
+    public void testPutActivityRemoveOutcome_OutcomeHasLogs_Forbidden() throws Exception {
+        long activityId = 10;
+        Activity testActivity = new Activity("Test Activity", false, "Test Location", profile, testActivityTypes);
+        testActivity.setId(activityId);
+        ActivityOutcome outcome = new ActivityOutcome("my outcome", "km/h");
+        outcome.setOutcomeId(1L);
+        testActivity.addOutcome(outcome);
+        Mockito.when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
+        Mockito.when(activityRepository.save(Mockito.any())).thenReturn(testActivity);
+        Mockito.when(activityParticipantResultRepository.countActivityParticipantResultByOutcomeOutcomeId(outcome.getOutcomeId())).thenReturn(1);
+
+        String json = "{\n" +
+                "  \"activity_name\": \"SENG302\",\n" +
+                "  \"description\": \"I really like testing\",\n" +
+                "  \"activity_type\":[ \"Swimming\" ],\r\n" +
+                "  \"continuous\": true,\n" +
+                "  \"location\": \"Christchurch, NZ\",\n" +
+                "  \"outcomes\": [] " +
+                "}";
+
+        putActivityJson(json, user.getUserId(), activityId)
+                .andExpect(status().isConflict())
+                .andExpect(result -> {
+                    Exception thrown = result.getResolvedException();
+                    assertTrue(thrown instanceof ForbiddenOperationException);
+                    assertEquals("cannot delete outcome \"" + outcome.getDescription() + "\" as participants have logged results against it", thrown.getMessage());
+                });
+
+        Mockito.verify(activityRepository, never()).save(Mockito.any());
     }
 
 }

@@ -159,16 +159,16 @@ const Activity = Vue.extend({
       .then((res) => {
         this.activity = res;
         getIsFollowingActivity(this.currentProfileId, this.activityId)
-        .then((following) => {
-          this.following = following;
+        .then((booleanResponse) => {
+          this.following = booleanResponse;
         })
         activityController.getIsParticipating(this.currentProfileId, this.activityId)
-        .then((participating) => {
-          this.participating = participating;
+        .then((booleanResponse) => {
+          this.participating = booleanResponse;
         })
         activityController.getIsOrganising(this.currentProfileId, this.activityId)
-        .then((organiser) => {
-          this.organiser = organiser;
+        .then((booleanResponse) => {
+          this.organiser = booleanResponse;
         })
       })
       .catch(() => {

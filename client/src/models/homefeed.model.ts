@@ -9,3 +9,16 @@ import { HomeFeedCardType } from '@/scripts/HomeFeedCardType';
      let res = await instance.get("homefeed/" + auth.getMyUserId());
      return res.data as HomeFeedCardType[];
  }
+
+ /**
+ * Retrieves data from "/homefeed/{{profileId}}" endpoint
+ * @param paginationId the id of the last loaded homefeed changelog entry
+ */
+export async function getAdditionalUsersHomefeed(paginationId: number): Promise<HomeFeedCardType[]> {
+    let res = await instance.get("homefeed/" + auth.getMyUserId(), {
+        params: {
+            lastId: paginationId
+        }
+    });
+    return res.data;
+}
