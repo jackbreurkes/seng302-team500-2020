@@ -426,8 +426,8 @@ const CreateActivity = Vue.extend({
     createButtonClicked: async function () { 
 
       try {
-        userModel.getProfileById(this.organiserId);
         if (this.isEditing) {
+          userModel.getProfileById(this.organiserId);
           activityModel.setActivityRole(this.organiserId, this.editingId, "Organiser")
         }
       } catch (err) {

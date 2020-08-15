@@ -75,14 +75,17 @@ public class UserActivityRoleController {
     public void deleteUserActivityRole(@PathVariable("activityId") long activityId,
                                                          @PathVariable("profileId") long profileId,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
-        Optional <UserActivityRole> roleToDelete = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId);
-        if(roleToDelete.isEmpty()){
+        UserActivityRole roleToDelete = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId).orElse(null);
+        if(roleToDelete == null){
             throw new RecordNotFoundException("This user currently does not have a role in this activity");
         }
-
-        userActivityRoleRepository.delete(roleToDelete.get());
+        if (roleToDelete.getActivityRole() != ActivityRole.ORGANISER) {
+            UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+        } else {
+            UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+        }
+        userActivityRoleRepository.delete(roleToDelete);
     }
 
     /**
@@ -104,9 +107,13 @@ public class UserActivityRoleController {
                                                          @PathVariable("profileId") long profileId,
                                                         @Valid @RequestBody UpdateUserActivityRoleRequest updateUserActivityRoleRequest,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
-
         ActivityRole userRole = updateUserActivityRoleRequest.getRole();
+
+        if (userRole == ActivityRole.ORGANISER) {
+            UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+        } else {
+            UserAuthorizer.getInstance().checkIsAuthenticated(request);
+        }
 
         if (userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId).isPresent()) {
             // Update the role of the existing user

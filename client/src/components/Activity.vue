@@ -211,6 +211,7 @@ const Activity = Vue.extend({
     /** Toggle the user's participation in this activity */
     toggleParticipation: function() {
       if (!this.participating) {
+        this.organiser = false;
         activityController.participateInActivity(this.currentProfileId, this.activityId)
           .then(() => this.participating = true)
           .catch((e) => { console.error(e) });
