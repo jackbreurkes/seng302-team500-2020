@@ -128,11 +128,11 @@
 
                 <v-text-field
                   v-if="this.isEditing"
-                  label="Enter organiser ID"
-                  ref="organiserId"
-                  id="organiserId"
-                  type="number"
-                  v-model="organiserId"
+                  label="Enter organiser Email"
+                  ref="organiserEmail"
+                  id="organiserEmail"
+                  type="email"
+                  v-model="organiserEmail"
                   
                 ></v-text-field>
                 
@@ -260,7 +260,7 @@ import Vue from "vue";
 import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
 import * as activityModel from "../models/activity.model"
-import * as userModel from "../models/user.model"
+import * as userSearch from "../controllers/userSearch.controller"
 
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -280,6 +280,7 @@ const CreateActivity = Vue.extend({
       startTime: "",
       endDate: "",
       endTime: "",
+      organiserEmail: "",
       organiserId: NaN as number,
       activityTypes: [] as string[],
       selectedActivityType: "" as string,
@@ -427,11 +428,11 @@ const CreateActivity = Vue.extend({
 
       try {
         if (this.isEditing) {
-          userModel.getProfileById(this.organiserId);
-          activityModel.setActivityRole(this.organiserId, this.editingId, "Organiser")
+          let user = await userSearch.searchUsers({"email": this.organiserEmail, "exact": 'true'});
+          activityModel.setActivityRole(user[0].profile_id, this.editingId, "Organiser")
         }
       } catch (err) {
-        this.errorMessage = "Could not find organiser with that ID";
+        this.errorMessage = "Could not find organiser with that E-mail";
         return;
       }
 
