@@ -176,7 +176,7 @@ public class SubscriptionControllerTest {
         long testActivityId = 1;
         long testSubscriptionId = 2;
 
-        Subscription subscription = new Subscription(profile2, HomefeedEntityType.ACTIVITY, testSubscriptionId);
+        Subscription subscription = new Subscription(profile2, ChangeLogEntity.ACTIVITY, testSubscriptionId);
         List<Long> subscriptionIds = new ArrayList<>();
         subscriptionIds.add(testSubscriptionId);
 
@@ -200,8 +200,8 @@ public class SubscriptionControllerTest {
     public void testDeleteSubscriptionWhereUserSubscribedMultipleTimes() throws Exception {
         long testActivityId = 1;
 
-        Subscription subscription1 = new Subscription(profile2, HomefeedEntityType.ACTIVITY, 1L);
-        Subscription subscription2 = new Subscription(profile2, HomefeedEntityType.ACTIVITY, 2L);
+        Subscription subscription1 = new Subscription(profile2, ChangeLogEntity.ACTIVITY, 1L);
+        Subscription subscription2 = new Subscription(profile2, ChangeLogEntity.ACTIVITY, 2L);
         List<Long> subscriptionIds = new ArrayList<>();
         subscriptionIds.add(subscription1.getEntityId());
         subscriptionIds.add(subscription2.getEntityId());
