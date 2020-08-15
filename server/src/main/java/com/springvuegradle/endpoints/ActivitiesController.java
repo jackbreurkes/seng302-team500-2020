@@ -1,57 +1,26 @@
 package com.springvuegradle.endpoints;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.*;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
+import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
+import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
+import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityChangeLog;
-import com.springvuegradle.model.data.ActivityOutcome;
-import com.springvuegradle.model.data.ActivityParticipantResult;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityOutcomeRepository;
-import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.CreateActivityRequest;
-import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
-import com.springvuegradle.model.responses.ActivityResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for all endpoints relating to activities
@@ -99,7 +68,7 @@ public class ActivitiesController {
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         @Valid @RequestBody CreateActivityRequest updateActivityRequest,
                                         Errors errors,
-                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException {
+                                        HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException, UserNotAuthorizedException, ForbiddenOperationException {
         if (errors.hasErrors()) {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
@@ -186,11 +155,17 @@ public class ActivitiesController {
             }
         }
 
+        List<ChangeLog> deleteOutcomeChanges = new ArrayList<>();
         for (ActivityOutcome outcome : deletedOutcomes) {
-            // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
+            int loggedResultsCount = activityParticipantResultRepository.countActivityParticipantResultByOutcomeOutcomeId(outcome.getOutcomeId());
+            if (loggedResultsCount > 0) {
+                throw new ForbiddenOperationException("cannot delete outcome \"" + outcome.getDescription() + "\" as participants have logged results against it");
+            }
             ChangeLog deleteOutcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(activityId, outcome, editingUser);
-            changeLogRepository.save(deleteOutcomeChangeLog);
+            deleteOutcomeChanges.add(deleteOutcomeChangeLog);
         }
+        changeLogRepository.saveAll(deleteOutcomeChanges);
+
         activity.getOutcomes().clear();
         activity.getOutcomes().addAll(outcomesToKeep);
 
