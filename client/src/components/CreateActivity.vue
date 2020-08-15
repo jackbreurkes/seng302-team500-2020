@@ -259,9 +259,8 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
-import * as activityRole from "../models/activtyRole.model";
-// eslint-disable-next-line no-unused-vars
-import { UpdateUserActivityRoleRequest } from "../scripts/ActivityRole";
+import * as activityModel from "../models/activity.model"
+import * as userModel from "../models/user.model"
 
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -271,9 +270,6 @@ const CreateActivity = Vue.extend({
   data: function () {
     return {
       isActivityOutcomesExpanded: false,
-      updateUserActivityRoleRequest: {
-        role : "",
-      } as UpdateUserActivityRoleRequest,
       createActivityRequest: {
         continuous: true,
       } as CreateActivityRequest,
@@ -429,10 +425,10 @@ const CreateActivity = Vue.extend({
 
     createButtonClicked: async function () { 
 
-      try { //find organiser's id using organiser's email
+      try {
+        userModel.getProfileById(this.organiserId);
         if (this.isEditing) {
-          this.updateUserActivityRoleRequest.role = "Organiser";
-          activityRole.setRole(this.updateUserActivityRoleRequest, this.organiserId, this.editingId)
+          activityModel.setActivityRole(this.organiserId, this.editingId, "Organiser")
         }
       } catch (err) {
         this.errorMessage = "Could not find organiser with that ID";

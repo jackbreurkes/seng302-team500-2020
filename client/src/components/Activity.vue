@@ -17,7 +17,11 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-menu bottom left offset-y>
+                  <v-chip v-if="currentProfileId === creatorId" outlined>Creator</v-chip>
+                  <v-chip v-if="organiser" outlined>Organiser</v-chip>
+                  <v-chip v-if="following" outlined>Following</v-chip>
+                  <v-chip v-if="participating" outlined>Participating</v-chip>
+                  <v-menu v-if="currentProfileId === creatorId || organiser" bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         dark
@@ -35,7 +39,7 @@
                       >
                         <v-list-item-title>Edit Activity</v-list-item-title>
                       </v-list-item>
-                      <v-list-item @click="confirmDeleteModal = true">
+                      <v-list-item v-if="currentProfileId === creatorId" @click="confirmDeleteModal = true">
                         <v-dialog v-model="confirmDeleteModal" width="290">
                           <template v-slot:activator="{ on }">
                             <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
@@ -126,6 +130,7 @@ const Activity = Vue.extend({
       activityId: NaN as number,
       creatorId: NaN as number,
       activity: [] as CreateActivityRequest,
+      organiser: false,
       participating: false,
       following: false,
       confirmDeleteModal: false,
@@ -159,7 +164,11 @@ const Activity = Vue.extend({
         })
         activityController.getIsParticipating(this.currentProfileId, this.activityId)
         .then((participating) => {
-          this.participating = participating
+          this.participating = participating;
+        })
+        activityController.getIsOrganising(this.currentProfileId, this.activityId)
+        .then((organiser) => {
+          this.organiser = organiser;
         })
       })
       .catch(() => {
