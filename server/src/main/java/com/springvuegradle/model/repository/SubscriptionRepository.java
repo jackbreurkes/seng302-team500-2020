@@ -45,6 +45,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
 	/**
 	 * Query for getting a list of subscription ids for a profile on a certain entity id
+	 * @param entityId id of the entity to get subscriptions for
+	 * @param profile the profile of the user whose subscriptions should be gathered
+	 * @return list of ids of the subscription entries for the user and the particular activity
 	 */
 	@Query(value = "SELECT DISTINCT s.id FROM Subscription s WHERE s.subscriber = ?2 AND s.entityId = ?1")
 	public List<Long> findSubscriptionIds(long entityId, Profile profile);
