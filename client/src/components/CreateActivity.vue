@@ -125,6 +125,17 @@
                   v-model="createActivityRequest.location"
                   :rules="inputRules.locationRules"
                 ></v-text-field>
+
+                <v-text-field
+                  v-if="this.isEditing"
+                  label="Enter organiser ID"
+                  ref="organiserId"
+                  id="organiserId"
+                  type="number"
+                  v-model="organiserId"
+                  
+                ></v-text-field>
+                
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -248,6 +259,10 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
+import * as activityRole from "../models/activtyRole.model";
+// eslint-disable-next-line no-unused-vars
+import { UpdateUserActivityRoleRequest } from "../scripts/ActivityRole";
+
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
@@ -256,6 +271,9 @@ const CreateActivity = Vue.extend({
   data: function () {
     return {
       isActivityOutcomesExpanded: false,
+      updateUserActivityRoleRequest: {
+        role : "",
+      } as UpdateUserActivityRoleRequest,
       createActivityRequest: {
         continuous: true,
       } as CreateActivityRequest,
@@ -266,6 +284,7 @@ const CreateActivity = Vue.extend({
       startTime: "",
       endDate: "",
       endTime: "",
+      organiserId: NaN as number,
       activityTypes: [] as string[],
       selectedActivityType: "" as string,
       startDateMenu: false,
@@ -408,7 +427,19 @@ const CreateActivity = Vue.extend({
       this.$router.back();
     },
 
-    createButtonClicked: async function () {
+    createButtonClicked: async function () { 
+
+      try { //find organiser's id using organiser's email
+        if (this.isEditing) {
+          this.updateUserActivityRoleRequest.role = "Organiser";
+          activityRole.setRole(this.updateUserActivityRoleRequest, this.organiserId, this.editingId)
+        }
+      } catch (err) {
+        this.errorMessage = "Could not find organiser with that ID";
+        return;
+      }
+
+        
       if (this.createActivityRequest.outcomes === undefined) {
         this.createActivityRequest.outcomes = [];
       }
