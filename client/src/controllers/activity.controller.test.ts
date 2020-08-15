@@ -267,6 +267,19 @@ test.each([
   }
 );
 
+test.each([
+  [""], ["really long activity outcome participant result"], ["A result that's exactly 31 long"]
+])(
+  "expect result with invalid length to be rejected",
+  async (result) => {
+    await expect(
+      activityController.createParticipantResult(1, 1, result, "date string")
+    ).rejects.toThrow(
+      new Error("Score's length should be between 0 and 30 characters")
+    );
+  }
+)
+
 const continuousCreateActivityRequest: CreateActivityRequest = {
   activity_name: "Non-stop running",
   description: "Run without stopping",
