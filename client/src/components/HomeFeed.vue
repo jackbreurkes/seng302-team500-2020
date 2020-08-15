@@ -23,14 +23,39 @@ const Homefeed = Vue.extend({
   // app initial state
   data: function() {
     return {
-      changeLogList: [] as HomeFeedCardType[]
+      changeLogList: [] as HomeFeedCardType[],
+      lastId: NaN as number
     };
   },
-  created: async function(){
+  created: async function() {
     this.changeLogList = await HomefeedController.getHomeFeedData();
+    this.updateLastId();
 
   },
   methods: {
+    /**
+     * Sets the callback to be called anytime when the user scrolls the document.
+     */
+    setOnScroll: function() {
+      window.onscroll = () => {
+        
+        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
+
+        if (bottomOfWindow) {
+          HomefeedController.getAdditionalUsersHomefeed(this.lastId)
+            .then(response => {
+              this.changeLogList.push.apply(this.changeLogList, response)
+              this.updateLastId();
+            });
+        }
+      };
+    },
+    updateLastId: function() {
+      this.lastId = this.changeLogList[this.changeLogList.length -1].change_id;
+    }
+  },
+  mounted() {
+    this.setOnScroll()
   }
 });
 
