@@ -477,7 +477,7 @@ public class ActivitiesController {
 		Profile profile = profileRepository.findById(authId).orElse(null);
 
 		if (profile == null) {
-			throw new UserNotAuthenticatedException("User is not authenticated");
+			throw new RecordNotFoundException("Profile with id "+authId+" not found");
 		}
 		
 		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
