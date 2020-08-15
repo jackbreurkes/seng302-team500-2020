@@ -92,7 +92,6 @@ public class UserAuthorizer {
      */
     public long checkIsTargetUserOrAdmin(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         long authId = checkIsAuthenticated(request);
-
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) { // this shouldn't happen since a user's existence is checked in the auth interceptor
             throw new UserNotAuthenticatedException("You are not authenticated");

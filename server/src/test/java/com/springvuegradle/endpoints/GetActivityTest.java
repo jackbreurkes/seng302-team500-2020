@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 
+import com.springvuegradle.model.repository.ProfileRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -39,6 +40,9 @@ public class GetActivityTest {
 
     @Mock
     private ActivityRepository activityRepository;
+
+    @Mock
+    private ProfileRepository profileRepository;
     
     @Mock
     private SubscriptionRepository subscriptionRepo;
@@ -61,9 +65,24 @@ public class GetActivityTest {
         request.setAttribute("authenticatedid", 1L);
 
         Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        Mockito.when(profileRepository.findById(profile.getUser().getUserId())).thenReturn(Optional.ofNullable(profile));
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
         ActivityResponse response = activitiesController.getActivity(1L,2L, request);
         assertEquals(response.getActivityName(), "Test");
+    }
+
+    @Test
+    void testActivityCreatorNotFound() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        long nonExistentCreatorId = 5L;
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        Mockito.when(profileRepository.findById(nonExistentCreatorId)).thenReturn(Optional.empty());
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        assertThrows(RecordNotFoundException.class, () -> {
+            activitiesController.getActivity(nonExistentCreatorId,2L, request);
+        });
     }
 
 
