@@ -80,8 +80,14 @@ public class UserActivityRoleController {
         if(roleToDelete == null){
             throw new RecordNotFoundException("This user currently does not have a role in this activity");
         }
-        if (roleToDelete.getActivityRole() != ActivityRole.ORGANISER) {
-            UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+        if (roleToDelete.getActivityRole() == ActivityRole.PARTICIPANT) {
+
+            try {
+                UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+            } catch (UserNotAuthorizedException e) { // if not target user or an admin, someone who is role authenticated can also delete
+                UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+            }
+
         } else {
             UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
         }
