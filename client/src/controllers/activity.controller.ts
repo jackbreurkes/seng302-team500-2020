@@ -1,5 +1,6 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
+import { UserApiFormat } from '@/scripts/User';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -426,4 +427,13 @@ export function getDurationActivities(activityList: CreateActivityRequest[]): Cr
 export function getContinuousActivities(activityList: CreateActivityRequest[]): CreateActivityRequest[] {
   let continuousActivities = activityList.filter(activity => activity.continuous === true);
   return continuousActivities;
+}
+
+/**
+ * returns a list of all organisers of an activity.
+ * @param activityId the activity to get the emails of organisers for
+ */
+export async function getActivityOrganisers(activityId: number): Promise<UserApiFormat[]> {
+  let profiles = await activityModel.getActivityOrganisers(activityId);
+  return profiles;
 }

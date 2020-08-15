@@ -5,20 +5,18 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityRole;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.UpdateUserActivityRoleRequest;
+import com.springvuegradle.model.responses.ProfileResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,6 +34,38 @@ public class UserActivityRoleController {
     @Autowired
     private ActivityRepository activityRepository;
 
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    private EmailRepository emailRepository;
+
+    /**
+     * Endpoint for getting the list of organisers of an activity.
+     * @param activityId the id of the activity that the organisers are associated with
+     * @param request the request object associated with the request
+     * @return a list of profiles of organisers
+     * @throws UserNotAuthorizedException if the user does not have the right permissions
+     * @throws UserNotAuthenticatedException if the user is not logged in
+     * @throws RecordNotFoundException If there is no UserActivityRole related to the user specified
+     */
+    @GetMapping("/activities/{activityId}/organisers")
+    @CrossOrigin
+    public List<ProfileResponse> getActivityOrganisers(@PathVariable("activityId") long activityId,
+                                                    HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
+        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity not found"));
+        List<UserActivityRole> roles = userActivityRoleRepository.getAllByActivityAndActivityRole(activity, ActivityRole.ORGANISER);
+
+        List<ProfileResponse> responses = new ArrayList<>();
+        for (UserActivityRole role : roles) {
+            User user = role.getUser();
+            profileRepository.findById(user.getUserId()).ifPresent(profile -> responses.add(new ProfileResponse(profile, emailRepository)));
+        }
+        return responses;
+    }
+
     /**
      * Endpoint for getting UserActivityRole information
      * @param activityId the id of the activity that the role is associated with
@@ -49,8 +79,8 @@ public class UserActivityRoleController {
     @GetMapping("/activities/{activityId}/roles/{profileId}")
     @CrossOrigin
     public String getUserActivityRole(@PathVariable("activityId") long activityId,
-                                                         @PathVariable("profileId") long profileId,
-                                                         HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
+                                      @PathVariable("profileId") long profileId,
+                                      HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId).orElse(null);

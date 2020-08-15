@@ -70,5 +70,7 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
             value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
     )
     public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+
+    public List<UserActivityRole> getAllByActivityAndActivityRole(Activity activity, ActivityRole role);
     
 }
