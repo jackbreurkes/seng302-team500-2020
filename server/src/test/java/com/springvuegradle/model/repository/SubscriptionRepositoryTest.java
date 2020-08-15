@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.springvuegradle.model.data.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,14 +17,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.HomefeedEntityType;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.Subscription;
-import com.springvuegradle.model.data.User;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -69,7 +62,7 @@ public class SubscriptionRepositoryTest {
 		
 		activityRepo.save(activity);
 		
-		Subscription subscription = new Subscription(testProfile, HomefeedEntityType.ACTIVITY, activity.getId());
+		Subscription subscription = new Subscription(testProfile, ChangeLogEntity.ACTIVITY, activity.getId());
 		subscriptionRepo.save(subscription);
 		
 		List<Subscription> savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile);
@@ -89,7 +82,7 @@ public class SubscriptionRepositoryTest {
 		
 		activityRepo.save(activity);
 		
-		Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+		Subscription subscription = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity.getId());
 		subscriptionRepo.save(subscription);
 		
 		List<Subscription> savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile2);
@@ -109,7 +102,7 @@ public class SubscriptionRepositoryTest {
 		
 		activityRepo.save(activity);
 		
-		Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+		Subscription subscription = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity.getId());
 		subscriptionRepo.save(subscription);
 		
 		List<Subscription> savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile2);
@@ -134,7 +127,7 @@ public class SubscriptionRepositoryTest {
 		
 		activityRepo.save(activity);
 		
-		Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+		Subscription subscription = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity.getId());
 		subscriptionRepo.save(subscription);
 		
 		List<Subscription> savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile2);
@@ -183,9 +176,9 @@ public class SubscriptionRepositoryTest {
 		activityRepo.save(activity);
 		activityRepo.save(activity2);
 		
-		Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+		Subscription subscription = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity.getId());
 		subscriptionRepo.save(subscription);
-		Subscription subscription2 = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity2.getId());
+		Subscription subscription2 = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity2.getId());
 		subscriptionRepo.save(subscription2);
 		
 		List<Subscription> savedSubscriptions = subscriptionRepo.findSubscriptionsByUser(testProfile2);
@@ -211,7 +204,7 @@ public class SubscriptionRepositoryTest {
 		for (int i = 0; i < numSubscribers; i++) {
 			Profile testProfile2 = new Profile(new User(), "Lisa","Simpson", LocalDate.of(1981, 5, 9), Gender.FEMALE);
 			testProfile2 = profileRepo.save(testProfile2);
-			Subscription subscription = new Subscription(testProfile2, HomefeedEntityType.ACTIVITY, activity.getId());
+			Subscription subscription = new Subscription(testProfile2, ChangeLogEntity.ACTIVITY, activity.getId());
 			subscriptionRepo.save(subscription);
 		}
 		
