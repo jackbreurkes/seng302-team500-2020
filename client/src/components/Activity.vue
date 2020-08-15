@@ -95,7 +95,7 @@
                   <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
-                  <v-btn id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                  <v-btn :disabled="organiser" id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
                 </div>
               </v-card-actions>
 
