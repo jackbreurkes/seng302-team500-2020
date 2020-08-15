@@ -2,7 +2,6 @@ package com.springvuegradle.model.data;
 
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -16,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ActivityChangeLogTest {
 
     final String TIME_FRAME_FORMAT = "{\"start_time\": \"%s\", \"end_time\": \"%s\"}";
+    private final String OUTCOME_CHANGELOG_FORMAT = "{ \"description\": \"%s\", \"unit\": \"%s\" }";
 
     ActivityType testWalkingActivityType;
     ActivityType testJoggingActivityType;
@@ -260,6 +260,30 @@ public class ActivityChangeLogTest {
             ActivityChangeLog.getLogForCreateActivity(newActivity);
         });
         assertEquals("new activity's id cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void testCreateOutcomeLog_HasCorrectFormat() {
+        ActivityOutcome newOutcome = new ActivityOutcome("test outcome", "km/h");
+        User creatingUser = new User(5);
+
+        ChangeLog outcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(1L, newOutcome, creatingUser);
+
+        assertEquals(ChangedAttribute.ACTIVITY_OUTCOME, outcomeChangeLog.getChangedAttribute());
+        assertNull(outcomeChangeLog.getOldValue());
+        assertEquals(String.format(OUTCOME_CHANGELOG_FORMAT, newOutcome.getDescription(), newOutcome.getUnits()), outcomeChangeLog.getNewValue());
+    }
+
+    @Test
+    void testDeleteOutcomeLog_HasCorrectFormat() {
+        ActivityOutcome newOutcome = new ActivityOutcome("test outcome", "km/h");
+        User deletingUser = new User(5);
+
+        ChangeLog outcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(1L, newOutcome, deletingUser);
+
+        assertEquals(ChangedAttribute.ACTIVITY_OUTCOME, outcomeChangeLog.getChangedAttribute());
+        assertEquals(String.format(OUTCOME_CHANGELOG_FORMAT, newOutcome.getDescription(), newOutcome.getUnits()), outcomeChangeLog.getOldValue());
+        assertNull(outcomeChangeLog.getNewValue());
     }
 
 }

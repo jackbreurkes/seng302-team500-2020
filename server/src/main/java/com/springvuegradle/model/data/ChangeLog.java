@@ -5,9 +5,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 
 /**
  * JPA representation of a change log entry
@@ -144,8 +142,8 @@ public class ChangeLog {
 		return timestamp;
 	}
 
-	public void setOffsetDateTime(OffsetDateTime offsetDateTime) {
-		this.timestamp = offsetDateTime;
+	public void setTimestamp(OffsetDateTime timestamp) {
+		this.timestamp = timestamp;
 	}
 
 }

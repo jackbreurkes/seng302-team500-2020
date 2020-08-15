@@ -9,7 +9,8 @@ public enum ChangedAttribute {
 	ACTIVITY_DESCRIPTION("activity_description"),
 	ACTIVITY_LOCATION("activity_location"),
 	ACTIVITY_EXISTENCE("activity_existence"),
-	ACTIVITY_ACTIVITY_TYPES("activity_activity_types");
+	ACTIVITY_ACTIVITY_TYPES("activity_activity_types"),
+	ACTIVITY_OUTCOME("activity_outcome");
 
 	/**
 	 * Name of the attribute changed when sent by json

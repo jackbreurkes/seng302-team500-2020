@@ -29,7 +29,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return Number of users following the given activity
 	 */
 	@Query(value = "SELECT COUNT(s) FROM Subscription s WHERE s.entityId = ?1 AND "
-			+ "entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY")
+			+ "entityType = com.springvuegradle.model.data.ChangeLogEntity.ACTIVITY")
 	public Long getFollowerCount(long activityId);
 
 	/**
@@ -39,7 +39,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return boolean true if subscibed
 	 */
 	@Query(value = "SELECT CASE WHEN (count(s) > 0)  THEN 'TRUE' ELSE 'FALSE' END FROM Subscription s "
-			+ "WHERE entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY AND "
+			+ "WHERE entityType = com.springvuegradle.model.data.ChangeLogEntity.ACTIVITY AND "
 			+ "entityId = ?1 AND subscriber = ?2")
 	public boolean isSubscribedToActivity(long entityId, Profile profile);
 
