@@ -31,7 +31,6 @@ const Homefeed = Vue.extend({
   },
   created: async function(){
     this.changeLogList = await HomefeedController.getHomeFeedData();
-    console.log(this.changeLogList);
 
   },
   methods: {

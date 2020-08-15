@@ -26,8 +26,8 @@ const HomeFeedCard = Vue.extend({
             editorName: this.cardData.editorName,
             editorAction: "edited",
             userActionTimeStamp: this.cardData.edited_timeStamp,
-            entity_id: this.cardData.entity_id,
-            creator_id: this.cardData.creator_id,
+            entityId: this.cardData.entity_id,
+            creatorId: this.cardData.creator_id,
             oldValue: "",
             newValue: "",
             infoString: ""
@@ -40,10 +40,10 @@ const HomeFeedCard = Vue.extend({
 
     methods: {
         activityClicked: function(){
-            this.$router.push("/profiles/" + this.creator_id + "/activities/" + this.entity_id)
+            this.$router.push("/profiles/" + this.creatorId + "/activities/" + this.entityId)
         },
         creatorClicked: function(){
-            this.$router.push("/profiles/" + this.creator_id)
+            this.$router.push("/profiles/" + this.creatorId)
         },
         parseTime: function(time:string){
             let dateTime = new Date(time);
