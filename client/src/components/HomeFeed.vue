@@ -33,7 +33,10 @@ const Homefeed = Vue.extend({
 
   },
   methods: {
-    scroll: function() {
+    /**
+     * Sets the callback to be called anytime when the user scrolls the document.
+     */
+    setOnScroll: function() {
       window.onscroll = () => {
         
         let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
@@ -52,7 +55,7 @@ const Homefeed = Vue.extend({
     }
   },
   mounted() {
-    this.scroll()
+    this.setOnScroll()
   }
 });
 
