@@ -1,13 +1,11 @@
 package com.springvuegradle.model.repository;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.springvuegradle.model.data.ActivityParticipantResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.springvuegradle.model.data.ActivityOutcome;
-import com.springvuegradle.model.data.ActivityParticipantResult;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository for ActivityParticipantResults
@@ -35,5 +33,7 @@ import com.springvuegradle.model.data.ActivityParticipantResult;
                 value = "SELECT r FROM ActivityParticipantResult r JOIN ActivityOutcome o ON r.outcome.outcomeId = o.outcomeId WHERE r.user.uuid = ?1 AND o.activity.activity_id = ?2"
         )
     List<ActivityParticipantResult> getParticipantResultsByUserIdAndActivityId(long profileId, long activityId);
+
+    int countActivityParticipantResultByOutcomeOutcomeId(long outcomeId);
 
 }
