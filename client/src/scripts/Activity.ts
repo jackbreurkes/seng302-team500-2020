@@ -15,4 +15,9 @@ export interface ActivityOutcomes {
   units: string;
   outcome_id?: number;
 }
-  
+
+export interface ParticipantResult {
+  score: string,
+  date: string,
+  time: string
+}

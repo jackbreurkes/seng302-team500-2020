@@ -101,13 +101,13 @@
                             >
                             <v-row align="end">
                               <v-col sm="12" md="6">
-                                {{item.description}}
+                                {{item.description}}:
                               </v-col>
                               <v-col sm="8" md="4">
                                 <v-text-field
                                   label="Your result"
                                   type="text"
-                                  v-model="participantOutcomes[item.outcome_id]"
+                                  v-model="participantOutcome[item.outcome_id]['score']"
                                   hide-details
                                 ></v-text-field>
                               </v-col>
@@ -116,16 +116,20 @@
                               </v-col>
                             </v-row>
                             <v-row>
-                              <v-col xs="11" md="5">
-                                Date picker
+                              <v-col xs="12" md="6">
+                                <v-text-field label="Completion date" type="date" v-model="participantOutcome[item.outcome_id]['date']"></v-text-field>
                               </v-col>
-                              <v-col xs="11" md="5">
-                                Time picker
+                              <v-col xs="12" md="6">
+                                <v-text-field label="Completion time" type="time" v-model="participantOutcome[item.outcome_id]['time']"></v-text-field>
                               </v-col>
                             </v-row>
-                            <v-row>
-                              <v-col xs="11" md="5">
-                              </v-col>
+                            <v-row justify="end">
+                              <v-spacer></v-spacer>
+                              <div class="mr-3">
+                                <v-btn @click="saveParticipantOutcome(item.outcome_id)" right color="primary">
+                                  Save
+                                </v-btn>
+                              </div>
                             </v-row>
                         </v-card>
                       </v-sheet>
@@ -159,7 +163,7 @@ import Vue from "vue";
 
 import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest } from '../scripts/Activity';
+import { CreateActivityRequest, ActivityOutcomes, ParticipantResult } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
 
@@ -179,7 +183,7 @@ const Activity = Vue.extend({
       confirmDeleteModal: false,
       startTimeString: '' as string,
       endTimeString: '' as string,
-      participantOutcomes: {}
+      participantOutcome: {} as Record<number, ParticipantResult>
     };
   },
 
@@ -210,6 +214,15 @@ const Activity = Vue.extend({
         .then((participating) => {
           this.participating = participating
         })
+
+        let outcome_array = this.activity.outcomes as ActivityOutcomes[];
+        for (let outcome_index in outcome_array) {
+          if (this.activity.outcomes === undefined) continue;
+          let outcome_id = this.activity.outcomes[outcome_index].outcome_id;
+          if (outcome_id === undefined) continue;
+          this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
+        }
+        console.log(this.participantOutcome);
       })
       .catch(() => {
         this.$router.back();
@@ -287,6 +300,11 @@ const Activity = Vue.extend({
      */
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
+    },
+
+    saveParticipantOutcome: function(outcome_id: number) {
+      console.log(outcome_id);
+      console.log(this.participantOutcome);
     }
   }
 
