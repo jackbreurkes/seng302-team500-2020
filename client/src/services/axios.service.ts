@@ -41,7 +41,7 @@ instance.interceptors.response.use(
   },
   function(error) {
     if (error.response && error.response.status === 401) {
-      auth.verifyUserId(); // will clear credentials if the user is invalid
+      auth.clearAuthInfo();
     }
     console.error(error);
     error.message = axiosErrorToMessage(error);

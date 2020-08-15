@@ -1,5 +1,6 @@
 package com.springvuegradle.endpoints;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.springvuegradle.auth.UserAuthorizer;
@@ -8,7 +9,7 @@ import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.HomefeedEntityType;
+import com.springvuegradle.model.data.ChangeLogEntity;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.Subscription;
 import com.springvuegradle.model.repository.UserRepository;
@@ -103,7 +104,7 @@ public class SubscriptionController {
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
         if(!subscriptionRepository.isSubscribedToActivity(activityId, profileRepository.getOne(profileId))){
-            subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), HomefeedEntityType.ACTIVITY, activityId));
+            subscriptionRepository.save(new Subscription(profileRepository.getOne(profileId), ChangeLogEntity.ACTIVITY, activityId));
         }else{
             throw new InvalidRequestFieldException("Already subscribed to activity");
         }
@@ -134,8 +135,10 @@ public class SubscriptionController {
         Profile userProfile = profileRepository.getOne(profileId);
 
         if(subscriptionRepository.isSubscribedToActivity(activityId, userProfile)){
-            long subscriptionId = subscriptionRepository.findSubscriptionId(activityId, userProfile);
-            subscriptionRepository.delete(subscriptionRepository.getOne(subscriptionId));
+            List<Long> subscriptionIdList = subscriptionRepository.findSubscriptionIds(activityId, userProfile);
+            for (long subscriptionId : subscriptionIdList) {
+                subscriptionRepository.delete(subscriptionRepository.getOne(subscriptionId));
+            }
         }else{
             throw new RecordNotFoundException("User not subscribed to activity");
         }

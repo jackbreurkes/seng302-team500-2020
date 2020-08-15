@@ -23,8 +23,6 @@ public class UserAuthorizer {
     private static UserAuthorizer authInstance = null;
 
     private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
-    private final short STD_ADMIN_USER_PERMISSION = 126;
-    private final short SUPER_ADMIN_USER_PERMISSION = 127;
 
     /**
      * Private constructor for singlton pattern
@@ -72,6 +70,20 @@ public class UserAuthorizer {
     }
 
     /**
+     * checks whether a user's is authenticated id is the same as the given id.
+     * @param request the request for the operation
+     * @param profileId the profile to check the request's authorisation against
+     * @return the user's ID if the user is correctly authenticated
+     */
+    public long checkIsTargetUser(HttpServletRequest request, Long profileId) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+        long authId = checkIsAuthenticated(request);
+        if (authId != profileId) {
+            throw new UserNotAuthorizedException("user is not authenticated as " + profileId);
+        }
+        return authId;
+    }
+
+    /**
      * Checks if the user making the request is authorised as the target user identified by the given ID or as an admin.
      * @param request the HttpServletRequest for the operation
      * @param profileId the ID of the target user
@@ -80,9 +92,8 @@ public class UserAuthorizer {
      */
     public long checkIsTargetUserOrAdmin(HttpServletRequest request, Long profileId, UserRepository userRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
         long authId = checkIsAuthenticated(request);
-
         User editingUser = userRepository.findById(authId).orElse(null);
-        if (editingUser == null) {
+        if (editingUser == null) { // this shouldn't happen since a user's existence is checked in the auth interceptor
             throw new UserNotAuthenticatedException("You are not authenticated");
         }
 

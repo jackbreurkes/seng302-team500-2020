@@ -4,6 +4,8 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.repository.ActivityOutcomeRepository;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
@@ -53,6 +55,12 @@ class PostActivityTest {
 
     @MockBean
     private ActivityTypeRepository activityTypeRepository;
+    
+    @MockBean
+	private ActivityParticipantResultRepository activityOutcomeRepo;
+    
+    @MockBean
+    private ActivityOutcomeRepository activityOutcomeRepository;
 
 
     private ActivitiesController activitiesController;

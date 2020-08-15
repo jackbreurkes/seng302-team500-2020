@@ -125,6 +125,17 @@
                   v-model="createActivityRequest.location"
                   :rules="inputRules.locationRules"
                 ></v-text-field>
+
+                <v-text-field
+                  v-if="this.isEditing"
+                  label="Enter organiser Email"
+                  ref="organiserEmail"
+                  id="organiserEmail"
+                  type="email"
+                  v-model="organiserEmail"
+                  
+                ></v-text-field>
+                
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -248,6 +259,9 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
+import * as activityModel from "../models/activity.model"
+import * as userSearch from "../controllers/userSearch.controller"
+
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
@@ -266,6 +280,8 @@ const CreateActivity = Vue.extend({
       startTime: "",
       endDate: "",
       endTime: "",
+      organiserEmail: "",
+      organiserId: NaN as number,
       activityTypes: [] as string[],
       selectedActivityType: "" as string,
       startDateMenu: false,
@@ -408,7 +424,19 @@ const CreateActivity = Vue.extend({
       this.$router.back();
     },
 
-    createButtonClicked: async function () {
+    createButtonClicked: async function () { 
+
+      try {
+        if (this.isEditing) {
+          let user = await userSearch.searchUsers({"email": this.organiserEmail, "exact": 'true'});
+          activityModel.setActivityRole(user[0].profile_id, this.editingId, "Organiser")
+        }
+      } catch (err) {
+        this.errorMessage = "Could not find organiser with that E-mail";
+        return;
+      }
+
+        
       if (this.createActivityRequest.outcomes === undefined) {
         this.createActivityRequest.outcomes = [];
       }

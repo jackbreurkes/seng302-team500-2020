@@ -75,14 +75,23 @@ public class UserActivityRoleController {
     public void deleteUserActivityRole(@PathVariable("activityId") long activityId,
                                                          @PathVariable("profileId") long profileId,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
-        Optional <UserActivityRole> roleToDelete = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId);
-        if(roleToDelete.isEmpty()){
+        UserActivityRole roleToDelete = userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId).orElse(null);
+        if(roleToDelete == null){
             throw new RecordNotFoundException("This user currently does not have a role in this activity");
         }
+        if (roleToDelete.getActivityRole() == ActivityRole.PARTICIPANT) {
 
-        userActivityRoleRepository.delete(roleToDelete.get());
+            try {
+                UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+            } catch (UserNotAuthorizedException e) { // if not target user or an admin, someone who is role authenticated can also delete
+                UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+            }
+
+        } else {
+            UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+        }
+        userActivityRoleRepository.delete(roleToDelete);
     }
 
     /**
@@ -104,9 +113,13 @@ public class UserActivityRoleController {
                                                          @PathVariable("profileId") long profileId,
                                                         @Valid @RequestBody UpdateUserActivityRoleRequest updateUserActivityRoleRequest,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
-        UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
-
         ActivityRole userRole = updateUserActivityRoleRequest.getRole();
+
+        if (userRole == ActivityRole.ORGANISER) {
+            UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
+        } else {
+            UserAuthorizer.getInstance().checkIsAuthenticated(request);
+        }
 
         if (userActivityRoleRepository.getRoleEntryByUserId(profileId, activityId).isPresent()) {
             // Update the role of the existing user
@@ -114,13 +127,13 @@ public class UserActivityRoleController {
         } else {
             // Create new entry for user
             Optional<Activity> activity = activityRepository.findById(activityId);
-            if (!activity.isPresent()) {
+            if (activity.isEmpty()) {
                 throw new RecordNotFoundException("Activity not found");
             }
-            else {
-                UserActivityRole userActivityRole = new UserActivityRole(activity.get(), (User) request.getAttribute("authenticateduser"), updateUserActivityRoleRequest.getRole());
-                userActivityRoleRepository.save(userActivityRole);
-            }
+            User user = userRepository.findById(profileId).orElseThrow(() -> new RecordNotFoundException("user " + profileId + " not found"));
+
+            UserActivityRole userActivityRole = new UserActivityRole(activity.get(), user, updateUserActivityRoleRequest.getRole());
+            userActivityRoleRepository.save(userActivityRole);
 
         }
 

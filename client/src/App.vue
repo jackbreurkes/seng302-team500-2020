@@ -2,7 +2,7 @@
   <div id="app">
     <v-app>
 
-      <v-app-bar color="primary" dark app clipped-left:true-value="">
+      <v-app-bar color="primary" dark app clipped-left:true-value="" >
         <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
         <v-toolbar-title>Intitulada </v-toolbar-title>
         <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
@@ -21,6 +21,7 @@
           dark
           overlay-opacity= 0.7
           fixed
+          style="position:fixed;"
           :permanent = "true" 
           v-if="showNavBar()"
 
