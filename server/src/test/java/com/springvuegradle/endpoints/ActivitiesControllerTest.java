@@ -536,6 +536,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
 		List<ActivityOutcome> outcomes = new ArrayList<>();
 		ActivityOutcome outcome = new ActivityOutcome("Time it took you to run 100m","seconds");
+
 		outcomes.add(outcome);
 		//Mock activity
 		ActivityType activityType = new ActivityType("Running");
@@ -544,6 +545,7 @@ public class ActivitiesControllerTest {
 		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
 		activity.setId(2L);
 		activity.setOutcomes(outcomes);
+		outcome.setActivity(activity);
 		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
 
 		//Mock participant
@@ -553,6 +555,7 @@ public class ActivitiesControllerTest {
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
 		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(activityOutcomeRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(outcome));
 
 		mvc.perform(MockMvcRequestBuilders
 				.delete("/activities/{activityId}/results/{outcomeId}", activity.getId(), outcome.getOutcomeId())
@@ -696,7 +699,7 @@ public class ActivitiesControllerTest {
 		});
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -864,7 +867,7 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
+		String json = "{\"outcome_id\": \"" + outcome.getOutcomeId() + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
@@ -874,7 +877,7 @@ public class ActivitiesControllerTest {
 	}
 
 	@Test
-	void testPutActivityParticipantResultUnauthorizedUser_404() throws Exception {
+	void testPutActivityParticipantResult_NonexistentOutcome_404() throws Exception {
 		//Mock Creator
 		User creator = new User(1L);
 		Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(creator));
@@ -899,14 +902,19 @@ public class ActivitiesControllerTest {
 		Mockito.when(activityParticipantResultRepository.findById(outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
 
 		// Mock json string
-		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \" 2020-07-14t00:15:10+0000 \"}";
+		String json = "{\"outcome_id\": \"" + 404 + "\" ,\"result\": \"" + 11 + "\", \"completed_date\": \"2020-07-14T00:15:10+0000\"}";
 		mvc.perform(MockMvcRequestBuilders
 				.put("/activities/{activityId}/results", activity.getId())
 				.content(json).contentType(MediaType.APPLICATION_JSON)
 				.requestAttr("authenticatedid", participant.getUserId())
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
-				.andExpect(status().is(404));
+				.andExpect(status().isNotFound())
+				.andDo(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof RecordNotFoundException);
+					assertEquals("Result does not exist", thrown.getMessage());
+				});
 
 	}
 }

@@ -552,7 +552,18 @@ public class ActivitiesController {
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
+        Activity activity = activityRepository.findById(activityId).orElse(null);
+        if (activity == null) {
+            throw new RecordNotFoundException("activity " + activityId + " not found");
+        }
+        ActivityOutcome outcome = activityOutcomeRepository.findById(outcomeId).orElse(null);
+        if (outcome == null) {
+            throw new RecordNotFoundException("outcome " + outcomeId + " not found");
+        }
+        if (outcome.getActivity().getId() != activityId) {
+            throw new RecordNotFoundException("no outcome with id " + outcomeId + " found for activity " + activityId);
+        }
+
 
         ActivityParticipantResult participantResult = activityParticipantResultRepository.getParticipantResult(authId, outcomeId).orElse(null);
         if (participantResult == null) {
