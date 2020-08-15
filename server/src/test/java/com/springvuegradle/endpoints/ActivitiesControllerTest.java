@@ -101,6 +101,9 @@ public class ActivitiesControllerTest {
 	@MockBean
 	private ChangeLogRepository changeLogRepository;
 
+	@MockBean
+	private EmailRepository emailRepository;
+
 
 	User user;
 	Profile profile;
