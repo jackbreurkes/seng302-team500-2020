@@ -121,13 +121,13 @@ public class UserActivityRoleController {
         } else {
             // Create new entry for user
             Optional<Activity> activity = activityRepository.findById(activityId);
-            if (!activity.isPresent()) {
+            if (activity.isEmpty()) {
                 throw new RecordNotFoundException("Activity not found");
             }
-            else {
-                UserActivityRole userActivityRole = new UserActivityRole(activity.get(), (User) request.getAttribute("authenticateduser"), updateUserActivityRoleRequest.getRole());
-                userActivityRoleRepository.save(userActivityRole);
-            }
+            User user = userRepository.findById(profileId).orElseThrow(() -> new RecordNotFoundException("user " + profileId + " not found"));
+
+            UserActivityRole userActivityRole = new UserActivityRole(activity.get(), user, updateUserActivityRoleRequest.getRole());
+            userActivityRoleRepository.save(userActivityRole);
 
         }
 
