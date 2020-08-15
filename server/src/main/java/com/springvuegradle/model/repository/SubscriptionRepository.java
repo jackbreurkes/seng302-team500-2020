@@ -29,24 +29,27 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 	 * @return Number of users following the given activity
 	 */
 	@Query(value = "SELECT COUNT(s) FROM Subscription s WHERE s.entityId = ?1 AND "
-			+ "entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY")
+			+ "entityType = com.springvuegradle.model.data.ChangeLogEntity.ACTIVITY")
 	public Long getFollowerCount(long activityId);
 
 	/**
-	 * Checks if uesr is subscribed to activity
+	 * Checks if user is subscribed to activity
 	 * @param entityId Id of the activity
 	 * @param profile User to check if subscribed
-	 * @return boolean true if subscibed
+	 * @return boolean true if subscribed
 	 */
 	@Query(value = "SELECT CASE WHEN (count(s) > 0)  THEN 'TRUE' ELSE 'FALSE' END FROM Subscription s "
-			+ "WHERE entityType = com.springvuegradle.model.data.HomefeedEntityType.ACTIVITY AND "
+			+ "WHERE entityType = com.springvuegradle.model.data.ChangeLogEntity.ACTIVITY AND "
 			+ "entityId = ?1 AND subscriber = ?2")
 	public boolean isSubscribedToActivity(long entityId, Profile profile);
 
 	/**
-	 * Query for getting subscription id from profile and entity id
+	 * Query for getting a list of subscription ids for a profile on a certain entity id
+	 * @param entityId id of the entity to get subscriptions for
+	 * @param profile the profile of the user whose subscriptions should be gathered
+	 * @return list of ids of the subscription entries for the user and the particular activity
 	 */
 	@Query(value = "SELECT DISTINCT s.id FROM Subscription s WHERE s.subscriber = ?2 AND s.entityId = ?1")
-	public long findSubscriptionId(long entityId, Profile profile);
+	public List<Long> findSubscriptionIds(long entityId, Profile profile);
 
 }

@@ -68,6 +68,12 @@ public class PutActivityTest {
     private ProfileRepository profileRepository;
     @MockBean
     private ChangeLogRepository changeLogRepository;
+    @MockBean
+    private ActivityOutcomeRepository activityOutcomeRepository;
+
+
+    @MockBean
+	private ActivityParticipantResultRepository activityOutcomeRepo;
 
     private User user;
     private Profile profile;
@@ -344,7 +350,7 @@ public class PutActivityTest {
                 "  \"location\": \"Christchurch, NZ\",\n" +
                 "  \"outcomes\": [" +
                 "{\"description\": \"" + newOutcomeDescription + "\", \"units\": \"" + newOutcomeUnits + "\" }," + // new outcome
-                "{\"description\": \"" + outcome1.getDescription() + "\", \"units\": \"" + outcome1.getUnits() + "\" }" + // order change
+                "{\"description\": \"" + outcome1.getDescription() + "\", \"units\": \"" + outcome1.getUnits() + "\" }" +
                 "] " +
                 "}";
 
@@ -356,10 +362,11 @@ public class PutActivityTest {
         assertEquals(1, activityCaptor.getAllValues().size());
         Activity createdActivity = activityCaptor.getValue();
         assertEquals(2, createdActivity.getOutcomes().size());
-        assertEquals(newOutcomeDescription, createdActivity.getOutcomes().get(0).getDescription());
-        assertEquals(newOutcomeUnits, createdActivity.getOutcomes().get(0).getUnits());
-        assertEquals(outcome1.getDescription(), createdActivity.getOutcomes().get(1).getDescription());
-        assertEquals(outcome1.getUnits(), createdActivity.getOutcomes().get(1).getUnits());
+        assertEquals(outcome1.getDescription(), createdActivity.getOutcomes().get(0).getDescription()); // already existing outcomes should come first
+        assertEquals(outcome1.getUnits(), createdActivity.getOutcomes().get(0).getUnits());
+        assertSame(outcome1, createdActivity.getOutcomes().get(0)); // should not create a new instance
+        assertEquals(newOutcomeDescription, createdActivity.getOutcomes().get(1).getDescription()); // new outcome appended to the list
+        assertEquals(newOutcomeUnits, createdActivity.getOutcomes().get(1).getUnits());
     }
 
     @ParameterizedTest

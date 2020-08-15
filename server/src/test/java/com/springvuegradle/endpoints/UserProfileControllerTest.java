@@ -73,6 +73,8 @@ class UserProfileControllerTest {
     private LocationRepository locationRepository;
     @MockBean
     private RoleRepository roleRepository;
+    @MockBean
+    private ChangeLogRepository changeLogRepository;
 
     /**
      * Creates the user profile controller and inserts the mocks we define in the place of the repositories

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * custom error to be thrown when a user is attempting to carry out an operation which is disallowed
  * (e.g. with invalid password, register too may emails)
  *
- * this error should not be used when the operation is forbidden due to the user's permission level.
+ * this error should not be used when the operation is forbidden due to who the user is (e.g. invalid permission level).
  * for this, an UserNotAuthorizedException should be used.
  */
 @ResponseStatus(value = HttpStatus.CONFLICT)
