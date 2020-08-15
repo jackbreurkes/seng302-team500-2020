@@ -6,6 +6,7 @@ import com.springvuegradle.model.responses.ErrorResponse;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -24,6 +25,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.LocalDate;
 import java.util.*;
 
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -167,9 +171,62 @@ public class SubscriptionControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("subscribed").value(false));
     }
 
+    @Test
+    public void testDeleteSubscription() throws Exception {
+        long testActivityId = 1;
+        long testSubscriptionId = 2;
+
+        Subscription subscription = new Subscription(profile2, HomefeedEntityType.ACTIVITY, testSubscriptionId);
+        List<Long> subscriptionIds = new ArrayList<>();
+        subscriptionIds.add(testSubscriptionId);
+
+        Mockito.when(profileRepo.getOne(user2.getUserId())).thenReturn(profile2);
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(testActivityId, profile2)).thenReturn(true);
+        Mockito.when(subscriptionRepository.findSubscriptionIds(testActivityId, profile2)).thenReturn(subscriptionIds);
+        Mockito.when(subscriptionRepository.getOne(testSubscriptionId)).thenReturn(subscription);
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/" + testActivityId)
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(200));
+
+        ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
+        Mockito.verify(subscriptionRepository).delete(captor.capture());
+        assertEquals(subscription, captor.getValue());
+    }
 
     @Test
-    public void testDeleteSubscriptionWhenNotSubscirbed() throws Exception {
+    public void testDeleteSubscriptionWhereUserSubscribedMultipleTimes() throws Exception {
+        long testActivityId = 1;
+
+        Subscription subscription1 = new Subscription(profile2, HomefeedEntityType.ACTIVITY, 1L);
+        Subscription subscription2 = new Subscription(profile2, HomefeedEntityType.ACTIVITY, 2L);
+        List<Long> subscriptionIds = new ArrayList<>();
+        subscriptionIds.add(subscription1.getEntityId());
+        subscriptionIds.add(subscription2.getEntityId());
+
+        Mockito.when(profileRepo.getOne(user2.getUserId())).thenReturn(profile2);
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(testActivityId, profile2)).thenReturn(true);
+        Mockito.when(subscriptionRepository.findSubscriptionIds(testActivityId, profile2)).thenReturn(subscriptionIds);
+        Mockito.when(subscriptionRepository.getOne(subscription1.getEntityId())).thenReturn(subscription1);
+        Mockito.when(subscriptionRepository.getOne(subscription2.getEntityId())).thenReturn(subscription2);
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/profiles/2/subscriptions/activities/" + testActivityId)
+                .requestAttr("authenticatedid", user2.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(200));
+
+        ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
+        Mockito.verify(subscriptionRepository, times(2)).delete(captor.capture());
+        Set<Subscription> capturedSubscriptions = new HashSet<>(captor.getAllValues());
+        assertTrue(capturedSubscriptions.contains(subscription1));
+        assertTrue(capturedSubscriptions.contains(subscription2));
+    }
+
+    @Test
+    public void testDeleteSubscriptionWhenNotSubscribed() throws Exception {
         Mockito.when(subscriptionRepository.isSubscribedToActivity(1L, profile2)).thenReturn(false);
         mvc.perform(MockMvcRequestBuilders
                 .delete("/profiles/2/subscriptions/activities/1")
@@ -179,7 +236,7 @@ public class SubscriptionControllerTest {
     }
 
     @Test
-    public void testDeleteSubscriptionNotAuthneticated() throws Exception {
+    public void testDeleteSubscriptionNotAuthenticated() throws Exception {
         mvc.perform(MockMvcRequestBuilders
                 .delete("/profiles/1/subscriptions/activities/1")
                 .accept(MediaType.APPLICATION_JSON))
