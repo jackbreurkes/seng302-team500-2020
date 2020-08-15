@@ -681,15 +681,19 @@ public class ActivitiesControllerTest {
 		Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
 		activity.setId(2L);
 		activity.setOutcomes(outcomes);
+		outcome.setActivity(activity);
 		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
 
 		//Mock participant
 		User participant = new User(50L);
+		Profile profile = new Profile(participant, "Bill", "Bobson", LocalDate.EPOCH, Gender.FEMALE);
 		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+		Mockito.when(profileRepo.findById(50L)).thenReturn(Optional.of(profile));
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
 		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
+		Mockito.when(changeLogRepository.save(Mockito.any(ChangeLog.class))).thenReturn(Mockito.mock(ChangeLog.class));
 		Mockito.when(activityParticipantResultRepository.save(Mockito.any())).thenAnswer(new Answer<ActivityParticipantResult>() {
 			@Override
 			public ActivityParticipantResult answer(InvocationOnMock invocation) throws Throwable {
