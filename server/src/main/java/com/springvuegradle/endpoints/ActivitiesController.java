@@ -3,11 +3,8 @@ package com.springvuegradle.endpoints;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -75,6 +72,7 @@ public class ActivitiesController {
 
     private int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
+
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
@@ -88,7 +86,10 @@ public class ActivitiesController {
 
     	Long authId = (Long) request.getAttribute("authenticatedid");
 
-        Optional<User> editingUser = userRepository.findById(authId);
+        User editingUser = userRepository.findById(authId).orElse(null);
+        if (editingUser == null) {
+            throw new RecordNotFoundException("user not found"); // shouldn't happen as this is already checked by auth handler
+        }
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
@@ -124,7 +125,7 @@ public class ActivitiesController {
         Set<ActivityType> activityTypesToAdd = new HashSet<>();
         for(String activityTypeString : updateActivityRequest.getActivityTypes()){
             Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-            if(!activityType.isPresent()){
+            if(activityType.isEmpty()){
                 throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
             }else{
                 activityTypesToAdd.add(activityType.get());
@@ -133,7 +134,7 @@ public class ActivitiesController {
 
 
         Activity activity = activityToEdit.get();
-        for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser.get())) {
+        for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser)) {
             changeLogRepository.save(change);
         }
 
@@ -143,10 +144,42 @@ public class ActivitiesController {
         activity.setLocation(updateActivityRequest.getLocation());
         activity.getActivityTypes().clear();
         activity.getActivityTypes().addAll(activityTypesToAdd);
-        activity.getOutcomes().clear();
-        // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
-        for (ActivityOutcomeRequest outcomeRequest : updateActivityRequest.getOutcomes()) {
-            activity.addOutcome(new ActivityOutcome(outcomeRequest.getDescription(), outcomeRequest.getUnits()));
+
+        Map<String, String> descriptionUnits = new LinkedHashMap<>(); // LinkedHashMap maintains insertion order
+        for (ActivityOutcomeRequest outcome : updateActivityRequest.getOutcomes()) {
+            if (descriptionUnits.containsKey(outcome.getDescription())) {
+                throw new InvalidRequestFieldException("an activity cannot have two outcomes with the same description");
+            }
+            descriptionUnits.put(outcome.getDescription(), outcome.getUnits());
+        }
+
+        List<ActivityOutcome> outcomesToKeep = new ArrayList<>();
+        List<ActivityOutcome> deletedOutcomes = new ArrayList<>();
+        for (ActivityOutcome outcome : activity.getOutcomes()) {
+            String description = outcome.getDescription();
+            boolean shouldKeep = descriptionUnits.containsKey(description) && outcome.getUnits().equals(descriptionUnits.get(description));
+            descriptionUnits.remove(description); // discard outcome from dictionary as it doesn't need to be added
+            if (shouldKeep) {
+                outcomesToKeep.add(outcome);
+            } else {
+                deletedOutcomes.add(outcome);
+            }
+        }
+
+        for (ActivityOutcome outcome : deletedOutcomes) {
+            // TODO when participant results are implemented, an error should be thrown if an outcome with results logged against it is overridden
+            ChangeLog deleteOutcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(activityId, outcome, editingUser);
+            changeLogRepository.save(deleteOutcomeChangeLog);
+        }
+        activity.setOutcomes(outcomesToKeep);
+
+        for (String key : descriptionUnits.keySet()) { // iterate over the new outcomes
+            String description = key;
+            String units = descriptionUnits.get(key);
+            ActivityOutcome newOutcome = new ActivityOutcome(description, units);
+            activity.addOutcome(newOutcome);
+            ChangeLog createOutcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(activityId, newOutcome, editingUser);
+            changeLogRepository.save(createOutcomeChangeLog);
         }
 
         if(!updateActivityRequest.isContinuous()){
@@ -226,7 +259,6 @@ public class ActivitiesController {
         }
 
         Long authId = (Long) httpRequest.getAttribute("authenticatedid");
-        Optional<User> editingUser = userRepository.findById(authId);
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 

@@ -327,4 +327,25 @@ public class HomeFeedControllerTest {
                     assertEquals(badExampleChangeId + " is not a valid changelog id", thrown.getMessage());
                 });
     }
+
+    @Test
+    public void testGetHomeFeed_ActivityWithOutcomes_Succeeds() throws Exception {
+        ActivityOutcome newOutcome = new ActivityOutcome("test description", "km/h");
+        ChangeLog createOutcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(1L, newOutcome, user);
+        createOutcomeChangeLog.setTimestamp(OffsetDateTime.MIN);
+        Mockito.when(changeLogRepository.retrieveUserHomeFeedUpdates(Mockito.eq(profile), Mockito.any(Pageable.class)))
+                .thenReturn(Collections.singletonList(createOutcomeChangeLog));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+user.getUserId())
+                .requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].changed_attribute").value("ACTIVITY_OUTCOME"))
+                .andExpect(jsonPath("$[0].old_value").doesNotExist())
+                .andExpect(jsonPath("$[0].new_value").exists());
+
+    }
 }
