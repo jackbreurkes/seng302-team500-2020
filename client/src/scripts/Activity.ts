@@ -21,3 +21,11 @@ export interface ParticipantResult {
   date: string,
   time: string
 }
+
+export interface ParticipantResultDisplay {
+  score: string;
+  date: string;
+  time: string;
+  description?: string;
+  units?: string;
+}

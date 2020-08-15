@@ -90,7 +90,39 @@
                     <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
                     <v-expansion-panel-content>
                       <v-sheet>
+                        Current results:
                           <v-card
+                            class="pa-2"
+                            :v-if="currentResults > 0"
+                            v-for="(result, index) in currentResults"
+                            v-bind:item="result"
+                            v-bind:index="index"
+                            :key="index"
+                            outlined
+                            >
+                            <v-row align="end">
+                              <v-col sm="12" md="6">
+                                Outcome: {{result.description}}
+                              </v-col>
+                              <v-col sm="12" md="6">
+                                <label>Result: {{result.score + " " + result.units}}</label>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col xs="12" md="6">
+                                Completion date: {{result.date}}
+                              </v-col>
+                              <v-col xs="12" md="6">
+                                Completion time: {{result.time.split(':')[0]+':'+result.time.split(':')[1]}}
+                              </v-col>
+                            </v-row>
+                            <v-row justify="end">
+                              <v-spacer></v-spacer>
+                            </v-row>
+                        </v-card>
+                        <br>
+                        Add new results:
+                        <v-card
                             class="pa-2"
                             :v-if="activity.outcomes.length > 0"
                             v-for="(item, index) in activity.outcomes"
@@ -164,7 +196,7 @@ import Vue from "vue";
 
 import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest, ActivityOutcomes, ParticipantResult } from '../scripts/Activity';
+import { CreateActivityRequest, ActivityOutcomes, ParticipantResult, ParticipantResultDisplay } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
 import FormValidator from "../scripts/FormValidator";
@@ -193,7 +225,8 @@ const Activity = Vue.extend({
             formValidator.checkResultValidity(v)
         ]
       },
-      currentResults: {} as Record<number, ParticipantResult>
+      currentResults: {} as Record<number, ParticipantResultDisplay>,
+      removeResultModal: false
     };
   },
 
@@ -212,19 +245,6 @@ const Activity = Vue.extend({
     } else {
       this.activityId = activityId;
       this.creatorId = creatorId;
-
-      activityController.getParticipantResults(this.currentProfileId, this.activityId)
-      .then((results) => {
-        for (let index in results) {
-          let date = results[index].completed_date.split(" ")[0];
-          let time = results[index].completed_date.split(" ")[1];
-          this.currentResults[results[index].outcome_id] = {
-              'score': results[index].result,
-              'date': date,
-              'time': time
-          } as ParticipantResult;
-        }
-      });
 
       getActivity(creatorId, activityId)
       .then((res) => {
@@ -245,6 +265,29 @@ const Activity = Vue.extend({
           if (outcome_id === undefined) continue;
           this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
         }
+      })
+      .then(() => {
+        activityController.getParticipantResults(this.currentProfileId, this.activityId)
+        .then((results) => {
+          let participantResults = {} as Record<number, ParticipantResultDisplay>;
+          for (let index in results) {
+            let date = results[index].completed_date.split(" ")[0];
+            let time = results[index].completed_date.split(" ")[1];
+            participantResults[results[index].outcome_id] = {
+                'score': results[index].result,
+                'date': date,
+                'time': time
+            } as ParticipantResultDisplay;
+          }
+          if (this.activity.outcomes != undefined) {
+            for (let outcomeIndex in this.activity.outcomes) {
+              participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].description = this.activity.outcomes[outcomeIndex].description;
+              participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].units = this.activity.outcomes[outcomeIndex].units;
+            }
+          }
+
+          this.currentResults = participantResults;
+        });
       })
       .catch(() => {
         this.$router.back();
