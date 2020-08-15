@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
+import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,14 +105,13 @@ public class ActivitiesController {
             throw new InvalidRequestFieldException(errorMessage);
         }
 
-    	Long authId = (Long) request.getAttribute("authenticatedid");
+        long authId = UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) {
             throw new RecordNotFoundException("user not found"); // shouldn't happen as this is already checked by auth handler
         }
 
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
@@ -222,11 +222,10 @@ public class ActivitiesController {
                                                  @PathVariable("activityId") long activityId,
                                                  HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException, UserNotAuthorizedException {
 
-        Long authId = (Long) request.getAttribute("authenticatedid");
+        long authId = UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
 
         Optional<User> editingUser = userRepository.findById(authId);
-
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+        assert editingUser.isPresent(); // checked by UserAuthorizer
 
         Optional<Activity> activityToDelete = activityRepository.findById(activityId);
 
@@ -261,8 +260,6 @@ public class ActivitiesController {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
         }
-
-        Long authId = (Long) httpRequest.getAttribute("authenticatedid");
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
@@ -417,6 +414,9 @@ public class ActivitiesController {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
         }
+        if (!FormValidator.validateTimestamp(updateActivityResultRequest.getCompletedDate())) {
+            throw new InvalidRequestFieldException("could not parse timestamp " + updateActivityResultRequest.getCompletedDate());
+        }
 
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
         activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
@@ -456,18 +456,14 @@ public class ActivitiesController {
 		}
 
 		long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
-		UserAuthorizer.getInstance().checkIsTargetUser(request, authId);
-		
+
 		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<Long, RecordOneActivityResultsRequest>();
 		for (RecordOneActivityResultsRequest outcomeObject : createResultsRequest.getOutcomes()) {
 			if (outcomeIds.containsKey(outcomeObject.getOutcomeId())) {
 				throw new InvalidRequestFieldException("Duplicate outcome ID");
 			}
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-			try {
-                 LocalDateTime.parse(outcomeObject.getCompletedDate(), formatter);
-            } catch (DateTimeParseException e) {
-			    throw new InvalidRequestFieldException("could not parse timestamp " + outcomeObject.getCompletedDate());
+            if (!FormValidator.validateTimestamp(outcomeObject.getCompletedDate())) {
+                throw new InvalidRequestFieldException("could not parse timestamp " + outcomeObject.getCompletedDate());
             }
 			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
 		}
@@ -531,7 +527,6 @@ public class ActivitiesController {
     public List<ParticipantResultResponse> getActivityResults(@PathVariable("activityId") long activityId,
                                                               HttpServletRequest request) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
-        UserAuthorizer.getInstance().checkIsTargetUser(request, authId);
 
         activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
 
@@ -555,8 +550,7 @@ public class ActivitiesController {
     public void deleteActivityResult(@PathVariable("activityId") long activityId,
                                                          @PathVariable("outcomeId") long outcomeId,
                                                          HttpServletRequest request) throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
-        Long authId = (Long) request.getAttribute("authenticatedid");
-        UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request,authId, userRepository);
+        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
 
