@@ -7,14 +7,14 @@
             <v-tooltip top>
                 <template v-slot:activator="{ on }">
                 <div v-on="on">
-                    <v-chip class="ml-2" id=creatorChip v-if="myProfileId === creatorId" outlined>Creator</v-chip>
+                    <v-chip class="ml-2" id="creatorChip" v-if="myProfileId === creatorId" outlined>Creator</v-chip>
                 </div>
                 </template>
                 <span>Your role</span>
             </v-tooltip>
-            <v-chip class="ml-2" v-if="organiser" outlined>Organiser</v-chip>
-            <v-chip class="ml-2" v-if="following" outlined>Following</v-chip>
-            <v-chip class="ml-2" v-if="participating" outlined>Participating</v-chip>
+            <v-chip class="ml-2" id="organiserChip" v-if="organiser" outlined>Organiser</v-chip>
+            <v-chip class="ml-2" id="followerChip" v-if="following" outlined>Following</v-chip>
+            <v-chip class="ml-2" id="participantChip" v-if="participating" outlined>Participating</v-chip>
         </v-card-title>
         <v-card-text>
             <span class="subtitle-1">{{activityDescription}}</span>
