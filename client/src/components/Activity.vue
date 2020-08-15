@@ -108,6 +108,7 @@
                                   label="Your result"
                                   type="text"
                                   v-model="participantOutcome[item.outcome_id]['score']"
+                                  :rules="inputRules.resultRules"
                                   hide-details
                                 ></v-text-field>
                               </v-col>
@@ -166,6 +167,7 @@ import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity }
 import { CreateActivityRequest, ActivityOutcomes, ParticipantResult } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
+import FormValidator from "../scripts/FormValidator";
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -173,6 +175,7 @@ const Activity = Vue.extend({
 
   // app initial state
   data: function() {
+    let formValidator = new FormValidator();
     return {
       currentProfileId: NaN as number,
       activityId: NaN as number,
@@ -183,7 +186,13 @@ const Activity = Vue.extend({
       confirmDeleteModal: false,
       startTimeString: '' as string,
       endTimeString: '' as string,
-      participantOutcome: {} as Record<number, ParticipantResult>
+      participantOutcome: {} as Record<number, ParticipantResult>,
+      inputRules: {
+        resultRules: [
+          (v: string) =>
+            formValidator.checkResultValidity(v)
+        ]
+      }
     };
   },
 
@@ -222,7 +231,6 @@ const Activity = Vue.extend({
           if (outcome_id === undefined) continue;
           this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
         }
-        console.log(this.participantOutcome);
       })
       .catch(() => {
         this.$router.back();
@@ -302,9 +310,20 @@ const Activity = Vue.extend({
       return activity.start_time != undefined && activity.end_time != undefined;
     },
 
-    saveParticipantOutcome: function(outcome_id: number) {
-      console.log(outcome_id);
-      console.log(this.participantOutcome);
+    saveParticipantOutcome: async function(outcomeId: number) {
+      let result = this.participantOutcome[outcomeId].score;
+      let completedDate = this.participantOutcome[outcomeId].date;
+      let completedTime = this.participantOutcome[outcomeId].time;
+      let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
+      
+      try {
+        if (completedDate === undefined) {
+          throw new Error("You must select a date");
+        }
+        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp);
+      } catch (err) {
+        alert(err.message);
+      }
     }
   }
 

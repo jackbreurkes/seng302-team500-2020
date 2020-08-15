@@ -146,4 +146,13 @@ export default class FormValidator {
     
         return true;
     }
+
+    /**
+     * checks if the result of an activityoutcome is valid
+     * @param result result to validate
+     * @returns true if valid, else false
+     */
+    checkResultValidity(result: string): boolean {
+        return result.length > 0 && result.length <= 30;
+    }
 }
