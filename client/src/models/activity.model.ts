@@ -36,13 +36,15 @@ export async function editActivity(data: CreateActivityRequest, profileId: numbe
  * @return Promise<boolean> of whether the participant outcome was recorded
  */
 export async function createParticipantOutcome(activityId: number, outcomeId: number, result: string, timestamp: string) {
-  let data = [
-    {
-      "outcome_id": outcomeId,
-      "result": result,
-      "completed_date": timestamp
-    }
-  ];
+  let data = {
+    "outcomes": [
+      {
+        "outcome_id": outcomeId,
+        "result": result,
+        "completed_date": timestamp
+      }
+    ]
+  }
   let res = await instance.post(`/activities/${activityId}/results`, data);
   return res.status == 201;
 }
