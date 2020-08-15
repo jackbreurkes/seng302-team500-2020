@@ -297,7 +297,12 @@ public class ActivitiesController {
     @Deprecated
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
-        return getSingleActivity(activityId, request);
+        ActivityResponse response = getSingleActivity(activityId, request);
+        Profile profile = profileRepository.findById(profileId).orElse(null);
+        if (profile == null) {
+            throw new RecordNotFoundException("profile " + profileId + " not found");
+        }
+        return response;
     }
 
     /**
