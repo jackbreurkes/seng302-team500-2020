@@ -396,10 +396,14 @@ html .clear-checked:active {
     text-decoration: underline;
 }
 
-#app {
+body {
     background: url('background.jpg');
+    background-repeat: no-repeat;
     background-attachment: fixed;
-    background-size: cover;
+}
+
+#app {
+    background: none;
 }
 
 .page-transition-enter-active {
