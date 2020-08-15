@@ -134,8 +134,7 @@
       },
       goTo: function(pathing : string) {
         if(!(pathing == "LOGOUT")){
-          // eslint-disable-next-line no-unused-vars
-          this.$router.push(pathing).catch(err => {}); // ignore routing errors from navbar
+          this.$router.push(pathing).catch(() => {}); // ignore routing errors from navbar
           }
         else {
           this.logoutButtonClicked();

@@ -259,6 +259,20 @@ const Homepage = Vue.extend({
       });
   },
 
+  /**
+   * handles the behaviour when the user navigates to another route that uses this component.
+   * will refresh the page to load the new information.
+   */
+  beforeRouteUpdate(to, _, next) {
+    const profileId: number = parseInt(to.params.profileId);
+    if (isNaN(profileId)) {
+      console.error(to.params.profileId + " is not a valid profile id")
+      return
+    }
+    next()
+    history.go(0)
+  },
+
   methods: {
     //click logout button
     logoutButtonClicked: function() {
