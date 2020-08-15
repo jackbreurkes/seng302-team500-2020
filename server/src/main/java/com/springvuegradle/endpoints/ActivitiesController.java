@@ -10,6 +10,7 @@ import com.springvuegradle.model.requests.RecordActivityResultsRequest;
 import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
+import com.springvuegradle.model.responses.ProfileResponse;
 import com.springvuegradle.util.FormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,6 +58,9 @@ public class ActivitiesController {
     
     @Autowired
     private ActivityParticipantResultRepository activityParticipantResultRepository;
+
+    @Autowired
+    private EmailRepository emailRepository;
 
 
 
@@ -569,6 +573,34 @@ public class ActivitiesController {
      */
     private Long getActivityParticipantCount(Activity activity) {
     	return this.userActivityRoleRepository.getParticipantCountByActivityId(activity.getId());
+    }
+
+
+    /**
+     * Gets all participants/organisers of a particular activity
+     * @param activityId The activity ID
+     * @param request HTTPServletRequest corresponding to the user's request
+     * @return an HTTP ResponseEntity with the HTTP response containing all participants/organisers a part of an activity
+     * @throws UserNotAuthenticatedException
+     */
+    @GetMapping("/activities/{activityId}/participants")
+    @CrossOrigin
+    public List<ProfileResponse> getActivityParticipants(@PathVariable("activityId") long activityId,
+                                                         HttpServletRequest request) throws UserNotAuthenticatedException {
+        UserAuthorizer.getInstance().checkIsAuthenticated(request);
+
+        List<User> profiles = new ArrayList<User>(); // The result list of participants/organisers
+
+        if (activityRepository.getOne(activityId) != null) {
+            profiles = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId);
+        }
+
+        List<ProfileResponse> responses = new ArrayList<>();
+        for (User user : profiles) {
+            responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        }
+
+        return responses;
     }
 
 }
