@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.*;
 
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.data.*;
@@ -329,6 +330,78 @@ public class ActivitiesControllerTest {
 		assertTrue(updateLogs.size() > 0);
 		assertTrue(updateLogs.stream().allMatch(changeLog -> changeLog.getEditingUser().getUserId() == profile.getUser().getUserId()));
 		assertTrue(updateLogs.stream().allMatch(changeLog -> changeLog.getEntityId() == activityId));
+	}
+
+	@Test
+	public void testUpdateActivityAsOrganiser_Success_LogsChanges() throws Exception {
+		long activityId = 3L;
+		User organiser = new User(100L);
+		organiser.setPermissionLevel(0);
+		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
+		testActivity.setId(activityId);
+		Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(organiser.getUserId(), activityId)).thenReturn(Optional.of(new UserActivityRole(testActivity, organiser, ActivityRole.ORGANISER)));
+		Mockito.when(userRepo.findById(organiser.getUserId())).thenReturn(Optional.of(organiser));
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"This is a description\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Christchurch, NZ\"\n" +
+				"}";
+
+		mvc.perform(MockMvcRequestBuilders
+				.put("/profiles/"+user.getUserId()+"/activities/" + activityId)
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", organiser.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk());
+
+		ArgumentCaptor<ChangeLog> changeLogCaptor = ArgumentCaptor.forClass(ChangeLog.class);
+		Mockito.verify(changeLogRepository, Mockito.atLeastOnce()).save(changeLogCaptor.capture());
+		List<ChangeLog> updateLogs = changeLogCaptor.getAllValues();
+		assertTrue(updateLogs.size() > 0);
+		assertTrue(updateLogs.stream().allMatch(changeLog -> changeLog.getEditingUser().getUserId() == organiser.getUserId()));
+		assertTrue(updateLogs.stream().allMatch(changeLog -> changeLog.getEntityId() == activityId));
+	}
+
+	@Test
+	public void testUpdateActivityAsParticipant_403() throws Exception {
+		long activityId = 3L;
+		User participant = new User(100L);
+		participant.setPermissionLevel(0);
+		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
+		testActivity.setId(activityId);
+		Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(participant.getUserId(), activityId)).thenReturn(Optional.of(new UserActivityRole(testActivity, participant, ActivityRole.PARTICIPANT)));
+		Mockito.when(userRepo.findById(participant.getUserId())).thenReturn(Optional.of(participant));
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"This is a description\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Christchurch, NZ\"\n" +
+				"}";
+
+		mvc.perform(MockMvcRequestBuilders
+				.put("/profiles/"+user.getUserId()+"/activities/" + activityId)
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", participant.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isForbidden())
+				.andExpect(result -> {
+					Exception thrown = result.getResolvedException();
+					assertTrue(thrown instanceof UserNotAuthorizedException);
+					assertEquals("you must be authenticated as someone with permission to edit this activity (admin, creator or organiser)", thrown.getMessage());
+				});
 	}
 
 	@Test
