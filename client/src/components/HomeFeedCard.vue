@@ -64,7 +64,7 @@ const HomeFeedCard = Vue.extend({
                 if (this.cardData.action_type === "CREATED" || this.cardData.action_type === "UPDATED") {
                     return "has logged a result of '" + this.cardData.new_value.value + " " + this.cardData.new_value.outcome_unit + "' to '" + this.cardData.new_value.outcome_description + "'. Changed"  
                 } else {
-                    return "has removed their result of '" + this.cardData.old_value.value + " " + this.cardData.old_value.outcome_unit + "' to '" + this.cardData.old_value.outcome_description + "'. Changed" 
+                    return "has removed their result of '" + this.cardData.old_value.value + " " + this.cardData.old_value.outcome_unit + "' from '" + this.cardData.old_value.outcome_description + "'. Changed" 
                 }
             }
              else if(this.cardData.changed_attribute == "ACTIVITY_NAME"){
