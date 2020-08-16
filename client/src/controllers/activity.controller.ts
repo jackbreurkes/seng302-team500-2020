@@ -438,7 +438,10 @@ export async function getActivityOrganisers(activityId: number): Promise<UserApi
   return profiles;
 }
 
-// @ts-ignore
+/**
+ * Returns a list of both organisers and participants of an activity
+ * @param activityId the activity id
+ */
 export async function getParticipants(activityId: number) {
   return await activityModel.getParticipants(activityId);
 }

@@ -146,7 +146,7 @@ import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
-import {getActivityRole} from "@/models/activity.model";
+import { getActivityRole } from "../models/activity.model";
 
 // app Vue instance
 const Activity = Vue.extend({
