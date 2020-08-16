@@ -390,27 +390,9 @@ const Activity = Vue.extend({
       });
     }
 
+    // Populates the datatable that holds all the participants/oraganisers
     this.search();
 },
-
-  computed: {
-
-    selectedUser: function() {
-      if (this.selectedUsers.length !== 1) {
-        return null;
-      }
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
-      return selectedUser;
-    },
-    selectedUserIsAdmin: function() {
-      if (this.selectedUsers.length !== 1) {
-        return false;
-      }
-
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
-      return selectedUser.permission_level && selectedUser.permission_level >= 120;
-    }
-  },
 
   methods: {
     /**
@@ -448,14 +430,14 @@ const Activity = Vue.extend({
     /** Toggle the user's participation in this activity */
     toggleParticipation: async function() {
       if (!this.participating) {
-        this.participants = this.participants + 1;
         this.organiser = false;
         await activityController.participateInActivity(this.currentProfileId, this.activityId);
         this.participating = true;
+        this.participants = this.participants + 1;
       } else {
-        this.participants = this.participants - 1;
         await activityController.removeActivityRole(this.currentProfileId, this.activityId)
         this.participating = false;
+        this.participants = this.participants - 1;
       }
     },
     /** Navigate back to the last page the user was on. */
@@ -540,16 +522,20 @@ const Activity = Vue.extend({
         this.updated = !this.updated; // Force component showing outcomes to refresh
       })
     },
+
+    /** Routes to the user you click on, on the datatable **/
     goToUser: function(userId: any) {
       this.$router.push("/profiles/" + userId.profile_id);
     },
+
+    /** Populates the datatable containing all the participants/organisers **/
     search: async function() {
       this.noDataText = "No participants found";
       this.errorMessage = "";
       try {
         let users = await getParticipants(this.activityId)
         let user;
-        for (user of users) {
+        for (user of users) { // Gives every user part of the activity a role
           if (this.creatorId == user.profile_id) {
             user.role = "CREATOR";
           } else {

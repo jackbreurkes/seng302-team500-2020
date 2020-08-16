@@ -188,6 +188,7 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
 /**
  * Returns all participants that are a part of an activity
  * @param activityId The activity ID
+ * @returns A list of profiles that participate/organise the activity
  */
 export async function getParticipants(activityId: number) {
   let res;
@@ -201,5 +202,4 @@ export async function getParticipants(activityId: number) {
     }
   }
   return res.data;
-
 }
