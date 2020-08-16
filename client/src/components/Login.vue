@@ -97,7 +97,7 @@
           const myUserId: number = auth.getMyUserId()!;
           this.errorMessage = "Logging you in...";
           if (auth.getMyPermissionLevel() === 0) {
-            this.$router.push({ name: "homepage", params: {profileId: myUserId.toString()} })
+            this.$router.push({ name: "profilePage", params: {profileId: myUserId.toString()} })
               .catch((err) => {
                 console.error(err);
                 this.errorMessage = "failed to load profile page";

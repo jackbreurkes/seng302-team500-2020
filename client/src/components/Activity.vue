@@ -94,6 +94,9 @@
                     <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
                     <v-expansion-panel-content>
                       <v-sheet :v-model="updated">
+                        <p v-if="activity.outcomes == undefined || Object.keys(activity.outcomes).length == 0">
+                          Activity has no associated outcomes
+                        </p>
                         <div v-if="Object.keys(currentResults) != undefined && Object.keys(currentResults).length > 0">
                         Current results:
                           <v-card
@@ -415,6 +418,12 @@ const Activity = Vue.extend({
       try {
         if (completedDate === undefined) {
           throw new Error("You must select a date");
+        }
+        if (completedTime === undefined) {
+          throw new Error("You must select a time");
+        }
+        if (result === undefined || result.length == 0 || result.length > 30) {
+          throw new Error("The entered result value must be at least one character but no more than 30");
         }
         await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
         .then((success) => {
