@@ -2,6 +2,8 @@ package com.springvuegradle.model.data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class ActivityOutcome {
@@ -19,6 +21,9 @@ public class ActivityOutcome {
 
     @NotNull
     private String units;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "outcome")
+    private List<ActivityParticipantResult> results = new ArrayList<>(); // needed for cascading
 
     /**
      * default no-arg constructor required by hibernate

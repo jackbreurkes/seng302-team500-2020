@@ -64,6 +64,9 @@ public class Activity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "activity")
     private List<ActivityOutcome> outcomes = new ArrayList<>();
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "activity")
+    private List<UserActivityRole> relatedRoles = new ArrayList<>(); // needed for cascading
+
     /**
      * no arg constructor required by JPA
      */

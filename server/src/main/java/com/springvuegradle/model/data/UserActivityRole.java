@@ -18,7 +18,7 @@ public class UserActivityRole {
     /**
      * The ID of the activity the user is a part of
      */
-    @OneToOne
+    @ManyToOne
     @JoinColumn(columnDefinition = "activity_id")
     private Activity activity;
 
