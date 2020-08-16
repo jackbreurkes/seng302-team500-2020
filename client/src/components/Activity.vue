@@ -62,6 +62,21 @@
             </v-toolbar>
 
             <v-card-text class="grey lighten-4">
+                <v-chip
+                    class="ma-2"
+                    color="blue"
+                    outlined
+                    label>
+                    Followers: {{followers}}
+                </v-chip>
+                <v-chip
+                        class="ma-2"
+                        color="blue"
+                        outlined
+                        label>
+                    Participants: {{participants}}
+                </v-chip>
+                <br>
               <h3>Activity Information</h3>
               <br>
               <p> Description: {{ activity.description }} </p>
@@ -177,6 +192,8 @@ const Activity = Vue.extend({
       selectedUsers: [] as UserApiFormat[],
       users: [] as UserApiFormat[],
       errorMessage: "",
+      followers: NaN as number,
+      participants: NaN as number,
     };
   },
 
@@ -199,6 +216,12 @@ const Activity = Vue.extend({
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        if (this.activity.num_followers != null) {
+            this.followers = this.activity.num_followers;
+        }
+        if (this.activity.num_participants != null) {
+            this.participants = this.activity.num_participants;
+        }
         getIsFollowingActivity(this.currentProfileId, this.activityId)
         .then((booleanResponse) => {
           this.following = booleanResponse;
@@ -253,6 +276,7 @@ const Activity = Vue.extend({
      */
     toggleFollowingActivity: function() {
       if (this.following) {
+        this.followers = this.followers - 1;
         unfollowActivity(this.currentProfileId, this.activityId)
         .then(() => {
           this.following = false
@@ -261,7 +285,8 @@ const Activity = Vue.extend({
           console.error(err)
         })
       } else {
-        followActivity(this.currentProfileId, this.activityId)
+          this.followers = this.followers + 1;
+          followActivity(this.currentProfileId, this.activityId)
         .then(() => {
           this.following = true
         })
@@ -273,11 +298,13 @@ const Activity = Vue.extend({
     /** Toggle the user's participation in this activity */
     toggleParticipation: function() {
       if (!this.participating) {
+        this.participants = this.participants + 1;
         this.organiser = false;
         activityController.participateInActivity(this.currentProfileId, this.activityId)
           .then(() => this.participating = true)
           .catch((e) => { console.error(e) });
       } else {
+          this.participants = this.participants - 1;
         activityController.removeActivityRole(this.currentProfileId, this.activityId)
           .then(() => this.participating = false)
           .catch((e) => { console.error(e) });
