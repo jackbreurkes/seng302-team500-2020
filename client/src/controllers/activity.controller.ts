@@ -430,5 +430,5 @@ export function getContinuousActivities(activityList: CreateActivityRequest[]): 
 
 // @ts-ignore
 export async function getParticipants(activityId: number) {
-  return await getParticipants(activityId);
+  return await activityModel.getParticipants(activityId);
 }

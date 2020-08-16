@@ -100,12 +100,10 @@
                 <template v-slot:items="users">
                   <!-- <td class="text-xs-right">{{ users.item.full_name }}</td> -->
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
-                  <td class="text-xs-right">{{ users.item.middlename }}</td>
                   <td class="text-xs-right">{{ users.item.lastname }}</td>
                   <!-- <td class="text-xs-right">{{ users.item.userId }}</td> -->
                   <td class="text-xs-right">{{ users.item.nickname }}</td>
-                  <td class="text-xs-right">{{ users.item.primary_email }}</td>
-                  <td class="text-xs-right">{{ users.item.role }}</td>
+                  <td class="text-xs-right">{{  }}</td>
                 </template>
               </v-data-table>
 
@@ -148,6 +146,7 @@ import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
+import {getActivityRole} from "@/models/activity.model";
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -169,11 +168,9 @@ const Activity = Vue.extend({
       headers: [
         // { text: 'Name', value: 'full_name' },
         { text: 'First Name', value: 'firstname' },
-        { text: 'Middle Name', value: 'middlename' },
         { text: 'Last Name', value: 'lastname' },
         //{ text: 'User Id', value: 'profile_id'},
         { text: 'Nickname', value: 'nickname' },
-        { text: 'Email', value: 'primary_email' },
         { text: 'Role', value: 'role' }
       ],
       noDataText: "No Participants",
@@ -190,8 +187,6 @@ const Activity = Vue.extend({
     } else {
       this.currentProfileId = myProfileId;
     }
-
-
 
     const activityId: number = parseInt(this.$route.params.activityId);
     const creatorId: number = parseInt(this.$route.params.profileId);
@@ -221,6 +216,8 @@ const Activity = Vue.extend({
         this.$router.back();
       });
     }
+
+    this.search();
 },
 
   computed: {
@@ -322,6 +319,14 @@ const Activity = Vue.extend({
       this.errorMessage = "";
       try {
         let users = await getParticipants(this.activityId)
+        let user;
+        for (user of users) {
+          if (this.creatorId == user.profile_id) {
+            user.role = "CREATOR";
+          } else {
+            user.role = await getActivityRole(user.profile_id, this.activityId);
+          }
+        }
         this.users = users as UserApiFormat[];
       } catch (err) {
         if (err.response) {
