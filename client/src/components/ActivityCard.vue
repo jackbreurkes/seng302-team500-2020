@@ -53,8 +53,12 @@ const ActivityCard = Vue.extend({
         }
     },
 
-    created() {
-        this.myProfileId = authService.getMyUserId();
+    async created() {
+        const myProfileId = authService.getMyUserId();
+        if (myProfileId === null) {
+            return
+        }
+        this.myProfileId = myProfileId;
         activityController.getIsFollowingActivity(this.myProfileId, this.activityId)
         .then((following) => {
             this.following = following;
