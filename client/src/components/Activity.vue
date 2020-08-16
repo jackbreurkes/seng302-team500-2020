@@ -434,6 +434,10 @@ const Activity = Vue.extend({
         this.participating = false;
         this.participants = this.participants - 1;
       }
+
+      // Reload the datatable when you participate/unparticipate
+      this.users = [];
+      this.search();
     },
     /** Navigate back to the last page the user was on. */
     backButtonClicked() {
