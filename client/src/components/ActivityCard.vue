@@ -49,21 +49,23 @@ const ActivityCard = Vue.extend({
             following: false,
             participating: false,
             organiser: false,
-            myProfileId: NaN as number,
         }
     },
 
-    created() {
-        this.myProfileId = authService.getMyUserId();
-        activityController.getIsFollowingActivity(this.myProfileId, this.activityId)
+    async created() {
+        const myProfileId = authService.getMyUserId();
+        if (myProfileId === null) {
+            return
+        }
+        activityController.getIsFollowingActivity(myProfileId, this.activityId)
         .then((following) => {
             this.following = following;
         })
-        activityController.getIsParticipating(this.myProfileId, this.activityId)
+        activityController.getIsParticipating(myProfileId, this.activityId)
         .then((participating) => {
             this.participating = participating;
         })
-        activityController.getIsOrganising(this.myProfileId, this.activityId)
+        activityController.getIsOrganising(myProfileId, this.activityId)
         .then((organiser) => {
             this.organiser = organiser;
         } )

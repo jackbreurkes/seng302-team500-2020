@@ -94,7 +94,11 @@
           console.error(e);
         }
         if (storedUserIdIsValid) {
-          const myUserId: number = auth.getMyUserId()!;
+          const myUserId: number | null = auth.getMyUserId();
+          if (myUserId === null) {
+            this.errorMessage = "failed to load user information. please log in again";
+            return
+          }
           this.errorMessage = "Logging you in...";
           if (auth.getMyPermissionLevel() === 0) {
             this.$router.push({ name: "profilePage", params: {profileId: myUserId.toString()} })
