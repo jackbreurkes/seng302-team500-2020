@@ -8,6 +8,8 @@ export interface CreateActivityRequest {
     end_time?: string;
     location?: string;
     outcomes?: ActivityOutcomes[];
+    num_followers?: number;
+    num_participants?: number;
   }
 
 export interface ActivityOutcomes {

@@ -16,5 +16,6 @@ export interface UserApiFormat {
     additional_email?: string[],
     activities?: string[],
     password?: string,
-    location?: LocationInterface
+    location?: LocationInterface,
+    activityRole?: string
 }
