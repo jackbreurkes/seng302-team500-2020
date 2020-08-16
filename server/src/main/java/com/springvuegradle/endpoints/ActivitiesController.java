@@ -594,14 +594,14 @@ public class ActivitiesController {
                                                          HttpServletRequest request) throws UserNotAuthenticatedException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        List<User> profiles = new ArrayList<User>(); // The result list of participants/organisers
+        List<User> users = new ArrayList<User>(); // The result list of participants/organisers
 
         if (activityRepository.getOne(activityId) != null) {
-            profiles = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId);
+            users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId);
         }
 
         List<ProfileResponse> responses = new ArrayList<>();
-        for (User user : profiles) {
+        for (User user : users) {
             responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
         }
 
