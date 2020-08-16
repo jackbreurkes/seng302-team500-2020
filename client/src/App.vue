@@ -88,7 +88,6 @@
     data: () => {
       return {
         burgerColour: 'white',
-        currentProfileId: NaN as Number,
         bar: true,
         collapsible: true,
         smallForm: true,
@@ -105,8 +104,6 @@
   },
     
     created() {
-    const profileId = auth.getMyUserId()
-    this.currentProfileId = profileId;
     this.updateUserData();
     this.loadNavInfo();
 
@@ -122,9 +119,9 @@
       loadNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
-            {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + this.currentProfileId}, //sometimes replacing userId with NaN
+            {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + auth.getMyUserId()},
             {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
-            {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + this.currentProfileId + "/edit"},
+            {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + auth.getMyUserId() + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
           if (auth.getMyPermissionLevel() >= 120) {
