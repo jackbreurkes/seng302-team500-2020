@@ -126,16 +126,6 @@
                   :rules="inputRules.locationRules"
                 ></v-text-field>
 
-                <v-text-field
-                  v-if="this.isEditing"
-                  label="Enter organiser Email"
-                  ref="organiserEmail"
-                  id="organiserEmail"
-                  type="email"
-                  v-model="organiserEmail"
-                  
-                ></v-text-field>
-                
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -209,6 +199,35 @@
                     </v-expansion-panel-content>
                   </v-expansion-panel>
                 </v-expansion-panels>
+
+                <v-expansion-panels v-if="isEditing" flat class="mt-3" style="border: 1px solid silver;">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>Activity Organisers</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <v-sheet>
+                        <div v-for="organiser in organisers" :key="organiser">
+                          <v-chip
+                            class="ml-1 mb-2"
+                            close
+                            @click:close="deleteOrganiser(organiser)"
+                          >{{ organiser.primary_email }}</v-chip>
+                        </div>
+                        <v-row class="d-flex align-center ml-1">
+                          <v-text-field
+                            v-if="this.isEditing"
+                            label="Enter organiser Email"
+                            ref="organiserEmail"
+                            id="organiserEmail"
+                            type="email"
+                            v-model="organiserEmail"
+                          ></v-text-field>
+                          <v-btn @click="addOrganiser" class="ml-3 mr-5">Add</v-btn>
+                        </v-row>
+                      </v-sheet>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+
                 <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
                 <v-row justify="end">
@@ -259,20 +278,24 @@ import Vue from "vue";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest, ActivityOutcomes } from "../scripts/Activity";
 import * as activityController from "../controllers/activity.controller";
-import * as activityModel from "../models/activity.model"
-import * as userSearch from "../controllers/userSearch.controller"
+import * as activityModel from "../models/activity.model";
+import * as userSearch from "../controllers/userSearch.controller";
+// eslint-disable-next-line no-unused-vars
+import { UserApiFormat } from "../scripts/User";
 
 // app Vue instance
 const CreateActivity = Vue.extend({
   name: "CreateActivity",
 
   // app initial state
-  data: function () {
+  data: function() {
     return {
       isActivityOutcomesExpanded: false,
       createActivityRequest: {
-        continuous: true,
+        continuous: true
       } as CreateActivityRequest,
+      organiserEmail: "",
+      organisers: [] as UserApiFormat[],
       isEditing: false as boolean,
       editingId: NaN as number,
       currentProfileId: NaN as number,
@@ -280,7 +303,6 @@ const CreateActivity = Vue.extend({
       startTime: "",
       endDate: "",
       endTime: "",
-      organiserEmail: "",
       organiserId: NaN as number,
       activityTypes: [] as string[],
       selectedActivityType: "" as string,
@@ -291,7 +313,7 @@ const CreateActivity = Vue.extend({
         activityNameRules: [
           (v: string) =>
             activityController.validateActivityName(v) ||
-            activityController.INVALID_ACTIVITY_NAME_MESSAGE,
+            activityController.INVALID_ACTIVITY_NAME_MESSAGE
         ],
         startDateRules: [
           (v: string) => {
@@ -299,7 +321,7 @@ const CreateActivity = Vue.extend({
               activityController.isFutureDate(v) ||
               activityController.INVALID_DATE_MESSAGE
             );
-          },
+          }
         ],
         startTimeRules: [
           (v: string) => {
@@ -307,7 +329,7 @@ const CreateActivity = Vue.extend({
               activityController.isValidTime(v) ||
               activityController.INVALID_TIME_MESSAGE
             );
-          },
+          }
         ],
         endTimeRules: [
           (v: string) => {
@@ -315,21 +337,21 @@ const CreateActivity = Vue.extend({
               activityController.isValidTime(v) ||
               activityController.INVALID_TIME_MESSAGE
             );
-          },
+          }
         ],
         descriptionRules: [
           (v: string) =>
             activityController.validateDescription(v) ||
-            activityController.INVALID_DESCRIPTION_MESSAGE,
+            activityController.INVALID_DESCRIPTION_MESSAGE
         ],
         locationRules: [
-          (v: string) => true || v, //TODO location not implemented
+          (v: string) => true || v //TODO location not implemented
         ],
         activityTypes: [
-          (v: string) => true || v, //TODO currently does not like syntax shown below but logic is there
+          (v: string) => true || v //TODO currently does not like syntax shown below but logic is there
           // (v: string) => activityController.validateActivityType(v, this.createActivityRequest) || activityController.INVALID_ACTIVITY_TYPE
-        ],
-      },
+        ]
+      }
     };
   },
 
@@ -338,10 +360,10 @@ const CreateActivity = Vue.extend({
     this.currentProfileId = profileId;
     activityController
       .getAvailableActivityTypes()
-      .then((activity) => {
-        this.activityTypes = activity;
+      .then(availableActivityTypes => {
+        this.activityTypes = availableActivityTypes;
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("unable to load activity types");
         console.error(err);
       });
@@ -362,23 +384,82 @@ const CreateActivity = Vue.extend({
           this.createActivityRequest.end_time
         );
       }
+      activityController
+        .getActivityOrganisers(this.editingId)
+        .then(organisers => {
+          this.organisers = organisers;
+        })
+        .catch(() => {});
     }
     this.checkOutcomesLength();
   },
 
   methods: {
-    checkOutcomesLength: function () {
+    /**
+     * tries to add the currently entered organiser to the set of organisers for this activity.
+     */
+    async addOrganiser() {
+      for (let organiser of this.organisers) {
+        if (organiser.primary_email === this.organiserEmail) {
+          this.errorMessage = "this organiser has already been added";
+          return;
+        }
+      }
+
+      try {
+        if (this.isEditing) {
+          let users = await userSearch.searchUsers({
+            email: this.organiserEmail,
+            exactEmail: "true"
+          });
+          activityModel.setActivityRole(
+            users[0].profile_id,
+            this.editingId,
+            "Organiser"
+          );
+          this.organisers.push(users[0]);
+          this.errorMessage = "";
+        }
+      } catch (err) {
+        this.errorMessage =
+          "Could not find acceptable profile with that e-mail";
+        return;
+      }
+    },
+
+    /**
+     * removes an organiser from the activity.
+     * @param organiserToDelete the organiser to remove from the activity
+     */
+    async deleteOrganiser(organiserToDelete: UserApiFormat) {
+      if (!organiserToDelete.profile_id) {
+        return;
+      }
+      activityController
+        .removeActivityRole(organiserToDelete.profile_id, this.editingId)
+        .then(() => {
+          this.organisers = this.organisers.filter(
+            org => org.profile_id !== organiserToDelete.profile_id
+          );
+          console.log(this.organisers);
+        })
+        .catch(err => {
+          this.errorMessage = err.message;
+        });
+    },
+
+    checkOutcomesLength: function() {
       if (
         this.createActivityRequest.outcomes === undefined ||
         this.createActivityRequest.outcomes.length == 0
       ) {
         this.createActivityRequest.outcomes = [
-          { description: "", units: "" } as ActivityOutcomes,
+          { description: "", units: "" } as ActivityOutcomes
         ];
         this.$forceUpdate();
       }
     },
-    addNewOutcome: function () {
+    addNewOutcome: function() {
       if (this.createActivityRequest.outcomes !== undefined) {
         for (let index in this.createActivityRequest
           .outcomes as ActivityOutcomes[]) {
@@ -390,7 +471,7 @@ const CreateActivity = Vue.extend({
         }
         this.createActivityRequest.outcomes.push({
           description: "",
-          units: "",
+          units: ""
         } as ActivityOutcomes);
         this.$forceUpdate();
       }
@@ -424,24 +505,13 @@ const CreateActivity = Vue.extend({
       this.$router.back();
     },
 
-    createButtonClicked: async function () { 
+    createButtonClicked: async function() {
 
-      try {
-        if (this.isEditing) {
-          let user = await userSearch.searchUsers({"email": this.organiserEmail, "exact": 'true'});
-          activityModel.setActivityRole(user[0].profile_id, this.editingId, "Organiser")
-        }
-      } catch (err) {
-        this.errorMessage = "Could not find organiser with that E-mail";
-        return;
-      }
-
-        
       if (this.createActivityRequest.outcomes === undefined) {
         this.createActivityRequest.outcomes = [];
       }
       this.createActivityRequest.outcomes = this.createActivityRequest.outcomes.filter(
-        (outcome) => outcome.description && outcome.units
+        outcome => outcome.description && outcome.units
       );
       try {
         activityController.validateNewActivity(
@@ -455,7 +525,13 @@ const CreateActivity = Vue.extend({
         this.errorMessage = err.message;
         return; // don't try to save the activity
       }
-      activityController.editOrCreateActivity(this.createActivityRequest, this.currentProfileId, this.editingId, this.isEditing)
+      activityController
+        .editOrCreateActivity(
+          this.createActivityRequest,
+          this.currentProfileId,
+          this.editingId,
+          this.isEditing
+        )
         .then(() => {
           this.$router.push({ name: "profilePage" });
         })

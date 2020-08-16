@@ -125,7 +125,7 @@
                 </v-tabs>
                 <v-tabs-items v-model="durationTab">
                   <v-tab-item v-for="item in activityList" :key="item.tab">
-                    <ActivitiesList :profileId="currentProfileId" :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
+                    <ActivitiesList :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
                   </v-tab-item>
                 </v-tabs-items>
               </v-card-text>
@@ -257,6 +257,20 @@ const Homepage = Vue.extend({
       .catch(err => {
         console.error(err);
       });
+  },
+
+  /**
+   * handles the behaviour when the user navigates to another route that uses this component.
+   * will refresh the page to load the new information.
+   */
+  beforeRouteUpdate(to, _, next) {
+    const profileId: number = parseInt(to.params.profileId);
+    if (isNaN(profileId)) {
+      console.error(to.params.profileId + " is not a valid profile id")
+      return
+    }
+    next()
+    history.go(0)
   },
 
   methods: {

@@ -1,6 +1,7 @@
 import { CreateActivityRequest } from "../scripts/Activity";
 import instance from "../services/axios.service";
 import { AxiosResponse } from 'axios';
+import { UserApiFormat } from '@/scripts/User';
 
 /**
  * creates an activity.
@@ -94,6 +95,15 @@ export async function addActivityFollower(profileId: number, activityId: number)
 export async function removeActivityFollower(profileId: number, activityId: number) {
   let res = await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
+
+/**
+ * returns all organisers for a given activity.
+ * @param activityId the activity to fetch organisers of
+ */
+export async function getActivityOrganisers(activityId: number): Promise<UserApiFormat[]> {
+  let res = await instance.get(`/activities/${activityId}/organisers`)
+  return res.data;
+}
 
 /**
  * gets the role of a user in a particular activity

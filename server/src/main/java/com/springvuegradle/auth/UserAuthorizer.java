@@ -134,10 +134,10 @@ public class UserAuthorizer {
         }
         UserActivityRole activityRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).orElse(null);
         if (activityRole == null) {
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as someone with permission to edit this activity (admin, creator or organiser)");
         }
         if (!activityRole.getActivityRole().equals(ActivityRole.ORGANISER)) { // Checks if the editing user is an Organiser of the activity
-            throw new UserNotAuthorizedException("you must be authenticated as the target user or an admin");
+            throw new UserNotAuthorizedException("you must be authenticated as someone with permission to edit this activity (admin, creator or organiser)");
         }
         return authId; //if an organiser
 

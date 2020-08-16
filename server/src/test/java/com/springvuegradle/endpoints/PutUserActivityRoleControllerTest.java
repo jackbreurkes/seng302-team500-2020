@@ -1,19 +1,12 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.UpdateUserActivityRoleRequest;
-
+import com.springvuegradle.model.repository.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +14,15 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -56,6 +44,12 @@ public class PutUserActivityRoleControllerTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private ProfileRepository profileRepository;
+
+    @MockBean
+    private EmailRepository emailRepository;
 
     @Autowired
     private MockMvc mvc;

@@ -78,7 +78,7 @@ public class ActivitiesController {
             throw new InvalidRequestFieldException(errorMessage);
         }
 
-        long authId = UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(request, profileId, userRepository);
+        long authId = UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
         User editingUser = userRepository.findById(authId).orElse(null);
         if (editingUser == null) {
