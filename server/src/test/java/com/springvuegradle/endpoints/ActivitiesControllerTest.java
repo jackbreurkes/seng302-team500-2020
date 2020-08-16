@@ -763,6 +763,8 @@ public class ActivitiesControllerTest {
 		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
 		Mockito.when(profileRepo.findById(50L)).thenReturn(Optional.of(profile));
 
+		Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(participant.getUserId(), activity.getId())).thenReturn(Optional.of(Mockito.mock(UserActivityRole.class)));
+
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
 		Mockito.when(activityParticipantResultRepository.getParticipantResult(participant.getUserId(), outcome.getOutcomeId())).thenReturn(Optional.of(activityParticipantResult));
@@ -970,9 +972,11 @@ public class ActivitiesControllerTest {
 		activity.setOutcomes(outcomes);
 		Mockito.when(activityRepo.findById(2L)).thenReturn(Optional.of(activity));
 
+
 		//Mock participant
 		User participant = new User(50L);
 		Mockito.when(userRepo.findById(50L)).thenReturn(Optional.of(participant));
+		Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(participant.getUserId(), activity.getId())).thenReturn(Optional.of(Mockito.mock(UserActivityRole.class)));
 
 		//Mock activity participant result
 		ActivityParticipantResult activityParticipantResult = new ActivityParticipantResult(participant, outcome,"12",null);
