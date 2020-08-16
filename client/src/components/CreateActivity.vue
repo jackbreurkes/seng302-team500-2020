@@ -540,6 +540,7 @@ const CreateActivity = Vue.extend({
         .catch(err => {
           this.errorMessage = err.message;
           if (err.message.startsWith("cannot delete outcome")) {
+            alert(err.message)
             history.go(0)
           }
         });
