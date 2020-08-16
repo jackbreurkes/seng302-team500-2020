@@ -132,17 +132,9 @@ export async function getActivityOrganisers(activityId: number): Promise<UserApi
  * @param profileId the profile to get the role of
  * @param activityId the activity the role is associated with
  */
-export async function getActivityRole(profileId: number, activityId: number): Promise<string | null> {
+export async function getActivityRole(profileId: number, activityId: number): Promise<string> {
   let res;
-  try {
-    res = await instance.get(`/activities/${activityId}/roles/${profileId}`)
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return null;
-    } else {
-      throw error;
-    }
-  }
+  res = await instance.get(`/activities/${activityId}/roles/${profileId}`)
   return res.data;
 }
 
@@ -190,16 +182,7 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
  * @param activityId The activity ID
  * @returns A list of profiles that participate/organise the activity
  */
-export async function getParticipants(activityId: number) {
-  let res;
-  try {
-    res = await instance.get(`/activities/${activityId}/participants`)
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return null;
-    } else {
-      throw error;
-    }
-  }
+export async function getParticipants(activityId: number): Promise<UserApiFormat[]> {
+  let res = await instance.get(`/activities/${activityId}/participants`);
   return res.data;
 }

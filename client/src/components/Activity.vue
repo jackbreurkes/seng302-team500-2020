@@ -158,7 +158,7 @@
                             <v-row justify="end">
                               <v-spacer></v-spacer>
                               <div class="mr-3">
-                                <v-btn @click="outcomeIdToRemove = index; removeResultModal = true" right color="error">
+                                <v-btn @click="outcomeIdToRemove = index, removeResultModal = true" right color="error">
                                   Remove
                                 </v-btn>
                               </div>
@@ -536,9 +536,9 @@ const Activity = Vue.extend({
         let user;
         for (user of users) { // Gives every user part of the activity a role
           if (this.creatorId == user.profile_id) {
-            user.role = "CREATOR";
-          } else {
-            user.role = await getActivityRole(user.profile_id, this.activityId);
+            user.activityRole = "CREATOR";
+          } else if (user.profile_id != undefined) {
+            user.activityRole = await getActivityRole(user.profile_id, this.activityId);
           }
         }
         this.users = users as UserApiFormat[];
