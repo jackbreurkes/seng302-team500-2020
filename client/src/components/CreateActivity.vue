@@ -524,6 +524,7 @@ const CreateActivity = Vue.extend({
         );
       } catch (err) {
         this.errorMessage = err.message;
+      
         return; // don't try to save the activity
       }
       activityController
@@ -538,6 +539,9 @@ const CreateActivity = Vue.extend({
         })
         .catch(err => {
           this.errorMessage = err.message;
+          if (err.message.startsWith("cannot delete outcome")) {
+            history.go(0)
+          }
         });
     },
 
