@@ -537,7 +537,6 @@ const Activity = Vue.extend({
         delete this.participantOutcome[this.outcomeIdToRemove].time;
         this.updated = !this.updated; // Force component showing outcomes to refresh
       })
-    }
     },
     goToUser: function(userId: any) {
       this.$router.push("/profiles/" + userId.profile_id);
