@@ -419,6 +419,7 @@ const CreateActivity = Vue.extend({
           );
           this.organisers.push(users[0]);
           this.errorMessage = "";
+          this.organiserEmail = "";
         }
       } catch (err) {
         this.errorMessage =
