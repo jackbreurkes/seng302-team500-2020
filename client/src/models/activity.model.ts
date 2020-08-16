@@ -29,6 +29,28 @@ export async function editActivity(data: CreateActivityRequest, profileId: numbe
 }
 
 /**
+ * records a participant's results against an activity outcome
+ * @param activityId activity ID of activity to record against
+ * @param outcomeId ID of the activity outcome to record against
+ * @param result The user's result for the outcome (between 0-30 characters)
+ * @param timestamp The ISO8601 format timestamp
+ * @return Promise<boolean> of whether the participant outcome was recorded
+ */
+export async function createParticipantOutcome(activityId: number, outcomeId: number, result: string, timestamp: string) {
+  let data = {
+    "outcomes": [
+      {
+        "outcome_id": outcomeId,
+        "result": result,
+        "completed_date": timestamp
+      }
+    ]
+  }
+  let res = await instance.post(`/activities/${activityId}/results`, data);
+  return res.status == 201;
+}
+
+/**
  * loads the list of available activity types.
  * @returns the list of available activity type names
  */
@@ -142,4 +164,23 @@ export async function setActivityRole(profileId: number, activityId: number, rol
  */
 export async function removeActivityRole(profileId: number, activityId: number) {
   await instance.delete(`/activities/${activityId}/roles/${profileId}`)
+}
+
+/**
+ * Get the results a participant has entered for a given activity
+ * @param profileId profile whose results should be retrieved
+ * @param activityId activity to retrieve the results for
+ */
+export async function fetchParticipantResults(profileId: number, activityId: number) {
+  let res = await instance.get(`/activities/${activityId}/results`)
+  return res.data
+}
+
+/**
+ * Remove a result a user has added for an activity
+ * @param activityId activity on which the result exists
+ * @param outcomeId outcome that the result is associated with
+ */
+export async function deleteParticipantResult(activityId: number, outcomeId: number) {
+  await instance.delete(`/activities/${activityId}/results/${outcomeId}`)
 }

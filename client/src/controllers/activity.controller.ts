@@ -74,6 +74,22 @@ export async function editOrCreateActivity(createActivityRequest: CreateActivity
   }
 }
 
+/**
+ * Records a participant's results in an activity's activityoutcome
+ * @param activityId ID of the activity to record against
+ * @param outcomeId ID of the individual activity outcome to record against
+ * @param score The user's score in this outcome
+ * @param completedTimestamp The time the user claims to have completed the activity
+ */
+export async function createParticipantResult(activityId: number, outcomeId: number, score: string, completedTimestamp: string): Promise<boolean> {
+  if (score.length == 0 || score.length > 30) {
+    throw new Error("Score's length should be between 0 and 30 characters");
+  }
+
+  let result = await activityModel.createParticipantOutcome(activityId, outcomeId, score, completedTimestamp);
+  return result;
+}
+
 
 /**
  * adds an activity type to an activity without persisting changes to the backend
@@ -354,6 +370,24 @@ export async function participateInActivity(profileId: number, activityId: numbe
  */
 export async function removeActivityRole(profileId: number, activityId: number) {
   await activityModel.removeActivityRole(profileId, activityId);
+}
+
+/**
+ * Get the results that a participant has entered for an activity
+ * @param profileId participant whose results should be retrieved
+ * @param activityId activity to retrieve the results for
+ */
+export async function getParticipantResults(profileId: number, activityId: number) {
+  return await activityModel.fetchParticipantResults(profileId, activityId);
+}
+
+/**
+ * Remove a result a user has added for an activity
+ * @param activityId activity on which the result exists
+ * @param outcomeId outcome that the result is associated with
+ */
+export async function removeParticipantResult(activityId: number, outcomeId: number) {
+  await activityModel.deleteParticipantResult(activityId, outcomeId);
 }
 
 /**

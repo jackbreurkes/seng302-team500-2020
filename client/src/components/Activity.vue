@@ -89,6 +89,102 @@
 
               <br><v-divider></v-divider><br>
 
+              <v-expansion-panels flat style="border: 1px solid silver;">
+                  <v-expansion-panel>
+                    <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <v-sheet :v-model="updated">
+                        <p v-if="activity.outcomes == undefined || Object.keys(activity.outcomes).length == 0">
+                          Activity has no associated outcomes
+                        </p>
+                        <div v-if="Object.keys(currentResults) != undefined && Object.keys(currentResults).length > 0">
+                        Current results:
+                          <v-card
+                            class="pa-2"
+                            v-for="(result, index) in currentResults"
+                            v-bind:item="result"
+                            v-bind:index="index"
+                            :key="index"
+                            outlined
+                            >
+                            <v-row align="end">
+                              <v-col sm="12" md="6">
+                                Outcome: {{result.description}}
+                              </v-col>
+                              <v-col sm="12" md="6">
+                                <label>Result: {{result.units == undefined ? result.score : result.score + " " + result.units}}</label>
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col xs="12" md="6">
+                                Completion date: {{result.date}}
+                              </v-col>
+                              <v-col xs="12" md="6">
+                                Completion time: {{result.time.split(':')[0]+':'+result.time.split(':')[1]}}
+                              </v-col>
+                            </v-row>
+                            <v-row justify="end">
+                              <v-spacer></v-spacer>
+                              <div class="mr-3">
+                                <v-btn @click="outcomeIdToRemove = index; removeResultModal = true" right color="error">
+                                  Remove
+                                </v-btn>
+                              </div>
+                            </v-row>
+                        </v-card>
+                        </div>
+                        <br>
+                        <div v-if="Object.keys(currentResults) == undefined || (activity.outcomes!=undefined && activity.outcomes.length - Object.keys(currentResults).length > 0)">
+                        Add new results:
+                        <v-card
+                            class="pa-2"
+                            v-for="(item, index) in activity.outcomes.filter(outcome => !(outcome.outcome_id in currentResults))"
+                            v-bind:item="item"
+                            v-bind:index="index"
+                            :key="index"
+                            outlined
+                            v-model="updated"
+                            >
+                            <v-row align="end">
+                              <v-col sm="12" md="6">
+                                {{item.description}}:
+                              </v-col>
+                              <v-col sm="8" md="4">
+                                <v-text-field
+                                  label="Your result"
+                                  type="text"
+                                  v-model="participantOutcome[item.outcome_id]['score']"
+                                  :rules="inputRules.resultRules"
+                                  hide-details
+                                ></v-text-field>
+                              </v-col>
+                              <v-col sm="4" md="2">
+                                {{item.units}}
+                              </v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col xs="12" md="6">
+                                <v-text-field label="Completion date" type="date" v-model="participantOutcome[item.outcome_id]['date']"></v-text-field>
+                              </v-col>
+                              <v-col xs="12" md="6">
+                                <v-text-field label="Completion time" type="time" v-model="participantOutcome[item.outcome_id]['time']"></v-text-field>
+                              </v-col>
+                            </v-row>
+                            <v-row justify="end">
+                              <v-spacer></v-spacer>
+                              <div class="mr-3">
+                                <v-btn @click="saveParticipantOutcome(item.outcome_id)" right color="primary">
+                                  Save
+                                </v-btn>
+                              </div>
+                            </v-row>
+                        </v-card>
+                        </div>
+                      </v-sheet>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
@@ -107,6 +203,19 @@
         </v-col>
       </v-row>
     </v-container>
+
+    <v-dialog v-model="removeResultModal" width="290">
+      <v-card>
+        <v-card-title class="headline" primary-title>Remove result?</v-card-title>
+        <v-card-text>This operation cannot be undone.</v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-btn text @click="removeResultModal = false">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="error" text @click="removeResult">Remove</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -115,9 +224,10 @@ import Vue from "vue";
 
 import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest } from '../scripts/Activity';
+import { CreateActivityRequest, ActivityOutcomes, ParticipantResult, ParticipantResultDisplay } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
+import FormValidator from "../scripts/FormValidator";
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -125,6 +235,7 @@ const Activity = Vue.extend({
 
   // app initial state
   data: function() {
+    let formValidator = new FormValidator();
     return {
       currentProfileId: NaN as number,
       activityId: NaN as number,
@@ -135,7 +246,19 @@ const Activity = Vue.extend({
       following: false,
       confirmDeleteModal: false,
       startTimeString: '' as string,
-      endTimeString: '' as string
+      endTimeString: '' as string,
+      participantOutcome: {} as Record<number, ParticipantResult>,
+      inputRules: {
+        resultRules: [
+          (v: string) =>
+            formValidator.checkResultValidity(v)
+        ]
+      },
+      currentResults: {} as Record<number, ParticipantResultDisplay>,
+      removeResultModal: false,
+      outcomeIdToRemove: NaN as number,
+      updated: false,
+      possibleOutcomes: {} as Record<number, ActivityOutcomes>
     };
   },
 
@@ -170,6 +293,33 @@ const Activity = Vue.extend({
         .then((booleanResponse) => {
           this.organiser = booleanResponse;
         })
+
+        let outcome_array = this.activity.outcomes as ActivityOutcomes[];
+        for (let outcome_index in outcome_array) {
+          if (this.activity.outcomes === undefined) continue;
+          let outcome_id = this.activity.outcomes[outcome_index].outcome_id;
+          if (outcome_id === undefined) continue;
+          this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
+          this.possibleOutcomes[outcome_id] = this.activity.outcomes[outcome_index] as ActivityOutcomes;
+        }
+      })
+      .then(() => {
+        activityController.getParticipantResults(this.currentProfileId, this.activityId)
+        .then((results) => {
+          let participantResults = {} as Record<number, ParticipantResultDisplay>;
+          for (let index in results) {
+            let date = results[index].completed_date.split("T")[0];
+            let time = results[index].completed_date.split("T")[1];
+            participantResults[results[index].outcome_id] = {
+                'score': results[index].result,
+                'date': date,
+                'time': time,
+                'description': this.possibleOutcomes[results[index].outcome_id].description,
+                'units': this.possibleOutcomes[results[index].outcome_id].units
+            } as ParticipantResultDisplay;
+          }
+          this.currentResults = participantResults;
+        });
       })
       .catch(() => {
         this.$router.back();
@@ -248,6 +398,56 @@ const Activity = Vue.extend({
      */
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
+    },
+    /**
+     * Add a new participant result for the specified outcome on this activity
+     */
+    saveParticipantOutcome: async function(outcomeId: number) {
+      let result = this.participantOutcome[outcomeId].score;
+      let completedDate = this.participantOutcome[outcomeId].date;
+      let completedTime = this.participantOutcome[outcomeId].time;
+      let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
+      
+      try {
+        if (completedDate === undefined) {
+          throw new Error("You must select a date");
+        }
+        if (completedTime === undefined) {
+          throw new Error("You must select a time");
+        }
+        if (result === undefined || result.length == 0 || result.length > 30) {
+          throw new Error("The entered result value must be at least one character but no more than 30");
+        }
+        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
+        .then((success) => {
+          if (success) {
+            this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
+            if (this.activity.outcomes==undefined) {
+              this.currentResults[outcomeId].description = "Description not found";
+              this.currentResults[outcomeId].units = "";
+            } else {
+              this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
+              this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
+            }
+            this.updated = !this.updated; // Force component showing outcomes to refresh
+          }
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    },
+
+    /** Remove the selected result from the activity */
+    removeResult: function() {
+      this.removeResultModal = false;
+      activityController.removeParticipantResult(this.activityId, this.outcomeIdToRemove)
+      .then(() => {
+        delete this.currentResults[this.outcomeIdToRemove];
+        this.participantOutcome[this.outcomeIdToRemove].score = "";
+        delete this.participantOutcome[this.outcomeIdToRemove].date;
+        delete this.participantOutcome[this.outcomeIdToRemove].time;
+        this.updated = !this.updated; // Force component showing outcomes to refresh
+      })
     }
   }
 
