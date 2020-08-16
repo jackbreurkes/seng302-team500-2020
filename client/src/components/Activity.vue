@@ -111,7 +111,6 @@
               >
                 <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
                 <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
-                <template #item.short_interests="{ item }">{{getActivitiesString(item.activities)}}</template>
                 <template v-slot:items="users">
                   <!-- <td class="text-xs-right">{{ users.item.full_name }}</td> -->
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
