@@ -108,6 +108,7 @@
                   @click:row="goToUser"
                   single-select
                   v-model="selectedUsers"
+                  sort-by="role"
               >
                 <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
                 <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
