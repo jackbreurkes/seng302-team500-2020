@@ -140,7 +140,11 @@ public class PutActivityTest {
     @Test
     void testActivityMissingLocation_400() throws Exception {
         long activityId = 10;
-        Mockito.when(activityRepository.findById(activityId)).thenReturn(Optional.of(Mockito.mock(Activity.class)));
+        Profile testCreator = new Profile(new User(1L), "Bob", "Builder", LocalDate.EPOCH, Gender.FEMALE);
+        Activity testActivity = new Activity("Test Activity", false, "Test Location", testCreator, new HashSet<>());
+        testActivity.setId(activityId);
+        Mockito.when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
+        Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(Mockito.anyLong(), Mockito.anyLong())).thenReturn(Optional.empty());
 
         String json = "{\n" +
                 "  \"activity_name\": \"test activity\",\n" +
@@ -183,7 +187,7 @@ public class PutActivityTest {
                 .andDo(result -> {
                     Exception thrown = result.getResolvedException();
                     assertTrue(thrown instanceof RecordNotFoundException);
-                    assertEquals("Activity does not exist", thrown.getMessage());
+                    assertEquals("Cannot find this activity", thrown.getMessage());
                 });
 
         Mockito.verify(activityRepository, never()).save(Mockito.any());
@@ -195,7 +199,11 @@ public class PutActivityTest {
     })
     void testActivityTypeDoesntExist_404(String activityType) throws Exception {
         long activityId = 10;
-        Mockito.when(activityRepository.findById(activityId)).thenReturn(Optional.of(Mockito.mock(Activity.class)));
+        Profile testCreator = new Profile(new User(1L), "Bob", "Builder", LocalDate.EPOCH, Gender.FEMALE);
+        Activity testActivity = new Activity("Test Activity", false, "Test Location", testCreator, new HashSet<>());
+        testActivity.setId(activityId);
+        Mockito.when(activityRepository.findById(activityId)).thenReturn(Optional.of(testActivity));
+        Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(Mockito.anyLong(), Mockito.anyLong())).thenReturn(Optional.empty());
 
         String json = "{\n" +
                 "  \"activity_name\": \"test activity\",\n" +
@@ -227,7 +235,8 @@ public class PutActivityTest {
         Mockito.when(validationErrors.getAllErrors()).thenReturn(new ArrayList<>());
 
         CreateActivityRequest CreateActivityRequest = createValidUpdateRequest();
-        Activity activity = new Activity();
+        Profile testProfile = new Profile(new User(10L), "Bill", "Benson", LocalDate.EPOCH, Gender.FEMALE);
+        Activity activity = new Activity("Test Activity", false, "", testProfile, new HashSet<>());
         when(activityRepository.findById(3L)).thenReturn(Optional.of(activity));
         assertThrows(UserNotAuthorizedException.class, () -> {
             activitiesController.putActivity(2L, 3L, CreateActivityRequest, validationErrors, request);
