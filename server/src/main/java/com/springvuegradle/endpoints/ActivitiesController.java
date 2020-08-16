@@ -388,7 +388,7 @@ public class ActivitiesController {
                                      @Valid @RequestBody RecordOneActivityResultsRequest updateActivityResultRequest,
                                      Errors errors,
                                      HttpServletRequest request) throws InvalidRequestFieldException,
-            RecordNotFoundException, UserNotAuthenticatedException {
+            RecordNotFoundException, UserNotAuthenticatedException, UserNotAuthorizedException {
         if (errors.hasErrors()) {
             String errorMessage = errors.getAllErrors().get(0).getDefaultMessage();
             throw new InvalidRequestFieldException(errorMessage);
@@ -398,7 +398,12 @@ public class ActivitiesController {
         }
 
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
-        activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
+        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
+        boolean hasRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).isPresent();
+        boolean isCreator = activity.getCreator().getUser().getUserId() == authId;
+        if (!hasRole && !isCreator) {
+            throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
+        }
 
         ActivityParticipantResult result = activityParticipantResultRepository.getParticipantResult(authId, updateActivityResultRequest.getOutcomeId()).orElse(null);
 
@@ -442,6 +447,13 @@ public class ActivitiesController {
 
 		long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
+        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("The activity specified does not exist"));
+		boolean hasRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).isPresent();
+		boolean isCreator = activity.getCreator().getUser().getUserId() == authId;
+		if (!hasRole && !isCreator) {
+		    throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
+        }
+
 		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<Long, RecordOneActivityResultsRequest>();
 		for (RecordOneActivityResultsRequest outcomeObject : createResultsRequest.getOutcomes()) {
 			if (outcomeIds.containsKey(outcomeObject.getOutcomeId())) {
@@ -464,14 +476,7 @@ public class ActivitiesController {
 		if (outcomeList.size() != outcomeIds.size()) {
 			throw new RecordNotFoundException("One or more activity outcome id does not exist");
 		}
-		
-		Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-		if (optionalActivity.isEmpty()) {
-			throw new RecordNotFoundException("The activity specified does not exist");
-		}
-		
-		Activity activity = optionalActivity.get();
-		
+
 		for (ActivityOutcome outcome : outcomeList) {
 			if (outcome.getActivity().getId() != activity.getId()) {
 				throw new InvalidRequestFieldException("One or more outcome ID is not for the requested activity");

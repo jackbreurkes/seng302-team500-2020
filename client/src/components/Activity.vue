@@ -446,18 +446,16 @@ const Activity = Vue.extend({
       }
     },
     /** Toggle the user's participation in this activity */
-    toggleParticipation: function() {
+    toggleParticipation: async function() {
       if (!this.participating) {
         this.participants = this.participants + 1;
         this.organiser = false;
-        activityController.participateInActivity(this.currentProfileId, this.activityId)
-          .then(() => this.participating = true)
-          .catch((e) => { console.error(e) });
+        await activityController.participateInActivity(this.currentProfileId, this.activityId);
+        this.participating = true;
       } else {
-          this.participants = this.participants - 1;
-        activityController.removeActivityRole(this.currentProfileId, this.activityId)
-          .then(() => this.participating = false)
-          .catch((e) => { console.error(e) });
+        this.participants = this.participants - 1;
+        await activityController.removeActivityRole(this.currentProfileId, this.activityId)
+        this.participating = false;
       }
     },
     /** Navigate back to the last page the user was on. */
@@ -496,6 +494,9 @@ const Activity = Vue.extend({
       let completedDate = this.participantOutcome[outcomeId].date;
       let completedTime = this.participantOutcome[outcomeId].time;
       let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
+      if (this.currentProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
+        await this.toggleParticipation();
+      }
 
       try {
         if (completedDate === undefined) {
@@ -507,6 +508,7 @@ const Activity = Vue.extend({
         if (result === undefined || result.length == 0 || result.length > 30) {
           throw new Error("The entered result value must be at least one character but no more than 30");
         }
+
         await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
         .then((success) => {
           if (success) {
