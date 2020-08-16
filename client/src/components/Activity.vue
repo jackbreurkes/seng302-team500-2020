@@ -112,7 +112,7 @@
                                 Outcome: {{result.description}}
                               </v-col>
                               <v-col sm="12" md="6">
-                                <label>Result: {{result.score + " " + result.units}}</label>
+                                <label>Result: {{result.units == undefined ? result.score : result.score + " " + result.units}}</label>
                               </v-col>
                             </v-row>
                             <v-row>
@@ -257,7 +257,8 @@ const Activity = Vue.extend({
       currentResults: {} as Record<number, ParticipantResultDisplay>,
       removeResultModal: false,
       outcomeIdToRemove: NaN as number,
-      updated: false
+      updated: false,
+      possibleOutcomes: {} as Record<number, ActivityOutcomes>
     };
   },
 
@@ -299,6 +300,7 @@ const Activity = Vue.extend({
           let outcome_id = this.activity.outcomes[outcome_index].outcome_id;
           if (outcome_id === undefined) continue;
           this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
+          this.possibleOutcomes[outcome_id] = this.activity.outcomes[outcome_index] as ActivityOutcomes;
         }
       })
       .then(() => {
@@ -311,20 +313,11 @@ const Activity = Vue.extend({
             participantResults[results[index].outcome_id] = {
                 'score': results[index].result,
                 'date': date,
-                'time': time
+                'time': time,
+                'description': this.possibleOutcomes[results[index].outcome_id].description,
+                'units': this.possibleOutcomes[results[index].outcome_id].units
             } as ParticipantResultDisplay;
           }
-          if (this.activity.outcomes != undefined) {
-            for (let outcomeIndex in this.activity.outcomes) {
-              // Uses -1 as placeholder which will be undefined
-              if (this.activity.outcomes[outcomeIndex].outcome_id != undefined && 
-                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1] != undefined) {
-                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].description = this.activity.outcomes[outcomeIndex].description;
-                participantResults[this.activity.outcomes[outcomeIndex].outcome_id || -1].units = this.activity.outcomes[outcomeIndex].units;
-                }
-            }
-          }
-
           this.currentResults = participantResults;
         });
       })
@@ -429,6 +422,13 @@ const Activity = Vue.extend({
         .then((success) => {
           if (success) {
             this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
+            if (this.activity.outcomes==undefined) {
+              this.currentResults[outcomeId].description = "Not found";
+              this.currentResults[outcomeId].units = "";
+            } else {
+              this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
+              this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
+            }
             this.updated = !this.updated; // Force component showing outcomes to refresh
           }
         });
