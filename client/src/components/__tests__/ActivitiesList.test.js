@@ -94,7 +94,7 @@ describe("Activities card test", () => {
             "end_time": "2020-08-07T11:11:00+1200",
             "description": "awdawdadw",
             "location": "awd",
-            "creator_id": 7001,
+            "creator_id": mockProfileId,
             "activity_type": ["Running"]
           }
         ]
@@ -111,7 +111,6 @@ describe("Activities card test", () => {
     getIsOrganising.mockResolvedValue(true);
     mountFunction(); // need to re-mount after changing mock resolve
     await Vue.nextTick()
-    console.log(wrapper.html())
     expect(wrapper.find('#organiserChip').exists()).toBe(true)
   })
 
