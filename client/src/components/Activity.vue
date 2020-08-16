@@ -423,7 +423,7 @@ const Activity = Vue.extend({
           if (success) {
             this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
             if (this.activity.outcomes==undefined) {
-              this.currentResults[outcomeId].description = "Not found";
+              this.currentResults[outcomeId].description = "Description not found";
               this.currentResults[outcomeId].units = "";
             } else {
               this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
