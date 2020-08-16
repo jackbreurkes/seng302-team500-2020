@@ -83,11 +83,11 @@
               >{{ activityType }}</v-chip> 
               <br>
 
-              <v-divider></v-divider><br>
+              <!-- <v-divider></v-divider><br>
 
               <p> Please insert a UserRoleList component here! </p>
 
-              <br><v-divider></v-divider><br>
+              <br><v-divider></v-divider><br> -->
 
               <v-expansion-panels flat style="border: 1px solid silver;">
                   <v-expansion-panel>
