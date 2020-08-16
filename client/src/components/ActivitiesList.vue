@@ -18,7 +18,7 @@ import { CreateActivityRequest } from "../scripts/Activity";
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["profileId", "authority", "activities", "myProfileId"], // props are passed in from the parent component
+  props: ["authority", "activities"], // props are passed in from the parent component
   components: { ActivityCard },
 
   // app initial state
