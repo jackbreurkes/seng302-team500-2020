@@ -15,5 +15,19 @@ export interface CreateActivityRequest {
 export interface ActivityOutcomes {
   description: string;
   units: string;
+  outcome_id?: number;
 }
-  
+
+export interface ParticipantResult {
+  score: string,
+  date: string,
+  time: string
+}
+
+export interface ParticipantResultDisplay {
+  score: string;
+  date: string;
+  time: string;
+  description?: string;
+  units?: string;
+}
