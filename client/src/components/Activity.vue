@@ -93,7 +93,7 @@
                   <v-expansion-panel>
                     <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
                     <v-expansion-panel-content>
-                      <v-sheet>
+                      <v-sheet :v-model="updated">
                         <div v-if="Object.keys(currentResults) != undefined && Object.keys(currentResults).length > 0">
                         Current results:
                           <v-card
@@ -123,7 +123,7 @@
                             <v-row justify="end">
                               <v-spacer></v-spacer>
                               <div class="mr-3">
-                                <v-btn @click="resultIdToRemove = index; removeResultModal = true" right color="error">
+                                <v-btn @click="outcomeIdToRemove = index; removeResultModal = true" right color="error">
                                   Remove
                                 </v-btn>
                               </div>
@@ -140,6 +140,7 @@
                             v-bind:index="index"
                             :key="index"
                             outlined
+                            v-model="updated"
                             >
                             <v-row align="end">
                               <v-col sm="12" md="6">
@@ -252,7 +253,8 @@ const Activity = Vue.extend({
       },
       currentResults: {} as Record<number, ParticipantResultDisplay>,
       removeResultModal: false,
-      resultIdToRemove: NaN as number
+      outcomeIdToRemove: NaN as number,
+      updated: false
     };
   },
 
@@ -301,8 +303,8 @@ const Activity = Vue.extend({
         .then((results) => {
           let participantResults = {} as Record<number, ParticipantResultDisplay>;
           for (let index in results) {
-            let date = results[index].completed_date.split(" ")[0];
-            let time = results[index].completed_date.split(" ")[1];
+            let date = results[index].completed_date.split("T")[0];
+            let time = results[index].completed_date.split("T")[1];
             participantResults[results[index].outcome_id] = {
                 'score': results[index].result,
                 'date': date,
@@ -401,7 +403,9 @@ const Activity = Vue.extend({
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
     },
-
+    /**
+     * Add a new participant result for the specified outcome on this activity
+     */
     saveParticipantOutcome: async function(outcomeId: number) {
       let result = this.participantOutcome[outcomeId].score;
       let completedDate = this.participantOutcome[outcomeId].date;
@@ -415,10 +419,8 @@ const Activity = Vue.extend({
         await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
         .then((success) => {
           if (success) {
-            let results = this.currentResults;
-            results[outcomeId] = this.participantOutcome[outcomeId];
-            this.currentResults = results;
-            // TODO: Check this works once back end is fixed
+            this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
+            this.updated = !this.updated; // Force component showing outcomes to refresh
           }
         });
       } catch (err) {
@@ -429,8 +431,14 @@ const Activity = Vue.extend({
     /** Remove the selected result from the activity */
     removeResult: function() {
       this.removeResultModal = false;
-      console.log(this.resultIdToRemove)
-      // TODO (is a separate task): do the removing and update the lists of current results and outcomes available to add
+      activityController.removeParticipantResult(this.activityId, this.outcomeIdToRemove)
+      .then(() => {
+        delete this.currentResults[this.outcomeIdToRemove];
+        this.participantOutcome[this.outcomeIdToRemove].score = "";
+        delete this.participantOutcome[this.outcomeIdToRemove].date;
+        delete this.participantOutcome[this.outcomeIdToRemove].time;
+        this.updated = !this.updated; // Force component showing outcomes to refresh
+      })
     }
   }
 

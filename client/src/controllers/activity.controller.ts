@@ -381,6 +381,15 @@ export async function getParticipantResults(profileId: number, activityId: numbe
 }
 
 /**
+ * Remove a result a user has added for an activity
+ * @param activityId activity on which the result exists
+ * @param outcomeId outcome that the result is associated with
+ */
+export async function removeParticipantResult(activityId: number, outcomeId: number) {
+  await activityModel.deleteParticipantResult(activityId, outcomeId);
+}
+
+/**
  * returns a reader-friendly description of the duration of a duration activity.
  * @param startTime the ISO datetime string representing the start time
  * @param endTime the ISO datetime string representing the end time

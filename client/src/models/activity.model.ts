@@ -165,3 +165,12 @@ export async function fetchParticipantResults(profileId: number, activityId: num
   let res = await instance.get(`/activities/${activityId}/results`)
   return res.data
 }
+
+/**
+ * Remove a result a user has added for an activity
+ * @param activityId activity on which the result exists
+ * @param outcomeId outcome that the result is associated with
+ */
+export async function deleteParticipantResult(activityId: number, outcomeId: number) {
+  await instance.delete(`/activities/${activityId}/results/${outcomeId}`)
+}
