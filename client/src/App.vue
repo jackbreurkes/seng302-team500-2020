@@ -104,10 +104,8 @@
   },
     
     created() {
-    this.updateUserData();
-    this.loadNavInfo();
-
-
+      this.updateUserData();
+      this.loadNavInfo();
     },
     watch: {
       $route() {
@@ -130,6 +128,7 @@
 
       },
       goTo: function(pathing : string) {
+        this.loadNavInfo(); // updates user id information
         if(!(pathing == "LOGOUT")){
           this.$router.push(pathing).catch(() => {}); // ignore routing errors from navbar
           }
