@@ -67,6 +67,8 @@ public class PutActivityTest {
     private ActivityOutcomeRepository activityOutcomeRepository;
     @MockBean
     private ActivityParticipantResultRepository activityParticipantResultRepository;
+    @MockBean
+    EmailRepository emailRepository;
 
     private User user;
     private Profile profile;

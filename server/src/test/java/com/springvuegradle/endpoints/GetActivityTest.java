@@ -1,14 +1,10 @@
 package com.springvuegradle.endpoints;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 
-import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.responses.ProfileResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -27,10 +23,9 @@ import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.responses.ActivityResponse;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GetActivityTest {
@@ -49,6 +44,9 @@ public class GetActivityTest {
     
     @Mock
     private UserActivityRoleRepository userActivityRoleRepository;
+
+    @Mock
+    private EmailRepository emailRepository;
 
     private Profile profile;
 
@@ -173,5 +171,48 @@ public class GetActivityTest {
         ActivityResponse response = activitiesController.getSingleActivity(2L, request);
         assertEquals(participants, response.getNumParticipants());
     }
+
+    @Test
+    void testGetActivityParticipantsWithNoParticipants() throws UserNotAuthenticatedException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        activity.setId(4L);
+
+        Mockito.when(activityRepository.getOne(4L)).thenReturn(activity);
+
+        List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(4L, request);
+
+        assertEquals(0, profiles.size());
+    }
+
+    @Test
+    void testGetActivityParticipantsReturnsOne() throws UserNotAuthenticatedException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        activity.setId(2L);
+
+        Mockito.when(activityRepository.getOne(2L)).thenReturn(activity);
+
+        User user = new User(3l);
+        Profile profile = new Profile(user, "Misha", "Morgun", LocalDate.now(), Gender.MALE);
+
+        ProfileResponse response = new ProfileResponse(profile, emailRepository);
+
+        List<User> userList = new ArrayList<>();
+        userList.add(user);
+        Mockito.when(userActivityRoleRepository.getInvolvedUsersByActivityId(2l)).thenReturn(userList);
+
+        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
+
+        List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(2L, request);
+
+        assertNotEquals(0, profiles.size());
+    }
+
+
 
 }

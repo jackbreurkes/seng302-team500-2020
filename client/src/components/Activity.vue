@@ -62,6 +62,21 @@
             </v-toolbar>
 
             <v-card-text class="grey lighten-4">
+                <v-chip
+                    class="ma-2"
+                    color="blue"
+                    outlined
+                    label>
+                    Followers: {{followers}}
+                </v-chip>
+                <v-chip
+                        class="ma-2"
+                        color="blue"
+                        outlined
+                        label>
+                    Participants: {{participants}}
+                </v-chip>
+                <br>
               <h3>Activity Information</h3>
               <br>
               <p> Description: {{ activity.description }} </p>
@@ -82,6 +97,30 @@
                 outlined
               >{{ activityType }}</v-chip> 
               <br>
+
+              <v-divider></v-divider><br>
+
+              <v-data-table
+                  :no-data-text="noDataText"
+                  :headers="headers"
+                  :items="users"
+                  item-key="profile_id"
+                  @click:row="goToUser"
+                  single-select
+                  v-model="selectedUsers"
+                  sort-by="role"
+              >
+                <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
+                <template v-slot:items="users">
+                  <td class="text-xs-right">{{ users.item.firstname }}</td>
+                  <td class="text-xs-right">{{ users.item.lastname }}</td>
+                  <td class="text-xs-right">{{ users.item.nickname }}</td>
+                  <td class="text-xs-right">{{ users.item.activityRole }}</td>
+                </template>
+              </v-data-table>
+
+              <br><v-divider></v-divider><br>
+
               <v-expansion-panels flat style="border: 1px solid silver;">
                   <v-expansion-panel>
                     <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
@@ -119,7 +158,7 @@
                             <v-row justify="end">
                               <v-spacer></v-spacer>
                               <div class="mr-3">
-                                <v-btn @click="outcomeIdToRemove = index; removeResultModal = true" right color="error">
+                                <v-btn @click="outcomeIdToRemove = index, removeResultModal = true" right color="error">
                                   Remove
                                 </v-btn>
                               </div>
@@ -215,12 +254,21 @@
 <script lang="ts">
 import Vue from "vue";
 
-import { getActivity, followActivity, unfollowActivity, getIsFollowingActivity } from '../controllers/activity.controller';
+import {
+  getActivity,
+  followActivity,
+  unfollowActivity,
+  getIsFollowingActivity,
+  getParticipants
+} from '../controllers/activity.controller';
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest, ActivityOutcomes, ParticipantResult, ParticipantResultDisplay } from '../scripts/Activity';
 import * as authService from '../services/auth.service';
 import * as activityController from '../controllers/activity.controller';
 import FormValidator from "../scripts/FormValidator";
+// eslint-disable-next-line no-unused-vars
+import { UserApiFormat } from "../scripts/User";
+import { getActivityRole } from "../models/activity.model";
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -251,7 +299,19 @@ const Activity = Vue.extend({
       removeResultModal: false,
       outcomeIdToRemove: NaN as number,
       updated: false,
-      possibleOutcomes: {} as Record<number, ActivityOutcomes>
+      possibleOutcomes: {} as Record<number, ActivityOutcomes>,
+      headers: [
+        { text: 'First Name', value: 'firstname' },
+        { text: 'Last Name', value: 'lastname' },
+        { text: 'Nickname', value: 'nickname' },
+        { text: 'Role', value: 'activityRole' }
+      ],
+      noDataText: "No Participants",
+      selectedUsers: [] as UserApiFormat[],
+      users: [] as UserApiFormat[],
+      errorMessage: "",
+      followers: NaN as number,
+      participants: NaN as number,
     };
   },
 
@@ -274,6 +334,12 @@ const Activity = Vue.extend({
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        if (this.activity.num_followers != null) {
+            this.followers = this.activity.num_followers;
+        }
+        if (this.activity.num_participants != null) {
+            this.participants = this.activity.num_participants;
+        }
         getIsFollowingActivity(this.currentProfileId, this.activityId)
         .then((booleanResponse) => {
           this.following = booleanResponse;
@@ -318,6 +384,9 @@ const Activity = Vue.extend({
         this.$router.back();
       });
     }
+
+    // Populates the datatable that holds all the participants/oraganisers
+    this.search();
 },
 
   methods: {
@@ -334,6 +403,7 @@ const Activity = Vue.extend({
      */
     toggleFollowingActivity: function() {
       if (this.following) {
+        this.followers = this.followers - 1;
         unfollowActivity(this.currentProfileId, this.activityId)
         .then(() => {
           this.following = false
@@ -342,7 +412,8 @@ const Activity = Vue.extend({
           console.error(err)
         })
       } else {
-        followActivity(this.currentProfileId, this.activityId)
+          this.followers = this.followers + 1;
+          followActivity(this.currentProfileId, this.activityId)
         .then(() => {
           this.following = true
         })
@@ -357,10 +428,16 @@ const Activity = Vue.extend({
         this.organiser = false;
         await activityController.participateInActivity(this.currentProfileId, this.activityId);
         this.participating = true;
+        this.participants = this.participants + 1;
       } else {
         await activityController.removeActivityRole(this.currentProfileId, this.activityId)
         this.participating = false;
+        this.participants = this.participants - 1;
       }
+
+      // Reload the datatable when you participate/unparticipate
+      this.users = [];
+      this.search();
     },
     /** Navigate back to the last page the user was on. */
     backButtonClicked() {
@@ -401,6 +478,7 @@ const Activity = Vue.extend({
       if (this.currentProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
         await this.toggleParticipation();
       }
+
       try {
         if (completedDate === undefined) {
           throw new Error("You must select a date");
@@ -442,7 +520,42 @@ const Activity = Vue.extend({
         delete this.participantOutcome[this.outcomeIdToRemove].time;
         this.updated = !this.updated; // Force component showing outcomes to refresh
       })
-    }
+    },
+
+    /** Routes to the user you click on, on the datatable **/
+    goToUser: function(userId: any) {
+      this.$router.push("/profiles/" + userId.profile_id);
+    },
+
+    /** Populates the datatable containing all the participants/organisers **/
+    search: async function() {
+      this.noDataText = "No participants found";
+      this.errorMessage = "";
+      try {
+        let users = await getParticipants(this.activityId)
+        let user;
+        for (user of users) { // Gives every user part of the activity a role
+          if (this.creatorId == user.profile_id) {
+            user.activityRole = "CREATOR";
+          } else if (user.profile_id != undefined) {
+            user.activityRole = await getActivityRole(user.profile_id, this.activityId);
+          }
+        }
+        this.users = users as UserApiFormat[];
+      } catch (err) {
+        if (err.response) {
+          if (err.response.status == 400) {
+            this.errorMessage = err.message;
+          }
+        } else if (err.message) {
+          this.errorMessage = err.message;
+        } else {
+          this.errorMessage = "Unexpected error";
+        }
+        this.noDataText = this.errorMessage;
+        this.users = [];
+      }
+    },
   }
 
 });

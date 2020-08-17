@@ -130,6 +130,7 @@ describe("activityPageTests", () => {
     let followButton = wrapper.find('#followBtn')
     followButton.trigger('click')
     await Vue.nextTick() // wait for click
+    await Vue.nextTick() // wait for click
     expect(followActivity.mock.calls.length).toBe(1)
     expect(wrapper.find('#followBtn').text().toLowerCase()).toBe("unfollow")
   })
@@ -141,6 +142,7 @@ describe("activityPageTests", () => {
     await Vue.nextTick() // resolves getIsFollowingActivity
     let followButton = wrapper.find('#followBtn')
     followButton.trigger('click')
+    await Vue.nextTick() // wait for click
     await Vue.nextTick() // wait for click
     expect(unfollowActivity.mock.calls.length).toBe(1)
     expect(wrapper.find('#followBtn').text().toLowerCase()).toBe("follow")

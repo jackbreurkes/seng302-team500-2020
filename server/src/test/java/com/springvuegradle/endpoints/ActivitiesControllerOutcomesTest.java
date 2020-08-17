@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.springvuegradle.model.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -35,15 +36,6 @@ import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.Gender;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityOutcomeRepository;
-import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -83,6 +75,9 @@ public class ActivitiesControllerOutcomesTest {
 	
 	@MockBean
     private ActivityOutcomeRepository activityOutcomeRepository;
+
+	@MockBean
+	EmailRepository emailRepository;
 
 	User user;
 	Profile profile;
