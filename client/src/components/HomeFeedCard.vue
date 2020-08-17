@@ -5,7 +5,7 @@
             <v-toolbar @click=activityClicked color="blue" dark flat height='50'>
                 <v-card-title>{{activityName}}</v-card-title>
             </v-toolbar>
-            <v-card-text class="pl-7 pt-3 " @click=creatorClicked>Created by {{creatorName}}</v-card-text>
+            <v-card-text class="pl-7 pt-3 " @click=creatorClicked>{{creatorName ? "Created by " + creatorName : ""}}</v-card-text>
                 <v-spacer></v-spacer>
             <v-card-text class="pl-7 subtitle-1">{{infoString}}</v-card-text>
         </v-card>
@@ -53,7 +53,12 @@ const HomeFeedCard = Vue.extend({
         },
         parseEditorAction: function(){
             if(this.cardData.changed_attribute == "ACTIVITY_EXISTENCE"){
-                return "created the activity " + this.cardData.entity_name;
+                if(this.cardData.action_type === "CREATED"){
+                    return "created the activity " + this.cardData.entity_name;
+                }else {
+                    return "deleted the activity " + this.cardData.entity_name;
+                }
+                
             } else if (this.cardData.changed_attribute == "ACTIVITY_OUTCOME") {
                 if (this.cardData.action_type === "CREATED") {
                     return "has created an activity outcome '" + this.cardData.new_value.description + "' where you can log your results. Changed"
