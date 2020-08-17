@@ -17,10 +17,10 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-chip v-if="currentProfileId === creatorId" outlined>Creator</v-chip>
-                  <v-chip v-if="organiser" outlined>Organiser</v-chip>
-                  <v-chip v-if="following" outlined>Following</v-chip>
-                  <v-chip v-if="participating" outlined>Participating</v-chip>
+                  <v-chip v-if="currentProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
+                  <v-chip v-if="organiser" outlined class="mr-1">Organiser</v-chip>
+                  <v-chip v-if="following" outlined class="mr-1">Following</v-chip>
+                  <v-chip v-if="participating" outlined class="mr-1">Participating</v-chip>
                   <v-menu v-if="currentProfileId === creatorId || organiser" bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
@@ -110,7 +110,7 @@
                   v-model="selectedUsers"
                   sort-by="role"
               >
-                <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
+                <template #full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
                 <template v-slot:items="users">
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
                   <td class="text-xs-right">{{ users.item.lastname }}</td>
@@ -169,7 +169,7 @@
                         <div v-if="Object.keys(currentResults) == undefined || (activity.outcomes!=undefined && activity.outcomes.length - Object.keys(currentResults).length > 0)">
                         Add new results:
                         <v-card
-                            class="pa-2"
+                            class="pa-2 mb-2"
                             v-for="(item, index) in activity.outcomes.filter(outcome => !(outcome.outcome_id in currentResults))"
                             v-bind:item="item"
                             v-bind:index="index"
@@ -220,10 +220,10 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
+                  <v-btn id="followBtn" @click="toggleFollowingActivity" class="mr-1" color="primary" :outlined="following" width="150"> {{ following ? "Unfollow" : "Follow" }} </v-btn>
                 </div>
                 <div>
-                  <v-btn :disabled="organiser" id="participateBtn" @click="toggleParticipation" class="mr-1" color="primary"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
+                  <v-btn :disabled="organiser" id="participateBtn" @click="toggleParticipation" class="mr-1" :outlined="participating" color="primary" width="150"> {{ participating ? "Unparticipate" : "Participate" }} </v-btn>
                 </div>
               </v-card-actions>
 
