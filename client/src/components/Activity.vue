@@ -110,12 +110,12 @@
                   v-model="selectedUsers"
                   sort-by="role"
               >
-                <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
+                <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
                 <template v-slot:items="users">
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
                   <td class="text-xs-right">{{ users.item.lastname }}</td>
                   <td class="text-xs-right">{{ users.item.nickname }}</td>
-                  <td class="text-xs-right">{{  }}</td>
+                  <td class="text-xs-right">{{ users.item.activityRole }}</td>
                 </template>
               </v-data-table>
 
@@ -304,7 +304,7 @@ const Activity = Vue.extend({
         { text: 'First Name', value: 'firstname' },
         { text: 'Last Name', value: 'lastname' },
         { text: 'Nickname', value: 'nickname' },
-        { text: 'Role', value: 'role' }
+        { text: 'Role', value: 'activityRole' }
       ],
       noDataText: "No Participants",
       selectedUsers: [] as UserApiFormat[],
