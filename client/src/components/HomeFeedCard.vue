@@ -2,12 +2,35 @@
   <div id="HomeFeedCard">
     <v-layout justify-center class="pt-1">
         <v-card width='600' height='100%'>
-            <v-toolbar @click=activityClicked color="blue" dark flat height='50'>
-                <v-card-title>{{activityName}}</v-card-title>
-            </v-toolbar>
-            <v-card-text class="pl-7 pt-3 " @click=creatorClicked>{{creatorName ? "Created by " + creatorName : ""}}</v-card-text>
+            <v-toolbar color="blue" dark flat height='50'>
+                <v-icon class="mr-2">mdi-account-edit</v-icon>
+                <v-toolbar-title>{{activityName}}</v-toolbar-title>
                 <v-spacer></v-spacer>
-            <v-card-text class="pl-7 subtitle-1">{{infoString}}</v-card-text>
+                <v-menu bottom left offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        dark
+                        icon
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-list>
+                      <v-list-item
+                        id="unsubscribe"
+                        @click="unsubscribe"
+                      >
+                        <v-list-item-title>Stop following</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+            </v-toolbar>
+            <v-card-text class="pl-7 pt-3" v-if="creatorName">Activity created by <router-link :to="'/profiles/' + this.creatorId"><p>{{creatorName}}</p></router-link></v-card-text>
+            <v-spacer></v-spacer>
+            <v-card-text class="pl-7 subtitle-1">{{infoString}}<router-link :to="'/profiles/' + this.creatorId + '/activities/' + this.entityId"><p class="ml-1">Go to activity</p></router-link></v-card-text>
         </v-card>
     </v-layout>
   </div>
@@ -15,6 +38,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import {unfollowActivity} from '../controllers/activity.controller';
+import * as authService from '../services/auth.service';
 
 const HomeFeedCard = Vue.extend({
     name: "HomeFeedCard",
@@ -30,21 +55,14 @@ const HomeFeedCard = Vue.extend({
             creatorId: this.cardData.creator_id,
             oldValue: "",
             newValue: "",
-            infoString: ""
+            infoString: "",
         };
     },
     created(){
         this.parseChangelogResponse();
-        
     },
 
     methods: {
-        activityClicked: function(){
-            this.$router.push("/profiles/" + this.creatorId + "/activities/" + this.entityId)
-        },
-        creatorClicked: function(){
-            this.$router.push("/profiles/" + this.creatorId)
-        },
         parseTime: function(time:string){
             let dateTime = new Date(time);
             const dtf = new Intl.DateTimeFormat(undefined, {
@@ -103,6 +121,24 @@ const HomeFeedCard = Vue.extend({
         },
         parseChangelogResponse: function(){
             this.infoString = this.cardData.editor_name + " " + this.parseEditorAction() + " on " + this.parseTime(this.cardData.edited_timestamp);
+        },
+        unsubscribe: async function() {
+            let myProfileId = await authService.getMyUserId();
+            if (myProfileId === undefined || myProfileId === null) {
+                return;
+            }
+            try {
+                await unfollowActivity(myProfileId, this.entityId);
+            } catch (err) {
+                if (!(err.response && err.response.status === 404)) { // ignore 404s
+                    throw err;
+                } else if (!(err.message && err.message.toLowerCase().startsWith("user not subscribed"))) { // if the 404 has the wrong message
+                    throw err;
+                }
+            }
+            this.creatorName = null;
+            this.activityName = "Unfollowed"
+            this.infoString = "You have unfollowed this activity. You will no longer receive updates about this activity."
         }
     }
 })
