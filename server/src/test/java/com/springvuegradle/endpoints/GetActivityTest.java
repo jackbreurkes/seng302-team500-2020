@@ -182,7 +182,7 @@ public class GetActivityTest {
 
         Mockito.when(activityRepository.getOne(4L)).thenReturn(activity);
 
-        List<ProfileResponse> profiles = activitiesController.getActivityParticipants(4L, request);
+        List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(4L, request);
 
         assertEquals(0, profiles.size());
     }
@@ -208,7 +208,7 @@ public class GetActivityTest {
 
         Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
 
-        List<ProfileResponse> profiles = activitiesController.getActivityParticipants(2L, request);
+        List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(2L, request);
 
         assertNotEquals(0, profiles.size());
     }
