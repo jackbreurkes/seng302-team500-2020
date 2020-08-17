@@ -304,7 +304,7 @@ const Activity = Vue.extend({
         { text: 'First Name', value: 'firstname' },
         { text: 'Last Name', value: 'lastname' },
         { text: 'Nickname', value: 'nickname' },
-        { text: 'Role', value: 'role' }
+        { text: 'Role', value: 'activityRole' }
       ],
       noDataText: "No Participants",
       selectedUsers: [] as UserApiFormat[],
@@ -535,6 +535,8 @@ const Activity = Vue.extend({
         let users = await getParticipants(this.activityId)
         let user;
         for (user of users) { // Gives every user part of the activity a role
+        console.log(user)
+        console.log(user["activityRole"])
           if (this.creatorId == user.profile_id) {
             user.activityRole = "CREATOR";
           } else if (user.profile_id != undefined) {
