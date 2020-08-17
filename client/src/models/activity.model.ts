@@ -178,11 +178,11 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
 }
 
 /**
- * Returns all participants that are a part of an activity
+ * Returns all users that are a involved in an activity
  * @param activityId The activity ID
  * @returns A list of profiles that participate/organise the activity
  */
 export async function getParticipants(activityId: number): Promise<UserApiFormat[]> {
-  let res = await instance.get(`/activities/${activityId}/participants`);
+  let res = await instance.get(`/activities/${activityId}/involved`);
   return res.data;
 }
