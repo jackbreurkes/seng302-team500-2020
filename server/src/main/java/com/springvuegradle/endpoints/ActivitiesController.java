@@ -588,7 +588,7 @@ public class ActivitiesController {
      * @return an HTTP ResponseEntity with the HTTP response containing all participants/organisers a part of an activity
      * @throws UserNotAuthenticatedException
      */
-    @GetMapping("/activities/{activityId}/participants")
+    @GetMapping("/activities/{activityId}/involved")
     @CrossOrigin
     public List<ProfileResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
                                                          HttpServletRequest request) throws UserNotAuthenticatedException {
