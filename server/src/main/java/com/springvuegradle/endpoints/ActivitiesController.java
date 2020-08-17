@@ -590,7 +590,7 @@ public class ActivitiesController {
      */
     @GetMapping("/activities/{activityId}/participants")
     @CrossOrigin
-    public List<ProfileResponse> getActivityParticipants(@PathVariable("activityId") long activityId,
+    public List<ProfileResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
                                                          HttpServletRequest request) throws UserNotAuthenticatedException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
