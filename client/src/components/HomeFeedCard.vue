@@ -56,17 +56,10 @@ const HomeFeedCard = Vue.extend({
             oldValue: "",
             newValue: "",
             infoString: "",
-            currentProfileId: -1 as number
         };
     },
     created(){
         this.parseChangelogResponse();
-        let myProfileId = authService.getMyUserId();
-        if (myProfileId == null) {
-            this.$router.push('login');
-        } else {
-            this.currentProfileId = myProfileId;
-        }
     },
 
     methods: {
@@ -130,10 +123,14 @@ const HomeFeedCard = Vue.extend({
             this.infoString = this.cardData.editor_name + " " + this.parseEditorAction() + " on " + this.parseTime(this.cardData.edited_timestamp);
         },
         unsubscribe: async function() {
-            await unfollowActivity(this.currentProfileId, this.entityId);
+            let myProfileId = await authService.getMyUserId();
+            if (myProfileId === undefined || myProfileId === null) {
+                return;
+            }
+            await unfollowActivity(myProfileId, this.entityId);
             this.creatorName = null;
             this.activityName = "Unfollowed"
-            this.infoString = "You have unsubscribed from this activity. You will no longer receive updates about this activity."
+            this.infoString = "You have unfollowed this activity. You will no longer receive updates about this activity."
         }
     }
 })
