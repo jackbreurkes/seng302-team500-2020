@@ -132,6 +132,8 @@ const HomeFeedCard = Vue.extend({
             } catch (err) {
                 if (!(err.response && err.response.status === 404)) { // ignore 404s
                     throw err;
+                } else if (!(err.message && err.message.toLowerCase().startsWith("user not subscribed"))) { // if the 404 has the wrong message
+                    throw err;
                 }
             }
             this.creatorName = null;
