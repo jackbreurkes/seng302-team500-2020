@@ -127,7 +127,13 @@ const HomeFeedCard = Vue.extend({
             if (myProfileId === undefined || myProfileId === null) {
                 return;
             }
-            await unfollowActivity(myProfileId, this.entityId);
+            try {
+                await unfollowActivity(myProfileId, this.entityId);
+            } catch (err) {
+                if (!(err.response && err.response.status === 404)) { // ignore 404s
+                    throw err;
+                }
+            }
             this.creatorName = null;
             this.activityName = "Unfollowed"
             this.infoString = "You have unfollowed this activity. You will no longer receive updates about this activity."
