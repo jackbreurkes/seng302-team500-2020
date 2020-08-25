@@ -40,7 +40,7 @@ export function validateNewActivity(sDate: string, sTime: string, eDate: string,
      if (eDate === "" || eDate === undefined) {
        throw new Error("Duration based activities must have an end date");
      }
-     if (!isValidEndDate(sDate, eDate)) {
+     if (!isValidEndDate(sDate, eDate, sTime, eTime)) {
        throw new Error("End date must be after start date")
      }
      if (!isValidTime(eTime) && eTime != "") {
@@ -255,7 +255,7 @@ export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
 }
 
-export const INVALID_DATE_MESSAGE = "Date must be at least one day into the future"
+export const INVALID_DATE_MESSAGE = "Date must be in the future"
 /**
  * Checks if dateString given is a date in the future
  * if it is valid
@@ -263,12 +263,22 @@ export const INVALID_DATE_MESSAGE = "Date must be at least one day into the futu
  * @return true or false
  */
 export function isFutureDate(dateString: string): boolean {
-  let today = new Date().getTime()
-  let date = new Date(dateString).getTime()
-  if ((today - date) < 0) {
+  let today = new Date();
+  let date = new Date(dateString).getTime();
+  let todayString;
+  if (today.getMonth().toString.length == 1) {
+    todayString = today.getFullYear()+'-0'+(today.getMonth()+1)+'-'+today.getDate();
+  } else {
+    todayString = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  }
+  if (todayString === dateString) {
     return true;
   } else {
-    return false;
+    if ((today.getTime() - date) < 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
@@ -418,14 +428,24 @@ export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
 }
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
-export function isValidEndDate(startDateString: string, endDateString: string): boolean 
+export function isValidEndDate(startDateString: string, endDateString: string, startTime: string, endTime: string): boolean 
 {
-  let endDate = new Date(endDateString).getTime();
-  let startDate = new Date(startDateString).getTime();
-  if ((startDate - endDate) < 0) {
-    return true;
+  if (startDateString === endDateString) {
+    let endDate = new Date(endDateString).setHours(parseInt(endTime.slice(0, 2), 10), parseInt(endTime.slice(3), 10));
+    let startDate = new Date(startDateString).setHours(parseInt(startTime.slice(0, 2), 10), parseInt(startTime.slice(3), 10));
+    if ((startDate < endDate) ) {
+      return true;
+    } else {
+      return false
+    }
   } else {
-    return false
+      let endDate = new Date(endDateString).getTime();
+      let startDate = new Date(startDateString).getTime();
+      if ((startDate - endDate) < 0) {
+        return true;
+      } else {
+        return false
+      }
   }
 }
 

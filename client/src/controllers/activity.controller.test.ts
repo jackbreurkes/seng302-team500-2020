@@ -185,18 +185,23 @@ test('expect "" to be an invalid start date', () => {
 
 // End date is in valid format and is after start date
 test.each([
-  ["2021-12-25", "2022-02-27"],
-  ["2021-02-25", "2022-02-18"],
-])("expect %s to be valid end date", (startDate, endDate) => {
-  expect(activityController.isValidEndDate(startDate, endDate)).toBe(true);
+  ["2021-12-25", "2022-02-27", "12:00", "12:00"],
+  ["2021-02-25", "2022-02-18", "12:00", "11:59"],
+  ["2021-02-25", "2021-02-25", "12:00", "12:01"],
+  ["2021-02-25", "2021-02-25", "12:00", "13:00"],
+])("expect %s to be valid end date", (startDate, endDate, startTime, endTime) => {
+  expect(activityController.isValidEndDate(startDate, endDate, startTime, endTime)).toBe(true);
 });
 
 // End date is in valid format and is before start date
 test.each([
-  ["2022-12-25", "2021-02-27"],
-  ["2022-02-25", "2021-02-18"],
-])("expect %s to be an invalid end date", (startDate, endDate) => {
-  expect(activityController.isValidEndDate(startDate, endDate)).toBe(false);
+  ["2022-12-25", "2021-02-27", "12:00", "12:00"],
+  ["2022-02-25", "2021-02-18", "12:00", "12:00"],
+  ["2021-02-25", "2021-02-25", "12:00", "11:59"],
+  ["2021-02-25", "2021-02-25", "12:00", "11:00"],
+  ["2022-02-25", "2021-02-25", "12:00", "12:01"],
+])("expect %s to be an invalid end date", (startDate, endDate, startTime, endTime) => {
+  expect(activityController.isValidEndDate(startDate, endDate, startTime, endTime)).toBe(false);
 });
 
 // Time is in valid format
