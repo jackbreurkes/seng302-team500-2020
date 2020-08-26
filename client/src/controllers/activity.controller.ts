@@ -274,11 +274,7 @@ export function isFutureDate(dateString: string): boolean {
   if (todayString === dateString) {
     return true;
   } else {
-    if ((today.getTime() - date) < 0) {
-      return true;
-    } else {
-      return false;
-    }
+    return (today.getTime() < date)
   }
 }
 
@@ -428,24 +424,23 @@ export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
 }
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
+/**
+ * Checks if end date and time is after start date and time.
+ * @param startDateString start date as a string
+ * @param endDateString end date as a string
+ * @param startTime start time as a string
+ * @param endTime end time as a string
+ */
 export function isValidEndDate(startDateString: string, endDateString: string, startTime: string, endTime: string): boolean 
 {
   if (startDateString === endDateString) {
     let endDate = new Date(endDateString).setHours(parseInt(endTime.slice(0, 2), 10), parseInt(endTime.slice(3), 10));
     let startDate = new Date(startDateString).setHours(parseInt(startTime.slice(0, 2), 10), parseInt(startTime.slice(3), 10));
-    if ((startDate < endDate) ) {
-      return true;
-    } else {
-      return false
-    }
+    return startDate < endDate;
   } else {
       let endDate = new Date(endDateString).getTime();
       let startDate = new Date(startDateString).getTime();
-      if ((startDate - endDate) < 0) {
-        return true;
-      } else {
-        return false
-      }
+      return startDate < endDate;
   }
 }
 

@@ -200,6 +200,7 @@ test.each([
   ["2021-02-25", "2021-02-25", "12:00", "11:59"],
   ["2021-02-25", "2021-02-25", "12:00", "11:00"],
   ["2022-02-25", "2021-02-25", "12:00", "12:01"],
+  ["2022-02-25", "2021-02-25", "12:00", "12:00"],
 ])("expect %s to be an invalid end date", (startDate, endDate, startTime, endTime) => {
   expect(activityController.isValidEndDate(startDate, endDate, startTime, endTime)).toBe(false);
 });
