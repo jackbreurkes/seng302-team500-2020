@@ -106,8 +106,7 @@
                 <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
-                <!--TODO Menu for this plus make sure admin knows this will create it on their behalf-->
-                  <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
+                  <v-btn @click="createActivityClicked" outlined>Create Activity {{editingAsAdmin ? "as " + currentUser.firstname : ""}}</v-btn>
                 </div>
               </v-toolbar>
   
@@ -156,11 +155,9 @@ import {
   getDurationActivities,
   getContinuousActivities,
 } from '../controllers/activity.controller';
-import { removeAdminMode } from "../services/properties.service";
 import { clearAuthInfo } from "../services/auth.service";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
-import * as PropertiesService from '../services/properties.service';
 import * as authService from "../services/auth.service"
 
 // app Vue instance
@@ -175,6 +172,7 @@ const Homepage = Vue.extend({
       currentProfileId: NaN as number,
       currentUser: {} as UserApiFormat,
       currentlyHasAuthority: false as boolean,
+      editingAsAdmin: false as boolean,
       confirmDeleteModal: false,
       // newEmail: "",
       // email: "",
@@ -230,8 +228,11 @@ const Homepage = Vue.extend({
     this.currentProfileId = profileId;
     
     let myProfileId = authService.getMyUserId()
-    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
+    if (myProfileId == profileId) {
       this.currentlyHasAuthority = true;
+    } else if (authService.isAdmin()) {
+      this.currentlyHasAuthority = true;
+      this.editingAsAdmin = true;
     }
 
     fetchProfileWithId(profileId)
@@ -303,7 +304,6 @@ const Homepage = Vue.extend({
         .then(() => {
           if (authService.getMyUserId() == this.currentProfileId) {
             //if we're editing ourself
-            removeAdminMode();
             clearAuthInfo();  
             this.$router.push({ name: "register" });  
           } else {

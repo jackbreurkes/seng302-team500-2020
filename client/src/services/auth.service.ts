@@ -21,9 +21,16 @@ export function getMyToken(): string | null {
 /**
  * returns the currently logged in user's permission level, or 0 if not found
  */
-export function getMyPermissionLevel(): number {
+function getMyPermissionLevel(): number {
   let level = parseInt(localStorage.getItem("permissionLevel") || "NaN");
   return isNaN(level) ? 0 : level; // default permission level is zero
+}
+
+/**
+ * returns true if the current permission level is suitable for an admin, false otherwise.
+ */
+export function isAdmin(): boolean {
+  return getMyPermissionLevel() >= 120;
 }
 
 /**

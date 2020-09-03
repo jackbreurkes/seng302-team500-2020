@@ -96,7 +96,6 @@ import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
 import * as auth from "../services/auth.service";
-import * as properties from "../services/properties.service";
 import * as adminController from "../controllers/admin.controller";
 import { deleteUserAccount } from "../controllers/profile.controller"
 
@@ -132,7 +131,7 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: async function() {
-    if (properties.getAdminMode()) {
+    if (auth.isAdmin()) {
       this.isAdmin = true;
     }
     await this.search(this.searchTerms);
@@ -210,7 +209,6 @@ const UserSearchResults = Vue.extend({
       deleteUserAccount(deleteId)
         .then(() => {
           if (auth.getMyUserId() == deleteId) {
-            properties.removeAdminMode();
             auth.clearAuthInfo();  
             this.$router.push({ name: "register" });  
           } else {
