@@ -65,9 +65,8 @@ export async function verifyUserId() {
     return false;
   }
 
-  let res;
   try {
-    res = await instance.get("whoami");
+    let res = await instance.get("whoami");
     userIdIsValid = res.data.profile_id === getMyUserId();
   } catch (e) {
     if (!e.response) { // the server did not respond
