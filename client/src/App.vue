@@ -1,87 +1,96 @@
 <template>
   <div id="app">
     <v-app>
-
-      <v-app-bar color="primary" dark app clipped-left:true-value="" style="z-index: 1000;">
-        <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
-        <v-toolbar-title>Intitulada </v-toolbar-title>
+      <v-app-bar color="primary" dark app clipped-left:true-value style="z-index: 1000;">
+        <v-app-bar-nav-icon @click="burgerSelected" :color="this.burgerColour" v-if="showNavBar()"></v-app-bar-nav-icon>
+        <v-toolbar-title>Intitulada</v-toolbar-title>
         <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
 
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
-        </div>  
+        </div>
       </v-app-bar>
-      <v-navigation-drawer 
-          :expand-on-hover= this.collapsible
-          :mini-variant = this.smallForm
-          :right= this.right
-          color = "rgba(30,30,30, 0.95)"
-          absolute
-          dark
-          overlay-opacity= 0.7
-          fixed
-          style="position:fixed; z-index: 999;"
-          :permanent = "true" 
-          v-if="showNavBar()"
+      <v-navigation-drawer
+        :expand-on-hover="this.collapsible"
+        :mini-variant="this.smallForm"
+        :right="this.right"
+        color = "rgba(30,30,30, 0.95)"
+        absolute
+        dark
+        overlay-opacity="0.7"
+        fixed
+        style="position:fixed; z-index: 999;"
+        :permanent="true"
+        v-if="showNavBar()"
+      >
+        <v-list
+          dense
+          nav
+          class="py-0"
         >
-          <v-list
-            dense
-            nav
-            class="py-0"
-          >
-            <v-list-item two-line :class="this.smallForm && 'px-0'">
-              <v-list-item-avatar> 
-                <img src="">
-                <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
-              </v-list-item-avatar>
-  
-              <v-list-item-content>
-                <v-list-item-title>Application</v-list-item-title>
-                <v-list-item-subtitle>Subtext</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-  
-            <v-divider></v-divider>
-  
-            <v-list-item
+          <v-list-item two-line :class="this.smallForm && 'px-0'">
+            <v-list-item-avatar>
+              <img src="">
+              <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
+            </v-list-item-avatar>
+
+            <v-list-item-content>
+              <v-list-item-title>Application</v-list-item-title>
+              <v-list-item-subtitle>Subtext</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item
               v-for="item in items"
               :key="item.title"
               link
               @click="goTo(item.pathing)"
             >
-              <v-list-item-icon>
-                <v-icon>{{ item.icon }}</v-icon>
-              </v-list-item-icon>
-  
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-navigation-drawer >
-      <v-content           
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer >
+      <v-content
       :class= "[computedPadding]">
         <transition name="page-transition">
-          <router-view></router-view>
+            <splitpanes class="default-theme" horizontal>
+            <pane min-size="20" max-size="80">
+              <router-view></router-view>
+            </pane>
+            <pane max-size="80">
+              <span>3</span>
+            </pane>
+          </splitpanes>
         </transition>
       </v-content>
-
     </v-app>
   </div>
 </template>
 
 <script lang="ts">
-  import Vue from "vue"
-  import {
-    logoutCurrentUser,
-    fetchCurrentUser
-  } from "./controllers/profile.controller";
-  import * as auth from "./services/auth.service";
+import Vue from "vue"
+import {
+  logoutCurrentUser,
+  fetchCurrentUser
+} from "./controllers/profile.controller";
+import * as auth from "./services/auth.service";
+
+import { Splitpanes, Pane } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
 
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
+    components: { Splitpanes, Pane },
     // app initial state
     data: () => {
       return {
@@ -184,5 +193,20 @@
 </script>
 
 <style>
-  [v-cloak] { display: none; }
+[v-cloak] {
+  display: none;
+}
+
+.splitpanes {
+  height: calc(100vh - 64px); /* navbar is 64px */
+}
+
+body {
+  overflow-y: hidden;
+}
+
+.splitpanes__pane {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
 </style>
