@@ -37,6 +37,7 @@
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
     "jest": "^25.5.4",
+    "jest-localstorage-mock": "^2.4.3",
     "jest-sonar-reporter": "^2.0.0",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",
@@ -85,7 +86,8 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "testResultsProcessor": "jest-sonar-reporter"
+    "testResultsProcessor": "jest-sonar-reporter",
+    "setupFiles": ["jest-localstorage-mock"]
   },
   "jestSonar": {
     "reportPath": "coverage",

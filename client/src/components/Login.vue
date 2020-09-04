@@ -100,7 +100,7 @@
             return
           }
           this.errorMessage = "Logging you in...";
-          if (auth.getMyPermissionLevel() === 0) {
+          if (!auth.isAdmin()) {
             this.$router.push({ name: "profilePage", params: {profileId: myUserId.toString()} })
               .catch((err) => {
                 console.error(err);

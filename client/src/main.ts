@@ -16,7 +16,6 @@ import VueLogger from "vuejs-logger";
 import VueRouter from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
-import { removeAdminMode } from './services/properties.service';
 
 const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
 
@@ -92,8 +91,7 @@ router.beforeEach((to, from, next) => {
 
   //checking if route is going to admin dashboard, and if it is and 
   //the permission level is too low then they will be redirected
-  if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
-    removeAdminMode();
+  if(to.name === "adminDashboard" && !auth.isAdmin()) {
     next({name: "homefeed"});
     return;
   }

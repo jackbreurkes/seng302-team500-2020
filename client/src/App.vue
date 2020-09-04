@@ -77,7 +77,6 @@
     logoutCurrentUser,
     fetchCurrentUser
   } from "./controllers/profile.controller";
-  import * as PropertiesService from './services/properties.service';
   import * as auth from "./services/auth.service";
 
   // app Vue instance
@@ -104,7 +103,7 @@
     
     created() {
       this.updateUserData();
-      this.loadNavInfo();
+      this.updateNavInfo();
     },
     watch: {
       $route() {
@@ -113,7 +112,7 @@
     },
 
     methods: {
-      loadNavInfo: function() {
+      updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + auth.getMyUserId()},
@@ -121,13 +120,13 @@
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + auth.getMyUserId() + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
           ]
-          if (auth.getMyPermissionLevel() >= 120) {
+          if (auth.isAdmin()) {
             this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
           }
 
       },
       goTo: function(pathing : string) {
-        this.loadNavInfo(); // updates user id information
+        this.updateNavInfo(); // updates user id information in path links
         if(!(pathing == "LOGOUT")){
           this.$router.push(pathing).catch(() => {}); // ignore routing errors from navbar
           }
@@ -167,15 +166,15 @@
       updateUserData: function() {
         fetchCurrentUser().then((user) => {
           this.isLoggedIn = true;
-          if (/*(!user || !user.firstname) && */auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode()) {
-            this.currentName = "Admin";
-          } else {
-            this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          this.currentName = user.nickname ? user.nickname : user.firstname + " " + user.lastname;
+          if (auth.isAdmin()) {
+            this.currentName += " (Admin)";
           }
+          this.updateNavInfo()
         })
         .catch(() => {
-          this.isLoggedIn = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode();
-          this.currentName = auth.getMyPermissionLevel() >= 120 && PropertiesService.getAdminMode() ? "Admin" : "";
+          this.isLoggedIn = auth.isAdmin();
+          this.currentName = auth.isAdmin() ? "Admin" : "";
         });
       }
     }
