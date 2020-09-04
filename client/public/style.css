@@ -396,7 +396,7 @@ html .clear-checked:active {
     text-decoration: underline;
 }
 
-body {
+#main-pane {
     background: url('background.jpg');
     background-repeat: no-repeat;
     background-attachment: fixed;

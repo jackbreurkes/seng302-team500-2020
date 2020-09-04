@@ -57,16 +57,36 @@
               <v-list-item-title>{{ item.title }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+
+          <!-- map toggle -->
+          <v-list-item
+              link
+              @click="setDisplayMap(!displayMap)"
+              class="mt-10"
+            >
+            <v-list-item-icon>
+              <v-icon>{{ displayMap ? "mdi-map-minus" : "mdi-map-search" }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ displayMap ? "Hide Map" : "Show Map" }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          
         </v-list>
       </v-navigation-drawer >
       <v-content
       :class= "[computedPadding]">
         <transition name="page-transition">
-            <splitpanes class="default-theme" horizontal>
-            <pane min-size="20" max-size="80">
+          <splitpanes
+              class="default-theme"
+              horizontal
+              @resize="mapPaneSize = 100 - $event[0].size"
+          >
+            <pane id="main-pane" min-size="20">
               <router-view></router-view>
             </pane>
-            <pane max-size="80">
+            <pane id="map-pane" :size="mapPaneSize" min-size="20" v-if="displayMap">
               <span>3</span>
             </pane>
           </splitpanes>
@@ -101,7 +121,9 @@ import "splitpanes/dist/splitpanes.css";
         right: false,
         items: [] as any,
         isLoggedIn: false,
-        currentName: ""
+        currentName: "",
+        displayMap: false,
+        mapPaneSize: 30,
       }
     },
       computed: {
@@ -121,6 +143,12 @@ import "splitpanes/dist/splitpanes.css";
     },
 
     methods: {
+      /**
+       * sets whether the map pane should be displayed. 
+       */
+      setDisplayMap(display: boolean) {
+        this.displayMap = display;
+      },
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
@@ -203,6 +231,11 @@ import "splitpanes/dist/splitpanes.css";
 
 body {
   overflow-y: hidden;
+}
+
+.map-fab {
+  position: absolute;
+  bottom: 0px;
 }
 
 .splitpanes__pane {
