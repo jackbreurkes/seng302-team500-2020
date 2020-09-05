@@ -56,6 +56,8 @@ Running on: http://localhost:9499/
 
 These can be installed automatically with `npm install` while inside the client directory
 
+Associated licenses can be found in client/LICENSE.md
+
 ##### Server (Backend/API)
 - [spring-boot-starter-data-jpa](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-starter-data-jpa)
 - [spring-boot-starter-data-rest](https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-starter-data-rest)
@@ -65,6 +67,7 @@ These can be installed automatically with `npm install` while inside the client 
 
 These can be installed automatically with `./gradlew --refresh-dependencies` while inside the server directory
 
+Associated licenses can be found in server/LICENSE.md
 
 ### Todo
 - Add team name into `build.gradle` and `package.json`
