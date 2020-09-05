@@ -14,14 +14,12 @@
       <v-navigation-drawer
         :expand-on-hover="this.collapsible"
         :mini-variant="this.smallForm"
-        :right="this.right"
-        color = "rgba(30,30,30, 0.95)"
-        absolute
+        color="rgba(30,30,30, 0.95)"
         dark
         overlay-opacity="0.7"
         fixed
-        style="position:fixed; z-index: 999;"
-        :permanent="true"
+        style="z-index: 999;"
+        permanent
         v-if="showNavBar()"
       >
         <v-list
@@ -72,22 +70,38 @@
               <v-list-item-title>{{ displayMap ? "Hide Map" : "Show Map" }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+
+          <!-- split direction toggle -->
+          <v-list-item
+              v-if="displayMap"
+              link
+              @click="setHorizontalSplit(!horizontalSplit)"
+            >
+            <v-list-item-icon>
+              <v-icon>{{ horizontalSplit ? "mdi-view-split-horizontal" : "mdi-view-split-vertical" }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>Split Direction</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
           
         </v-list>
       </v-navigation-drawer >
+
       <v-content
-      :class= "[computedPadding]">
+      :class="showNavBar() ? 'nav-drawer-margin' : ''">
         <transition name="page-transition">
           <splitpanes
               class="default-theme"
-              horizontal
+              :horizontal="horizontalSplit"
               @resize="mapPaneSize = 100 - $event[0].size"
           >
             <pane id="main-pane" min-size="20">
               <router-view></router-view>
             </pane>
             <pane id="map-pane" :size="mapPaneSize" min-size="20" v-if="displayMap">
-              <span>3</span>
+              <span>MAP PANE</span>
             </pane>
           </splitpanes>
         </transition>
@@ -103,6 +117,7 @@ import {
   fetchCurrentUser
 } from "./controllers/profile.controller";
 import * as auth from "./services/auth.service";
+import * as preferences from "./services/preferences.service"
 
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
@@ -124,18 +139,16 @@ import "splitpanes/dist/splitpanes.css";
         currentName: "",
         displayMap: false,
         mapPaneSize: 30,
+        horizontalSplit: true,
       }
     },
-      computed: {
-    computedPadding () {
-      return `p${'l'}-${12}`
-    },
-  },
     
     created() {
       this.updateUserData();
       this.updateNavInfo();
+      this.horizontalSplit = preferences.getPrefersHorizontalSplit();
     },
+
     watch: {
       $route() {
         this.updateUserData();
@@ -149,6 +162,15 @@ import "splitpanes/dist/splitpanes.css";
       setDisplayMap(display: boolean) {
         this.displayMap = display;
       },
+
+      /**
+       * sets whether the screen should be split horizontally.
+       */
+      setHorizontalSplit(horizontal: boolean) {
+        this.horizontalSplit = horizontal;
+        preferences.setPrefersHorizontalSplit(horizontal);
+      },
+
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
@@ -191,6 +213,7 @@ import "splitpanes/dist/splitpanes.css";
         }
       },
       logoutButtonClicked: function() {
+        this.displayMap = false;
         logoutCurrentUser()
           .then(() => {
             this.$router.push({ name: "login" });
@@ -225,6 +248,10 @@ import "splitpanes/dist/splitpanes.css";
   display: none;
 }
 
+.nav-drawer-margin {
+  margin-left: 56px; 
+}
+
 .splitpanes {
   height: calc(100vh - 64px); /* navbar is 64px */
 }
@@ -239,7 +266,7 @@ body {
 }
 
 .splitpanes__pane {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 </style>
