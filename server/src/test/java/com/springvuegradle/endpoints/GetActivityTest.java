@@ -184,7 +184,7 @@ public class GetActivityTest {
 
         List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(4L, request);
 
-        assertEquals(0, profiles.size());
+        assertEquals(1, profiles.size()); //1 because the creator is always participating in their activity
     }
 
     @Test
@@ -210,7 +210,7 @@ public class GetActivityTest {
 
         List<ProfileResponse> profiles = activitiesController.getProfilesInvolvedWithActivity(2L, request);
 
-        assertNotEquals(0, profiles.size());
+        assertEquals(2, profiles.size(), "Activity should have 2 people involved: the creator and the person participating");
     }
 
 
