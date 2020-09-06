@@ -6,11 +6,11 @@ const prefersHorizontalSplitKey = "prefersHorizontalSplit"
 
 /**
  * returns whether the user prefers the map pane to be split horizontally or vertically.
- * defaults to true if no preference has been stored.
+ * defaults to true if no preference has been stored or an invalid preference is stored.
  */
 export function getPrefersHorizontalSplit(): boolean {
-    let horizontal = localStorage.getItem(prefersHorizontalSplitKey) || "true";
-    return horizontal === "true";
+    let horizontal = localStorage.getItem(prefersHorizontalSplitKey);
+    return horizontal !== "false";
 }
 
 /**

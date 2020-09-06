@@ -88,7 +88,9 @@
       "/node_modules/"
     ],
     "testResultsProcessor": "jest-sonar-reporter",
-    "setupFiles": ["jest-localstorage-mock"]
+    "setupFiles": [
+      "jest-localstorage-mock"
+    ]
   },
   "jestSonar": {
     "reportPath": "coverage",
