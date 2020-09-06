@@ -63,9 +63,6 @@ import com.springvuegradle.util.FormValidator;
 
 /**
  * Controller for all endpoints relating to activities
- * @author Michael Freeman
- * @author Jack van Heugten Breurkes
- * @author James Auman
  */
 @RestController
 public class ActivitiesController {
