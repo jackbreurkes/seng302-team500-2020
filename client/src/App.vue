@@ -96,12 +96,13 @@
               class="default-theme"
               :horizontal="horizontalSplit"
               @resize="mapPaneSize = 100 - $event[0].size"
+              @pane-maximize="displayMap = true"
           >
-            <pane id="main-pane" min-size="20">
+            <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
               <router-view></router-view>
             </pane>
-            <pane id="map-pane" :size="mapPaneSize" min-size="20" v-if="displayMap">
-              <span>MAP PANE</span>
+            <pane id="map-pane" :size="mapPaneSize">
+              <div id="map" ref="map"></div>
             </pane>
           </splitpanes>
         </transition>
@@ -138,8 +139,9 @@ import "splitpanes/dist/splitpanes.css";
         isLoggedIn: false,
         currentName: "",
         displayMap: false,
-        mapPaneSize: 30,
+        mapPaneSize: 0,
         horizontalSplit: true,
+        map: null,
       }
     },
     
@@ -149,9 +151,24 @@ import "splitpanes/dist/splitpanes.css";
       this.horizontalSplit = preferences.getPrefersHorizontalSplit();
     },
 
+    mounted() {
+      // @ts-ignore next line
+      this.map = new window.google.maps.Map(this.$refs["map"], {
+        center: {
+          lat: -43.525, 
+          lng: 172.58
+        },
+        zoom: 4,
+        streetViewControl: false
+      })
+    },
+
     watch: {
       $route() {
         this.updateUserData();
+      },
+      mapPaneSize: function(newVal) {
+        this.displayMap = newVal > 0.1;
       }
     },
 
@@ -160,7 +177,11 @@ import "splitpanes/dist/splitpanes.css";
        * sets whether the map pane should be displayed. 
        */
       setDisplayMap(display: boolean) {
-        this.displayMap = display;
+        if (display) {
+          this.mapPaneSize = 30;
+        } else {
+          this.mapPaneSize = 0.00001; // setting to zero doesn't work, no idea why
+        }
       },
 
       /**
@@ -268,5 +289,11 @@ body {
 .splitpanes__pane {
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  background: grey;
 }
 </style>
