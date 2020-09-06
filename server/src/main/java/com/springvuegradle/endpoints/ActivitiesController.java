@@ -1,9 +1,57 @@
 package com.springvuegradle.endpoints;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.*;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
+import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityParticipantResult;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityOutcomeRepository;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
@@ -12,16 +60,6 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
 import com.springvuegradle.util.FormValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Controller for all endpoints relating to activities
@@ -586,23 +624,36 @@ public class ActivitiesController {
      * @param activityId The activity ID
      * @param request HTTPServletRequest corresponding to the user's request
      * @return an HTTP ResponseEntity with the HTTP response containing all participants/organisers a part of an activity
-     * @throws UserNotAuthenticatedException
+     * @throws UserNotAuthenticatedException If the user is not authenticated
+     * @throws RecordNotFoundException If the activity ID does not exist
      */
     @GetMapping("/activities/{activityId}/involved")
     @CrossOrigin
     public List<ProfileResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
-                                                         HttpServletRequest request) throws UserNotAuthenticatedException {
+                                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        List<User> users = new ArrayList<User>(); // The result list of participants/organisers
-
-        if (activityRepository.getOne(activityId) != null) {
-            users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId);
+        Activity activity = null;
+        Profile creator = null;
+        try {
+        	activity = activityRepository.getOne(activityId);
+        	if (activity == null) {
+        		throw new EntityNotFoundException();
+        	}
+        	creator = activity.getCreator();
+        } catch (EntityNotFoundException e) {
+        	throw new RecordNotFoundException("Given activity ID does not exist");
         }
+        
+        List<User> users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId); // The result list of participants/organisers
 
         List<ProfileResponse> responses = new ArrayList<>();
+        responses.add(new ProfileResponse(creator, emailRepository));
+        
         for (User user : users) {
-            responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        	if (user.getUserId() != creator.getUser().getUserId()) {
+        		responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        	}
         }
 
         return responses;

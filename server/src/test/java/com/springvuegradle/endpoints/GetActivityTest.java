@@ -173,7 +173,7 @@ public class GetActivityTest {
     }
 
     @Test
-    void testGetActivityParticipantsWithNoParticipants() throws UserNotAuthenticatedException {
+    void testGetActivityParticipantsWithNoParticipants() throws UserNotAuthenticatedException, RecordNotFoundException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
@@ -188,7 +188,7 @@ public class GetActivityTest {
     }
 
     @Test
-    void testGetActivityParticipantsReturnsOne() throws UserNotAuthenticatedException {
+    void testGetActivityParticipantsReturnsOne() throws UserNotAuthenticatedException, RecordNotFoundException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
