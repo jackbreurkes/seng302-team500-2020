@@ -17,11 +17,11 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-chip v-if="currentProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
+                  <v-chip v-if="currentUsersProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
                   <v-chip v-if="organiser" outlined class="mr-1">Organiser</v-chip>
                   <v-chip v-if="following" outlined class="mr-1">Following</v-chip>
                   <v-chip v-if="participating" outlined class="mr-1">Participating</v-chip>
-                  <v-menu v-if="currentProfileId === creatorId || organiser" bottom left offset-y>
+                  <v-menu v-if="currentUsersProfileId === creatorId || organiser" bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         dark
@@ -39,7 +39,7 @@
                       >
                         <v-list-item-title>Edit Activity</v-list-item-title>
                       </v-list-item>
-                      <v-list-item v-if="currentProfileId === creatorId" @click="confirmDeleteModal = true">
+                      <v-list-item v-if="currentUsersProfileId === creatorId" @click="confirmDeleteModal = true">
                         <v-dialog v-model="confirmDeleteModal" width="290">
                           <template v-slot:activator="{ on }">
                             <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
@@ -278,7 +278,7 @@ const Activity = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
-      currentProfileId: NaN as number,
+      currentUsersProfileId: NaN as number,
       activityId: NaN as number,
       creatorId: NaN as number,
       activity: [] as CreateActivityRequest,
@@ -320,7 +320,7 @@ const Activity = Vue.extend({
     if (myProfileId == null) {
       this.$router.push('login');
     } else {
-      this.currentProfileId = myProfileId;
+      this.currentUsersProfileId = myProfileId;
     }
 
     const activityId: number = parseInt(this.$route.params.activityId);
@@ -340,18 +340,22 @@ const Activity = Vue.extend({
         if (this.activity.num_participants != null) {
             this.participants = this.activity.num_participants;
         }
-        getIsFollowingActivity(this.currentProfileId, this.activityId)
+        getIsFollowingActivity(this.currentUsersProfileId, this.activityId)
         .then((booleanResponse) => {
           this.following = booleanResponse;
         })
-        activityController.getIsParticipating(this.currentProfileId, this.activityId)
+        activityController.getIsParticipating(this.currentUsersProfileId, this.activityId)
         .then((booleanResponse) => {
           this.participating = booleanResponse;
         })
-        activityController.getIsOrganising(this.currentProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.organiser = booleanResponse;
-        })
+        if (this.creatorId == this.currentUsersProfileId) {
+          this.organiser = true;
+        } else {
+          activityController.getIsOrganising(this.currentUsersProfileId, this.activityId)
+          .then((booleanResponse) => {
+            this.organiser = booleanResponse;
+          })
+        }
 
         let outcome_array = this.activity.outcomes as ActivityOutcomes[];
         for (let outcome_index in outcome_array) {
@@ -363,7 +367,7 @@ const Activity = Vue.extend({
         }
       })
       .then(() => {
-        activityController.getParticipantResults(this.currentProfileId, this.activityId)
+        activityController.getParticipantResults(this.currentUsersProfileId, this.activityId)
         .then((results) => {
           let participantResults = {} as Record<number, ParticipantResultDisplay>;
           for (let index in results) {
@@ -404,7 +408,7 @@ const Activity = Vue.extend({
     toggleFollowingActivity: function() {
       if (this.following) {
         this.followers = this.followers - 1;
-        unfollowActivity(this.currentProfileId, this.activityId)
+        unfollowActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.following = false
         })
@@ -413,7 +417,7 @@ const Activity = Vue.extend({
         })
       } else {
           this.followers = this.followers + 1;
-          followActivity(this.currentProfileId, this.activityId)
+          followActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.following = true
         })
@@ -426,11 +430,11 @@ const Activity = Vue.extend({
     toggleParticipation: async function() {
       if (!this.participating) {
         this.organiser = false;
-        await activityController.participateInActivity(this.currentProfileId, this.activityId);
+        await activityController.participateInActivity(this.currentUsersProfileId, this.activityId);
         this.participating = true;
         this.participants = this.participants + 1;
       } else {
-        await activityController.removeActivityRole(this.currentProfileId, this.activityId)
+        await activityController.removeActivityRole(this.currentUsersProfileId, this.activityId)
         this.participating = false;
         this.participants = this.participants - 1;
       }
@@ -446,7 +450,7 @@ const Activity = Vue.extend({
     /** Delete the activity */
     deleteActivity: async function() {
       this.confirmDeleteModal = false;
-      activityController.deleteActivity(this.currentProfileId, this.activityId)
+      activityController.deleteActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.$router.back();
         })
@@ -475,7 +479,7 @@ const Activity = Vue.extend({
       let completedDate = this.participantOutcome[outcomeId].date;
       let completedTime = this.participantOutcome[outcomeId].time;
       let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
-      if (this.currentProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
+      if (this.currentUsersProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
         await this.toggleParticipation();
       }
 
