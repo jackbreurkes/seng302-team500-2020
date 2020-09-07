@@ -1,5 +1,9 @@
 package com.springvuegradle.endpoints;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -17,6 +21,9 @@ import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.requests.UpdateRoleRequest;
 import com.springvuegradle.util.FormValidator;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -476,7 +483,41 @@ public class UserProfileController {
     private ProfileResponse view(long id) throws RecordNotFoundException {
         if (profileRepository.existsById(id)) {
             Profile profile = profileRepository.findById(id).get();
-            return new ProfileResponse(profile, emailRepository);
+            ProfileResponse response = new ProfileResponse(profile, emailRepository);
+
+            // Calling the Open Street Map API to get the latitude and longitude of the user location and saving it
+            try {
+                URL url = new URL("https://nominatim.openstreetmap.org/search?city=" + profile.getLocation().getCity().replace(" ", "+") +
+                        "&country=" + profile.getLocation().getCountry().replace(" ", "+") + "&format=json&limit=1");
+
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+
+                // Reading the response
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer content = new StringBuffer();
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+                in.close();
+
+                con.disconnect();
+
+                JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+                JSONArray result = (JSONArray) parser.parse(content.toString()); // It always returns a JSONArray even though there's only ever one
+
+                JSONObject single = (JSONObject) result.get(0);
+                String lat = (String) single.get("lat");
+                String lon = (String) single.get("lon");
+
+                response.setLat(Float.parseFloat(lat));
+                response.setLon(Float.parseFloat(lon));
+            } catch (Exception e) {
+                // Exception is caught when profile doesn't have a location associated with it
+            }
+            return response;
         } else {
             throw new RecordNotFoundException("Profile with id " + id + " not found");
         }
