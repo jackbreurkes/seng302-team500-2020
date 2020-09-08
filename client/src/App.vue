@@ -1,87 +1,131 @@
 <template>
   <div id="app">
     <v-app>
-
-      <v-app-bar color="primary" dark app clipped-left:true-value="" style="z-index: 1000;">
-        <v-app-bar-nav-icon @click="burgerSelected" :color = this.burgerColour v-if="showNavBar()"></v-app-bar-nav-icon> 
-        <v-toolbar-title>Intitulada </v-toolbar-title>
+      <v-app-bar color="primary" dark app clipped-left:true-value style="z-index: 1000;">
+        <v-app-bar-nav-icon @click="burgerSelected" :color="this.burgerColour" v-if="showNavBar()"></v-app-bar-nav-icon>
+        <v-toolbar-title>Intitulada</v-toolbar-title>
         <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
 
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
           Logged in as {{currentName}} <v-btn @click="logoutButtonClicked" outlined>Logout</v-btn>
-        </div>  
+        </div>
       </v-app-bar>
-      <v-navigation-drawer 
-          :expand-on-hover= this.collapsible
-          :mini-variant = this.smallForm
-          :right= this.right
-          color = "rgba(30,30,30, 0.95)"
-          absolute
-          dark
-          overlay-opacity= 0.7
-          fixed
-          style="position:fixed; z-index: 999;"
-          :permanent = "true" 
-          v-if="showNavBar()"
+      <v-navigation-drawer
+        :expand-on-hover="this.collapsible"
+        :mini-variant="this.smallForm"
+        color="rgba(30,30,30, 0.95)"
+        dark
+        overlay-opacity="0.7"
+        fixed
+        style="z-index: 999;"
+        permanent
+        v-if="showNavBar()"
+      >
+        <v-list
+          dense
+          nav
+          class="py-0"
         >
-          <v-list
-            dense
-            nav
-            class="py-0"
-          >
-            <v-list-item two-line :class="this.smallForm && 'px-0'">
-              <v-list-item-avatar> 
-                <img src="">
-                <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
-              </v-list-item-avatar>
-  
-              <v-list-item-content>
-                <v-list-item-title>Application</v-list-item-title>
-                <v-list-item-subtitle>Subtext</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-  
-            <v-divider></v-divider>
-  
-            <v-list-item
+          <v-list-item two-line :class="this.smallForm && 'px-0'">
+            <v-list-item-avatar>
+              <img src="">
+              <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
+            </v-list-item-avatar>
+
+            <v-list-item-content>
+              <v-list-item-title>Application</v-list-item-title>
+              <v-list-item-subtitle>Subtext</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-list-item
               v-for="item in items"
               :key="item.title"
               link
               @click="goTo(item.pathing)"
             >
-              <v-list-item-icon>
-                <v-icon>{{ item.icon }}</v-icon>
-              </v-list-item-icon>
-  
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-navigation-drawer >
-      <v-content           
-      :class= "[computedPadding]">
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <!-- map toggle -->
+          <v-list-item
+              link
+              @click="setDisplayMap(!displayMap)"
+              class="mt-10"
+            >
+            <v-list-item-icon>
+              <v-icon>{{ displayMap ? "mdi-map-minus" : "mdi-map-search" }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ displayMap ? "Hide Map" : "Show Map" }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <!-- split direction toggle -->
+          <v-list-item
+              v-if="displayMap"
+              link
+              @click="setHorizontalSplit(!horizontalSplit)"
+            >
+            <v-list-item-icon>
+              <v-icon>{{ horizontalSplit ? "mdi-view-split-horizontal" : "mdi-view-split-vertical" }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>Split Direction</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          
+        </v-list>
+      </v-navigation-drawer >
+
+      <v-content
+      :class="showNavBar() ? 'nav-drawer-margin' : ''">
         <transition name="page-transition">
-          <router-view></router-view>
+          <splitpanes
+              class="default-theme"
+              :horizontal="horizontalSplit"
+              @resize="mapPaneSize = 100 - $event[0].size"
+          >
+            <pane id="main-pane" min-size="20">
+              <router-view></router-view>
+            </pane>
+            <pane id="map-pane" :size="mapPaneSize" min-size="20" v-if="displayMap">
+              <span>MAP PANE</span>
+            </pane>
+          </splitpanes>
         </transition>
       </v-content>
-
     </v-app>
   </div>
 </template>
 
 <script lang="ts">
-  import Vue from "vue"
-  import {
-    logoutCurrentUser,
-    fetchCurrentUser
-  } from "./controllers/profile.controller";
-  import * as auth from "./services/auth.service";
+import Vue from "vue"
+import {
+  logoutCurrentUser,
+  fetchCurrentUser
+} from "./controllers/profile.controller";
+import * as auth from "./services/auth.service";
+import * as preferences from "./services/preferences.service"
+
+import { Splitpanes, Pane } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
 
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
+    components: { Splitpanes, Pane },
     // app initial state
     data: () => {
       return {
@@ -92,19 +136,19 @@
         right: false,
         items: [] as any,
         isLoggedIn: false,
-        currentName: ""
+        currentName: "",
+        displayMap: false,
+        mapPaneSize: 30,
+        horizontalSplit: true,
       }
     },
-      computed: {
-    computedPadding () {
-      return `p${'l'}-${12}`
-    },
-  },
     
     created() {
       this.updateUserData();
       this.updateNavInfo();
+      this.horizontalSplit = preferences.getPrefersHorizontalSplit();
     },
+
     watch: {
       $route() {
         this.updateUserData();
@@ -112,6 +156,21 @@
     },
 
     methods: {
+      /**
+       * sets whether the map pane should be displayed. 
+       */
+      setDisplayMap(display: boolean) {
+        this.displayMap = display;
+      },
+
+      /**
+       * sets whether the screen should be split horizontally.
+       */
+      setHorizontalSplit(horizontal: boolean) {
+        this.horizontalSplit = horizontal;
+        preferences.setPrefersHorizontalSplit(horizontal);
+      },
+
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
@@ -154,6 +213,7 @@
         }
       },
       logoutButtonClicked: function() {
+        this.displayMap = false;
         logoutCurrentUser()
           .then(() => {
             this.$router.push({ name: "login" });
@@ -184,5 +244,29 @@
 </script>
 
 <style>
-  [v-cloak] { display: none; }
+[v-cloak] {
+  display: none;
+}
+
+.nav-drawer-margin {
+  margin-left: 56px; 
+}
+
+.splitpanes {
+  height: calc(100vh - 64px); /* navbar is 64px */
+}
+
+body {
+  overflow-y: hidden;
+}
+
+.map-fab {
+  position: absolute;
+  bottom: 0px;
+}
+
+.splitpanes__pane {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 </style>

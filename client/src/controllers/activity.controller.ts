@@ -40,7 +40,7 @@ export function validateNewActivity(sDate: string, sTime: string, eDate: string,
      if (eDate === "" || eDate === undefined) {
        throw new Error("Duration based activities must have an end date");
      }
-     if (!isValidEndDate(sDate, eDate)) {
+     if (!isValidEndDate(sDate, eDate, sTime, eTime)) {
        throw new Error("End date must be after start date")
      }
      if (!isValidTime(eTime) && eTime != "") {
@@ -255,21 +255,16 @@ export async function getActivitiesByCreator(creatorId: number) {
   return activityModel.getActivitiesByCreator(creatorId);
 }
 
-export const INVALID_DATE_MESSAGE = "Date must be at least one day into the future"
+export const INVALID_DATE_MESSAGE = "Date must be in the future"
 /**
- * Checks if dateString given is a date in the future
- * if it is valid
+ * Checks if dateString given is a date in the future i.e from 00:00 today
  * @param dateString date in question in string form
  * @return true or false
  */
 export function isFutureDate(dateString: string): boolean {
-  let today = new Date().getTime()
-  let date = new Date(dateString).getTime()
-  if ((today - date) < 0) {
-    return true;
-  } else {
-    return false;
-  }
+  let today = new Date().setHours(0);
+  let dateInput = new Date(dateString).getTime();
+  return (today <= dateInput)
 }
 
 /**
@@ -418,15 +413,24 @@ export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
 }
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
-export function isValidEndDate(startDateString: string, endDateString: string): boolean 
+/**
+ * Checks if end date and time is after start date and time.
+ * @param startDateString start date as a string
+ * @param endDateString end date as a string
+ * @param startTime start time as a string, initialised to 00:00 if left empty
+ * @param endTime end time as a string, initialised to 00:00 if left empty
+ */
+export function isValidEndDate(startDateString: string, endDateString: string, startTime: string, endTime: string): boolean 
 {
-  let endDate = new Date(endDateString).getTime();
-  let startDate = new Date(startDateString).getTime();
-  if ((startDate - endDate) < 0) {
-    return true;
-  } else {
-    return false
+  if (startTime === '') {
+    startTime = '00:00'
   }
+  if (endTime === '') { 
+    endTime = '00:00'
+  }
+  let endDate = new Date(endDateString).setHours(parseInt(endTime.slice(0, 2), 10), parseInt(endTime.slice(3), 10));
+  let startDate = new Date(startDateString).setHours(parseInt(startTime.slice(0, 2), 10), parseInt(startTime.slice(3), 10));
+  return startDate < endDate;
 }
 
 export const INVALID_TIME_MESSAGE = "Please enter a valid time"
