@@ -10,6 +10,10 @@
    */
 
   import Vue from 'vue'
+  import { getProfileLocation } from "../controllers/profile.controller";
+  import { getMyUserId } from "../services/auth.service"
+  // eslint-disable-next-line no-unused-vars
+  import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 
   // app Vue instance
   const MapView = Vue.extend({
@@ -22,7 +26,7 @@
       }
     },
 
-    mounted() {
+    mounted: async function() {
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {
@@ -32,6 +36,18 @@
         zoom: 4,
         streetViewControl: false
       })
+      Vue.prototype.$map = this.map; //make this globally accessible
+
+      let userId = getMyUserId();
+      let location = {lat: -43.5948293, lon: 172.4718623} as LocationCoordinatesInterface;
+      if (userId !== null) {
+        location = await getProfileLocation(userId);
+      }
+
+      // @ts-ignore next line
+      this.map.setCenter({lat: location.lat, lng: location.lon})
+      // @ts-ignore next line
+      this.map.setZoom(11);
     },
 
   })
