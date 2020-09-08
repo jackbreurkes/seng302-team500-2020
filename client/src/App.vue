@@ -173,11 +173,12 @@ import "splitpanes/dist/splitpanes.css";
 
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
+            {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
+            {title: 'Search for Activities', icon: '', pathing:"/activities/"},
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + auth.getMyUserId()},
-            {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + auth.getMyUserId() + "/edit"},
-            {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"}, 
+            {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"},
           ]
           if (auth.isAdmin()) {
             this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
