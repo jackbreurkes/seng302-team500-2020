@@ -1,9 +1,57 @@
 package com.springvuegradle.endpoints;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.*;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityChangeLog;
+import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityParticipantResult;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityOutcomeRepository;
+import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.SubscriptionRepository;
+import com.springvuegradle.model.repository.UserActivityRoleRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
@@ -12,22 +60,9 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
 import com.springvuegradle.util.FormValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Controller for all endpoints relating to activities
- * @author Michael Freeman
- * @author Jack van Heugten Breurkes
- * @author James Auman
  */
 @RestController
 public class ActivitiesController {
@@ -62,11 +97,6 @@ public class ActivitiesController {
     @Autowired
     private EmailRepository emailRepository;
 
-
-
-    private int ADMIN_USER_MINIMUM_PERMISSION = 120;
-
-
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     public ActivityResponse putActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
@@ -88,28 +118,7 @@ public class ActivitiesController {
 
         Optional<Activity> activityToEdit = activityRepository.findById(activityId);
 
-        // validate request body
-        if (updateActivityRequest.getActivityName() == null) {
-            throw new InvalidRequestFieldException("missing activity_name field");
-        }
-        if (updateActivityRequest.getActivityName().length() < 4 || updateActivityRequest.getActivityName().length() > 30) {
-            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
-        }
-        if (updateActivityRequest.getActivityTypes() == null) {
-            throw new InvalidRequestFieldException("missing activity_type field");
-        }
-        if (updateActivityRequest.getActivityTypes().size() == 0) {
-            throw new InvalidRequestFieldException("must have at least one activity_type");
-        }
-        if (updateActivityRequest.getDescription() != null && updateActivityRequest.getDescription().length() < 8) {
-            throw new InvalidRequestFieldException("activity description must be at least 8 characters");
-        }
-        if (updateActivityRequest.getLocation() == null) {
-            throw new InvalidRequestFieldException("missing location field");
-        }
-        if(!updateActivityRequest.isContinuous() && updateActivityRequest.isContinuous()){
-            throw new InvalidRequestFieldException("Missing continuous field");
-        }
+        validateActivityRequest(updateActivityRequest);
 
         if(activityToEdit.isEmpty()){
             throw new RecordNotFoundException("Activity does not exist");
@@ -173,16 +182,16 @@ public class ActivitiesController {
         activity.getOutcomes().clear();
         activity.getOutcomes().addAll(outcomesToKeep);
 
-        for (String key : descriptionUnits.keySet()) { // iterate over the new outcomes
-            String description = key;
-            String units = descriptionUnits.get(key);
+        for (Map.Entry<String, String> entrySet : descriptionUnits.entrySet()) { // iterate over the new outcomes
+            String description = entrySet.getKey();
+            String units = entrySet.getValue();
             ActivityOutcome newOutcome = new ActivityOutcome(description, units);
             activity.addOutcome(newOutcome);
             ChangeLog createOutcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(activityId, newOutcome, editingUser);
             changeLogRepository.save(createOutcomeChangeLog);
         }
 
-        if(!updateActivityRequest.isContinuous()){
+        if(Boolean.FALSE.equals(updateActivityRequest.isContinuous())){
             activity.setIsDuration(true);
 
             activity.setStartTime(updateActivityRequest.getStartTime());
@@ -192,6 +201,35 @@ public class ActivitiesController {
         }
         return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
 
+    }
+    
+    /**
+     * Validates create/edit activity requests by throwing an InvalidRequestFieldException when the request is invalid
+     * @param request Request body to validate
+     * @throws InvalidRequestFieldException When the request is invalid. Exception contains a message as to why it failed
+     */
+    private void validateActivityRequest(CreateActivityRequest request) throws InvalidRequestFieldException {
+        if (request.getActivityName() == null) {
+            throw new InvalidRequestFieldException("missing activity_name field");
+        }
+        if (request.getActivityName().length() < 4 || request.getActivityName().length() > 30) {
+            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
+        }
+        if (request.getActivityTypes() == null) {
+            throw new InvalidRequestFieldException("missing activity_type field");
+        }
+        if (request.getActivityTypes().isEmpty()) {
+            throw new InvalidRequestFieldException("must have at least one activity_type");
+        }
+        if (request.isContinuous() == null) {
+            throw new InvalidRequestFieldException("missing continuous field");
+        }
+        if (request.getDescription() != null && request.getDescription().length() < 8) {
+            throw new InvalidRequestFieldException("activity description must be at least 8 characters");
+        }
+        if (request.getLocation() == null) {
+            throw new InvalidRequestFieldException("missing location field");
+        }
     }
 
 
@@ -242,28 +280,7 @@ public class ActivitiesController {
 
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
 
-        // validate request body
-        if (createActivityRequest.getActivityName() == null) {
-            throw new InvalidRequestFieldException("missing activity_name field");
-        }
-        if (createActivityRequest.getActivityName().length() < 4 || createActivityRequest.getActivityName().length() > 30) {
-            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
-        }
-        if (createActivityRequest.getActivityTypes() == null) {
-            throw new InvalidRequestFieldException("missing activity_type field");
-        }
-        if (createActivityRequest.getActivityTypes().size() == 0) {
-            throw new InvalidRequestFieldException("must have at least one activity_type");
-        }
-        if (createActivityRequest.isContinuous() == null) {
-            throw new InvalidRequestFieldException("missing continuous field");
-        }
-        if (createActivityRequest.getDescription() != null && createActivityRequest.getDescription().length() < 8) {
-            throw new InvalidRequestFieldException("activity description must be at least 8 characters");
-        }
-        if (createActivityRequest.getLocation() == null) {
-            throw new InvalidRequestFieldException("missing location field");
-        }
+        validateActivityRequest(createActivityRequest);
 
         List<ActivityType> activityTypeList = new ArrayList<>();
         for (String activityType : createActivityRequest.getActivityTypes()) {
@@ -274,10 +291,8 @@ public class ActivitiesController {
             activityTypeList.add(optionalActivityType.get());
         }
 
-        if (!createActivityRequest.isContinuous()) {
-            if (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null) {
-                throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
-            }
+        if (Boolean.FALSE.equals(createActivityRequest.isContinuous()) && (createActivityRequest.getStartTime() == null || createActivityRequest.getEndTime() == null)) {
+        	throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
         }
 
         Optional<Profile> optionalCreator = profileRepository.findById(profileId);
@@ -304,6 +319,15 @@ public class ActivitiesController {
         return new ActivityResponse(activity, 1L, 1L);
     }
 
+    /**
+     * Get an activity with the profile ID of the creator and the activity ID
+     * @param profileId Owner of the activity requested
+     * @param activityId Activity ID being requested
+     * @param request http request made
+     * @return Response of the activity that was requested
+     * @throws UserNotAuthenticatedException if no authentication information is provided
+     * @throws RecordNotFoundException if the activity does not exist
+     */
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
     @Deprecated
@@ -313,6 +337,9 @@ public class ActivitiesController {
         Profile profile = profileRepository.findById(profileId).orElse(null);
         if (profile == null) {
             throw new RecordNotFoundException("profile " + profileId + " not found");
+        }
+        if (profile.getUser().getUserId() != profileId) {
+        	throw new RecordNotFoundException("activity id "+activityId+" does not belong to profile id "+profileId);
         }
         return response;
     }
@@ -454,7 +481,7 @@ public class ActivitiesController {
 		    throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
         }
 
-		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<Long, RecordOneActivityResultsRequest>();
+		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<>();
 		for (RecordOneActivityResultsRequest outcomeObject : createResultsRequest.getOutcomes()) {
 			if (outcomeIds.containsKey(outcomeObject.getOutcomeId())) {
 				throw new InvalidRequestFieldException("Duplicate outcome ID");
@@ -520,7 +547,9 @@ public class ActivitiesController {
                                                               HttpServletRequest request) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
+        if (!activityRepository.existsById(activityId)) {
+        	throw new RecordNotFoundException("activity " + activityId + " not found");
+        }
 
         List<ActivityParticipantResult> results = activityParticipantResultRepository.getParticipantResultsByUserIdAndActivityId(authId, activityId);
         return results.stream().map(ParticipantResultResponse::new).collect(Collectors.toList());
@@ -586,23 +615,36 @@ public class ActivitiesController {
      * @param activityId The activity ID
      * @param request HTTPServletRequest corresponding to the user's request
      * @return an HTTP ResponseEntity with the HTTP response containing all participants/organisers a part of an activity
-     * @throws UserNotAuthenticatedException
+     * @throws UserNotAuthenticatedException If the user is not authenticated
+     * @throws RecordNotFoundException If the activity ID does not exist
      */
     @GetMapping("/activities/{activityId}/involved")
     @CrossOrigin
     public List<ProfileResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
-                                                         HttpServletRequest request) throws UserNotAuthenticatedException {
+                                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
-        List<User> users = new ArrayList<User>(); // The result list of participants/organisers
-
-        if (activityRepository.getOne(activityId) != null) {
-            users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId);
+        Activity activity = null;
+        Profile creator = null;
+        try {
+        	activity = activityRepository.getOne(activityId);
+        	if (activity == null) {
+        		throw new EntityNotFoundException();
+        	}
+        	creator = activity.getCreator();
+        } catch (EntityNotFoundException e) {
+        	throw new RecordNotFoundException("Given activity ID does not exist");
         }
+        
+        List<User> users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId); // The result list of participants/organisers
 
         List<ProfileResponse> responses = new ArrayList<>();
+        responses.add(new ProfileResponse(creator, emailRepository));
+        
         for (User user : users) {
-            responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        	if (user.getUserId() != creator.getUser().getUserId()) {
+        		responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        	}
         }
 
         return responses;

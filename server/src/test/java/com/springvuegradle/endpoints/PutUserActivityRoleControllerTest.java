@@ -104,6 +104,9 @@ public class PutUserActivityRoleControllerTest {
 
     @Test
     void testCreateUserActivityRoleAsAdmin_Success() throws Exception {
+    	//Mock user activity creator
+        User creator = new User(2L);
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(creator));
         //Mock user
         User self = new User(1L);
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(self));
@@ -113,7 +116,7 @@ public class PutUserActivityRoleControllerTest {
         Mockito.when(userRepository.findById(100L)).thenReturn(Optional.of(admin));
 
         //Mock activity
-        Activity activity = new Activity();
+        Activity activity = new Activity("hello",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),new HashSet<ActivityType>());
         activity.setId(2L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
 
