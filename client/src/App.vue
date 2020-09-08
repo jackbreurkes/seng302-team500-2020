@@ -92,16 +92,18 @@
       <v-content
       :class="showNavBar() ? 'nav-drawer-margin' : ''">
         <transition name="page-transition">
+          <!-- SplitPanes API: https://antoniandre.github.io/splitpanes/ -->
           <splitpanes
               class="default-theme"
               :horizontal="horizontalSplit"
               @resize="mapPaneSize = 100 - $event[0].size"
+              @pane-maximize="displayMap = true"
           >
-            <pane id="main-pane" min-size="20">
+            <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
               <router-view></router-view>
             </pane>
-            <pane id="map-pane" :size="mapPaneSize" min-size="20" v-if="displayMap">
-              <span>MAP PANE</span>
+            <pane id="map-pane" :size="mapPaneSize">
+              <MapView id="map-view"></MapView>
             </pane>
           </splitpanes>
         </transition>
@@ -120,12 +122,13 @@ import * as auth from "./services/auth.service";
 import * as preferences from "./services/preferences.service"
 
 import { Splitpanes, Pane } from "splitpanes";
+import MapView from "./components/MapView.vue";
 import "splitpanes/dist/splitpanes.css";
 
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
-    components: { Splitpanes, Pane },
+    components: { Splitpanes, Pane, MapView },
     // app initial state
     data: () => {
       return {
@@ -138,7 +141,7 @@ import "splitpanes/dist/splitpanes.css";
         isLoggedIn: false,
         currentName: "",
         displayMap: false,
-        mapPaneSize: 30,
+        mapPaneSize: 0,
         horizontalSplit: true,
       }
     },
@@ -152,6 +155,9 @@ import "splitpanes/dist/splitpanes.css";
     watch: {
       $route() {
         this.updateUserData();
+      },
+      mapPaneSize: function(newVal) {
+        this.displayMap = newVal > 0.1;
       }
     },
 
@@ -160,7 +166,11 @@ import "splitpanes/dist/splitpanes.css";
        * sets whether the map pane should be displayed. 
        */
       setDisplayMap(display: boolean) {
-        this.displayMap = display;
+        if (display) {
+          this.mapPaneSize = 30;
+        } else {
+          this.mapPaneSize = 0.00001; // setting to zero doesn't work, no idea why
+        }
       },
 
       /**
@@ -260,13 +270,13 @@ body {
   overflow-y: hidden;
 }
 
-.map-fab {
-  position: absolute;
-  bottom: 0px;
-}
-
 .splitpanes__pane {
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+#map-view {
+  height: 100%;
+  width: 100%;
 }
 </style>
