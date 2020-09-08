@@ -92,6 +92,7 @@
       <v-content
       :class="showNavBar() ? 'nav-drawer-margin' : ''">
         <transition name="page-transition">
+          <!-- SplitPanes API: https://antoniandre.github.io/splitpanes/ -->
           <splitpanes
               class="default-theme"
               :horizontal="horizontalSplit"
@@ -102,7 +103,7 @@
               <router-view></router-view>
             </pane>
             <pane id="map-pane" :size="mapPaneSize">
-              <div id="map" ref="map"></div>
+              <MapView id="map-view"></MapView>
             </pane>
           </splitpanes>
         </transition>
@@ -121,12 +122,13 @@ import * as auth from "./services/auth.service";
 import * as preferences from "./services/preferences.service"
 
 import { Splitpanes, Pane } from "splitpanes";
+import MapView from "./components/MapView.vue";
 import "splitpanes/dist/splitpanes.css";
 
   // app Vue instance
   const app = Vue.extend({
     name: 'app',
-    components: { Splitpanes, Pane },
+    components: { Splitpanes, Pane, MapView },
     // app initial state
     data: () => {
       return {
@@ -141,7 +143,6 @@ import "splitpanes/dist/splitpanes.css";
         displayMap: false,
         mapPaneSize: 0,
         horizontalSplit: true,
-        map: null,
       }
     },
     
@@ -149,18 +150,6 @@ import "splitpanes/dist/splitpanes.css";
       this.updateUserData();
       this.updateNavInfo();
       this.horizontalSplit = preferences.getPrefersHorizontalSplit();
-    },
-
-    mounted() {
-      // @ts-ignore next line
-      this.map = new window.google.maps.Map(this.$refs["map"], {
-        center: {
-          lat: -43.525, 
-          lng: 172.58
-        },
-        zoom: 4,
-        streetViewControl: false
-      })
     },
 
     watch: {
@@ -281,19 +270,13 @@ body {
   overflow-y: hidden;
 }
 
-.map-fab {
-  position: absolute;
-  bottom: 0px;
-}
-
 .splitpanes__pane {
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-#map {
+#map-view {
   height: 100%;
   width: 100%;
-  background: grey;
 }
 </style>
