@@ -148,8 +148,7 @@ export function setStartDate(dateString: string, time: string) {
  * @returns only the date as string
  */
 export function getDateFromISO(dateString: string): string {
-  var date = new Date(dateString);
-  return date.toISOString().substring(0, 10);
+  return dateString.substring(0, 10);
 }
 
 /**
@@ -158,8 +157,7 @@ export function getDateFromISO(dateString: string): string {
  * @param dateString 
  */
 export function getTimeFromISO(dateString: string): string {
-  var date = new Date(dateString);
-  return date.toISOString().substring(11, 16);
+  return dateString.substring(11, 16);
 }
 
 /**
