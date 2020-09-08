@@ -2,11 +2,7 @@ package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.ExceptionHandlerController;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 
 import org.apache.tomcat.util.json.JSONParser;
@@ -816,5 +812,54 @@ class UserProfileControllerTest {
 		json = (ArrayList<LinkedHashMap<String, Object>>) parser.parse();
 		return json;
 	}
+
+	//----------------------------Testing GET Profile Location----------------------------//
+    @Test
+    public void testGetProfileLocation_Authorized_ReturnsProfile() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        Location location = new Location("Christchurch", "New Zealand");
+        profile.setLocation(location);
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/location")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId));
+    }
+
+    @Test
+    public void testGetProfileLocation_Authorized_ReturnsProfileWithLocation() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        Location location = new Location("Christchurch", "New Zealand");
+        profile.setLocation(location);
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/location")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").value(172.63664))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").value(-43.530956));
+    }
 
 }

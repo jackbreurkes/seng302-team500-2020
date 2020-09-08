@@ -1,5 +1,10 @@
 package com.springvuegradle.endpoints;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -17,6 +22,9 @@ import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.requests.UpdateRoleRequest;
 import com.springvuegradle.util.FormValidator;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -412,7 +420,67 @@ public class UserProfileController {
         return locationRepository.save(location);
     }
 
+    /**
+     * Helper function for viewProfileWithLocation. This handles querying OSM API with a location name for the latitude
+     * and longitude
+     * @param location A Location object with at least the City and Country names
+     * @return A string JSON response from OSM API
+     * @throws IOException An exception when querying OSM API
+     */
+    private String getLocationJSON(Location location) throws IOException {
+        URL url = new URL("https://nominatim.openstreetmap.org/search?city=" + location.getCity().replace(" ", "+") +
+                "&country=" + location.getCountry().replace(" ", "+") + "&format=json&limit=1");
 
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+
+        // Reading the response
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer content = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+
+        con.disconnect();
+
+        return content.toString();
+    }
+
+    /**
+     * Handles viewing another profile including its location details (latitude, longitude)
+     * @param profileId profile id to view
+     * @return response entity to be sent to the client
+     */
+    @GetMapping("/{profileId}/location")
+    @CrossOrigin
+    public ProfileResponse viewProfileWithLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+        if (profileRepository.existsById(profileId)) {
+            Profile profile = profileRepository.findById(profileId).get();
+            ProfileResponse response =  new ProfileResponse(profile, emailRepository);
+
+            // Calling the Open Street Map API to get the latitude and longitude of the user location and saving it
+            try {
+                String jsonString = getLocationJSON(profile.getLocation());
+                JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+                JSONArray result = (JSONArray) parser.parse(jsonString); // It always returns a JSONArray even though there's only ever one
+
+                JSONObject single = (JSONObject) result.get(0);
+                String lat = (String) single.get("lat");
+                String lon = (String) single.get("lon");
+
+                response.setLat(Float.parseFloat(lat));
+                response.setLon(Float.parseFloat(lon));
+            } catch (Exception e) {
+                // Exception is caught when profile doesn't have a location associated with it
+            }
+            return response;
+        } else {
+            throw new RecordNotFoundException("Profile with id " + profileId + " not found");
+        }
+    }
 
     /**
      * Handles viewing another profile
@@ -467,6 +535,8 @@ public class UserProfileController {
         profile = profileRepository.save(profile);
         return new ProfileResponse(profile, emailRepository);
     }
+
+
 
     /**
      * Gets information about a certain profile or returns an error object for the client
