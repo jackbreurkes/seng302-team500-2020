@@ -1,6 +1,14 @@
 <template>
   <div>
     <div id="map" ref="map"></div>
+    <div id="legend">
+      <h3>Legend</h3>
+      <div v-for="icon in legend" :key="icon.title">
+        <v-list-item-icon>
+          <p><v-icon small class="ma-0 pa-0" :color="icon.colour">{{ icon.icon }}</v-icon>Titit</p>
+        </v-list-item-icon>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -23,6 +31,28 @@
     data: function() {
       return {
           map: null,
+          legend: {
+            created: {
+              title: 'Created',
+              colour: 'rgba(255, 0, 0, 1)',
+              icon: 'mdi-square'
+            },
+            following: {
+              title: 'Following',
+              colour: 'rgba(255, 145, 0, 1)',
+              icon: 'mdi-square'
+            },
+            participating: {
+              title: 'Participating',
+              colour: 'rgba(162, 0, 255, 1)',
+              icon: 'mdi-square'
+            },
+            miscellaneous: {
+              title: 'Miscellaneous',
+              colour: 'rgba(120, 144, 156, 1)',
+              icon: 'mdi-square'
+            }
+          }
       }
     },
 
@@ -48,6 +78,10 @@
       this.map.setCenter({lat: location.lat, lng: location.lon})
       // @ts-ignore next line
       this.map.setZoom(11);
+
+      // @ts-ignore next line
+      this.map.controls[window.google.maps.ControlPosition.RIGHT_TOP].push(document.getElementById('legend'));
+
     },
 
   })
@@ -63,4 +97,11 @@
   width: 100%;
   background: grey;
 }
+#legend {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    padding: 10px;
+    margin: 10px;
+    border: 3px solid #000;
+  }
 </style>
