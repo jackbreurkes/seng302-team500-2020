@@ -2,6 +2,7 @@ import { CreateActivityRequest } from "../scripts/Activity";
 import instance from "../services/axios.service";
 import { AxiosResponse } from 'axios';
 import { UserApiFormat } from '@/scripts/User';
+import { UserRoleFormat } from '@/scripts/UserRoleFormat';
 
 /**
  * creates an activity.
@@ -182,7 +183,7 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
  * @param activityId The activity ID
  * @returns A list of profiles that participate/organise the activity
  */
-export async function getParticipants(activityId: number): Promise<UserApiFormat[]> {
+export async function getParticipants(activityId: number): Promise<UserRoleFormat[]> {
   let res = await instance.get(`/activities/${activityId}/involved`);
   return res.data;
 }
