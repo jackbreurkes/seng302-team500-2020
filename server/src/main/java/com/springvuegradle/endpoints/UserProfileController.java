@@ -427,7 +427,7 @@ public class UserProfileController {
      * @return A string JSON response from OSM API
      * @throws IOException An exception when querying OSM API
      */
-    private String getLocationJSON(Location location) throws IOException {
+    protected String getLocationJSON(Location location) throws IOException {
         URL url = new URL("https://nominatim.openstreetmap.org/search?city=" + location.getCity().replace(" ", "+") +
                 "&country=" + location.getCountry().replace(" ", "+") + "&format=json&limit=1");
 
