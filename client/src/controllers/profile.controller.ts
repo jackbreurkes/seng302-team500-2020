@@ -1,4 +1,4 @@
-import { getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails, deleteAccount } from '../models/user.model'
+import { getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails, deleteAccount, getUserLocation } from '../models/user.model'
 import * as auth from "../services/auth.service";
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
@@ -239,6 +239,15 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
       user.activities.splice(index, 1);
     }
     await saveActivityTypes(user, profileId);
+}
+
+/**
+ * Gets the specified user's profile including lat/lon.
+ * 
+ * @param profileId Profile ID to get the city location of
+ */
+export async function getProfileLocation(profileId: number) {
+    return await getUserLocation(profileId);
 }
 
 /**

@@ -454,7 +454,7 @@ public class UserProfileController {
      * @param profileId profile id to view
      * @return response entity to be sent to the client
      */
-    @GetMapping("/{profileId}/location")
+    @GetMapping("/{profileId}/latlon")
     @CrossOrigin
     public ProfileResponse viewProfileWithLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         if (profileRepository.existsById(profileId)) {

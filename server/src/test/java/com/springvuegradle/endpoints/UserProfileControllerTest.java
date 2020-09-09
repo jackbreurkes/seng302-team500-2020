@@ -829,7 +829,7 @@ class UserProfileControllerTest {
         Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/" + profileId + "/location")
+                .get("/profiles/" + profileId + "/latlon")
                 .requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -852,7 +852,7 @@ class UserProfileControllerTest {
         Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/" + profileId + "/location")
+                .get("/profiles/" + profileId + "/latlon")
                 .requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
