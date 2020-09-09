@@ -1,11 +1,10 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
@@ -22,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,31 +74,41 @@ public class ActivitySearchControllerTest {
     private MockMvc mvc;
 
     private HashSet testActivityTypes;
+    private Profile profile;
+    private User user;
 
     @BeforeAll
     public void setUp(){
         //Initialize the mocks we create
         MockitoAnnotations.initMocks(this);
+        user = new User(1);
+        Mockito.when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
+
+        profile = new Profile(user, "Bob","Builder", LocalDate.of(2000, 10, 15), Gender.MALE);
+        Mockito.when(profileRepository.findById(user.getUserId())).thenReturn(Optional.of(profile));
         this.testActivityTypes = new HashSet<>();
         this.testActivityTypes.add(new ActivityType("Running"));
     }
 
     @Test
     @Ignore
+    @Disabled
     public void testGetUserByPartOfFirstEmailSegment() throws Exception {
 
         String json = "{\n" +
                 "  \"searchTerms\": [\"bab\"]\n" +
                 "}";
-
-        Activity activity = new Activity("bab", false, "simp city", null, testActivityTypes);
+        String searchTerms = "bab";
+        Activity activity = new Activity("bab", false, "simp city", profile, testActivityTypes);
         List<Activity> activities = new ArrayList<>();
         activities.add(activity);
         Mockito.when(activityRepository.findActivitiesByActivityNameContaining("bab")).thenReturn(activities);
 
         mvc.perform(MockMvcRequestBuilders
                 .get("/activities")
-                .content(json).contentType(MediaType.APPLICATION_JSON)
+                .queryParam("searchTerms", searchTerms)
+                //.content(json).contentType(MediaType.APPLICATION_JSON)
+                .requestAttr("authenticatedid", user.getUserId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
