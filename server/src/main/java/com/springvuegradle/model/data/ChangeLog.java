@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
 
 /**
  * JPA representation of a change log entry
- *
  */
 @Entity
 @Table(name = "changelog")

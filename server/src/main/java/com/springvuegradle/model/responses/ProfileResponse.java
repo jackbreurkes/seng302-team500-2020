@@ -1,14 +1,16 @@
 package com.springvuegradle.model.responses;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.EmailRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Country;
+import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.repository.EmailRepository;
 
 public class ProfileResponse {
 

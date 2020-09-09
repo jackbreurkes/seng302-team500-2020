@@ -42,7 +42,6 @@ import com.springvuegradle.model.responses.ProfileResponse;
 
 /**
  * Endpoint for the PUT /profiles/{profile_id} request
- * @author Jack van Heugten Breurkes
  */
 @RestController
 @RequestMapping("/profiles")

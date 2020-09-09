@@ -4,7 +4,6 @@ package com.springvuegradle.model.requests;
  * Update fitness request class
  * May, in future, be integrated into the update profile class but
  * for now it is simpler to do it like this and more atomic
- * @Author Michael Freeman
  */
 public class UpdateFitnessRequest {
 
