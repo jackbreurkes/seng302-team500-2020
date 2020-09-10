@@ -1,11 +1,11 @@
 <template>
   <div>
     <div id="map" ref="map"></div>
-    <div id="legend">
-      <h3>Legend</h3>
-      <div v-for="icon in legend" :key="icon.title">
-        <v-list-item-icon>
-          <p><v-icon small class="ma-0 pa-0" :color="icon.colour">{{ icon.icon }}</v-icon>Titit</p>
+    <div id="legend" class="ma-1 pa-1 rounded white" index=-1>
+      <h3 class="ma-0 pa-0">Legend</h3>
+      <div v-for="icon in legend" :key="icon.title" class="ma-0 pa-0">
+        <v-list-item-icon class="ma-0 pa-0">
+          <p class="ma-0 pa-0"><v-icon small :color="icon.colour">{{ icon.icon }}</v-icon>{{ icon.title }}</p>
         </v-list-item-icon>
       </div>
     </div>
@@ -31,6 +31,7 @@
     data: function() {
       return {
           map: null,
+          legendCurrentlyOnLeft: true as boolean,
           legend: {
             created: {
               title: 'Created',
@@ -79,10 +80,10 @@
       // @ts-ignore next line
       this.map.setZoom(11);
 
+      // Places the legend in the top right-hand corner
       // @ts-ignore next line
-      this.map.controls[window.google.maps.ControlPosition.RIGHT_TOP].push(document.getElementById('legend'));
-
-    },
+      this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(document.getElementById('legend'));
+    }
 
   })
 
