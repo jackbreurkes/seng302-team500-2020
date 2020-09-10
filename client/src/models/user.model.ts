@@ -3,6 +3,7 @@ import { UserApiFormat } from "@/scripts/User";
 
 import instance from "../services/axios.service";
 import * as auth from "../services/auth.service";
+import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 
 /**
  * Attempts to retrieve the current user's info using the saved ID via GET /{{SERVER_URL}}/profiles/<their ID>
@@ -152,4 +153,14 @@ export async function updateCurrentPassword(
 
 export async function deleteAccount(profileId: number) {
   let res = await instance.delete("profiles/" + profileId);
+}
+
+/**
+ * Gets the specified user's profile including lat/lon.
+ * 
+ * @param profileId Profile ID to get the city location of
+ */
+export async function getUserLocation(profileId: number) {
+  let res = await instance.get("/profiles/"+profileId+"/latlon");
+  return res.data as LocationCoordinatesInterface;
 }

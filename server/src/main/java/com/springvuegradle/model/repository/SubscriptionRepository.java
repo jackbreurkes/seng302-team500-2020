@@ -10,8 +10,6 @@ import com.springvuegradle.model.data.Subscription;
 
 /**
  * JPA repository for subscriptions
- * @author Alex Hobson
- *
  */
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 

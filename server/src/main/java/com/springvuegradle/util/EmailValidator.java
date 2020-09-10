@@ -1,11 +1,9 @@
 package com.springvuegradle.util;
 
-import javax.validation.Constraint;
+import java.util.regex.Pattern;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
-import java.lang.annotation.*;
-import java.util.regex.Pattern;
 
 public class EmailValidator implements ConstraintValidator<EmailConstraint, String> {
 

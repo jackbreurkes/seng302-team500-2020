@@ -8,33 +8,26 @@ import java.time.temporal.ChronoUnit;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.Session;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.SessionRepository;
 import com.springvuegradle.model.requests.LoginRequest;
-import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.LoginSuccessResponse;
 
 /**
  * REST endpoint for logging in a user
- * 
- * @author Alex Hobson
- *
  */
 @RestController
 public class LoginController {
