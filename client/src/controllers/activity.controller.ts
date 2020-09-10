@@ -27,24 +27,24 @@ export function validateNewActivity(sDate: string, sTime: string, eDate: string,
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
   }
-  if (!hasTimeFrame(createActivityRequest.continuous)) {
+  if (createActivityRequest.continuous === undefined) {
     throw new Error("Please select a time frame");
   }
    if (!createActivityRequest.continuous) {
-     if (sDate === "" || sDate === undefined) {
+     if (sDate === "") {
        throw new Error("Duration based activities must have a start date");
      }
      if (!isValidTime(sTime) && sTime !== "") {
       throw new Error("Start time is not in valid format");
     }
-     if (eDate === "" || eDate === undefined) {
+     if (eDate === "") {
        throw new Error("Duration based activities must have an end date");
-     }
-     if (!isValidEndDate(sDate, eDate, sTime, eTime)) {
-       throw new Error("End date must be after start date")
      }
      if (!isValidTime(eTime) && eTime != "") {
        throw new Error("End time is not in valid format");
+     }
+     if (!isValidEndDate(sDate, eDate, sTime, eTime)) {
+       throw new Error("End date must be after start date")
      }
      createActivityRequest.start_time = setStartDate(sDate, sTime);
      createActivityRequest.end_time = setEndDate(eDate, eTime);
@@ -151,9 +151,9 @@ export function getDateFromISO(dateString: string): string {
 }
 
 /**
- * Returns only the time of the given ISO format date in
- * HH-MM format
- * @param dateString 
+ * Returns only the time of the given ISO format date in HH:MM format
+ * @param dateString the ISO timestamp to get the time of
+ * @return the hours and minutes in HH:MM format
  */
 export function getTimeFromISO(dateString: string): string {
   return dateString.substring(11, 16);
@@ -269,16 +269,8 @@ export function isFutureDate(dateString: string): boolean {
  * @param dateString date in question
  */
 export function isValidDate(dateString: string) {
-  var dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
-  if(!dateString.match(dateRegEx)) {
-    return false; 
-  }
-  var d = new Date(dateString);
-  var dNum = d.getTime();
-  if(!dNum && dNum !== 0) {
-    return false;
-  }
-  return d.toISOString().slice(0,10) === dateString;
+  const dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
+  return dateString.match(dateRegEx) !== null;
 }
 
 /**
@@ -397,17 +389,6 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
-/**
- * Checks if the create activity request field "continuous" exists
- * @param timeFrame the createActivityRequest.continuous field
- */
-export function hasTimeFrame(timeFrame: boolean | undefined): boolean {
-  if (timeFrame === undefined) {
-    return false;
-  } else {
-    return true;
-  }
-}
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
 /**
@@ -436,12 +417,8 @@ export const INVALID_TIME_MESSAGE = "Please enter a valid time"
  * @param timeString time string to be checked
  */
 export function isValidTime(timeString: string): boolean {
-  let timeRegEx = /^\d{1,2}:\d{2}([ap]m)?$/;
-  if (timeString.match(timeRegEx)) {
-    return true;
-  } else {
-    return false;
-  }
+  let timeRegEx = /^\d{1,2}:\d{2}?$/;
+  return timeString.match(timeRegEx) !== null;
 }
 
 
@@ -488,7 +465,7 @@ export async function getParticipants(activityId: number) {
  * @param time the time to check is between start and end
  * @returns true if time is between start and end, false otherwise
  */
-export async function timeIsWithinRange(start: string, end: string, time: string) {
+export function timeIsWithinRange(start: string, end: string, time: string) {
   let startDate = new Date(start);
   let endDate = new Date(end);
   let testDate = new Date(time);
