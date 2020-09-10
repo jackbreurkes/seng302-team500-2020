@@ -1,210 +1,116 @@
 package com.springvuegradle.endpoints;
 
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
-import org.junit.Ignore;
+import com.springvuegradle.model.requests.SearchActivityRequest;
+import com.springvuegradle.model.responses.ActivityResponse;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@EnableAutoConfiguration
-@AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = {UserProfileController.class})
-@WebMvcTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ActivitySearchControllerTest {
-
     @InjectMocks
-    ActivitySearchController activitySearchController;
+    private ActivitySearchController activitySearchController;
 
-    @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
-    private EmailRepository emailRepository;
-
-    @MockBean
-    private ProfileRepository profileRepository;
-
-    @MockBean
-    private CountryRepository countryRepository;
-
-    @MockBean
-    private SessionRepository sessionRepository;
-
-    @Autowired
-    @MockBean
+    @Mock
     private ActivityRepository activityRepository;
 
-    @MockBean
-    private ActivityTypeRepository activityTypeRepository;
+    @Mock
+    private ProfileRepository profileRepository;
 
-    @MockBean
-    private LocationRepository locationRepository;
-
-    @MockBean
-    private RoleRepository roleRepository;
-
-    @MockBean
-    private ChangeLogRepository changeLogRepository;
-
-
-    @Autowired
-    private MockMvc mvc;
-
-    private HashSet testActivityTypes;
     private Profile profile;
-    private User user;
 
     @BeforeAll
     public void setUp(){
         //Initialize the mocks we create
-        activitySearchController = new ActivitySearchController();
         MockitoAnnotations.initMocks(this);
-        user = new User(1);
-        Mockito.when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
+        profile = new Profile(new User(1L), "David", "Clarke", LocalDate.now(), Gender.FEMALE);
+    }
+    @Test
+    void searchActivity_200() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
 
-        profile = new Profile(user, "Bob","Builder", LocalDate.of(2000, 10, 15), Gender.MALE);
-        Mockito.when(profileRepository.findById(user.getUserId())).thenReturn(Optional.of(profile));
-        this.testActivityTypes = new HashSet<>();
-        this.testActivityTypes.add(new ActivityType("Running"));
+        SearchActivityRequest s = new SearchActivityRequest();
+        s.setSearchedTerms(new ArrayList<>(Arrays.asList("Test")));
+
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        activity.setId(2L);
+
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>(Arrays.asList(activity)));
+        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
+
+        List<ActivityResponse> response = activitySearchController.searchActivities(s, request);
+
+        assertEquals(1, response.size(), "There should be one search result");
+    }
+
+
+    @Test
+    void searchActivityNotAuthenticated() throws Exception{
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        SearchActivityRequest s = new SearchActivityRequest();
+        s.setSearchedTerms(new ArrayList<>(Arrays.asList("Test")));
+
+        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
+        activity.setId(2L);
+
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>(Arrays.asList(activity)));
+        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
+
+        assertThrows(UserNotAuthenticatedException.class, () -> {
+            activitySearchController.searchActivities(s, request);
+        });
     }
 
     @Test
-    @Ignore
-    @Disabled
-    public void testGetActivityByPartialSearch_200() throws Exception {
-        User creator = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+    void searchActivityNoResults_404() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
 
-        ActivityType activityType = new ActivityType("Running");
-        Set<ActivityType> activitySet = new HashSet<ActivityType>();
-        activitySet.add(activityType);
-        List<Activity> activityList = new ArrayList<>();
+        SearchActivityRequest s = new SearchActivityRequest();
+        s.setSearchedTerms(new ArrayList<>(Arrays.asList("Test")));
 
-        Activity activity = new Activity("test search",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-        activityList.add(activity);
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
-        String json = "{\n" +
-                "   \"searchTerms\": [\"test\"]\n" +
-                "}";
-        mvc.perform(MockMvcRequestBuilders
-                .get("/activities/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .requestAttr("authenticatedid", creator.getUserId())
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-    @Test
-    @Ignore
-    @Disabled
-    public void testGetActivityByPartialSearch_404() throws Exception {
-        User creator = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>());
+        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
 
-        ActivityType activityType = new ActivityType("Running");
-        Set<ActivityType> activitySet = new HashSet<ActivityType>();
-        activitySet.add(activityType);
-        List<Activity> activityList = new ArrayList<>();
-
-        Activity activity = new Activity("dontfindme",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-        activityList.add(activity);
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
-        String json = "{\n" +
-                "   \"searchTerms\": [\"test\"]\n" +
-                "}";
-        mvc.perform(MockMvcRequestBuilders
-                .get("/activities/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .requestAttr("authenticatedid", creator.getUserId())
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        assertThrows(RecordNotFoundException.class, () -> {
+            activitySearchController.searchActivities(s, request);
+        });
     }
 
     @Test
-    @Ignore
-    @Disabled
-    public void testGetActivityByPartialSearch_400() throws Exception {
-        User creator = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+    void searchBadRequest_400() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
 
-        ActivityType activityType = new ActivityType("Running");
-        Set<ActivityType> activitySet = new HashSet<ActivityType>();
-        activitySet.add(activityType);
-        List<Activity> activityList = new ArrayList<>();
+        SearchActivityRequest s = new SearchActivityRequest();
+        s.setSearchedTerms(new ArrayList<>(Arrays.asList()));
 
-        Activity activity = new Activity("dontfindme",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-        activityList.add(activity);
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
-        String json = "{\n" +
-                "   \"searchTerms\": []\n" +
-                "}";
-        mvc.perform(MockMvcRequestBuilders
-                .get("/activities/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .requestAttr("authenticatedid", creator.getUserId())
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-    @Test
-    @Ignore
-    @Disabled
-    public void testGetMultipleActivitiesByPartialSearch_200() throws Exception {
-        User creator = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>());
+        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
 
-        ActivityType activityType = new ActivityType("Running");
-        Set<ActivityType> activitySet = new HashSet<ActivityType>();
-        activitySet.add(activityType);
-        List<Activity> activityList = new ArrayList<>();
-
-        Activity activity = new Activity("testActivity 1",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-        Activity activity1 = new Activity("testActivity 2",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
-        activityList.add(activity);
-        activityList.add(activity1);
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("testActivity")).thenReturn(activityList);
-        String json = "{\n" +
-                "   \"searchTerms\": [\"testActivity\"]\n" +
-                "}";
-        mvc.perform(MockMvcRequestBuilders
-                .get("/activities/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
-                .requestAttr("authenticatedid", creator.getUserId())
-                .characterEncoding("utf-8")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
+        assertThrows(InvalidRequestFieldException.class, () -> {
+            activitySearchController.searchActivities(s, request);
+        });
     }
 }
 
