@@ -4,8 +4,6 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Login request spring should create when user tries to log in
- * @author Alex Hobson
- *
  */
 public class LoginRequest {
 

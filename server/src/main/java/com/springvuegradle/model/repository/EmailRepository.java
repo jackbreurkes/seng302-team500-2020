@@ -13,8 +13,6 @@ import javax.transaction.Transactional;
 
 /**
  * JPA Repository of email addresses
- * @author Alex Hobson
- *
  */
 public interface EmailRepository extends JpaRepository<Email, String> {
 

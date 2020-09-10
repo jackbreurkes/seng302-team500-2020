@@ -110,12 +110,12 @@
                   v-model="selectedUsers"
                   sort-by="role"
               >
-                <template #full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
+                <template #full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.role }}</template>
                 <template v-slot:items="users">
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
                   <td class="text-xs-right">{{ users.item.lastname }}</td>
                   <td class="text-xs-right">{{ users.item.nickname }}</td>
-                  <td class="text-xs-right">{{ users.item.activityRole }}</td>
+                  <td class="text-xs-right">{{ users.item.role }}</td>
                 </template>
               </v-data-table>
 
@@ -268,7 +268,8 @@ import * as activityController from '../controllers/activity.controller';
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
-import { getActivityRole } from "../models/activity.model";
+// eslint-disable-next-line no-unused-vars
+import { UserRoleFormat } from '@/scripts/UserRoleFormat';
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -304,7 +305,7 @@ const Activity = Vue.extend({
         { text: 'First Name', value: 'firstname' },
         { text: 'Last Name', value: 'lastname' },
         { text: 'Nickname', value: 'nickname' },
-        { text: 'Role', value: 'activityRole' }
+        { text: 'Role', value: 'role' }
       ],
       noDataText: "No Participants",
       selectedUsers: [] as UserApiFormat[],
@@ -537,15 +538,7 @@ const Activity = Vue.extend({
       this.errorMessage = "";
       try {
         let users = await getParticipants(this.activityId)
-        let user;
-        for (user of users) { // Gives every user part of the activity a role
-          if (this.creatorId == user.profile_id) {
-            user.activityRole = "CREATOR";
-          } else if (user.profile_id != undefined) {
-            user.activityRole = await getActivityRole(user.profile_id, this.activityId);
-          }
-        }
-        this.users = users as UserApiFormat[];
+        this.users = users as UserRoleFormat[];
       } catch (err) {
         if (err.response) {
           if (err.response.status == 400) {

@@ -5,29 +5,21 @@ import java.security.NoSuchAlgorithmException;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
 import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.CountryRepository;
 import com.springvuegradle.model.repository.EmailRepository;
-import com.springvuegradle.model.repository.LocationRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.UserResponse;
 
 /**
  * Process GET /whoami
- * @author Alex Hobson
- * @author Olivia Mackintosh
  */
 @RestController
 public class WhoAmIController {

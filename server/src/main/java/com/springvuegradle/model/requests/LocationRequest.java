@@ -1,7 +1,5 @@
 package com.springvuegradle.model.requests;
 
-import com.springvuegradle.model.data.Location;
-
 /**
  * wraps a location object so that it can be passed as a field in the request
  */

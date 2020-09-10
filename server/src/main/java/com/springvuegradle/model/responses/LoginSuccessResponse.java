@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * When a user submits a valid email/password and needs a token for authentication
- * @author Alex Hobson
- *
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LoginSuccessResponse {
