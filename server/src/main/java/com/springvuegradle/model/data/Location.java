@@ -197,8 +197,8 @@ public class Location implements Serializable {
 					if (state != null) {
 						location.setState(state);
 					}
-					location.setLatitude(node.get("lat").floatValue());
-					location.setLongitude(node.get("lon").floatValue());
+					location.setLatitude((float)node.get("lat").asDouble());
+					location.setLongitude((float)node.get("lon").asDouble());
 					return location;
 				}
 			}

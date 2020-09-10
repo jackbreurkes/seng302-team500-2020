@@ -469,15 +469,14 @@ public class UserProfileController {
             		throw new RecordNotFoundException("Could not resolve location for profile id "+profileId);
             	}
             	
-            	locationRepository.save(newLocation);
+            	location.setLatitude(newLocation.getLatitude());
+            	location.setLongitude(newLocation.getLongitude());
+            	locationRepository.save(location);
             	
-            	profile.setLocation(newLocation);
             	profileRepository.save(profile);
-            	
-            	location = newLocation;
             }
             
-            return new UserLocationResponse(profile.getLocation().getLatitude(), profile.getLocation().getLongitude());
+            return new UserLocationResponse(location.getLatitude(), location.getLongitude());
         } else {
             throw new RecordNotFoundException("Profile with id " + profileId + " not found");
         }
