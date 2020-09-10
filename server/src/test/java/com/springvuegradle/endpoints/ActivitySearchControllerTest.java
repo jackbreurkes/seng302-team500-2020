@@ -80,6 +80,7 @@ public class ActivitySearchControllerTest {
     @BeforeAll
     public void setUp(){
         //Initialize the mocks we create
+        activitySearchController = new ActivitySearchController();
         MockitoAnnotations.initMocks(this);
         user = new User(1);
         Mockito.when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
@@ -93,25 +94,117 @@ public class ActivitySearchControllerTest {
     @Test
     @Ignore
     @Disabled
-    public void testGetUserByPartOfFirstEmailSegment() throws Exception {
+    public void testGetActivityByPartialSearch_200() throws Exception {
+        User creator = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
 
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        List<Activity> activityList = new ArrayList<>();
+
+        Activity activity = new Activity("test search",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+        activityList.add(activity);
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
         String json = "{\n" +
-                "  \"searchTerms\": [\"bab\"]\n" +
+                "   \"searchTerms\": [\"test\"]\n" +
                 "}";
-        String searchTerms = "bab";
-        Activity activity = new Activity("bab", false, "simp city", profile, testActivityTypes);
-        List<Activity> activities = new ArrayList<>();
-        activities.add(activity);
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("bab")).thenReturn(activities);
-
         mvc.perform(MockMvcRequestBuilders
-                .get("/activities")
-                .queryParam("searchTerms", searchTerms)
-                //.content(json).contentType(MediaType.APPLICATION_JSON)
-                .requestAttr("authenticatedid", user.getUserId())
+                .get("/activities/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .requestAttr("authenticatedid", creator.getUserId())
+                .characterEncoding("utf-8")
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
+    @Test
+    @Ignore
+    @Disabled
+    public void testGetActivityByPartialSearch_404() throws Exception {
+        User creator = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
 
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        List<Activity> activityList = new ArrayList<>();
+
+        Activity activity = new Activity("dontfindme",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+        activityList.add(activity);
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
+        String json = "{\n" +
+                "   \"searchTerms\": [\"test\"]\n" +
+                "}";
+        mvc.perform(MockMvcRequestBuilders
+                .get("/activities/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .requestAttr("authenticatedid", creator.getUserId())
+                .characterEncoding("utf-8")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Ignore
+    @Disabled
+    public void testGetActivityByPartialSearch_400() throws Exception {
+        User creator = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        List<Activity> activityList = new ArrayList<>();
+
+        Activity activity = new Activity("dontfindme",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+        activityList.add(activity);
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("test")).thenReturn(activityList);
+        String json = "{\n" +
+                "   \"searchTerms\": []\n" +
+                "}";
+        mvc.perform(MockMvcRequestBuilders
+                .get("/activities/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .requestAttr("authenticatedid", creator.getUserId())
+                .characterEncoding("utf-8")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @Ignore
+    @Disabled
+    public void testGetMultipleActivitiesByPartialSearch_200() throws Exception {
+        User creator = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
+
+        ActivityType activityType = new ActivityType("Running");
+        Set<ActivityType> activitySet = new HashSet<ActivityType>();
+        activitySet.add(activityType);
+        List<Activity> activityList = new ArrayList<>();
+
+        Activity activity = new Activity("testActivity 1",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+        Activity activity1 = new Activity("testActivity 2",false,"REe",new Profile(creator,"creator","man",null, Gender.FEMALE),activitySet);
+        activityList.add(activity);
+        activityList.add(activity1);
+        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("testActivity")).thenReturn(activityList);
+        String json = "{\n" +
+                "   \"searchTerms\": [\"testActivity\"]\n" +
+                "}";
+        mvc.perform(MockMvcRequestBuilders
+                .get("/activities/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .requestAttr("authenticatedid", creator.getUserId())
+                .characterEncoding("utf-8")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
 }
+
