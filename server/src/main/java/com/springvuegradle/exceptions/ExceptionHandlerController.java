@@ -15,9 +15,6 @@ import com.springvuegradle.model.responses.ErrorResponse;
 
 /**
  * handles exceptions thrown by endpoints globally.
- * @author Michael Freeman
- * @author Jack van Heugten Breurkes
- * @author Josh Yee
  */
 @ControllerAdvice
 public class ExceptionHandlerController {

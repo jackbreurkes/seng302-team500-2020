@@ -88,6 +88,8 @@ class UserProfileControllerTest {
                 .setControllerAdvice(new ExceptionHandlerController()) // allows us to use our ExceptionHandlerController with MockMvc
                 .build();
         this.tempActivityType = new ActivityType("Running");
+        
+        userProfileController = Mockito.mock(UserProfileController.class, Mockito.CALLS_REAL_METHODS);
     }
     
     /**
@@ -812,6 +814,28 @@ class UserProfileControllerTest {
 		json = (ArrayList<LinkedHashMap<String, Object>>) parser.parse();
 		return json;
 	}
+    
+    String christchurchLocationQuery = "[\n" + 
+    		"    {\n" + 
+    		"        \"place_id\": 293493313,\n" + 
+    		"        \"licence\": \"Data (C) OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright\",\n" + 
+    		"        \"osm_type\": \"relation\",\n" + 
+    		"        \"osm_id\": 2730349,\n" + 
+    		"        \"boundingbox\": [\n" + 
+    		"            \"-43.6292014\",\n" + 
+    		"            \"-43.3890866\",\n" + 
+    		"            \"172.3930248\",\n" + 
+    		"            \"172.8216267\"\n" + 
+    		"        ],\n" + 
+    		"        \"lat\": \"-43.530955\",\n" + 
+    		"        \"lon\": \"172.6366455\",\n" + 
+    		"        \"display_name\": \"Christchurch, Christchurch City, Canterbury, New Zealand\",\n" + 
+    		"        \"class\": \"place\",\n" + 
+    		"        \"type\": \"city\",\n" + 
+    		"        \"importance\": 0.9063371164819316,\n" + 
+    		"        \"icon\": \"https://nominatim.openstreetmap.org/images/mapicons/poi_place_city.p.20.png\"\n" + 
+    		"    }\n" + 
+    		"]";
 
 	//----------------------------Testing GET Profile Location----------------------------//
     @Test
@@ -822,6 +846,9 @@ class UserProfileControllerTest {
         Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
         Location location = new Location("Christchurch", "New Zealand");
         profile.setLocation(location);
+        
+        Mockito.doReturn(this.christchurchLocationQuery).when(this.userProfileController).getLocationJSON(location);
+        
         Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
         Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
         User authUser = Mockito.mock(User.class);
@@ -829,12 +856,13 @@ class UserProfileControllerTest {
         Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/" + profileId + "/location")
+                .get("/profiles/" + profileId + "/latlon")
                 .requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber());
     }
 
     @Test
@@ -852,14 +880,13 @@ class UserProfileControllerTest {
         Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/" + profileId + "/location")
+                .get("/profiles/" + profileId + "/latlon")
                 .requestAttr("authenticatedid", authId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").value(172.63664))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").value(-43.530956));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber());
     }
 
 }

@@ -1,54 +1,40 @@
 package com.springvuegradle.endpoints;
 
-import java.io.StringWriter;
 import java.security.NoSuchAlgorithmException;
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import com.springvuegradle.auth.UserAuthorizer;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.springvuegradle.auth.ChecksumUtils;
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Session;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.requests.LoginRequest;
-import com.springvuegradle.model.requests.NewEmailRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
-import com.springvuegradle.model.responses.LoginSuccessResponse;
-
-import net.minidev.json.JSONObject;
 
 /**
  * Endpoint for the /profiles/{profile_id}/emails requests
- * @author Olivia Mackintosh
  */
 @RestController
 public class NewEmailController {

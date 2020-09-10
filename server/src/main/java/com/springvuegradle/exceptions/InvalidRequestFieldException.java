@@ -4,7 +4,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * @author Jack van Heugten Breurkes
  * custom error to be thrown when a record could not be found
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)

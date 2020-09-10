@@ -86,6 +86,7 @@ public class ChangeLogRepositoryTest {
         ChangeLog change2 = new ChangeLog(ChangeLogEntity.ACTIVITY, swimming.getId(), ChangedAttribute.ACTIVITY_LOCATION,
                 editingUser.getUser(), ActionType.UPDATED, "Old location", "New location");
         change1 = changeLogRepository.save(change1);
+        changeLogRepository.flush(); //the order that the entities are saved in varies with factors such as operating system
         change2 = changeLogRepository.save(change2);
 
         List<ChangeLog> homeFeedUpdates = changeLogRepository.retrieveUserHomeFeedUpdates(profile1, Pageable.unpaged());

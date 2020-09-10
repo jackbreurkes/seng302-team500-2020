@@ -1,17 +1,14 @@
 package com.springvuegradle.model.repository;
 
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import com.springvuegradle.model.data.ActivityType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
-import org.springframework.data.jpa.repository.Query;
 
 
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
@@ -20,10 +17,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	public List<List<String>> findByFirstLastname(String firstName, String lastName);
 
 	public List<String> findByFirstName(String firstLetterName);
-
-
-
-
 
     public Optional<Profile> findById(User user);
 	public List<Profile> findByNickNameStartingWith(String nickname);

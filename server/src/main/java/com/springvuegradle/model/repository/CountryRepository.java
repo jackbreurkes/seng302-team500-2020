@@ -1,11 +1,10 @@
 package com.springvuegradle.model.repository;
 
-import com.springvuegradle.model.data.Country;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.springvuegradle.model.data.Country;
 
 public interface CountryRepository extends JpaRepository<Country, Integer> {
     public Optional<Country> findByName(String name);

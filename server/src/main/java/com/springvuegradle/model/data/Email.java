@@ -6,9 +6,6 @@ import javax.persistence.*;
 
 /**
  * JPA class for Email addresses in persistent storage
- * @author Alex Hobson
- * @author Riley Symon
- *
  */
 @Entity
 @Table(name = "email")

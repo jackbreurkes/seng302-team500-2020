@@ -2,8 +2,6 @@ package com.springvuegradle.model.data;
 
 /**
  * Gender enum
- * @author Alex Hobson
- *
  */
 public enum Gender {
 	MALE("male"), FEMALE("female"), NON_BINARY("non-binary");

@@ -1,16 +1,11 @@
 package com.springvuegradle.helpers;
 
-import com.springvuegradle.model.data.Country;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * Implements get request for all countries
- * @Author Michael Freeman
- * @Author Josh Yee
  */
 
 @Service

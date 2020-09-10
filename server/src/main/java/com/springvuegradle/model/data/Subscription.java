@@ -10,15 +10,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
  * JPA POJO class representing the relation between a user and
  * something they can subscribe to (such as Activities)
- * 
- * @author Alex Hobson
- *
  */
 @Entity
 @Table(name = "subscriptions")
