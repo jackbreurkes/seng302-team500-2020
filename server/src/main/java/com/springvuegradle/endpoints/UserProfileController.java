@@ -8,36 +8,67 @@ import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
+import com.springvuegradle.exceptions.ForbiddenOperationException;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Country;
+import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.Role;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.LocationRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.RoleRepository;
+import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.requests.ProfileObjectMapper;
 import com.springvuegradle.model.requests.PutActivityTypesRequest;
 import com.springvuegradle.model.requests.UpdateRoleRequest;
+import com.springvuegradle.model.responses.ErrorResponse;
+import com.springvuegradle.model.responses.ProfileCreatedResponse;
+import com.springvuegradle.model.responses.ProfileResponse;
+import com.springvuegradle.model.responses.UserLocationResponse;
 import com.springvuegradle.util.FormValidator;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
-
-import com.springvuegradle.exceptions.ForbiddenOperationException;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
-import com.springvuegradle.model.requests.ProfileObjectMapper;
-import com.springvuegradle.model.responses.ErrorResponse;
-import com.springvuegradle.model.responses.ProfileCreatedResponse;
-import com.springvuegradle.model.responses.ProfileResponse;
 
 
 /**
@@ -456,13 +487,16 @@ public class UserProfileController {
      */
     @GetMapping("/{profileId}/latlon")
     @CrossOrigin
-    public ProfileResponse viewProfileWithLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
+    public UserLocationResponse viewProfileWithLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         if (profileRepository.existsById(profileId)) {
             Profile profile = profileRepository.findById(profileId).get();
-            ProfileResponse response =  new ProfileResponse(profile, emailRepository);
 
             // Calling the Open Street Map API to get the latitude and longitude of the user location and saving it
             try {
+            	Location location = profile.getLocation();
+            	if (location == null) {
+            		throw new RecordNotFoundException("Requested user does not have a location associated with their profile");
+            	}
                 String jsonString = getLocationJSON(profile.getLocation());
                 JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
                 JSONArray result = (JSONArray) parser.parse(jsonString); // It always returns a JSONArray even though there's only ever one
@@ -470,13 +504,12 @@ public class UserProfileController {
                 JSONObject single = (JSONObject) result.get(0);
                 String lat = (String) single.get("lat");
                 String lon = (String) single.get("lon");
-
-                response.setLat(Float.parseFloat(lat));
-                response.setLon(Float.parseFloat(lon));
-            } catch (Exception e) {
+                
+                return new UserLocationResponse(Float.parseFloat(lat), Float.parseFloat(lon));
+            } catch (IOException | net.minidev.json.parser.ParseException e) {
                 // Exception is caught when profile doesn't have a location associated with it
+            	throw new RecordNotFoundException("Could not resolve coordinates for user's location");
             }
-            return response;
         } else {
             throw new RecordNotFoundException("Profile with id " + profileId + " not found");
         }
