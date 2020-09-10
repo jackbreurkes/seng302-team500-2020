@@ -861,8 +861,8 @@ class UserProfileControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber());
     }
 
     @Test
@@ -885,7 +885,6 @@ class UserProfileControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(profileId))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber());
     }

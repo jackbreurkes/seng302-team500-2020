@@ -12,6 +12,9 @@ import com.springvuegradle.model.data.Location;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.repository.EmailRepository;
 
+/**
+ * Response class when a profile needs to be sent to the client
+ */
 public class ProfileResponse {
 
     private final long profile_id;
@@ -28,8 +31,6 @@ public class ProfileResponse {
     private final List<String> passports = new ArrayList<>();
     private final String[] additional_email;
     private final List<String> activities = new ArrayList<>();
-    private float lat;
-    private float lon;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final Location location;
@@ -67,10 +68,6 @@ public class ProfileResponse {
         }
         location = profile.getLocation();
     }
-
-    public void setLat(float lat) { this.lat = lat; }
-
-    public void setLon(float lon) { this.lon = lon; }
 
     public long getProfile_id() {
         return profile_id;
@@ -135,8 +132,4 @@ public class ProfileResponse {
     public Location getLocation() {
         return location;
     }
-
-    public float getLat() { return lat; }
-
-    public float getLon() { return lon; }
 }
