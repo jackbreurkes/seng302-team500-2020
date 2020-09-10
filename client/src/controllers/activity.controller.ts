@@ -1,6 +1,7 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
 import { UserApiFormat } from '@/scripts/User';
+import {getAddressCoordAndFormattedString} from '@/models/location.model'
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -22,7 +23,7 @@ export async function getAvailableActivityTypes(force = false) {
  * @param createActivityRequest request form consisting of all other elements of the form
  * @param profileId user's id 
  */
-export function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
+export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
     createActivityRequest: CreateActivityRequest) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
     throw new Error("Please enter an activity name of 4-30 characters long");
@@ -55,11 +56,24 @@ export function validateNewActivity(sDate: string, sTime: string, eDate: string,
   if (createActivityRequest.location === undefined) {
     throw new Error("Please enter the location of the activity")
   }
+  else {
+    console.log("about to await")
+    let locationObject = await getAddressCoordAndFormattedString(createActivityRequest.location)
+    if (locationObject[0] === undefined) {
+      throw new Error("Can't find a valid location with that address, try again")
+    } else {
+      createActivityRequest.location = locationObject[0].display_name
+      //for recieving lat/long values for later storage
+      // console.log(locationObject[0].lat)
+      // console.log(locationObject[0].lon)
+    }
+
+  }
   if (createActivityRequest.activity_type === [] || createActivityRequest.activity_type === undefined) {
     throw new Error("Please select at least one activity type");
   }
-}
 
+}
 /**
  * Edit an activity
  * @param createActivityRequest Data related to the activity to edit

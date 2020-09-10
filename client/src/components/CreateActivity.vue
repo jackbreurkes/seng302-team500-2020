@@ -515,7 +515,7 @@ const CreateActivity = Vue.extend({
         outcome => outcome.description && outcome.units
       );
       try {
-        activityController.validateNewActivity(
+        await activityController.validateNewActivity(
           this.startDate,
           this.startTime,
           this.endDate,
