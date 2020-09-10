@@ -6,9 +6,6 @@ import javax.persistence.*;
 
 /**
  * JPA representation of sessions (token when a user is logged in)
- * 
- * @author Alex Hobson
- *
  */
 @Entity
 @Table(name = "session")
@@ -102,13 +99,4 @@ public class Session {
 	public void setExpiry(OffsetDateTime expiry) {
 		this.expiry = expiry;
 	}
-
-	/**
-	 * Gets whether this session is expired at this point in time
-	 * 
-	 * @return true if the session has expired and should not be valid
-	 */
-	/*public boolean isSessionExpired() {
-		return (getExpiry().isBefore(Instant.now().atOffset(ZoneOffset.UTC)));
-	}*/
 }

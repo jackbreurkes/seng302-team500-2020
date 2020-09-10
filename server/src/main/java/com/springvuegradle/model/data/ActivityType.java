@@ -5,7 +5,6 @@ import javax.validation.constraints.NotNull;
 
 /**
  * JPA POJO representing an ActivityType.
- * @author Jack van Heugten Breurkes
  */
 @Entity
 @Table(name = "activity_type")

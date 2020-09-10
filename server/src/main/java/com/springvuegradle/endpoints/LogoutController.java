@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.springvuegradle.model.repository.SessionRepository;
 import com.springvuegradle.model.responses.ErrorResponse;
 
+/**
+ * Rest controller for logging out a user
+ */
 @RestController
 public class LogoutController {
 

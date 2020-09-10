@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+/**
+ * Controller for all endpoints related to editing a user's password
+ */
 @RestController
 public class EditPasswordController {
 
