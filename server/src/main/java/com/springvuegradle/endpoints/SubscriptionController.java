@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * REST controller for subscription status
- *
  */
 @RestController
 public class SubscriptionController {

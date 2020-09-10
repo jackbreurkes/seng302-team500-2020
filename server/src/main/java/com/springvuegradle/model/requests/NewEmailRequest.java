@@ -2,16 +2,12 @@ package com.springvuegradle.model.requests;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * Class for handling requests to add an email to an account
- * 
- * @author Riley Symon
- *
  */
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)

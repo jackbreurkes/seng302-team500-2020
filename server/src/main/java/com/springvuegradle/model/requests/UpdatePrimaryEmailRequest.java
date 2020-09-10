@@ -2,9 +2,6 @@ package com.springvuegradle.model.requests;
 
 /**
  * Class for handling requests to change primary email
- * 
- * @author Riley Symon
- *
  */
 
 public class UpdatePrimaryEmailRequest {

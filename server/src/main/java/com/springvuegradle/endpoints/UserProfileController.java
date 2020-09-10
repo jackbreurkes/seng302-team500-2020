@@ -73,7 +73,6 @@ import net.minidev.json.parser.JSONParser;
 
 /**
  * Endpoint for the PUT /profiles/{profile_id} request
- * @author Jack van Heugten Breurkes
  */
 @RestController
 @RequestMapping("/profiles")

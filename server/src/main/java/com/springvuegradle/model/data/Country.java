@@ -1,18 +1,15 @@
 package com.springvuegradle.model.data;
 
-import org.springframework.beans.factory.annotation.Value;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Model class for the countries that will be stored
  * in our database after being pulled from the RESTCountries API
- * @Author Michael Freeman
  */
-
-
 @Entity
 @Table(name="country")
 public class Country implements Serializable {

@@ -42,12 +42,12 @@ import com.springvuegradle.model.data.ActivityType;
 import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.data.UserActivityRole;
 import com.springvuegradle.model.repository.ActivityOutcomeRepository;
 import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
@@ -58,7 +58,7 @@ import com.springvuegradle.model.requests.RecordActivityResultsRequest;
 import com.springvuegradle.model.requests.RecordOneActivityResultsRequest;
 import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
-import com.springvuegradle.model.responses.ProfileResponse;
+import com.springvuegradle.model.responses.UserActivityRoleResponse;
 import com.springvuegradle.util.FormValidator;
 
 /**
@@ -93,9 +93,6 @@ public class ActivitiesController {
     
     @Autowired
     private ActivityParticipantResultRepository activityParticipantResultRepository;
-
-    @Autowired
-    private EmailRepository emailRepository;
 
     @PutMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
@@ -620,7 +617,7 @@ public class ActivitiesController {
      */
     @GetMapping("/activities/{activityId}/involved")
     @CrossOrigin
-    public List<ProfileResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
+    public List<UserActivityRoleResponse> getProfilesInvolvedWithActivity(@PathVariable("activityId") long activityId,
                                                          HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
@@ -638,12 +635,15 @@ public class ActivitiesController {
         
         List<User> users = userActivityRoleRepository.getInvolvedUsersByActivityId(activityId); // The result list of participants/organisers
 
-        List<ProfileResponse> responses = new ArrayList<>();
-        responses.add(new ProfileResponse(creator, emailRepository));
+        List<UserActivityRoleResponse> responses = new ArrayList<>();
+        responses.add(new UserActivityRoleResponse(creator, "Creator"));
         
         for (User user : users) {
         	if (user.getUserId() != creator.getUser().getUserId()) {
-        		responses.add(new ProfileResponse(profileRepository.getOne(user.getUserId()), emailRepository));
+        		Optional<Profile> profile = profileRepository.findById(user.getUserId());
+        		if (profile.isEmpty()) continue; //should only happen if the superadmin somehow follows an activity
+        		UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(user.getUserId(), activityId).get();
+        		responses.add(new UserActivityRoleResponse(profile.get(), role.getActivityRole().getFriendlyName()));
         	}
         }
 
