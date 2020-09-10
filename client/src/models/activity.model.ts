@@ -35,7 +35,6 @@ export async function editActivity(data: CreateActivityRequest, profileId: numbe
  * @param outcomeId ID of the activity outcome to record against
  * @param result The user's result for the outcome (between 0-30 characters)
  * @param timestamp The ISO8601 format timestamp
- * @return Promise<boolean> of whether the participant outcome was recorded
  */
 export async function createParticipantOutcome(activityId: number, outcomeId: number, result: string, timestamp: string) {
   let data = {
@@ -48,7 +47,6 @@ export async function createParticipantOutcome(activityId: number, outcomeId: nu
     ]
   }
   let res = await instance.post(`/activities/${activityId}/results`, data);
-  return res.status == 201;
 }
 
 /**

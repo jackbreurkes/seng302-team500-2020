@@ -81,13 +81,12 @@ export async function editOrCreateActivity(createActivityRequest: CreateActivity
  * @param score The user's score in this outcome
  * @param completedTimestamp The time the user claims to have completed the activity
  */
-export async function createParticipantResult(activityId: number, outcomeId: number, score: string, completedTimestamp: string): Promise<boolean> {
+export async function createParticipantResult(activityId: number, outcomeId: number, score: string, completedTimestamp: string) {
   if (score.length == 0 || score.length > 30) {
-    throw new Error("Score's length should be between 0 and 30 characters");
+    throw new Error("The given result should be between 0 and 30 characters");
   }
 
-  let result = await activityModel.createParticipantOutcome(activityId, outcomeId, score, completedTimestamp);
-  return result;
+  await activityModel.createParticipantOutcome(activityId, outcomeId, score, completedTimestamp);
 }
 
 
@@ -480,4 +479,18 @@ export async function getActivityOrganisers(activityId: number): Promise<UserApi
  */
 export async function getParticipants(activityId: number) {
   return await activityModel.getParticipants(activityId);
+}
+
+/**
+ * Takes three timestamp strings. Checks that a given time is between start and end.
+ * @param start the timestamp representing the start of the time range
+ * @param end the timestamp representing the end of the time range
+ * @param time the time to check is between start and end
+ * @returns true if time is between start and end, false otherwise
+ */
+export async function timeIsWithinRange(start: string, end: string, time: string) {
+  let startDate = new Date(start);
+  let endDate = new Date(end);
+  let testDate = new Date(time);
+  return startDate <= testDate && testDate <= endDate;
 }
