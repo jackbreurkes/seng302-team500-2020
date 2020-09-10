@@ -53,6 +53,7 @@ Running on: http://localhost:9499/
 - [serve v11.3.0](https://www.npmjs.com/package/serve/v/11.3.0)
 - [vue-router v3.1.6](https://www.npmjs.com/package/vue-router/v/3.1.6)
 - [vuejs-logger v1.5.4](https://www.npmjs.com/package/vuejs-logger/v/1.5.4)
+- [splitpanes v2.2.1](https://www.npmjs.com/package/splitpanes)
 
 These can be installed automatically with `npm install` while inside the client directory
 
