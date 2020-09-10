@@ -184,7 +184,7 @@ import "splitpanes/dist/splitpanes.css";
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
-            {title: 'Search for Activities', icon: '', pathing:"/activities/"},
+            {title: 'Search for Activities', icon: 'mdi-bike', pathing:"/activities/"},
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + auth.getMyUserId()},
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + auth.getMyUserId() + "/edit"},
