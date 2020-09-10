@@ -451,35 +451,6 @@ public class UserProfileController {
     }
 
     /**
-     * Helper function for viewProfileWithLocation. This handles querying OSM API with a location name for the latitude
-     * and longitude
-     * @param location A Location object with at least the City and Country names
-     * @return A string JSON response from OSM API
-     * @throws IOException An exception when querying OSM API
-     */
-    protected String getLocationJSON(Location location) throws IOException {
-        URL url = new URL("https://nominatim.openstreetmap.org/search?city=" + location.getCity().replace(" ", "+") +
-                "&country=" + location.getCountry().replace(" ", "+") + "&format=json&limit=1");
-
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-
-        // Reading the response
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer content = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
-
-        con.disconnect();
-
-        return content.toString();
-    }
-
-    /**
      * Handles viewing another profile including its location details (latitude, longitude)
      * @param profileId profile id to view
      * @return response entity to be sent to the client
@@ -489,26 +460,24 @@ public class UserProfileController {
     public UserLocationResponse viewProfileWithLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         if (profileRepository.existsById(profileId)) {
             Profile profile = profileRepository.findById(profileId).get();
+            Location location = profile.getLocation();
 
-            // Calling the Open Street Map API to get the latitude and longitude of the user location and saving it
-            try {
-            	Location location = profile.getLocation();
-            	if (location == null) {
-            		throw new RecordNotFoundException("Requested user does not have a location associated with their profile");
+            if (location.getLatitude() == null || location.getLongitude() == null) {
+            	Location newLocation = location.lookupAndValidate();
+            	
+            	if (newLocation == null) {
+            		throw new RecordNotFoundException("Could not resolve location for profile id "+profileId);
             	}
-                String jsonString = getLocationJSON(profile.getLocation());
-                JSONParser parser = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
-                JSONArray result = (JSONArray) parser.parse(jsonString); // It always returns a JSONArray even though there's only ever one
-
-                JSONObject single = (JSONObject) result.get(0);
-                String lat = (String) single.get("lat");
-                String lon = (String) single.get("lon");
-                
-                return new UserLocationResponse(Float.parseFloat(lat), Float.parseFloat(lon));
-            } catch (IOException | net.minidev.json.parser.ParseException e) {
-                // Exception is caught when profile doesn't have a location associated with it
-            	throw new RecordNotFoundException("Could not resolve coordinates for user's location");
+            	
+            	locationRepository.save(newLocation);
+            	
+            	profile.setLocation(newLocation);
+            	profileRepository.save(profile);
+            	
+            	location = newLocation;
             }
+            
+            return new UserLocationResponse(profile.getLocation().getLatitude(), profile.getLocation().getLongitude());
         } else {
             throw new RecordNotFoundException("Profile with id " + profileId + " not found");
         }

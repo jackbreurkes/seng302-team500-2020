@@ -31,7 +31,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class Location implements Serializable {
 
-    @Id
+    /**
+	 * Required randomly generated field
+	 */
+	private static final long serialVersionUID = 7638087353446385507L;
+
+	@Id
     @GeneratedValue
     @JsonIgnore
     private long locationId;
@@ -44,6 +49,16 @@ public class Location implements Serializable {
 
     @NotNull
     private String country;
+    
+    /**
+     * Latitude of this city
+     */
+    private Float latitude;
+
+	/**
+     * Longitude of this city
+     */
+    private Float longitude;
 
     /**
      * Constructor required by Spring
@@ -71,6 +86,22 @@ public class Location implements Serializable {
         this.city = city;
         this.state = state;
         this.country = country;
+    }
+    
+    /**
+     * constructor with coordinates and optional state parameter
+     * @param city the city
+     * @param state optional state
+     * @param country the country the city is in
+     * @param latitude the latitude of the marker for the center of the city
+     * @param longitude the longitude of the marker for the center of the city
+     */
+    public Location(String city, String state, String country, float latitude, float longitude) {
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     /**
@@ -166,6 +197,8 @@ public class Location implements Serializable {
 					if (state != null) {
 						location.setState(state);
 					}
+					location.setLatitude(node.get("lat").floatValue());
+					location.setLongitude(node.get("lon").floatValue());
 					return location;
 				}
 			}
@@ -175,7 +208,7 @@ public class Location implements Serializable {
 		return null;
 	}
 	
-	private String makeRequest(String locationString) {
+	protected String makeRequest(String locationString) {
 		final String uri = "https://nominatim.openstreetmap.org/search/?q=" + locationString
 				+ "&format=json&addressdetails=1&accept-language=en&limit=10";
 
@@ -183,5 +216,21 @@ public class Location implements Serializable {
 		String result = restTemplate.getForObject(uri, String.class);
 		
 		return result;
+	}
+	
+	public Float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Float latitude) {
+		this.latitude = latitude;
+	}
+
+	public Float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Float longitude) {
+		this.longitude = longitude;
 	}
 }
