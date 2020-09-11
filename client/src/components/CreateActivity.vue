@@ -516,10 +516,10 @@ const CreateActivity = Vue.extend({
       );
       try {
         activityController.validateNewActivity(
-          this.startDate,
-          this.startTime,
-          this.endDate,
-          this.endTime,
+          this.startDate || "",
+          this.startTime || "",
+          this.endDate || "",
+          this.endTime || "",
           this.createActivityRequest
         );
       } catch (err) {
