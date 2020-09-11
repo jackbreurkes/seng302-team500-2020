@@ -10,15 +10,24 @@ import javax.validation.constraints.NotNull;
 @Table(name = "activity_pin")
 public class ActivityPin {
 
+    /**
+     * Id for this pin
+     */
     @Id
     @GeneratedValue
     private long pin_id;
 
+    /**
+     * Latitudinal position of this activity pin location
+     */
     @NotNull
-    private long latitude;
+    private float latitude;
 
+    /**
+     * Longitudinal position of this activity pin location
+     */
     @NotNull
-    private long longitude;
+    private float longitude;
 
     /**
      * Activity which this pin is for
@@ -38,7 +47,7 @@ public class ActivityPin {
      * @param latitude latitudinal position of the location of the pin
      * @param longitude longitudinal position of the location of the pin
      */
-    public ActivityPin(Activity activity, long latitude, long longitude)
+    public ActivityPin(Activity activity, float latitude, float longitude)
     {
         this.activity = activity;
         this.latitude = latitude;
@@ -53,19 +62,19 @@ public class ActivityPin {
         this.pin_id = pin_id;
     }
 
-    public long getLatitude() {
+    public float getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(long latitude) {
+    public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 
-    public long getLongitude() {
+    public float getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(long longitude) {
+    public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
 
