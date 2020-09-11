@@ -5,18 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -53,6 +42,10 @@ public class Activity {
     @NotNull
     @Column(columnDefinition = "varchar(30)")
     private String location;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "activity_pin")
+    private ActivityPin activityPin;
 
     @NotNull
     @ManyToOne(fetch=FetchType.LAZY)
@@ -204,6 +197,20 @@ public class Activity {
      */
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    /**
+     * @return the pin for this activity
+     */
+    public ActivityPin getActivityPin() {
+        return activityPin;
+    }
+
+    /**
+     * @param activityPin pin to associate with this activity
+     */
+    public void setActivityPin(ActivityPin activityPin) {
+        this.activityPin = activityPin;
     }
 
     /**
