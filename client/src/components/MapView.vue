@@ -23,6 +23,8 @@
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
   import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
+  // eslint-disable-next-line no-unused-vars
+  import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 
   // app Vue instance
   const MapView = Vue.extend({
@@ -54,7 +56,8 @@
               colour: 'rgba(120, 144, 156, 1)',
               icon: 'mdi-square'
             }
-          }
+          },
+          loggedInUserId: NaN as number //used to detect changes in authentication, i.e. center on a user when they log in
       }
     },
 
@@ -70,22 +73,71 @@
       })
       Vue.prototype.$map = this.map; //make this globally accessible
 
-      let userId = getMyUserId();
-      let location = {lat: -43.5948293, lon: 172.4718623} as LocationCoordinatesInterface;
-      if (userId !== null) {
-        location = await getProfileLocation(userId);
-      }
-
-      // @ts-ignore next line
-      this.map.setCenter({lat: location.lat, lng: location.lon})
-      // @ts-ignore next line
-      this.map.setZoom(11);
+      this.centerMapOnUserLocation();
 
       // Places the legend in the top right-hand corner
       // @ts-ignore next line
       this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(this.$refs['legend']);
-    }
 
+      /*
+        everything below related to timeouts is to prevent sending tens of requests per second
+        since the 'idle' event is called when the mapview has been resized, in addition to when
+        the user has stopped dragging the map round. This throttles the client to only send
+        a request every 300 milliseconds.
+
+      */
+      let timerId = -1;
+
+      // @ts-ignore next line
+      this.map.addListener('idle', () => {
+        if (timerId !== -1) {
+          clearTimeout(timerId);
+        }
+        timerId = setTimeout(() => {
+          // @ts-ignore next line
+          let bounds = this.map.getBounds();
+
+          let boundingBox = {
+            sw_lat: bounds['Va']['i'],
+            ne_lat: bounds['Va']['j'],
+            sw_lon: bounds['ab']['i'],
+            ne_lon: bounds['ab']['j']
+          } as BoundingBoxInterface;
+
+          this.loadPinsInArea(boundingBox);
+        }, 300);
+      });
+    },
+
+    methods: {
+      loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
+        console.log("Requesting pins for map which can see: "+JSON.stringify(boundingBox));
+        //TODO
+      },
+
+      centerMapOnUserLocation: async function() {
+        let userId = getMyUserId();
+
+        if (userId !== null) {
+          let location = await getProfileLocation(userId);
+          // @ts-ignore next line
+          this.map.setCenter({lat: location.lat, lng: location.lon})
+          // @ts-ignore next line
+          this.map.setZoom(11);
+        }
+      }
+    },
+
+    watch: {
+      $route() {
+        let userId = getMyUserId();
+
+        if (userId !== null && userId != this.loggedInUserId) {
+          this.centerMapOnUserLocation();
+          this.loggedInUserId = userId;
+        }
+      }
+    }
   })
 
   export default MapView
