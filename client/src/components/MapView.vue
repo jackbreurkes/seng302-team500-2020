@@ -1,6 +1,15 @@
 <template>
   <div>
     <div id="map" ref="map"></div>
+    <!-- index of -1 below places the legend above the fullscreen button -->
+    <div id="legend" ref="legend" class="ma-1 pa-1 rounded white" index=-1>
+      <h3 class="ma-0 pa-0">Legend</h3>
+      <div v-for="icon in legend" :key="icon.title" class="ma-0 pa-0">
+        <v-list-item-icon class="ma-0 pa-0">
+          <p class="ma-0 pa-0"><v-icon small :color="icon.colour">{{ icon.icon }}</v-icon>{{ icon.title }}</p>
+        </v-list-item-icon>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -23,6 +32,29 @@
     data: function() {
       return {
           map: null,
+          legendCurrentlyOnLeft: true as boolean,
+          legend: {
+            created: {
+              title: 'Created',
+              colour: 'rgba(255, 0, 0, 1)',
+              icon: 'mdi-square'
+            },
+            following: {
+              title: 'Following',
+              colour: 'rgba(255, 145, 0, 1)',
+              icon: 'mdi-square'
+            },
+            participating: {
+              title: 'Participating',
+              colour: 'rgba(162, 0, 255, 1)',
+              icon: 'mdi-square'
+            },
+            miscellaneous: {
+              title: 'Miscellaneous',
+              colour: 'rgba(120, 144, 156, 1)',
+              icon: 'mdi-square'
+            }
+          }
       }
     },
 
@@ -48,7 +80,11 @@
       this.map.setCenter({lat: location.lat, lng: location.lon})
       // @ts-ignore next line
       this.map.setZoom(11);
-    },
+
+      // Places the legend in the top right-hand corner
+      // @ts-ignore next line
+      this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(this.$refs['legend']);
+    }
 
   })
 
@@ -63,4 +99,11 @@
   width: 100%;
   background: grey;
 }
+#legend {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    padding: 10px;
+    margin: 10px;
+    border: 3px solid #000;
+  }
 </style>
