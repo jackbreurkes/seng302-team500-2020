@@ -10,13 +10,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-<<<<<<< server/src/test/java/com/springvuegradle/endpoints/GetActivityTest.java
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.requests.SearchActivityRequest;
 import com.springvuegradle.model.responses.ProfileResponse;
-=======
->>>>>>> server/src/test/java/com/springvuegradle/endpoints/GetActivityTest.java
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
