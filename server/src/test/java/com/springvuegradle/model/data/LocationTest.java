@@ -227,7 +227,7 @@ public class LocationTest {
     
     @Test
     public void testLookupLocation_BlueskyScenario_GetsCorrectLocation() {
-    	Mockito.doReturn(christchurchLocationQuery).when(testLocation).makeRequest("Test City, Test State, Test Country");
+    	Mockito.doReturn(christchurchLocationQuery).when(testLocation).performLocationSearch("Test City, Test State, Test Country");
     	
     	Location lookedupLocation = testLocation.lookupAndValidate();
     	
@@ -240,7 +240,7 @@ public class LocationTest {
     
     @Test
     public void testLookupLocation_SearchWithoutState_GetsCorrectLocation() {
-    	Mockito.doReturn(christchurchLocationQuery).when(testLocation2).makeRequest("Test City, Test Country");
+    	Mockito.doReturn(christchurchLocationQuery).when(testLocation2).performLocationSearch("Test City, Test Country");
     	
     	Location lookedupLocation = testLocation2.lookupAndValidate();
     	
@@ -253,7 +253,7 @@ public class LocationTest {
     
     @Test
     public void testLookupLocation_PlaceIsNotACity_ReturnsNull() {
-    	Mockito.doReturn(rejectNonCities).when(testLocation).makeRequest("Test City, Test State, Test Country");
+    	Mockito.doReturn(rejectNonCities).when(testLocation).performLocationSearch("Test City, Test State, Test Country");
     	
     	Location lookedupLocation = testLocation.lookupAndValidate();
     	
@@ -262,7 +262,7 @@ public class LocationTest {
     
     @Test
     public void testLookupLocation_NotAPlaceOrCity_ReturnsNull() {
-    	Mockito.doReturn("[]").when(testLocation).makeRequest("Test City, Test State, Test Country");
+    	Mockito.doReturn("[]").when(testLocation).performLocationSearch("Test City, Test State, Test Country");
     	
     	Location lookedupLocation = testLocation.lookupAndValidate();
     	
@@ -271,7 +271,7 @@ public class LocationTest {
     
     @Test
     public void testLookupLocation_FirstOptionNotACity_GetsCorrectLocation() {
-    	Mockito.doReturn(nonFirstOption).when(testLocation).makeRequest("Test City, Test State, Test Country");
+    	Mockito.doReturn(nonFirstOption).when(testLocation).performLocationSearch("Test City, Test State, Test Country");
     	
     	Location lookedupLocation = testLocation.lookupAndValidate();
     	
