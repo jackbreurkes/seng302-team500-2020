@@ -61,7 +61,7 @@ public class Activity {
      * The street address for the activity location
      */
     @NotNull
-    @Column(columnDefinition = "varchar(240)")
+    @Column(columnDefinition = "varchar(255)")
     private String location;
 
     /**
