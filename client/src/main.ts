@@ -9,6 +9,7 @@ import AdminDashboard from "./components/AdminDashboard.vue";
 import Search from './components/Search.vue';
 import HomeFeed from './components/HomeFeed.vue';
 import Activity from './components/Activity.vue';
+import ActivitySearch from './components/ActivitySearch.vue';
 
 Vue.config.productionTip = false;
 
@@ -62,7 +63,8 @@ const routes = [
     path: "/homefeed",
     name: "homefeed",
     component: HomeFeed,
-  }
+  },
+  {path: "/activities", name: "activities", component: ActivitySearch}
 ];
 
 const router = new VueRouter({
