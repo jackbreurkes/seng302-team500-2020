@@ -12,19 +12,23 @@ const mockActivityTypes: string[] = [
   "Dancing",
 ];
 
-const mockCreateActivityRequest: CreateActivityRequest = {
-  activity_name: "Raid Area 52",
-  description: "Naruto run through area 52",
-  activity_type: mockActivityTypes,
-  continuous: true,
-  start_time: "",
-  end_time: "",
-  location: "Christchurch, New Zealand",
-};
+let mockCreateActivityRequest: CreateActivityRequest;
 
 activityModel.loadAvailableActivityTypes = jest.fn(async () => {
   return mockActivityTypes;
 });
+
+beforeEach(() => {
+  mockCreateActivityRequest = {
+    activity_name: "Raid Area 52",
+    description: "Naruto run through area 52",
+    activity_type: mockActivityTypes,
+    continuous: true,
+    start_time: "",
+    end_time: "",
+    location: "Christchurch, New Zealand",
+  };
+})
 
 // --------- ACTIVITY TYPES ---------- //
 test.each(["Walking", "Existing", "Whatever"])(
@@ -211,25 +215,12 @@ test.each(["01:00", "12:30", "19:30"])(`expect %s to be valid time`, (time) => {
 });
 
 // Time is not in valid format
-test.each(["half past one", "12:30:20", "7PM"])(
+test.each(["half past one", "12:30:20", "7PM", "10:00pm", "001:00", "10:000"])(
   `expect %s to be an invalid time`,
   (time) => {
     expect(activityController.isValidTime(time)).toBe(false);
   }
 );
-
-// Time frame exists
-test.each([true, false])(
-  "expect activity request to have time frame",
-  (timeFrame) => {
-    expect(activityController.hasTimeFrame(timeFrame)).toBe(true);
-  }
-);
-
-//Time frame does not exist
-test("expect undefined to be an invalid timeFrame", () => {
-  expect(activityController.hasTimeFrame(undefined)).toBe(false);
-});
 
 // Set end date with time and offset of ISO 8601 form. Empty time string implies no input
 // ISO 8601 format is a string of length
@@ -281,7 +272,7 @@ test.each([
     await expect(
       activityController.createParticipantResult(1, 1, result, "date string")
     ).rejects.toThrow(
-      new Error("Score's length should be between 0 and 30 characters")
+      new Error("The given result should be between 0 and 30 characters")
     );
   }
 )
@@ -369,3 +360,134 @@ test.each(["participant", "Participant", "PARTICIPANT", "pArtIcIpANt"])(
     expect(result).toBe(true);
   }
 );
+
+
+test.each([
+  //        START            |           END             |            TIME          //
+  ["2020-02-20T00:00:00+1300", "2020-02-21T00:00:00+1300", "2020-02-20T12:00:00+1300"],
+  ["2020-02-20T00:00:00+1300", "2020-02-20T00:00:02+1300", "2020-02-20T00:00:01+1300"],
+  ["2020-02-20T10:00:00+1300", "2021-11-05T01:00:00+1300", "2020-09-01T09:00:00+1300"],
+])(
+  "expect timeIsWithinRange to return true for arguments %s, %s, %s",
+  (start, end, time) => {
+    expect(activityController.timeIsWithinRange(start, end, time)).toBe(true);
+  }
+)
+
+
+test.each([
+  //        START            |           END             |            TIME          //
+  ["2020-02-20T00:00:00+1300", "2020-02-21T00:00:00+1300", "2020-02-21T11:00:00+1300"],
+  ["2020-02-20T00:00:00+1300", "2020-02-20T00:00:02+1300", "2020-02-20T00:00:03+1300"],
+  ["2020-02-20T10:00:00+1300", "2020-11-05T01:00:00+1300", "2021-09-01T09:00:00+1300"],
+])(
+  "expect timeIsWithinRange to return false for arguments %s, %s, %s",
+  (start, end, time) => {
+    expect(activityController.timeIsWithinRange(start, end, time)).toBe(false);
+  }
+)
+
+
+test.each([
+  ["11:00", "2020-02-21T11:00:00+1300"],
+  ["00:50", "2564-02-20T00:50:13+1300"],
+  ["00:00", "1911-09-01T00:00:00+1300"],
+])(
+  "expect getTimeFromISO to return %s for an ISO timestamp of %s",
+  (time, isoTimestamp) => {
+    expect(activityController.getTimeFromISO(isoTimestamp)).toBe(time);
+  }
+)
+
+
+test.each(["", "sm", "this one is way too long and shouldnt be allowed"])(
+  "expect validateNewActivity to throw an error if the activity name is invalid",
+  (name) => {
+    mockCreateActivityRequest.activity_name = name;
+    expect(() => {
+      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
+    }).toThrow("Please enter an activity name of 4-30 characters long")
+  }
+)
+
+test(
+  "expect validateNewActivity to throw an error if the activity has no time frame",
+  () => {
+    delete mockCreateActivityRequest.continuous;
+    expect(() => {
+      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
+    }).toThrow("Please select a time frame")
+  }
+)
+
+test(
+  "expect validateNewActivity to throw an error if a duration activity has no start date",
+  () => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
+    }).toThrow("Duration based activities must have a start date")
+  }
+)
+
+test(
+  "expect validateNewActivity to throw an error if a duration activity has no end date",
+  () => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("2020-10-10", "", "", "", mockCreateActivityRequest)
+    }).toThrow("Duration based activities must have an end date")
+  }
+)
+
+test.each(["12pm", "midnight", "0800", "10:00pm", "5"])(
+  "expect validateNewActivity to throw an error for malformed start time %s",
+  (startTime) => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("2020-10-10", startTime, "", "", mockCreateActivityRequest)
+    }).toThrow("Start time is not in valid format")
+  }
+)
+
+test(
+  "expect validateNewActivity to throw an error if end date is before start date",
+  () => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("2020-10-10", "", "2020-01-01", "", mockCreateActivityRequest)
+    }).toThrow("End date must be after start date")
+  }
+)
+
+test.each(["12pm", "midnight", "0800", "10:00pm", "5"])(
+  "expect validateNewActivity to throw an error for malformed end time %s",
+  (endTime) => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("2020-10-10", "10:10", "2020-11-11", endTime, mockCreateActivityRequest)
+    }).toThrow("End time is not in valid format")
+  }
+)
+
+test(
+  "expect validateNewActivity to throw an error if the end date is before the start date",
+  () => {
+    mockCreateActivityRequest.continuous = false;
+    expect(() => {
+      activityController.validateNewActivity("2020-10-10", "", "2020-01-11", "", mockCreateActivityRequest)
+    }).toThrow("End date must be after start date")
+  }
+)
+
+test.each([
+  ["2020-10-10", "", "2020-11-11", ""]
+])(
+  "expect validateNewActivity to set the activity start and end times if the timeframe is duration",
+  (startDate, startTime, endDate, endTime) => {
+    mockCreateActivityRequest.continuous = false;
+    activityController.validateNewActivity(startDate, startTime, endDate, endTime, mockCreateActivityRequest)
+    expect(mockCreateActivityRequest.start_time).toBe(activityController.setStartDate(startDate, startTime))
+    expect(mockCreateActivityRequest.end_time).toBe(activityController.setEndDate(endDate, endTime))
+  }
+)

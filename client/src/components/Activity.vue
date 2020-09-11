@@ -205,7 +205,7 @@
                             <v-row justify="end">
                               <v-spacer></v-spacer>
                               <div class="mr-3">
-                                <v-btn @click="saveParticipantOutcome(item.outcome_id)" right color="primary">
+                                <v-btn @click="saveParticipantOutcomeClicked(item.outcome_id)" right color="primary">
                                   Save
                                 </v-btn>
                               </div>
@@ -216,6 +216,25 @@
                     </v-expansion-panel-content>
                   </v-expansion-panel>
                 </v-expansion-panels>
+
+                <!-- save outcome outside time frame confirmation modal -->
+                <v-dialog v-model="displayConfirmTimeframeModal" width="350">
+
+                      <v-card>
+                        <v-card-title class="headline" primary-title>Confirm Your Result Time</v-card-title>
+
+                        <v-card-text>The completion time you are trying to enter for this result is not within the activity's suggested duration.
+                          Are you sure you wish to continue?</v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-btn text @click="displayConfirmTimeframeModal = false">Cancel</v-btn>
+                          <v-spacer></v-spacer>
+                          <v-btn color="success" text @click="saveParticipantOutcome">Confirm</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
 
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -313,6 +332,7 @@ const Activity = Vue.extend({
       errorMessage: "",
       followers: NaN as number,
       participants: NaN as number,
+      displayConfirmTimeframeModal: false,
     };
   },
 
@@ -472,46 +492,58 @@ const Activity = Vue.extend({
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
     },
+
     /**
-     * Add a new participant result for the specified outcome on this activity
+     * Attempt to add a new participant result for the specified outcome on this activity.
+     * displays a modal if the time frame is outside the expected time frame.
      */
-    saveParticipantOutcome: async function(outcomeId: number) {
+    saveParticipantOutcomeClicked: async function(outcomeId: number) {
       let result = this.participantOutcome[outcomeId].score;
       let completedDate = this.participantOutcome[outcomeId].date;
       let completedTime = this.participantOutcome[outcomeId].time;
+
+      if (completedDate === undefined) {
+        alert("You must select a date");
+        return;
+      }
+      if (completedTime === undefined) {
+        alert("You must select a time");
+        return;
+      }
+      if (result === undefined) {
+        alert("You must enter a result");
+        return;
+      }
       let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
+      if (!this.hasTimeFrame(this.activity) || activityController.timeIsWithinRange(this.activity.start_time!, this.activity.end_time!, completedTimestamp)) {
+        await this.saveParticipantOutcome(outcomeId, result, completedTimestamp);
+      } else {
+        this.displayConfirmTimeframeModal = true;
+      }
+    },
+
+    /**
+     * Add a new participant result for the specified outcome on this activity.
+     */
+    async saveParticipantOutcome(outcomeId: number, result: string, completedTimestamp: string) {
+      this.displayConfirmTimeframeModal = false;
       if (this.currentUsersProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
         await this.toggleParticipation();
       }
 
-      try {
-        if (completedDate === undefined) {
-          throw new Error("You must select a date");
-        }
-        if (completedTime === undefined) {
-          throw new Error("You must select a time");
-        }
-        if (result === undefined || result.length == 0 || result.length > 30) {
-          throw new Error("The entered result value must be at least one character but no more than 30");
-        }
-
-        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
-        .then((success) => {
-          if (success) {
-            this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
-            if (this.activity.outcomes==undefined) {
-              this.currentResults[outcomeId].description = "Description not found";
-              this.currentResults[outcomeId].units = "";
-            } else {
-              this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
-              this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
-            }
-            this.updated = !this.updated; // Force component showing outcomes to refresh
+      activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
+        .then(() => {
+          this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
+          if (this.activity.outcomes === undefined) {
+            this.currentResults[outcomeId].description = "Description not found";
+            this.currentResults[outcomeId].units = "";
+          } else {
+            this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
+            this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
           }
-        });
-      } catch (err) {
-        alert(err.message);
-      }
+          this.updated = !this.updated; // Force component showing outcomes to refresh
+        })
+        .catch((err) => {alert(err.message)});
     },
 
     /** Remove the selected result from the activity */
