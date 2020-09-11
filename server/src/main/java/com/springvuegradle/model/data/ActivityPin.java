@@ -30,6 +30,30 @@ public class ActivityPin {
     private float longitude;
 
     /**
+     * Latitudinal position of the southwest corner of the bounding box for the pin location
+     */
+    @NotNull
+    private float southwestBoundingLatitude;
+
+    /**
+     * Latitudinal position of the northeast corner of the bounding box for the pin location
+     */
+    @NotNull
+    private float northeastBoundingLatitude;
+
+    /**
+     * Longitudinal position of the southwest corner of the bounding box for the pin location
+     */
+    @NotNull
+    private float southwestBoundingLongitude;
+
+    /**
+     * Longitudinal position of the northeast corner of the bounding box for the pin location
+     */
+    @NotNull
+    private float northeastBoundingLongitude;
+
+    /**
      * Activity which this pin is for
      */
     @OneToOne
@@ -46,12 +70,22 @@ public class ActivityPin {
      * @param activity activity which this pin is for
      * @param latitude latitudinal position of the location of the pin
      * @param longitude longitudinal position of the location of the pin
+     * @param southwestBoundingLatitude latitudinal position of the southwest corner of the bounding box of the pin
+     * @param northeastBoundingLatitude latitudinal position of the northeast corner of the bounding box of the pin
+     * @param southwestBoundingLongitude longitudinal position of the southwest corner of the bounding box of the pin
+     * @param northeastBoundingLongitude longitudinal position of the northeast corner of the bounding box of the pin
      */
-    public ActivityPin(Activity activity, float latitude, float longitude)
+    public ActivityPin(Activity activity, float latitude, float longitude,
+                       float southwestBoundingLatitude, float northeastBoundingLatitude,
+                       float southwestBoundingLongitude, float northeastBoundingLongitude)
     {
         this.activity = activity;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.southwestBoundingLatitude = southwestBoundingLatitude;
+        this.southwestBoundingLongitude = southwestBoundingLongitude;
+        this.northeastBoundingLatitude = northeastBoundingLatitude;
+        this.northeastBoundingLongitude = northeastBoundingLongitude;
     }
 
     public long getPin_id() {
