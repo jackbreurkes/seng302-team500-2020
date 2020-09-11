@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="map" ref="map"></div>
-    <div id="legend" class="ma-1 pa-1 rounded white" index=-1>
+    <div id="legend" ref="legend" class="ma-1 pa-1 rounded white" index=-1>
       <h3 class="ma-0 pa-0">Legend</h3>
       <div v-for="icon in legend" :key="icon.title" class="ma-0 pa-0">
         <v-list-item-icon class="ma-0 pa-0">
@@ -82,7 +82,7 @@
 
       // Places the legend in the top right-hand corner
       // @ts-ignore next line
-      this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(document.getElementById('legend'));
+      this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(this.$refs['legend']);
     }
 
   })
