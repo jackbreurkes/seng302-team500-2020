@@ -29,7 +29,7 @@ public class ActivityPin {
     @NotNull
     private float longitude;
 
-    /**
+	/**
      * Latitudinal position of the southwest corner of the bounding box for the pin location
      */
     @NotNull
@@ -127,4 +127,36 @@ public class ActivityPin {
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
+    
+    public float getSouthwestBoundingLatitude() {
+		return southwestBoundingLatitude;
+	}
+
+	public void setSouthwestBoundingLatitude(float southwestBoundingLatitude) {
+		this.southwestBoundingLatitude = southwestBoundingLatitude;
+	}
+
+	public float getNortheastBoundingLatitude() {
+		return northeastBoundingLatitude;
+	}
+
+	public void setNortheastBoundingLatitude(float northeastBoundingLatitude) {
+		this.northeastBoundingLatitude = northeastBoundingLatitude;
+	}
+
+	public float getSouthwestBoundingLongitude() {
+		return southwestBoundingLongitude;
+	}
+
+	public void setSouthwestBoundingLongitude(float southwestBoundingLongitude) {
+		this.southwestBoundingLongitude = southwestBoundingLongitude;
+	}
+
+	public float getNortheastBoundingLongitude() {
+		return northeastBoundingLongitude;
+	}
+
+	public void setNortheastBoundingLongitude(float northeastBoundingLongitude) {
+		this.northeastBoundingLongitude = northeastBoundingLongitude;
+	}
 }
