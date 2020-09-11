@@ -63,7 +63,15 @@ public class ActivityPin {
     /**
      * no arg constructor required by JPA
      */
-    public ActivityPin() {}
+    public ActivityPin() {
+        this.activity = new Activity();
+        this.latitude = 0;
+        this.longitude = 0;
+        this.southwestBoundingLatitude = 0;
+        this.southwestBoundingLongitude = 0;
+        this.northeastBoundingLatitude = 0;
+        this.northeastBoundingLongitude = 0;
+    }
 
     /**
      * Create new activity pin with the required information (activity, latitude and longitude)
