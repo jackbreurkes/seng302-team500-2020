@@ -108,6 +108,9 @@ public class Activity {
      */
     public Activity() {
     	activityTypes = new HashSet<ActivityType>();
+        activityName = "";
+        isDuration = false;
+        location = "";
     }
 
     /**
