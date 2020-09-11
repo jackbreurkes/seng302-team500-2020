@@ -107,7 +107,7 @@ public class Activity {
      * no arg constructor required by JPA
      */
     public Activity() {
-    	activityTypes = new HashSet<ActivityType>();
+    	activityTypes = new HashSet<>();
         activityName = "";
         isDuration = false;
         location = "";
