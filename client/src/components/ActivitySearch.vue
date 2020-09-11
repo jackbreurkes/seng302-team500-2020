@@ -56,7 +56,7 @@
                         <v-data-table
                                 :no-data-text="noDataText"
                                 :headers="headers"
-                                :items="users"
+                                :items="activities"
                                 item-key="activity_id"
                                 single-select
                                 v-model="selectedActivities"
