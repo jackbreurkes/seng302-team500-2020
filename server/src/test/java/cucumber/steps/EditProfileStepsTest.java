@@ -140,7 +140,7 @@ public class EditProfileStepsTest {
         when(profileRepository.save(testProfile)).thenReturn(testProfile);
         try {
             successReponse = userProfileController.updateProfile(updateProfileRequest, (long) id, mockRequest);
-        } catch (InvalidRequestFieldException | ParseException | UserNotAuthenticatedException
+        } catch (InvalidRequestFieldException | UserNotAuthenticatedException
                 | RecordNotFoundException | UserNotAuthorizedException e) {
             errorResponse = e;
         }
