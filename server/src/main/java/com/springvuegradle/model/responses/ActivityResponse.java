@@ -1,5 +1,6 @@
 package com.springvuegradle.model.responses;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,7 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ActivityType;
+import org.springframework.data.geo.Point;
 
 /**
  * class used to return an Activity entity as JSON data
@@ -30,6 +33,14 @@ public class ActivityResponse {
     
     private Long numFollowers;
     private Long numParticipants;
+
+    // lat, lon and boundingbox formats match https://nominatim.org/release-docs/develop/api/Output
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Float lon;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Float lat;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Float> boundingbox;
 
 	@JsonProperty("activity_type")
     private List<String> activityTypes;
@@ -58,6 +69,19 @@ public class ActivityResponse {
             this.startTime = activity.getStartTime();
             this.endTime = activity.getEndTime();
         }
+
+        if (activity.getActivityPin() != null) {
+            ActivityPin pin = activity.getActivityPin();
+            this.lat = pin.getLatitude();
+            this.lon = pin.getLongitude();
+            this.boundingbox = Arrays.asList(
+                    pin.getSouthwestBoundingLatitude(), // min latitude
+                    pin.getNortheastBoundingLatitude(), // max latitude
+                    pin.getSouthwestBoundingLongitude(), // min longitude
+                    pin.getNortheastBoundingLongitude() // max longitude
+            );
+        }
+
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.activityTypes = activity.getActivityTypes()
                 .stream()
@@ -151,5 +175,17 @@ public class ActivityResponse {
 
     public List<ActivityOutcomeResponse> getOutcomes() {
         return outcomes;
+    }
+
+    public Float getLat() {
+        return lat;
+    }
+
+    public Float getLon() {
+        return lon;
+    }
+
+    public List<Float> getBoundingbox() {
+        return boundingbox;
     }
 }
