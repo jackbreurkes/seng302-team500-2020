@@ -20,6 +20,7 @@
 
   import Vue from 'vue'
   import { getProfileLocation } from "../controllers/profile.controller";
+  import { getActivitiesInBoundingBox } from "../controllers/activity.controller";
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
   import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
@@ -111,8 +112,8 @@
 
     methods: {
       loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
-        console.log("Requesting pins for map which can see: "+JSON.stringify(boundingBox));
-        //TODO
+        let pins = await getActivitiesInBoundingBox(boundingBox);
+        console.log(pins);
       },
 
       centerMapOnUserLocation: async function() {

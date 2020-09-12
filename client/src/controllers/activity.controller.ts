@@ -1,6 +1,7 @@
 import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
 import { UserApiFormat } from '@/scripts/User';
+import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -470,4 +471,12 @@ export function timeIsWithinRange(start: string, end: string, time: string) {
   let endDate = new Date(end);
   let testDate = new Date(time);
   return startDate <= testDate && testDate <= endDate;
+}
+
+/**
+ * Gets activities that fall within a certain area
+ * @param boundingBox Bounding box to get activities inside
+ */
+export async function getActivitiesInBoundingBox(boundingBox: BoundingBoxInterface) {
+ return await activityModel.getActivitiesInBoundingBox(boundingBox);
 }
