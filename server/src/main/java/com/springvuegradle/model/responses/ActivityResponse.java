@@ -46,6 +46,11 @@ public class ActivityResponse {
     private List<String> activityTypes;
 
     /**
+     * default constructor used for serialising response JSON in tests
+     */
+    protected ActivityResponse() {}
+
+    /**
      * default constructor
      * @param activity the activity whose data should be used to populate the JSON response data
      */

@@ -355,14 +355,7 @@ public class ActivitiesController {
                                               HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
 
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
-
-        Optional<Activity> optionalActivity = activityRepository.findById(activityId);
-        if(!optionalActivity.isPresent()){
-            throw new RecordNotFoundException("Activity doesn't exist");
-        }
-
-        Activity activity = optionalActivity.get();
-
+        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("Activity doesn't exist"));
         return new ActivityResponse(activity, getActivityFollowerCount(activity), getActivityParticipantCount(activity));
     }
 
