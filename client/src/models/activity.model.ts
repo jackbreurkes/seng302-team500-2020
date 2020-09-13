@@ -3,6 +3,7 @@ import instance from "../services/axios.service";
 import { AxiosResponse } from 'axios';
 import { UserApiFormat } from '@/scripts/User';
 import { UserRoleFormat } from '@/scripts/UserRoleFormat';
+import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 
 /**
  * creates an activity.
@@ -183,5 +184,16 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
  */
 export async function getParticipants(activityId: number): Promise<UserRoleFormat[]> {
   let res = await instance.get(`/activities/${activityId}/involved`);
+  return res.data;
+}
+
+/**
+ * Gets activities that fall within a certain area
+ * @param boundingBox Bounding box to get activities inside
+ */
+export async function getActivitiesInBoundingBox(boundingBox: BoundingBoxInterface) {
+
+  let res = await instance.get(`/map?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
+    &sw_lat=${boundingBox.sw_lat}&sw_lon=${boundingBox.sw_lon}`);
   return res.data;
 }
