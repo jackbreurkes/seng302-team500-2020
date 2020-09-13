@@ -285,6 +285,16 @@ export async function getActivity(creatorId: number, activityId: number) {
   return activityModel.getActivity(creatorId, activityId);
 }
 
+/**
+ * Gets an activity by the activity ID
+ * 
+ * @param {number} activityId Activity ID
+ * @return {CreateActivityRequest} Retrieved activity data
+ */
+export async function getActivityById(activityId: number) {
+  return activityModel.getActivityById(activityId);
+}
+
 
 /**
  * Registers user's account to follow the activity with the given id

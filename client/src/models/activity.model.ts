@@ -79,6 +79,16 @@ export async function getActivity(creatorId: number, activityId: number): Promis
   return res.data;
 }
 
+/**
+ * Gets an activity by its activity id
+ * @param {number} activityId id of the activity to retrieve
+ * @return {CreateActivityRequest} retrieved activity data
+ */
+export async function getActivityById(activityId: number): Promise<CreateActivityRequest> {
+  let res = await instance.get(`/activities/${activityId}`);
+  return res.data;
+}
+
 
 /**
  * Deletes an activity by its creator's id and the activity id

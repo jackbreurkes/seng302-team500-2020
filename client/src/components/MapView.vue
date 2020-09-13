@@ -20,7 +20,7 @@
 
   import Vue from 'vue'
   import { getProfileLocation } from "../controllers/profile.controller";
-  import { getActivitiesInBoundingBox } from "../controllers/activity.controller";
+  import { getActivitiesInBoundingBox, getActivityById } from "../controllers/activity.controller";
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
   import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
@@ -28,6 +28,8 @@
   import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
   // eslint-disable-next-line no-unused-vars
   import { Pin } from '@/scripts/Pin';
+  // eslint-disable-next-line no-unused-vars
+  import { CreateActivityRequest } from '@/scripts/Activity';
 
   // app Vue instance
   const MapView = Vue.extend({
@@ -117,21 +119,21 @@
       loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
         let pins = [ //for testing purposes
           {
-            "activityId": 1,
-            "location": {
-              lat: -41.2784228,
-              lon: 174.7766923
-            }
-          },
-          {
-            "activityId": 2,
-            "location": {
-              lat: -41.2784228,
-              lon: 174.7766923
-            }
-          },
-          {
             "activityId": 3,
+            "location": {
+              lat: -41.2784228,
+              lon: 174.7766923
+            }
+          },
+          {
+            "activityId": 193,
+            "location": {
+              lat: -41.2784228,
+              lon: 174.7766923
+            }
+          },
+          {
+            "activityId": 195,
             "location": {
               lat: -41.2774228,
               lon: 174.7766923
@@ -145,21 +147,28 @@
           1+1;
         }
 
+        let createdPositions = [] as any[];
+
         //clear all the pins
         this.displayedPins.forEach((marker, index) => {
+          for (let pinIndex in pins) {
+            let pin = pins[pinIndex];
+            if (pin.location.lat == marker.position.lat() && pin.location.lon == marker.position.lng()) {
+              createdPositions.push({lat: pin.location.lat, lng: pin.location.lon});
+              return;
+            }
+          }
           // @ts-ignore next line
           marker.setMap(null);
           delete this.displayedPins[index];
         });
-
-        let createdPositions = [] as any[];
 
         pins.forEach((pin: Pin) =>  {
           let position = {lat: pin.location.lat, lng: pin.location.lon};
           if (createdPositions.includes(position)) {
             return;
           }
-          let allActivities = [] as any[];
+          let allActivities = [] as number[];
           
           pins.forEach((pin: Pin) =>  {
             if (pin.location.lat == position.lat && pin.location.lon == position.lng) {
@@ -170,8 +179,7 @@
           let displayedPin = new window.google.maps.Marker({position: position, map: this.map});
 
           displayedPin.addListener('click', () => {
-            alert("All activities available at this point: "+JSON.stringify(allActivities));
-            //todo create https://developers.google.com/maps/documentation/javascript/reference/info-window
+            this.createPinInfoWindow(this.map, displayedPin, allActivities);
           });
 
           this.displayedPins.push(displayedPin);
@@ -189,6 +197,31 @@
           // @ts-ignore next line
           this.map.setZoom(11);
         }
+      },
+
+      createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: number[]) {
+        let htmlString = "<table>";
+        for (let activityIndex in allActivities) {
+          let activityId = allActivities[activityIndex];
+          let activity = await getActivityById(activityId);
+          if (activity.activity_name !== undefined) {
+            htmlString += "<tr><td colspan='2'><b>"+activity.activity_name+"</b></td></tr>";
+            if (!activity.continuous) {
+              htmlString += "<tr><td>Starts</td><td>"+activity.start_time+"</td></tr>";
+              htmlString += "<tr><td>Ends</td><td>"+activity.end_time+"</td></tr>";
+            }
+            if (activity.activity_type !== undefined) {
+              htmlString += "<tr><td>Activity types</td><td>"+activity.activity_type.join(", ")+"</td></tr>";
+            }
+          }
+          htmlString += "<router-link href='/profiles/"+activity.creator_id+"/activities/"+activityId+"'>Go to activity</router-link>"
+        }
+        htmlString += "</table>";
+        // @ts-ignore next line
+        let infoWindow = new window.google.maps.InfoWindow({
+          "content": htmlString,
+        });
+        infoWindow.open(map, displayedPin);
       }
     },
 
