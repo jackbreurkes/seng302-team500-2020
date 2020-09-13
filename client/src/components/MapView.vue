@@ -26,6 +26,8 @@
   import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
   // eslint-disable-next-line no-unused-vars
   import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
+  // eslint-disable-next-line no-unused-vars
+  import { Pin } from '@/scripts/Pin';
 
   // app Vue instance
   const MapView = Vue.extend({
@@ -58,7 +60,8 @@
               icon: 'mdi-square'
             }
           },
-          loggedInUserId: NaN as number //used to detect changes in authentication, i.e. center on a user when they log in
+          loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
+          displayedPins: [] as any[]
       }
     },
 
@@ -112,8 +115,68 @@
 
     methods: {
       loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
-        let pins = await getActivitiesInBoundingBox(boundingBox);
-        console.log(pins);
+        let pins = [ //for testing purposes
+          {
+            "activityId": 1,
+            "location": {
+              lat: -41.2784228,
+              lon: 174.7766923
+            }
+          },
+          {
+            "activityId": 2,
+            "location": {
+              lat: -41.2784228,
+              lon: 174.7766923
+            }
+          },
+          {
+            "activityId": 3,
+            "location": {
+              lat: -41.2774228,
+              lon: 174.7766923
+            }
+          }
+        ] as Pin[];
+
+        try {//TODO take out the try statement once the endpoint is implemented
+          pins = await getActivitiesInBoundingBox(boundingBox);
+        } catch (err) {
+          1+1;
+        }
+
+        //clear all the pins
+        this.displayedPins.forEach((marker, index) => {
+          // @ts-ignore next line
+          marker.setMap(null);
+          delete this.displayedPins[index];
+        });
+
+        let createdPositions = [] as any[];
+
+        pins.forEach((pin: Pin) =>  {
+          let position = {lat: pin.location.lat, lng: pin.location.lon};
+          if (createdPositions.includes(position)) {
+            return;
+          }
+          let allActivities = [] as any[];
+          
+          pins.forEach((pin: Pin) =>  {
+            if (pin.location.lat == position.lat && pin.location.lon == position.lng) {
+              allActivities.push(pin.activityId);
+            }
+          });
+          // @ts-ignore next line
+          let displayedPin = new window.google.maps.Marker({position: position, map: this.map});
+
+          displayedPin.addListener('click', () => {
+            alert("All activities available at this point: "+JSON.stringify(allActivities));
+            //todo create https://developers.google.com/maps/documentation/javascript/reference/info-window
+          });
+
+          this.displayedPins.push(displayedPin);
+          createdPositions.push(position);
+        })
       },
 
       centerMapOnUserLocation: async function() {
