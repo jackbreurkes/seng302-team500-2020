@@ -67,6 +67,9 @@ import com.springvuegradle.util.FormValidator;
 @RestController
 public class ActivitiesController {
 
+    private final String PROFILE_NOT_FOUND = "profile with id %d not found";
+    private final String ACTIVITY_NOT_FOUND = "activity with id %d not found";
+
     @Autowired
     private ProfileRepository profileRepository;
 
@@ -107,32 +110,25 @@ public class ActivitiesController {
 
         long authId = UserAuthorizer.getInstance().checkIsRoleAuthenticated(request, profileId, activityId, userRepository, userActivityRoleRepository, activityRepository);
 
-        User editingUser = userRepository.findById(authId).orElse(null);
-        if (editingUser == null) {
-            throw new RecordNotFoundException("user not found"); // shouldn't happen as this is already checked by auth handler
-        }
-
-
-        Optional<Activity> activityToEdit = activityRepository.findById(activityId);
+        User editingUser = userRepository.findById(authId).orElseThrow(
+                () -> new RecordNotFoundException("user not found") // shouldn't happen as this is already checked by auth handler
+        );
 
         validateActivityRequest(updateActivityRequest);
 
-        if(activityToEdit.isEmpty()){
-            throw new RecordNotFoundException("Activity does not exist");
-        }
+        Activity activity = activityRepository.findById(activityId).orElseThrow(
+                () -> new RecordNotFoundException("Activity does not exist")
+        );
 
         Set<ActivityType> activityTypesToAdd = new HashSet<>();
         for(String activityTypeString : updateActivityRequest.getActivityTypes()){
-            Optional<ActivityType> activityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeString);
-            if(activityType.isEmpty()){
-                throw new RecordNotFoundException("Activity type " + activityTypeString + " does not exist");
-            }else{
-                activityTypesToAdd.add(activityType.get());
-            }
+            ActivityType activityType = activityTypeRepository
+                    .getActivityTypeByActivityTypeName(activityTypeString)
+                    .orElseThrow(() -> new RecordNotFoundException("Activity type " + activityTypeString + " does not exist"));
+            activityTypesToAdd.add(activityType);
         }
 
 
-        Activity activity = activityToEdit.get();
         for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser)) {
             changeLogRepository.save(change);
         }
@@ -144,10 +140,33 @@ public class ActivitiesController {
         activity.getActivityTypes().clear();
         activity.getActivityTypes().addAll(activityTypesToAdd);
 
+        updateActivityOutcomes(activity, updateActivityRequest.getOutcomes(), editingUser);
+
+        if(Boolean.FALSE.equals(updateActivityRequest.isContinuous())){
+            activity.setIsDuration(true);
+
+            activity.setStartTime(updateActivityRequest.getStartTime());
+            activity.setEndTime(updateActivityRequest.getEndTime());
+        } else {
+            activity.setIsDuration(false);
+        }
+        return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
+    }
+
+    /**
+     * Updates the outcomes associated with an activity.
+     * Updates the changelog if the update operations are successful.
+     * @param activity the Activity to associate the outcomes with
+     * @param outcomes request objects for all of the outcomes that should be associated with the given activity
+     * @param editingUser the user who is editing the activity's outcomes
+     * @throws InvalidRequestFieldException if the user supplies two or more outcomes with the same description
+     * @throws ForbiddenOperationException if the user tries to remove an outcome that already has results associated with it
+     */
+    private void updateActivityOutcomes(Activity activity, List<ActivityOutcomeRequest> outcomes, User editingUser) throws InvalidRequestFieldException, ForbiddenOperationException {
         Map<String, String> descriptionUnits = new LinkedHashMap<>(); // LinkedHashMap maintains insertion order
-        for (ActivityOutcomeRequest outcome : updateActivityRequest.getOutcomes()) {
+        for (ActivityOutcomeRequest outcome : outcomes) {
             if (descriptionUnits.containsKey(outcome.getDescription())) {
-                throw new InvalidRequestFieldException("an activity cannot have two outcomes with the same description");
+                throw new InvalidRequestFieldException("an activity cannot have multiple outcomes with the same description");
             }
             descriptionUnits.put(outcome.getDescription(), outcome.getUnits());
         }
@@ -171,7 +190,7 @@ public class ActivitiesController {
             if (loggedResultsCount > 0) {
                 throw new ForbiddenOperationException("cannot delete outcome \"" + outcome.getDescription() + "\" as participants have logged results against it");
             }
-            ChangeLog deleteOutcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(activityId, outcome, editingUser);
+            ChangeLog deleteOutcomeChangeLog = ActivityChangeLog.getLogForDeleteOutcome(activity.getId(), outcome, editingUser);
             deleteOutcomeChanges.add(deleteOutcomeChangeLog);
         }
         changeLogRepository.saveAll(deleteOutcomeChanges);
@@ -184,20 +203,9 @@ public class ActivitiesController {
             String units = entrySet.getValue();
             ActivityOutcome newOutcome = new ActivityOutcome(description, units);
             activity.addOutcome(newOutcome);
-            ChangeLog createOutcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(activityId, newOutcome, editingUser);
+            ChangeLog createOutcomeChangeLog = ActivityChangeLog.getLogForCreateOutcome(activity.getId(), newOutcome, editingUser);
             changeLogRepository.save(createOutcomeChangeLog);
         }
-
-        if(Boolean.FALSE.equals(updateActivityRequest.isContinuous())){
-            activity.setIsDuration(true);
-
-            activity.setStartTime(updateActivityRequest.getStartTime());
-            activity.setEndTime(updateActivityRequest.getEndTime());
-        } else {
-            activity.setIsDuration(false);
-        }
-        return new ActivityResponse(activityRepository.save(activity), getActivityFollowerCount(activity), getActivityParticipantCount(activity));
-
     }
     
     /**
@@ -292,17 +300,16 @@ public class ActivitiesController {
         	throw new InvalidRequestFieldException("duration activities must have start_time and end_time values");
         }
 
-        Optional<Profile> optionalCreator = profileRepository.findById(profileId);
-        if (optionalCreator.isEmpty()) {
-            throw new RecordNotFoundException("profile with id " + profileId + " not found");
-        }
+        Profile creator = profileRepository.findById(profileId).orElseThrow(
+                () -> new RecordNotFoundException(String.format(PROFILE_NOT_FOUND, profileId))
+        );
 
         // save activity
         Activity activity = new Activity(
                 createActivityRequest.getActivityName(),
                 !createActivityRequest.isContinuous(),
                 createActivityRequest.getLocation(),
-                optionalCreator.get(),
+                creator,
                 new HashSet<>(activityTypeList));
         activity.setDescription(createActivityRequest.getDescription());
         activity.setStartTime(createActivityRequest.getStartTime());
@@ -318,6 +325,7 @@ public class ActivitiesController {
 
     /**
      * Get an activity with the profile ID of the creator and the activity ID
+     * @deprecated because the endpoint "/activities/{activityId}" covers this functionality without requiring creator id
      * @param profileId Owner of the activity requested
      * @param activityId Activity ID being requested
      * @param request http request made
@@ -331,10 +339,9 @@ public class ActivitiesController {
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         ActivityResponse response = getSingleActivity(activityId, request);
-        Profile profile = profileRepository.findById(profileId).orElse(null);
-        if (profile == null) {
-            throw new RecordNotFoundException("profile " + profileId + " not found");
-        }
+        Profile profile = profileRepository.findById(profileId).orElseThrow(
+                () -> new RecordNotFoundException(String.format(PROFILE_NOT_FOUND, profileId))
+        );
         if (profile.getUser().getUserId() != profileId) {
         	throw new RecordNotFoundException("activity id "+activityId+" does not belong to profile id "+profileId);
         }
@@ -414,13 +421,8 @@ public class ActivitiesController {
             throw new InvalidRequestFieldException("could not parse timestamp " + updateActivityResultRequest.getCompletedDate());
         }
 
-        long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
-        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("activity " + activityId + " not found"));
-        boolean hasRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).isPresent();
-        boolean isCreator = activity.getCreator().getUser().getUserId() == authId;
-        if (!hasRole && !isCreator) {
-            throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
-        }
+        Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException(String.format(ACTIVITY_NOT_FOUND, activityId)));
+        long authId = UserAuthorizer.getInstance().checkIsInvolvedWithActivity(request, activity, userActivityRoleRepository);
 
         ActivityParticipantResult result = activityParticipantResultRepository.getParticipantResult(authId, updateActivityResultRequest.getOutcomeId()).orElse(null);
 
@@ -432,7 +434,7 @@ public class ActivitiesController {
         result = activityParticipantResultRepository.save(result);
 
         //Add a changelog entry
-        Profile profile = profileRepository.findById(authId).orElseThrow(() -> new RecordNotFoundException("profile " + authId + " not found"));
+        Profile profile = profileRepository.findById(authId).orElseThrow(() -> new RecordNotFoundException(String.format(PROFILE_NOT_FOUND, authId)));
         ChangeLog createParticipantResultChangeLog = ActivityChangeLog.getLogForCreateParticipantResult(profile, result);
         changeLogRepository.save(createParticipantResultChangeLog);
 
@@ -462,14 +464,9 @@ public class ActivitiesController {
 			throw new InvalidRequestFieldException(errorMessage);
 		}
 
-		long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
-
         Activity activity = activityRepository.findById(activityId).orElseThrow(() -> new RecordNotFoundException("The activity specified does not exist"));
-		boolean hasRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activityId).isPresent();
-		boolean isCreator = activity.getCreator().getUser().getUserId() == authId;
-		if (!hasRole && !isCreator) {
-		    throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
-        }
+
+		long authId = UserAuthorizer.getInstance().checkIsInvolvedWithActivity(request, activity, userActivityRoleRepository);
 
 		Map<Long, RecordOneActivityResultsRequest> outcomeIds = new HashMap<>();
 		for (RecordOneActivityResultsRequest outcomeObject : createResultsRequest.getOutcomes()) {
@@ -482,12 +479,10 @@ public class ActivitiesController {
 			outcomeIds.put(outcomeObject.getOutcomeId(), outcomeObject);
 		}
 
-		Profile profile = profileRepository.findById(authId).orElse(null);
+		Profile profile = profileRepository.findById(authId).orElseThrow(
+		        () -> new RecordNotFoundException(String.format(ACTIVITY_NOT_FOUND, activityId))
+        );
 
-		if (profile == null) {
-			throw new RecordNotFoundException("Profile with id "+authId+" not found");
-		}
-		
 		List<ActivityOutcome> outcomeList = this.activityOutcomeRepository.getOutcomesById(new ArrayList<Long>(outcomeIds.keySet()));
 		
 		if (outcomeList.size() != outcomeIds.size()) {
@@ -538,7 +533,7 @@ public class ActivitiesController {
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         if (!activityRepository.existsById(activityId)) {
-        	throw new RecordNotFoundException("activity " + activityId + " not found");
+        	throw new RecordNotFoundException(String.format(ACTIVITY_NOT_FOUND, activityId));
         }
 
         List<ActivityParticipantResult> results = activityParticipantResultRepository.getParticipantResultsByUserIdAndActivityId(authId, activityId);
@@ -565,7 +560,7 @@ public class ActivitiesController {
 
         Activity activity = activityRepository.findById(activityId).orElse(null);
         if (activity == null) {
-            throw new RecordNotFoundException("activity " + activityId + " not found");
+            throw new RecordNotFoundException(String.format(ACTIVITY_NOT_FOUND, activityId));
         }
         ActivityOutcome outcome = activityOutcomeRepository.findById(outcomeId).orElse(null);
         if (outcome == null) {
