@@ -1,6 +1,5 @@
 package com.springvuegradle.model.responses;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,7 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ActivityType;
-import org.springframework.data.geo.Point;
+import com.springvuegradle.model.data.GeoPosition;
 
 /**
  * class used to return an Activity entity as JSON data
@@ -34,13 +33,10 @@ public class ActivityResponse {
     private Long numFollowers;
     private Long numParticipants;
 
-    // lat, lon and boundingbox formats match https://nominatim.org/release-docs/develop/api/Output
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Float lon;
+    private GeoPosition geoposition;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Float lat;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Float> boundingbox;
+    private GeoPosition[] boundingBox; // array of size 2 - first element is southwest point, second is northeast point
 
 	@JsonProperty("activity_type")
     private List<String> activityTypes;
@@ -77,14 +73,11 @@ public class ActivityResponse {
 
         if (activity.getActivityPin() != null) {
             ActivityPin pin = activity.getActivityPin();
-            this.lat = pin.getLatitude();
-            this.lon = pin.getLongitude();
-            this.boundingbox = Arrays.asList(
-                    pin.getSouthwestBoundingLatitude(), // min latitude
-                    pin.getNortheastBoundingLatitude(), // max latitude
-                    pin.getSouthwestBoundingLongitude(), // min longitude
-                    pin.getNortheastBoundingLongitude() // max longitude
-            );
+            this.geoposition = new GeoPosition(pin.getLatitude(), pin.getLongitude());
+            this.boundingBox = new GeoPosition[] {
+                    new GeoPosition(pin.getSouthwestBoundingLatitude(), pin.getSouthwestBoundingLongitude()),
+                    new GeoPosition(pin.getNortheastBoundingLatitude(), pin.getNortheastBoundingLongitude())
+            };
         }
 
         this.creatorId = activity.getCreator().getUser().getUserId();
@@ -182,15 +175,11 @@ public class ActivityResponse {
         return outcomes;
     }
 
-    public Float getLat() {
-        return lat;
+    public GeoPosition getGeoposition() {
+        return geoposition;
     }
 
-    public Float getLon() {
-        return lon;
-    }
-
-    public List<Float> getBoundingbox() {
-        return boundingbox;
+    public GeoPosition[] getBoundingBox() {
+        return boundingBox;
     }
 }

@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.model.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,15 +35,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Country;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Location;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.Role;
-import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ActivityTypeRepository;
 import com.springvuegradle.model.repository.ChangeLogRepository;
@@ -58,7 +50,6 @@ import com.springvuegradle.model.requests.UpdateRoleRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
-import com.springvuegradle.model.responses.UserLocationResponse;
 import com.springvuegradle.util.FormValidator;
 
 
@@ -443,7 +434,7 @@ public class UserProfileController {
      */
     @GetMapping("/{profileId}/latlon")
     @CrossOrigin
-    public UserLocationResponse viewProfileLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws RecordNotFoundException {
+    public GeoPosition viewProfileLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws RecordNotFoundException {
     	Optional<Profile> optionalProfile = profileRepository.findById(profileId);
         if (optionalProfile.isPresent()) {
             Profile profile = optionalProfile.get();
@@ -463,7 +454,7 @@ public class UserProfileController {
             	profileRepository.save(profile);
             }
             
-            return new UserLocationResponse(location.getLatitude(), location.getLongitude());
+            return new GeoPosition(location.getLatitude(), location.getLongitude());
         } else {
             throw new RecordNotFoundException("Profile with id " + profileId + " not found");
         }

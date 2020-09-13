@@ -1055,7 +1055,9 @@ public class ActivitiesControllerTest {
 
 		Activity testActivity = new Activity("test activity", false, "The Moon", new Profile(new User(1L), "bob", "ng", LocalDate.EPOCH, Gender.FEMALE), new HashSet<>());
 		testActivity.setId(1L);
-		ActivityPin pin = new ActivityPin(testActivity, 10, 11, 12, 13, 14, 15);
+		GeoPosition southwest = new GeoPosition(12, 13);
+		GeoPosition northeast = new GeoPosition(14, 15);
+		ActivityPin pin = new ActivityPin(testActivity, 10, 11, southwest.getLat(), northeast.getLat(), southwest.getLon(), northeast.getLon());
 		pin.setPin_id(1L);
 		testActivity.setActivityPin(pin);
 		Mockito.when(activityRepo.findById(testActivity.getId())).thenReturn(Optional.of(testActivity));
@@ -1072,9 +1074,11 @@ public class ActivitiesControllerTest {
 		String responseJson = result.getResponse().getContentAsString();
 		ActivityResponse response = objectMapper.readValue(responseJson, new TypeReference<ActivityResponse>() {});
 
-		assertEquals(10.0f, response.getLat());
-		assertEquals(11.0f, response.getLon());
-		assertEquals(Arrays.asList(12.0f, 13.0f, 14.0f, 15.0f), response.getBoundingbox());
+		assertEquals(10.0f, response.getGeoposition().getLat());
+		assertEquals(11.0f, response.getGeoposition().getLon());
+		assertEquals(2, response.getBoundingBox().length);
+		assertEquals(southwest, response.getBoundingBox()[0]);
+		assertEquals(northeast, response.getBoundingBox()[1]);
 	}
 }
 
