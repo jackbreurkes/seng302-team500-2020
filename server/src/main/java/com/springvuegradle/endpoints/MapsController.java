@@ -105,7 +105,7 @@ public class MapsController {
                         userRole = "follower";
                     }
                 }
-            }query
+            }
 
             responses.add(new ActivityPinResponse(pin, userRole));
         }
