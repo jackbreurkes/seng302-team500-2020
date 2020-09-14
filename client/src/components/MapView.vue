@@ -1,5 +1,28 @@
 <template>
   <div>
+    <div id="infowindow" ref="infowindow" v-show="this.openInfoWindow !== null">
+      <v-container 
+        v-for="activity in this.displayedActivities" 
+        v-bind:key="activity.activity_id"
+      >
+        <v-row><b>{{activity.activity_name}}</b></v-row>
+        <v-row no-gutters v-if="!activity.continuous">
+          <v-col cols="6">Starts</v-col>
+          <v-col cols="6">{{activity.start_time}}</v-col>
+        </v-row>
+        <v-row no-gutters v-if="!activity.continuous">
+          <v-col cols="6">Ends</v-col>
+          <v-col cols="6">{{activity.end_time}}</v-col>
+        </v-row>
+        <v-row no-gutters>
+          <v-col cols="6">Activity Types</v-col>
+          <v-col cols="6">{{activity.activity_type.join(", ")}}</v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12"><v-btn @click="visitActivity(activity)" text small>Go to activity</v-btn></v-col>
+        </v-row>
+      </v-container>
+    </div>
     <div id="map" ref="map"></div>
     <!-- index of -1 below places the legend above the fullscreen button -->
     <div id="legend" ref="legend" class="ma-1 pa-1 rounded white" index=-1>
@@ -63,7 +86,9 @@
             }
           },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
-          displayedPins: [] as any[]
+          displayedPins: [] as any[],
+          displayedActivities: [] as CreateActivityRequest[],
+          openInfoWindow: null as any
       }
     },
 
@@ -75,7 +100,8 @@
           lng: 172.58
         },
         zoom: 4,
-        streetViewControl: false
+        streetViewControl: false,
+        clickableIcons: false
       })
       Vue.prototype.$map = this.map; //make this globally accessible
 
@@ -126,14 +152,14 @@
             }
           },
           {
-            "activityId": 193,
+            "activityId": 5,
             "location": {
               lat: -41.2784228,
               lon: 174.7766923
             }
           },
           {
-            "activityId": 195,
+            "activityId": 7,
             "location": {
               lat: -41.2774228,
               lon: 174.7766923
@@ -200,28 +226,36 @@
       },
 
       createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: number[]) {
-        let htmlString = "<table>";
+        this.displayedActivities = [];
         for (let activityIndex in allActivities) {
           let activityId = allActivities[activityIndex];
           let activity = await getActivityById(activityId);
-          if (activity.activity_name !== undefined) {
-            htmlString += "<tr><td colspan='2'><b>"+activity.activity_name+"</b></td></tr>";
-            if (!activity.continuous) {
-              htmlString += "<tr><td>Starts</td><td>"+activity.start_time+"</td></tr>";
-              htmlString += "<tr><td>Ends</td><td>"+activity.end_time+"</td></tr>";
-            }
-            if (activity.activity_type !== undefined) {
-              htmlString += "<tr><td>Activity types</td><td>"+activity.activity_type.join(", ")+"</td></tr>";
-            }
-          }
-          htmlString += "<router-link href='/profiles/"+activity.creator_id+"/activities/"+activityId+"'>Go to activity</router-link>"
+          this.displayedActivities.push(activity);
         }
-        htmlString += "</table>";
+
+        if (this.openInfoWindow !== null) {
+          this.openInfoWindow.close();
+          this.openInfoWindow = null;
+        }
+        
         // @ts-ignore next line
         let infoWindow = new window.google.maps.InfoWindow({
-          "content": htmlString,
+          "content": this.$refs["infowindow"]
         });
         infoWindow.open(map, displayedPin);
+        this.openInfoWindow = infoWindow;
+      },
+
+      visitActivity: function(activity: CreateActivityRequest) {
+        if (activity.activity_id == null || activity.creator_id == null) {
+          return;
+        }
+        this.$router.push({ name: "activity", params: {
+            profileId: activity.creator_id.toString(),
+            activityId: activity.activity_id.toString()
+          }
+        });
+        this.openInfoWindow.close();
       }
     },
 
