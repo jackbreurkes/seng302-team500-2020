@@ -30,46 +30,47 @@ public interface UserActivityRoleRepository extends JpaRepository<UserActivityRo
 
     /**
      * Named query for getting all info on users who are involved with an activity
-     * @param activity_id of activity
+     * @param activityId of activity
      * @return list of activities that user is involved in
      */
         @Query(
             value= "SELECT u FROM User u JOIN UserActivityRole a ON a.user.uuid = u.uuid WHERE a.activity.activity_id = ?1"
     )
-    public List<User> getInvolvedUsersByActivityId(long activity_id);
+    public List<User> getInvolvedUsersByActivityId(long activityId);
 
 	/**
 	 * Named query for getting the number of participants in an activity
-	 * @param activity_id of activity
+	 * @param activityId of activity
 	 * @return amount of users with participant role in the given activity
 	 */
 		@Query(
 			value= "SELECT COUNT(a) FROM UserActivityRole a WHERE a.activity.activity_id = ?1 AND a.activityRole = com.springvuegradle.model.data.ActivityRole.PARTICIPANT"
 	)
-	public Long getParticipantCountByActivityId(long activity_id);
+	Long getParticipantCountByActivityId(long activityId);
 
     /**
-     * Named query for getting the table entry to ret
-     * @param uuid of user
+     * retrieves the role of a user in a given activity.
+     * @param uuid the id of the user
+     * @param activityId the id of the activity
      * @return the role entry in an activity that a user is involved in
      */
     @Query(
             value = "SELECT a FROM UserActivityRole a WHERE a.user.uuid = ?1 AND a.activity.activity_id = ?2"
     )
-    public Optional<UserActivityRole> getRoleEntryByUserId(long uuid, long activity_id);
+    Optional<UserActivityRole> getRoleEntryByUserId(long uuid, long activityId);
 
     /**
      * Updates the role for a given user in a given activity
      * @param activityRole The new role of the user
      * @param uuid The users id
-     * @param activity_id The activity id
+     * @param activityId The activity id
      */
     @Transactional
     @Modifying
     @Query(
             value = "UPDATE UserActivityRole SET activityRole = ?1 where user.uuid = ?2 and activity.activity_id = ?3"
     )
-    public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activity_id);
+    public void updateUserActivityRole(ActivityRole activityRole, long uuid, long activityId);
 
     public List<UserActivityRole> getAllByActivityAndActivityRole(Activity activity, ActivityRole role);
     
