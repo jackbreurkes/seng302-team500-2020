@@ -37,10 +37,13 @@ public class ActivitySearchController {
     @GetMapping
     @CrossOrigin
     public List<ActivityResponse> searchActivities(@Valid @RequestBody SearchActivityRequest searchActivityRequest, HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
-
+        System.out.println("1231313212312");
+        System.out.println(request.getParameter("searchTerms"));
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
         //Expecting frontend to strip/split strings appropriate, for both quotation marks and space separated
         List<String> searchTerms = searchActivityRequest.getSearchTerms();
+        System.out.println("HELLOOOOOOOOOO");
+        System.out.println(searchTerms);
         if(searchTerms.size() == 0){
             throw new InvalidRequestFieldException("No Search Terms Entered");
         }

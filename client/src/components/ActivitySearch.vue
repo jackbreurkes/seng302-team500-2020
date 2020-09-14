@@ -53,24 +53,9 @@
                                 </v-col>
                             </v-row>
                         <p class="pl-1" style="color: red">{{ errorMessage }}</p>
-                        <v-data-table
-                                :no-data-text="noDataText"
-                                :headers="headers"
-                                :items="activities"
-                                item-key="activity_id"
-                                single-select
-                                v-model="selectedActivities"
-                        >
-                            <template #name="{ item }">{{ item.activity_name }}</template>
-                            <template v-slot:items="activities">
-                                <td class="text-xs-right">{{ activities.item.activity_name}}</td>
-                                <td class="text-xs-right">{{ activities.item.activity_type }}</td>
-                                <td class="text-xs-right">{{ activities.item.creator_name }}</td>
-                                <td class="text-xs-right">{{ activities.item.location }}</td>
-                                <td class="text-xs-right">{{ activities.item.num_participants }}</td>
-                                <td class="text-xs-right">{{ activities.item.num_followers }}</td>
-                            </template>
-                        </v-data-table>
+                        <div id="activitySearchResults">
+                            <ActivitySearchResults :searchTerms="searchTerms"></ActivitySearchResults>
+                        </div>
                     </v-card>
                 </v-col>
             </v-row>
@@ -81,13 +66,17 @@
 
 
 <script lang="ts">
-    import Vue from "vue";
-    // eslint-disable-next-line no-unused-vars
-    import {CreateActivityRequest} from "@/scripts/Activity";
+import Vue from "vue";
+import ActivitySearchResults from "./ActivitySearchResults.vue";
+// eslint-disable-next-line no-unused-vars
+import {CreateActivityRequest} from "@/scripts/Activity";
+// eslint-disable-next-line no-unused-vars
+import { Dictionary } from "vue-router/types/router";
 
     // app Vue instance
     const Activities = Vue.extend({
         name: "Activities",
+        components: { ActivitySearchResults },
 
 
         // app initial state
@@ -103,17 +92,21 @@
                     { text: 'Follower Count', value: 'num_followers'},
                 ],
                 searchString: "",
+                searchTerms: [] as string[],
                 activities: [] as CreateActivityRequest[],
                 selectedActivities: [] as CreateActivityRequest[],
+                errorMessage: "",
             };
         },
 
         created() {
-
+            this.searchTerms = [];
         },
 
         methods: {
-
+            search: function() {
+                this.searchTerms.push(this.searchString);
+            },
         }
 
     });

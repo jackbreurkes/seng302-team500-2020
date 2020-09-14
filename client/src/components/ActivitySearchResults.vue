@@ -1,64 +1,7 @@
 <template>
-  <div style="text-align: center" id="UserSearchResults">
+  <div style="text-align: center" id="ActivitySearchResults">
   <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
-  <v-col v-if="isAdmin" class="d-flex justify-left admin-controls">
-      <div v-if="selectedUsers.length === 1">
-        <v-btn color="primary" @click="editSelectedUser" class="mr-8">edit</v-btn>
-
-        <v-dialog
-      v-model="deleteUserModal"
-      width="450"
-    >
-      <template v-slot:activator="{ on }">
-        <v-btn
-          color="red lighten-2"
-          dark
-          v-on="on"
-          class="mr-8"
-        >
-          delete
-        </v-btn>
-      </template>
-
-      <v-card>
-        <v-card-title
-          class="headline"
-          primary-title
-        >
-          Delete {{selectedUsers[0].firstname + ' ' + selectedUsers[0].lastname}}?
-        </v-card-title>
-
-        <v-card-text>
-          This will delete the user and all of their information. This operation cannot be undone.
-        </v-card-text>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn
-            text
-            @click="deleteUserModal = false"
-          >
-            cancel
-          </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="deleteSelectedUser"
-          >
-            delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-
-        <v-btn v-if="!selectedUserIsAdmin" color="success" @click="promoteSelectedUser" class="mr-8">promote</v-btn>
-        <v-btn v-if="selectedUserIsAdmin" color="warning" @click="demoteSelectedUser" class="mr-8">demote</v-btn>
-      </div>
-  </v-col>
     <v-data-table
     :no-data-text="noDataText"
     :headers="headers"
@@ -66,9 +9,8 @@
     item-key="activity_id"
     @click:row="goToActivity"
     :page.sync="page"
-    :show-select="isAdmin"
     single-select
-    v-model="selectedUsers"
+    v-model="selectedActivities"
     >
     <template #item.full_name="{ item }">{{ item.activityName }} {{ item.creatorName }} {{ item.location }}</template>
     <template #item.short_interests="{ item }">{{getActivitiesString(item.activities)}}</template>
@@ -94,9 +36,6 @@ import { UserApiFormat } from "@/scripts/User";
 import { CreateActivityRequest } from '@/scripts/Activity'
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
-import * as auth from "../services/auth.service";
-import * as adminController from "../controllers/admin.controller";
-import { deleteUserAccount } from "../controllers/profile.controller"
 
 // app Vue instance
 const ActivitySearchResults = Vue.extend({
@@ -117,41 +56,28 @@ const ActivitySearchResults = Vue.extend({
         { text: 'Particpant Count', value: 'participants' },
         { text: 'Follower Count', value: 'followers'}
       ],
-      isAdmin: false,
-      activties: [] as CreateActivityRequest[],
-      deleteUserModal: false,
+      activities: [] as CreateActivityRequest[],
+      selectedActivities: [] as CreateActivityRequest[],
       users: [] as UserApiFormat[],
       errorMessage: "",
       noDataText: "No users found",
       searchRulesModal: false,
+      creatorId: NaN as number,
       page: 1
     }
   },
   created: async function() {
-    if (auth.isAdmin()) {
-      this.isAdmin = true;
-    }
     await this.search(this.searchTerms);
     this.checkPage();
   },
 
   computed: {
-
-    selectedUser: function() {
-      if (this.selectedUsers.length !== 1) {
+    selectedActivity: function() {
+      if (this.selectedActivities.length !== 1){ 
         return null;
       }
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
-      return selectedUser;
-    },
-
-    selectedUserIsAdmin: function() {
-      if (this.selectedUsers.length !== 1) {
-        return false;
-      }
-
-      let selectedUser: UserApiFormat = this.selectedUsers[0];
-      return selectedUser.permission_level && selectedUser.permission_level >= 120;
+      let selectedActivities: CreateActivityRequest = this.selectedActivities[0];
+      return selectedActivities;
     }
   },
 
@@ -160,7 +86,7 @@ const ActivitySearchResults = Vue.extend({
     goToActivity: function(activityId: any) {
       this.$router.push(`/profiles/${this.creatorId}/activities/${activityId}`);
     },
-    search: async function(searchTerms: Dictionary<string>) {
+    search: async function(searchTerms: string[]) {
       this.noDataText = "No activities found";
       this.errorMessage = "";
       try {
@@ -178,6 +104,13 @@ const ActivitySearchResults = Vue.extend({
         }
         this.noDataText = this.errorMessage;
         this.activities = [];
+      }
+    },
+
+    checkPage: function(){
+      if(localStorage.getItem("searchPage")){
+        this.page = parseInt(localStorage.getItem("searchPage")!);
+        localStorage.removeItem("searchPage");
       }
     },
 
