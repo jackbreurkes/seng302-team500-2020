@@ -346,75 +346,82 @@ const Activity = Vue.extend({
 
     const activityId: number = parseInt(this.$route.params.activityId);
     const creatorId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(creatorId) || isNaN(activityId)) {
-      this.$router.back();
-    } else {
-      this.activityId = activityId;
-      this.creatorId = creatorId;
-
-      getActivity(creatorId, activityId)
-      .then((res) => {
-        this.activity = res;
-        if (this.activity.num_followers != null) {
-            this.followers = this.activity.num_followers;
-        }
-        if (this.activity.num_participants != null) {
-            this.participants = this.activity.num_participants;
-        }
-        getIsFollowingActivity(this.currentUsersProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.following = booleanResponse;
-        })
-        activityController.getIsParticipating(this.currentUsersProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.participating = booleanResponse;
-        })
-        if (this.creatorId == this.currentUsersProfileId) {
-          this.organiser = true;
-        } else {
-          activityController.getIsOrganising(this.currentUsersProfileId, this.activityId)
-          .then((booleanResponse) => {
-            this.organiser = booleanResponse;
-          })
-        }
-
-        let outcome_array = this.activity.outcomes as ActivityOutcomes[];
-        for (let outcome_index in outcome_array) {
-          if (this.activity.outcomes === undefined) continue;
-          let outcome_id = this.activity.outcomes[outcome_index].outcome_id;
-          if (outcome_id === undefined) continue;
-          this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
-          this.possibleOutcomes[outcome_id] = this.activity.outcomes[outcome_index] as ActivityOutcomes;
-        }
-      })
-      .then(() => {
-        activityController.getParticipantResults(this.currentUsersProfileId, this.activityId)
-        .then((results) => {
-          let participantResults = {} as Record<number, ParticipantResultDisplay>;
-          for (let index in results) {
-            let date = results[index].completed_date.split("T")[0];
-            let time = results[index].completed_date.split("T")[1];
-            participantResults[results[index].outcome_id] = {
-                'score': results[index].result,
-                'date': date,
-                'time': time,
-                'description': this.possibleOutcomes[results[index].outcome_id].description,
-                'units': this.possibleOutcomes[results[index].outcome_id].units
-            } as ParticipantResultDisplay;
-          }
-          this.currentResults = participantResults;
-        });
-      })
-      .catch(() => {
-        this.$router.back();
-      });
-    }
-
-    // Populates the datatable that holds all the participants/oraganisers
-    this.search();
-},
+    
+    this.displayActivity(activityId, creatorId);
+  },
 
   methods: {
+    /**
+     * Displays the activity (populates the page)
+     */
+    displayActivity: function(activityId: number, creatorId: number) {
+      if (isNaN(creatorId) || isNaN(activityId)) {
+        this.$router.back();
+      } else {
+        this.activityId = activityId;
+        this.creatorId = creatorId;
+
+        getActivity(creatorId, activityId)
+        .then((res) => {
+          this.activity = res;
+          if (this.activity.num_followers != null) {
+              this.followers = this.activity.num_followers;
+          }
+          if (this.activity.num_participants != null) {
+              this.participants = this.activity.num_participants;
+          }
+          getIsFollowingActivity(this.currentUsersProfileId, this.activityId)
+          .then((booleanResponse) => {
+            this.following = booleanResponse;
+          })
+          activityController.getIsParticipating(this.currentUsersProfileId, this.activityId)
+          .then((booleanResponse) => {
+            this.participating = booleanResponse;
+          })
+          if (this.creatorId == this.currentUsersProfileId) {
+            this.organiser = true;
+          } else {
+            activityController.getIsOrganising(this.currentUsersProfileId, this.activityId)
+            .then((booleanResponse) => {
+              this.organiser = booleanResponse;
+            })
+          }
+
+          let outcome_array = this.activity.outcomes as ActivityOutcomes[];
+          for (let outcome_index in outcome_array) {
+            if (this.activity.outcomes === undefined) continue;
+            let outcome_id = this.activity.outcomes[outcome_index].outcome_id;
+            if (outcome_id === undefined) continue;
+            this.participantOutcome[outcome_id] = {"score": ""} as ParticipantResult;
+            this.possibleOutcomes[outcome_id] = this.activity.outcomes[outcome_index] as ActivityOutcomes;
+          }
+        })
+        .then(() => {
+          activityController.getParticipantResults(this.currentUsersProfileId, this.activityId)
+          .then((results) => {
+            let participantResults = {} as Record<number, ParticipantResultDisplay>;
+            for (let index in results) {
+              let date = results[index].completed_date.split("T")[0];
+              let time = results[index].completed_date.split("T")[1];
+              participantResults[results[index].outcome_id] = {
+                  'score': results[index].result,
+                  'date': date,
+                  'time': time,
+                  'description': this.possibleOutcomes[results[index].outcome_id].description,
+                  'units': this.possibleOutcomes[results[index].outcome_id].units
+              } as ParticipantResultDisplay;
+            }
+            this.currentResults = participantResults;
+          });
+        })
+        .catch(() => {
+          this.$router.back();
+        });
+      }
+
+      // Populates the datatable that holds all the participants/oraganisers
+      this.search();
+    },
     /**
      * Send the user to the activity's edit page
      */
@@ -585,8 +592,15 @@ const Activity = Vue.extend({
         this.users = [];
       }
     },
-  }
+  },
 
+  watch: {
+    $route(to) {
+      const activityId: number = parseInt(to.params.activityId);
+      const creatorId: number = parseInt(to.params.profileId);
+      this.displayActivity(activityId, creatorId);
+    }
+  }
 });
 
 export default Activity;
