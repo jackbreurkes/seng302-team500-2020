@@ -7,6 +7,8 @@ export interface CreateActivityRequest {
     start_time?: string;
     end_time?: string;
     location?: string;
+    latitude?: number;
+    longitude?: number;
     outcomes?: ActivityOutcomes[];
     num_followers?: number;
     num_participants?: number;
