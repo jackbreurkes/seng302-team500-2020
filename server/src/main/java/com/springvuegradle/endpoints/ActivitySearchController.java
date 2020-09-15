@@ -34,7 +34,7 @@ public class ActivitySearchController {
      */
     @GetMapping
     @CrossOrigin
-    public List<ActivityResponse> searchActivities(@RequestParam(value="searchTerms[]")String[] requestSearchTerms, @RequestParam(value="page") int page, HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+    public List<ActivityResponse> searchActivities(@RequestParam(value="searchTerms")String[] requestSearchTerms, @RequestParam(value="page") int page, HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
 
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
         ArrayList<String> searchTerms = new ArrayList<>(Arrays.asList(requestSearchTerms));
