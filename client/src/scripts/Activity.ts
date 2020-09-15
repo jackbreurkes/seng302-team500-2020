@@ -7,8 +7,8 @@ export interface CreateActivityRequest {
     start_time?: string;
     end_time?: string;
     location?: string;
-    latitude?: number;
-    longitude?: number;
+    geoposition?: GeoPosition;
+    bounding_box?: GeoPosition[];
     outcomes?: ActivityOutcomes[];
     num_followers?: number;
     num_participants?: number;
@@ -32,4 +32,9 @@ export interface ParticipantResultDisplay {
   time: string;
   description?: string;
   units?: string;
+}
+
+export interface GeoPosition {
+  lat: number;
+  lon: number;
 }
