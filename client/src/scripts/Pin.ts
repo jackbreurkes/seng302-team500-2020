@@ -1,6 +1,7 @@
 import { LocationCoordinatesInterface } from './LocationCoordinatesInterface';
 
 export interface Pin {
-    activityId: number
+    activity_id: number
     location: LocationCoordinatesInterface
+    role?: string
 }

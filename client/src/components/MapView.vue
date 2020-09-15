@@ -19,7 +19,7 @@
           <v-col cols="6">{{activity.activity_type.join(", ")}}</v-col>
         </v-row>
         <v-row>
-          <v-col cols="12"><v-btn @click="visitActivity(activity)" text small>Go to activity</v-btn></v-col>
+          <v-col cols="12"><v-btn @click="visitActivity(activity)" text small color="primary">Go to activity</v-btn></v-col>
         </v-row>
       </v-container>
     </div>
@@ -88,7 +88,13 @@
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
           displayedPins: [] as any[],
           displayedActivities: [] as CreateActivityRequest[],
-          openInfoWindow: null as any
+          openInfoWindow: null as any,
+          mapIcons: [
+            "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          ] //in the order: creator, participant, following, miscellaneous
       }
     },
 
@@ -145,25 +151,28 @@
       loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
         let pins = [ //for testing purposes
           {
-            "activityId": 3,
+            "activity_id": 193,
             "location": {
               lat: -41.2784228,
               lon: 174.7766923
-            }
+            },
+            "role": "creator"
           },
           {
-            "activityId": 5,
+            "activity_id": 3,
             "location": {
               lat: -41.2784228,
               lon: 174.7766923
-            }
+            },
+            "role": "participant"
           },
           {
-            "activityId": 7,
+            "activity_id": 195,
             "location": {
               lat: -41.2774228,
               lon: 174.7766923
-            }
+            },
+            "role": "follower"
           }
         ] as Pin[];
 
@@ -195,14 +204,27 @@
             return;
           }
           let allActivities = [] as number[];
+          let highestRole = 3;
           
           pins.forEach((pin: Pin) =>  {
             if (pin.location.lat == position.lat && pin.location.lon == position.lng) {
-              allActivities.push(pin.activityId);
+              allActivities.push(pin.activity_id);
+              let role = pin.role;
+              if (role == "creator") {
+                highestRole = 0;
+              } else if (role == "participant" && highestRole > 1) {
+                highestRole = 1;
+              } else if (role == "follower" && highestRole > 2) {
+                highestRole = 2;
+              }
             }
           });
           // @ts-ignore next line
-          let displayedPin = new window.google.maps.Marker({position: position, map: this.map});
+          let displayedPin = new window.google.maps.Marker({
+            position: position, 
+            map: this.map,
+            icon: this.mapIcons[highestRole]
+          });
 
           displayedPin.addListener('click', () => {
             this.createPinInfoWindow(this.map, displayedPin, allActivities);
