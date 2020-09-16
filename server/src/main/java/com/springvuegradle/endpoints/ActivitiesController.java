@@ -67,8 +67,8 @@ import com.springvuegradle.util.FormValidator;
 @RestController
 public class ActivitiesController {
 
-    private final String PROFILE_NOT_FOUND = "profile with id %d not found";
-    private final String ACTIVITY_NOT_FOUND = "activity with id %d not found";
+    private static final String PROFILE_NOT_FOUND = "profile with id %d not found";
+    private static final String ACTIVITY_NOT_FOUND = "activity with id %d not found";
 
     @Autowired
     private ProfileRepository profileRepository;
@@ -335,7 +335,7 @@ public class ActivitiesController {
      */
     @GetMapping("/profiles/{profileId}/activities/{activityId}")
     @CrossOrigin
-    @Deprecated
+    @Deprecated(since = "sprint 5")
     public ActivityResponse getActivity(@PathVariable("profileId") long profileId, @PathVariable("activityId") long activityId,
                                         HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         ActivityResponse response = getSingleActivity(activityId, request);
@@ -529,7 +529,7 @@ public class ActivitiesController {
     @GetMapping("/activities/{activityId}/results")
     @CrossOrigin
     public List<ParticipantResultResponse> getActivityResults(@PathVariable("activityId") long activityId,
-                                                              HttpServletRequest request) throws UserNotAuthenticatedException, UserNotAuthorizedException, RecordNotFoundException {
+                                                              HttpServletRequest request) throws UserNotAuthenticatedException, RecordNotFoundException {
         long authId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
         if (!activityRepository.existsById(activityId)) {
