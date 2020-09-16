@@ -203,7 +203,7 @@ export async function getParticipants(activityId: number): Promise<UserRoleForma
  */
 export async function getActivitiesInBoundingBox(boundingBox: BoundingBoxInterface) {
 
-  let res = await instance.get(`/map?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
+  let res = await instance.get(`/maps?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
     &sw_lat=${boundingBox.sw_lat}&sw_lon=${boundingBox.sw_lon}`);
   return res.data;
 }

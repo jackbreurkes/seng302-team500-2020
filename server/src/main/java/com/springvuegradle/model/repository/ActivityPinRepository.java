@@ -22,9 +22,9 @@ public interface ActivityPinRepository extends JpaRepository<ActivityPin, Long> 
      * @param pageable pagination object for this query
      * @return a list of activity pins that are within the requested bounds
      */
-    @Query("SELECT p FROM ActivityPin p WHERE p.latitude <= :northEastLat " +
-            "AND p.longitude <= :northEastLon " +
-            "AND p.latitude > :southWestLat " +
-            "AND p.longitude > :southWestLon")
+    @Query("SELECT p FROM ActivityPin p WHERE p.latitude <= ?1 " +
+            "AND p.longitude <= ?2 " +
+            "AND p.latitude > ?3 " +
+            "AND p.longitude > ?4")
     List<ActivityPin> findPinsInBounds(float northEastLat, float northEastLon, float southWestLat, float southWestLon, Pageable pageable);
 }

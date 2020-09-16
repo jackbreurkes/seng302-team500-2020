@@ -12,7 +12,7 @@ import com.springvuegradle.model.data.GeoPosition;
 public class ActivityPinResponse {
 
     private final long activityId;
-    private final GeoPosition coordinates;
+    private final GeoPosition location;
     private final String role;
     
     /**
@@ -20,7 +20,7 @@ public class ActivityPinResponse {
      */
     protected ActivityPinResponse() {
     	activityId = 0;
-    	coordinates = null;
+    	location = null;
     	role = null;
     }
 
@@ -31,7 +31,7 @@ public class ActivityPinResponse {
      */
     public ActivityPinResponse(ActivityPin pin, String role) {
         activityId = pin.getActivity().getId();
-        coordinates = new GeoPosition(pin.getLatitude(), pin.getLongitude());
+        location = new GeoPosition(pin.getLatitude(), pin.getLongitude());
         this.role = role;
     }
 
@@ -39,8 +39,8 @@ public class ActivityPinResponse {
         return activityId;
     }
 
-    public GeoPosition getCoordinates() {
-        return coordinates;
+    public GeoPosition getLocation() {
+        return location;
     }
 
     public String getRole() {

@@ -136,10 +136,10 @@
           let bounds = this.map.getBounds();
 
           let boundingBox = {
-            sw_lat: bounds['Va']['i'],
-            ne_lat: bounds['Va']['j'],
-            sw_lon: bounds['ab']['i'],
-            ne_lon: bounds['ab']['j']
+            sw_lat: bounds['ab']['i'],
+            ne_lat: bounds['ab']['j'],
+            sw_lon: bounds['Va']['i'],
+            ne_lon: bounds['Va']['j']
           } as BoundingBoxInterface;
 
           this.loadPinsInArea(boundingBox);
@@ -149,39 +149,7 @@
 
     methods: {
       loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
-        let pins = [ //for testing purposes
-          {
-            "activity_id": 193,
-            "location": {
-              lat: -41.2784228,
-              lon: 174.7766923
-            },
-            "role": "creator"
-          },
-          {
-            "activity_id": 3,
-            "location": {
-              lat: -41.2784228,
-              lon: 174.7766923
-            },
-            "role": "participant"
-          },
-          {
-            "activity_id": 195,
-            "location": {
-              lat: -41.2774228,
-              lon: 174.7766923
-            },
-            "role": "follower"
-          }
-        ] as Pin[];
-
-        try {//TODO take out the try statement once the endpoint is implemented
-          pins = await getActivitiesInBoundingBox(boundingBox);
-        } catch (err) {
-          1+1;
-        }
-
+        let pins = await getActivitiesInBoundingBox(boundingBox);        
         let createdPositions = [] as any[];
 
         //clear all the pins
