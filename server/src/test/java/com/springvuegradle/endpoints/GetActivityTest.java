@@ -43,36 +43,39 @@ public class GetActivityTest {
     @InjectMocks
     private ActivitiesController activitiesController;
 
+    @InjectMocks
+    private ActivitySearchController activitySearchController;
+
     @Mock
     private ActivityRepository activityRepository;
 
     @Mock
     private ProfileRepository profileRepository;
-    
+
     @Mock
     private SubscriptionRepository subscriptionRepo;
-    
+
     @Mock
     private UserActivityRoleRepository userActivityRoleRepository;
 
     private Profile profile;
 
     @BeforeAll
-    public void setUp(){
+    public void setUp() {
         //Initialize the mocks we create
         MockitoAnnotations.initMocks(this);
         profile = new Profile(new User(1L), "David", "Clarke", LocalDate.now(), Gender.FEMALE);
     }
 
     @Test
-    void testAuthorisedUser() throws Exception{
+    void testAuthorisedUser() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
         Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
         Mockito.when(profileRepository.findById(profile.getUser().getUserId())).thenReturn(Optional.ofNullable(profile));
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
-        ActivityResponse response = activitiesController.getActivity(1L,2L, request);
+        ActivityResponse response = activitiesController.getActivity(1L, 2L, request);
         assertEquals(response.getActivityName(), "Test");
     }
 
@@ -86,13 +89,13 @@ public class GetActivityTest {
         Mockito.when(profileRepository.findById(nonExistentCreatorId)).thenReturn(Optional.empty());
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
         assertThrows(RecordNotFoundException.class, () -> {
-            activitiesController.getActivity(nonExistentCreatorId,2L, request);
+            activitiesController.getActivity(nonExistentCreatorId, 2L, request);
         });
     }
 
 
     @Test
-    void testUnauthorisedUser(){
+    void testUnauthorisedUser() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         assertThrows(UserNotAuthenticatedException.class, () -> {
@@ -101,20 +104,20 @@ public class GetActivityTest {
     }
 
     @Test
-    void testActivityDoesntExist(){
+    void testActivityDoesntExist() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.empty());
 
         assertThrows(RecordNotFoundException.class, () -> {
-           activitiesController.getActivity(1L, 2L, request);
+            activitiesController.getActivity(1L, 2L, request);
         });
     }
 
     // --------- Test for GET /activities/activityId -------------------------
 
     @Test
-    void testAuthorisedUserGetActivityWithoutCreatorId() throws Exception{
+    void testAuthorisedUserGetActivityWithoutCreatorId() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
@@ -126,7 +129,7 @@ public class GetActivityTest {
 
 
     @Test
-    void testUnauthorisedUserGetActivityWithoutCreatorId(){
+    void testUnauthorisedUserGetActivityWithoutCreatorId() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         assertThrows(UserNotAuthenticatedException.class, () -> {
@@ -135,7 +138,7 @@ public class GetActivityTest {
     }
 
     @Test
-    void testGetNonexistentActivityWithoutCreatorId(){
+    void testGetNonexistentActivityWithoutCreatorId() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.empty());
@@ -144,37 +147,37 @@ public class GetActivityTest {
             activitiesController.getSingleActivity(2L, request);
         });
     }
-    
+
     @ParameterizedTest
-	@ValueSource(ints = {0, 1, 2, 3, 10, 100})
+    @ValueSource(ints = {0, 1, 2, 3, 10, 100})
     void testActivityWithFollowers(int followers) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
         Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
         activity.setId(2);
-        
+
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
         Mockito.when(subscriptionRepo.getFollowerCount(2L)).thenReturn(Long.valueOf(followers));
         Mockito.when(userActivityRoleRepository.getParticipantCountByActivityId(2L)).thenReturn(Long.valueOf(0));
-        
+
         ActivityResponse response = activitiesController.getSingleActivity(2L, request);
         assertEquals(followers, response.getNumFollowers());
     }
-    
+
     @ParameterizedTest
-	@ValueSource(ints = {0, 1, 2, 3, 10, 100})
+    @ValueSource(ints = {0, 1, 2, 3, 10, 100})
     void testActivityWithParticipants(int participants) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
         Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
         activity.setId(2);
-        
+
         Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
         Mockito.when(subscriptionRepo.getFollowerCount(2L)).thenReturn(0L);
         Mockito.when(userActivityRoleRepository.getParticipantCountByActivityId(2L)).thenReturn(Long.valueOf(participants));
-        
+
         ActivityResponse response = activitiesController.getSingleActivity(2L, request);
         assertEquals(participants, response.getNumParticipants());
     }
@@ -221,7 +224,4 @@ public class GetActivityTest {
         
         assertEquals(2, profiles.size(), "Activity should have 2 people involved: the creator and the person participating");
     }
-
-
-
 }
