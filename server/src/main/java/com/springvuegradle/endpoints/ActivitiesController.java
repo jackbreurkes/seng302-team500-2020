@@ -14,6 +14,8 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,24 +36,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityChangeLog;
-import com.springvuegradle.model.data.ActivityOutcome;
-import com.springvuegradle.model.data.ActivityParticipantResult;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
-import com.springvuegradle.model.repository.ActivityOutcomeRepository;
-import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
@@ -90,6 +74,9 @@ public class ActivitiesController {
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
+
+    @Autowired
+    private ActivityPinRepository activityPinRepository;
 
     @Autowired
     private ActivityOutcomeRepository activityOutcomeRepository;
@@ -132,6 +119,33 @@ public class ActivitiesController {
         for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser)) {
             changeLogRepository.save(change);
         }
+        if ( updateActivityRequest.getLocation() != activity.getLocation()) {
+            float locationLat = updateActivityRequest.getGeoposition().getLat();
+            float locationLon = updateActivityRequest.getGeoposition().getLon();
+            float boundingSWLat = updateActivityRequest.getBoundingBox()[0].getLat();
+            float boundingNELat = updateActivityRequest.getBoundingBox()[1].getLat();
+            float boundingSWLon = updateActivityRequest.getBoundingBox()[0].getLon();
+            float boundingNELon = updateActivityRequest.getBoundingBox()[1].getLon();
+            ActivityPin oldPin = activity.getActivityPin();
+            if (!oldPin.equals(null)) {
+                oldPin.setLatitude(locationLat);
+                oldPin.setLongitude(locationLon);
+                oldPin.setSouthwestBoundingLatitude(boundingSWLat);
+                oldPin.setNortheastBoundingLatitude(boundingNELat);
+                oldPin.setSouthwestBoundingLongitude(boundingSWLon);
+                oldPin.setNortheastBoundingLongitude(boundingNELon);
+                activityPinRepository.save(oldPin);
+            }else {
+
+                // creating and saving ActivityPin. We do not check for duplicates as ActivityPins and Activity have a
+                // 1:1 relationship.
+                ActivityPin pin = new ActivityPin(activity, locationLat, locationLon, boundingSWLat, boundingNELat, boundingSWLon, boundingNELon);
+                activity.setActivityPin(pin);
+                activityPinRepository.save(pin);
+            }
+        }
+
+
 
         activity.setActivityName(updateActivityRequest.getActivityName());
         activity.setDescription(updateActivityRequest.getDescription());
@@ -318,8 +332,23 @@ public class ActivitiesController {
         for (ActivityOutcomeRequest outcome : createActivityRequest.getOutcomes()) {
             activity.addOutcome(new ActivityOutcome(outcome.getDescription(), outcome.getUnits()));
         }
+
+        // creating and saving ActivityPin. We do not check for duplicates as ActivityPins and Activity have a
+        // 1:1 relationship.
+        float locationLat = createActivityRequest.getGeoposition().getLat();
+        float locationLon = createActivityRequest.getGeoposition().getLon();
+        float boundingSWLat = createActivityRequest.getBoundingBox()[0].getLat();
+        float boundingNELat = createActivityRequest.getBoundingBox()[1].getLat();
+        float boundingSWLon = createActivityRequest.getBoundingBox()[0].getLon();
+        float boundingNELon = createActivityRequest.getBoundingBox()[1].getLon();
+
+        ActivityPin pin = new ActivityPin(activity,locationLat, locationLon,boundingSWLat,boundingNELat, boundingSWLon, boundingNELon);
+
+        activity.setActivityPin(pin);
         activity = activityRepository.save(activity);
+        activityPinRepository.save(pin);
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
+
         return new ActivityResponse(activity, 1L, 1L);
     }
 
