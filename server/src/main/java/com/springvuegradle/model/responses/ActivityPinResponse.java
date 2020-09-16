@@ -14,6 +14,15 @@ public class ActivityPinResponse {
     private final long activityId;
     private final GeoPosition coordinates;
     private final String role;
+    
+    /**
+     * empty constructor used to map JSON responses to objects within tests.
+     */
+    protected ActivityPinResponse() {
+    	activityId = 0;
+    	coordinates = null;
+    	role = null;
+    }
 
     /**
      * constructor for a activity pin response.

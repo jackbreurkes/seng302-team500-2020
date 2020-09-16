@@ -1,8 +1,22 @@
 package com.springvuegradle.endpoints;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.Profile;
@@ -12,17 +26,6 @@ import com.springvuegradle.model.repository.ProfileRepository;
 import com.springvuegradle.model.repository.SubscriptionRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.responses.ActivityPinResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Controller for maps related endpoints.
@@ -85,31 +88,41 @@ public class MapsController {
 
         List<ActivityPinResponse> responses = new ArrayList<>();
         for (ActivityPin pin : pinsWithinBounds) {
-            String userRole = null;
-            final long activityId = pin.getActivity().getId();
-            boolean isCreator = pin.getActivity().getCreator().getUser().getUserId() == userId;
-            if (isCreator) {
-                userRole = "creator";
-            } else {
-                UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(userId, activityId).orElse(null);
-                boolean isOrganiser = role != null && role.getActivityRole().equals(ActivityRole.ORGANISER);
-                boolean isParticipant = role != null && role.getActivityRole().equals(ActivityRole.PARTICIPANT);
-                if (isOrganiser) {
-                    userRole = "organiser";
-                } else if (isParticipant) {
-                    userRole = "participant";
-                } else {
-                    Profile profile = profileRepository.findById(userId).orElse(null);
-                    boolean isFollower = profile != null && subscriptionRepository.isSubscribedToActivity(activityId, profile);
-                    if (isFollower) {
-                        userRole = "follower";
-                    }
-                }
-            }
-
+            String userRole = this.getActivityRoleString(userId, pin.getActivity());
             responses.add(new ActivityPinResponse(pin, userRole));
         }
         return responses;
+    }
+    
+    /**
+     * Gets the activity role string for the given activity and user
+     * @param userId user ID to get the role of
+     * @param activity activity we are getting the user's role within
+     * @return Output can be any of: "creator", "organiser", "participant", "follower" or null
+     */
+    private String getActivityRoleString(long userId, Activity activity) {
+    	final long activityId = activity.getId();
+    	String userRole = null;
+    	boolean isCreator = activity.getCreator().getUser().getUserId() == userId;
+        if (isCreator) {
+            userRole = "creator";
+        } else {
+            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(userId, activityId).orElse(null);
+            boolean isOrganiser = role != null && role.getActivityRole().equals(ActivityRole.ORGANISER);
+            boolean isParticipant = role != null && role.getActivityRole().equals(ActivityRole.PARTICIPANT);
+            if (isOrganiser) {
+                userRole = "organiser";
+            } else if (isParticipant) {
+                userRole = "participant";
+            } else {
+                Profile profile = profileRepository.findById(userId).orElse(null);
+                boolean isFollower = profile != null && subscriptionRepository.isSubscribedToActivity(activityId, profile);
+                if (isFollower) {
+                    userRole = "follower";
+                }
+            }
+        }
+        return userRole;
     }
 
     /**
