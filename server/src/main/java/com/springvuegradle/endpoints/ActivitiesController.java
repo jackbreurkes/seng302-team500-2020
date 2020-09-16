@@ -8,15 +8,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -44,6 +50,7 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.model.responses.UserActivityRoleResponse;
 import com.springvuegradle.util.FormValidator;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Controller for all endpoints relating to activities
@@ -119,33 +126,26 @@ public class ActivitiesController {
         for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser)) {
             changeLogRepository.save(change);
         }
-        if ( updateActivityRequest.getLocation() != activity.getLocation()) {
-            float locationLat = updateActivityRequest.getGeoposition().getLat();
-            float locationLon = updateActivityRequest.getGeoposition().getLon();
-            float boundingSWLat = updateActivityRequest.getBoundingBox()[0].getLat();
-            float boundingNELat = updateActivityRequest.getBoundingBox()[1].getLat();
-            float boundingSWLon = updateActivityRequest.getBoundingBox()[0].getLon();
-            float boundingNELon = updateActivityRequest.getBoundingBox()[1].getLon();
-            ActivityPin oldPin = activity.getActivityPin();
-            if (!oldPin.equals(null)) {
-                oldPin.setLatitude(locationLat);
-                oldPin.setLongitude(locationLon);
-                oldPin.setSouthwestBoundingLatitude(boundingSWLat);
-                oldPin.setNortheastBoundingLatitude(boundingNELat);
-                oldPin.setSouthwestBoundingLongitude(boundingSWLon);
-                oldPin.setNortheastBoundingLongitude(boundingNELon);
-                activityPinRepository.save(oldPin);
-            }else {
 
-                // creating and saving ActivityPin. We do not check for duplicates as ActivityPins and Activity have a
-                // 1:1 relationship.
-                ActivityPin pin = new ActivityPin(activity, locationLat, locationLon, boundingSWLat, boundingNELat, boundingSWLon, boundingNELon);
+        if(!activity.getLocation().equals(updateActivityRequest.getLocation())) {
+            ActivityPin pin = validateCreatePinLocation(activity,updateActivityRequest.getLocation());
+            if (activity.getActivityPin() != null) {
+                // overwrite
+                ActivityPin oldPin = activity.getActivityPin();
+                oldPin.setNortheastBoundingLongitude(pin.getNortheastBoundingLongitude());
+                oldPin.setSouthwestBoundingLongitude(pin.getSouthwestBoundingLongitude());
+                oldPin.setNortheastBoundingLatitude(pin.getNortheastBoundingLatitude());
+                oldPin.setSouthwestBoundingLatitude(pin.getSouthwestBoundingLatitude());
+                oldPin.setLongitude(pin.getLongitude());
+                oldPin.setLatitude(pin.getLatitude());
+
+                activityPinRepository.save(oldPin);
+            } else {
                 activity.setActivityPin(pin);
                 activityPinRepository.save(pin);
             }
+
         }
-
-
 
         activity.setActivityName(updateActivityRequest.getActivityName());
         activity.setDescription(updateActivityRequest.getDescription());
@@ -333,16 +333,7 @@ public class ActivitiesController {
             activity.addOutcome(new ActivityOutcome(outcome.getDescription(), outcome.getUnits()));
         }
 
-        // creating and saving ActivityPin. We do not check for duplicates as ActivityPins and Activity have a
-        // 1:1 relationship.
-        float locationLat = createActivityRequest.getGeoposition().getLat();
-        float locationLon = createActivityRequest.getGeoposition().getLon();
-        float boundingSWLat = createActivityRequest.getBoundingBox()[0].getLat();
-        float boundingNELat = createActivityRequest.getBoundingBox()[1].getLat();
-        float boundingSWLon = createActivityRequest.getBoundingBox()[0].getLon();
-        float boundingNELon = createActivityRequest.getBoundingBox()[1].getLon();
-
-        ActivityPin pin = new ActivityPin(activity,locationLat, locationLon,boundingSWLat,boundingNELat, boundingSWLon, boundingNELon);
+        ActivityPin pin = validateCreatePinLocation(activity, createActivityRequest.getLocation());
 
         activity.setActivityPin(pin);
         activity = activityRepository.save(activity);
@@ -350,6 +341,60 @@ public class ActivitiesController {
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
 
         return new ActivityResponse(activity, 1L, 1L);
+    }
+
+    /**
+     * Validates the location given with the nominatim API and returns a created pin with appropriate lat, lon and
+     * bounding box coordinates
+     * @param activity The activity for the pin.
+     * @param location Frontend verified string of a location
+     * @return The created activity pin.
+     */
+    private ActivityPin validateCreatePinLocation(Activity activity, String location) throws RecordNotFoundException {
+        final String uri = "https://nominatim.openstreetmap.org/search/?q=" + location
+                + "&format=json&addressdetails=1&accept-language=en&limit=1";
+
+        RestTemplate restTemplate = new RestTemplate();
+        String result = restTemplate.getForObject(uri, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = null;
+
+        float locationLat = 0;
+        float locationLon = 0;
+
+        float boundingSWLat = 0;
+        float boundingNELat = 0;
+        float boundingSWLon = 0;
+        float boundingNELon = 0;
+
+        try {
+            rootNode = mapper.readTree(result);
+
+            if (rootNode instanceof ArrayNode) {
+                for (JsonNode node : ((ArrayNode)rootNode)) {
+                    JsonNode boundingNode = node.get("boundingbox");
+
+                    locationLat = (float) node.get("lat").asDouble();
+                    locationLon = (float) node.get("lon").asDouble();
+
+                    boundingSWLat = (float) boundingNode.get(0).asDouble();
+                    boundingNELat = (float) boundingNode.get(1).asDouble();
+                    boundingSWLon = (float) boundingNode.get(2).asDouble();
+                    boundingNELon = (float) boundingNode.get(3).asDouble();
+
+
+                }
+            }
+        } catch (JsonProcessingException | NullPointerException e) {
+            e.printStackTrace();
+        }
+
+        if (boundingSWLat == boundingNELat) {
+            throw new RecordNotFoundException("Cannot find this location");
+        }
+
+        return new ActivityPin(activity,locationLat, locationLon,boundingSWLat,boundingNELat, boundingSWLon, boundingNELon);
     }
 
     /**

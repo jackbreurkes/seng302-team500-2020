@@ -40,27 +40,6 @@ public class CreateActivityRequest {
     private String location;
 
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private GeoPosition geoposition;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private GeoPosition[] boundingBox; // array of size 2 - first element is southwest point, second is northeast point
-
-    public GeoPosition getGeoposition() {
-        return geoposition;
-    }
-
-    public void setGeoposition(GeoPosition geoposition) {
-        this.geoposition = geoposition;
-    }
-
-    public GeoPosition[] getBoundingBox() {
-        return boundingBox;
-    }
-
-    public void setBoundingBox(GeoPosition[] boundingBox) {
-        this.boundingBox = boundingBox;
-    }
-
     public CreateActivityRequest() {}
 
     /**
