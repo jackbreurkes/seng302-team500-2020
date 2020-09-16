@@ -58,15 +58,11 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
     throw new Error("Please enter the location of the activity")
   }
   else {
-    console.log("about to await")
     let locationObject = await getAddressCoordAndFormattedString(createActivityRequest.location)
     if (locationObject[0] === undefined) {
       throw new Error("Can't find a valid location with that address, try again")
     } else {
       createActivityRequest.location = locationObject[0].display_name
-      //for recieving lat/long values for later storage
-      // console.log(locationObject[0].lat)
-      // console.log(locationObject[0].lon)
     }
 
   }
