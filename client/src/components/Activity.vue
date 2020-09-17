@@ -82,6 +82,7 @@
               <p> Description: {{ activity.description }} </p>
               <br>
               <p> Location: {{ activity.location }} </p>
+              <p v-on:click="viewOnMap"> Show activity on map </p>
 
               <div v-if="hasTimeFrame(activity)"> <!-- Activity has a start and end time -->
                 <p> {{ getDurationDescription(activity.start_time, activity.end_time) }} </p>
@@ -595,6 +596,26 @@ const Activity = Vue.extend({
         this.users = [];
       }
     },
+
+    /** Place a pin for this activity on the map */
+    viewOnMap: async function() {
+      // TODO: Think about how the pin will be removed!
+
+      let role = "";
+      if (this.currentUsersProfileId === this.creatorId) {
+        role = "creator";
+      } else if (this.organiser) {
+        role = "organiser";
+      } else if (this.following) {
+        role = "follower";
+      } else if (this.participating) {
+        role = "participating";
+      }
+
+      this.$root.$emit('showActivityOnMap', this.activityId, this.activity.location, role);
+
+
+    }
   },
 
   watch: {

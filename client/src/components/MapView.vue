@@ -89,6 +89,17 @@
     },
 
     mounted: async function() {
+      this.$root.$on('showActivityOnMap', (activityId: number, location: LocationCoordinatesInterface, role: string) => {
+        let pin = {
+          activity_id: activityId,
+          location: location,
+          role: role
+        } /* as Pin */
+        let pins = [pin] /* as Pin[] */;
+
+        
+      })
+
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {
