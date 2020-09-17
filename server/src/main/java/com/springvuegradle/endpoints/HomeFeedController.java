@@ -41,6 +41,8 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
+    private static int BOUNDING_BOX_SIZE = 0.1;
+
     /**
      * Retrieve and respond to a request to get a user's home feed updates
      * @param profileId id of the user whose home feed it should return
@@ -107,7 +109,7 @@ public class HomeFeedController {
      */
     public List<Activity> findRecommendedActivities(Profile profile){
         //Get the activities within the range of the users profile location
-        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(0f,0f,0f,0f, null);
+        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
         List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
         List<Activity> candidateActivities = new ArrayList<Activity>();
         for(Activity activity : activityList){
@@ -174,7 +176,7 @@ public class HomeFeedController {
      * @return Activity with the given id
      * @throws RecordNotFoundException if no activity with the id given exists
      */
-    @Deprecated
+    @Deprecated(since="sprint 6")
     private Activity getActivityIfExists(Long activityId) throws RecordNotFoundException {
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if (optionalActivity.isEmpty()) {
@@ -189,7 +191,7 @@ public class HomeFeedController {
      * @return the profile with the given id
      * @throws RecordNotFoundException if no profile exists
      */
-    @Deprecated
+    @Deprecated(since="sprint 6")
     private Profile getProfileIfExists(Long profileId) throws RecordNotFoundException {
         Optional<Profile> optionalEditor = profileRepository.findById(profileId);
         if (optionalEditor.isEmpty()) {
