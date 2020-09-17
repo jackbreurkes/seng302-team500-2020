@@ -2,7 +2,7 @@ import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
 import { UserApiFormat } from '@/scripts/User';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
-import { getAddressFormattedString } from '../models/location.model'
+import { getAddressFormattedString } from '../models/location.model';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -46,7 +46,7 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
        throw new Error("End time is not in valid format");
      }
      if (!isValidEndDate(sDate, eDate, sTime, eTime)) {
-       throw new Error("End date must be after start date")
+       throw new Error("End date must be after start date");
      }
      createActivityRequest.start_time = setStartDate(sDate, sTime);
      createActivityRequest.end_time = setEndDate(eDate, eTime);
@@ -55,13 +55,13 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
     throw new Error("Description must be at least 8 characters");
   }
   if (createActivityRequest.location === undefined) {
-    throw new Error("Please enter the location of the activity")
+    throw new Error("Please enter the location of the activity");
   }
   else {
 
     let locationObject = await getAddressFormattedString(createActivityRequest.location)
     if (locationObject[0] === undefined) {
-      throw new Error("Can't find a valid location with that address, try again")
+      throw new Error("Can't find a valid location with that address, try again");
     } else {
       createActivityRequest.location = locationObject[0].display_name
     }
@@ -112,10 +112,10 @@ export async function addActivityType(activityType: string, createActivityReques
     createActivityRequest.activity_type = []
   }
   if (createActivityRequest.activity_type.includes(activityType)) {
-    throw new Error(`${activityType} is already added to the activity`)
+    throw new Error(`${activityType} is already added to the activity`);
   }
   if (!(await getAvailableActivityTypes()).includes(activityType)) {
-    throw new Error(`activity type ${activityType} does not exist`)
+    throw new Error(`activity type ${activityType} does not exist`);
   }
   createActivityRequest.activity_type.push(activityType);
 }

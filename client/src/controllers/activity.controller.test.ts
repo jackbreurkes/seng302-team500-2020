@@ -1,7 +1,7 @@
 import * as activityController from "./activity.controller";
 import { CreateActivityRequest } from "../scripts/Activity";
 
-const locationModel = require("../models/location.model")
+const locationModel = require("../models/location.model");
 const activityModel = require("../models/activity.model");
 var today = new Date().toISOString().slice(0, 10);
 activityModel.createActivity = jest.fn();
