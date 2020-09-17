@@ -1,27 +1,9 @@
 <template>
   <div>
     <div id="infowindow" ref="infowindow" v-show="this.openInfoWindow !== null">
-      <v-container 
-        v-for="activity in this.displayedActivities" 
-        v-bind:key="activity.activity_id"
-      >
-        <v-row><b>{{activity.activity_name}}</b></v-row>
-        <v-row no-gutters v-if="!activity.continuous">
-          <v-col cols="6">Starts</v-col>
-          <v-col cols="6">{{activity.start_time}}</v-col>
-        </v-row>
-        <v-row no-gutters v-if="!activity.continuous">
-          <v-col cols="6">Ends</v-col>
-          <v-col cols="6">{{activity.end_time}}</v-col>
-        </v-row>
-        <v-row no-gutters>
-          <v-col cols="6">Activity Types</v-col>
-          <v-col cols="6">{{activity.activity_type.join(", ")}}</v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12"><v-btn @click="visitActivity(activity)" text small color="primary">Go to activity</v-btn></v-col>
-        </v-row>
-      </v-container>
+      <div v-for="activity in displayedActivities" :key="activity.activity_id" class="ma-2">
+        <MapInfoWindowView v-bind:activity="activity" v-on:clicked-goto-activity="visitActivity(activity)"></MapInfoWindowView>
+      </div>
     </div>
     <div id="map" ref="map"></div>
     <!-- index of -1 below places the legend above the fullscreen button -->
@@ -54,10 +36,12 @@
   // eslint-disable-next-line no-unused-vars
   import { CreateActivityRequest } from '@/scripts/Activity';
 
+  import MapInfoWindowView from './MapInfoWindowView.vue'
+
   // app Vue instance
   const MapView = Vue.extend({
     name: 'MapView',
-
+    components: {MapInfoWindowView},
     // app initial state
     data: function() {
       return {

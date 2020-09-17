@@ -399,6 +399,19 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
   return "Starts at: " + dtf.format(start) + "Ends: " + dtf.format(end);
 }
 
+/**
+ * returns a reader-friendly formatted date
+ * @param dateString the ISO datetime string representing the time to be formatted
+ * @return the formatted date string
+ */
+export function describeDate(dateString: string) {
+  let start = new Date(dateString);
+  const dtf = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
+  });
+  return dtf.format(start);
+}
+
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
 
 export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
