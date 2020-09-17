@@ -229,10 +229,15 @@ public class UserProfileController {
     	List<Profile> profiles = new ArrayList<>();	// would eventually be results from query of database with parameters
     	
 		if (searchedNickname != null && !searchedNickname.equals("")) {
-			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
+			profiles = profileRepository.findByNickNameStartingWithIgnoreCase(searchedNickname);
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")
+                && searchedLastname != null && !searchedLastname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
-		} else if (searchedFullname != null && !searchedFullname.equals("")) {
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
+            profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
+        } else if (searchedLastname != null && !searchedLastname.equals("")) {
+            profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+        } else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && !searchedEmail.equals("")) {
 		    boolean exact = useExactEmail != null && useExactEmail.equals("true");
@@ -277,9 +282,9 @@ public class UserProfileController {
     	
     	List<Profile> profiles = new ArrayList<>();
     	if (middlename.length() == 0) {
-    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
-    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, middlename, lastname);
     	}
 
 		return profiles;
@@ -301,9 +306,9 @@ public class UserProfileController {
     	
     	List<Profile> profiles = new ArrayList<>();
     	if (middlename == null || middlename.length() == 0) {
-    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
-    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, middlename, lastname);
     	}
 
 		return profiles;
