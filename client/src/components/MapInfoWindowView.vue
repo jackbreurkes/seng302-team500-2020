@@ -1,23 +1,22 @@
 <template>
   <v-container>
     <v-row class="ma-0 pa-0">
-      <v-icon class="mr-1">mdi-account-multiple</v-icon>
       <h3>{{activity.activity_name}}</h3>
     </v-row>
     <v-row no-gutters v-if="!activity.continuous">
-        <v-col class="ml-2"><b>Starts</b></v-col>
+        <v-col><b>Starts</b></v-col>
         <v-col>{{formatDate(activity.start_time)}}</v-col>
     </v-row>
     <v-row no-gutters v-if="!activity.continuous">
-        <v-col class="ml-2"><b>Ends</b></v-col>
+        <v-col><b>Ends</b></v-col>
         <v-col>{{formatDate(activity.end_time)}}</v-col>
     </v-row>
     <v-row no-gutters>
-        <v-col class="ml-2"><b>Activity Types</b></v-col>
+        <v-col><b>Activity Types</b></v-col>
         <v-col>{{activity.activity_type.join(", ")}}</v-col>
     </v-row>
     <v-row no-gutters>
-        <v-col class="ml-2"><b>Your involvement</b></v-col>
+        <v-col><b>Your involvement</b></v-col>
         <v-col>{{creator ? "Creator" : (participating ? "Participating" : (following ? "Following" : "Not following"))}}</v-col>
     </v-row>
     <v-row>
