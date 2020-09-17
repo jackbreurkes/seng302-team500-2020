@@ -15,6 +15,14 @@ public class GeoPosition {
 	float lon;
 	
 	/**
+	 * empty constructor for mapping JSON objects into objects within tests. 
+	 */
+	protected GeoPosition() {
+		lat = 0;
+		lon = 0;
+	}
+	
+	/**
 	 * Construct a GeoPosition with a latitude and longitude
 	 * @param latitude latitude of the geographical point
 	 * @param longitude longitude of geographical point
