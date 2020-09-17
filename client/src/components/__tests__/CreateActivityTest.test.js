@@ -89,6 +89,7 @@ describe("activityPageTests", () => {
     wrapper.find("#createButton").trigger('click')
     await Vue.nextTick()
     const createCalls = editOrCreateActivity.mock.calls
+    await Vue.nextTick()
     expect(createCalls.length).toBe(1);
     let activity = createCalls[0][0];
     expect(activity.outcomes.length).toBe(1);
@@ -101,6 +102,7 @@ describe("activityPageTests", () => {
     wrapper.find("#createButton").trigger('click')
     await Vue.nextTick()
     const createCalls = editOrCreateActivity.mock.calls
+    await Vue.nextTick()
     expect(createCalls.length).toBe(1);
     let activity = createCalls[0][0];
     expect(activity.outcomes.length).toBe(0);

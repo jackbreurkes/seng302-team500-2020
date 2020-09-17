@@ -1,6 +1,7 @@
 import * as activityController from "./activity.controller";
 import { CreateActivityRequest } from "../scripts/Activity";
 
+const locationModel = require("../models/location.model")
 const activityModel = require("../models/activity.model");
 var today = new Date().toISOString().slice(0, 10);
 activityModel.createActivity = jest.fn();
@@ -402,83 +403,79 @@ test.each([
 
 test.each(["", "sm", "this one is way too long and shouldnt be allowed"])(
   "expect validateNewActivity to throw an error if the activity name is invalid",
-  (name) => {
+  async (name) => {
     mockCreateActivityRequest.activity_name = name;
-    expect(() => {
-      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
-    }).toThrow("Please enter an activity name of 4-30 characters long")
+    await expect((activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest))
+    ).rejects.toThrow("Please enter an activity name of 4-30 characters long")
   }
 )
 
 test(
   "expect validateNewActivity to throw an error if the activity has no time frame",
-  () => {
+  async () => {
     delete mockCreateActivityRequest.continuous;
-    expect(() => {
-      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
-    }).toThrow("Please select a time frame")
+    await expect((activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest))
+    ).rejects.toThrow("Please select a time frame")
   }
 )
 
 test(
   "expect validateNewActivity to throw an error if a duration activity has no start date",
-  () => {
+  async () => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest)
-    }).toThrow("Duration based activities must have a start date")
+    await expect((activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest))
+    ).rejects.toThrow("Duration based activities must have a start date")
   }
 )
 
 test(
   "expect validateNewActivity to throw an error if a duration activity has no end date",
-  () => {
+  async() => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("2020-10-10", "", "", "", mockCreateActivityRequest)
-    }).toThrow("Duration based activities must have an end date")
+    await expect((activityController.validateNewActivity("2020-10-10", "", "", "", mockCreateActivityRequest))
+    ).rejects.toThrow("Duration based activities must have an end date")
   }
 )
 
 test.each(["12pm", "midnight", "0800", "10:00pm", "5"])(
   "expect validateNewActivity to throw an error for malformed start time %s",
-  (startTime) => {
+  async (startTime) => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("2020-10-10", startTime, "", "", mockCreateActivityRequest)
-    }).toThrow("Start time is not in valid format")
+    await expect((activityController.validateNewActivity("2020-10-10", startTime, "", "", mockCreateActivityRequest))
+    ).rejects.toThrow("Start time is not in valid format")
   }
 )
 
 test(
   "expect validateNewActivity to throw an error if end date is before start date",
-  () => {
+  async () => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("2020-10-10", "", "2020-01-01", "", mockCreateActivityRequest)
-    }).toThrow("End date must be after start date")
+    await expect((activityController.validateNewActivity("2020-10-10", "", "2020-01-01", "", mockCreateActivityRequest))
+    ).rejects.toThrow("End date must be after start date")
   }
 )
 
 test.each(["12pm", "midnight", "0800", "10:00pm", "5"])(
   "expect validateNewActivity to throw an error for malformed end time %s",
-  (endTime) => {
+  async (endTime) => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("2020-10-10", "10:10", "2020-11-11", endTime, mockCreateActivityRequest)
-    }).toThrow("End time is not in valid format")
+    await expect(activityController.validateNewActivity("2020-10-10", "10:10", "2020-11-11", endTime, mockCreateActivityRequest)
+    ).rejects.toThrow("End time is not in valid format")
   }
 )
 
+
 test(
   "expect validateNewActivity to throw an error if the end date is before the start date",
-  () => {
+  async() => {
     mockCreateActivityRequest.continuous = false;
-    expect(() => {
-      activityController.validateNewActivity("2020-10-10", "", "2020-01-11", "", mockCreateActivityRequest)
-    }).toThrow("End date must be after start date")
+    await expect(activityController.validateNewActivity("2020-10-10", "", "2020-01-11", "", mockCreateActivityRequest)
+    ).rejects.toThrow(
+      new Error("End date must be after start date")
+    );
   }
 )
+
 
 test.each([
   ["2020-10-10", "", "2020-11-11", ""]
@@ -491,3 +488,44 @@ test.each([
     expect(mockCreateActivityRequest.end_time).toBe(activityController.setEndDate(endDate, endTime))
   }
 )
+
+test(
+  "expect validateNewActivity to throw an error if location is undefined",
+  async() => {
+    mockCreateActivityRequest.location = undefined;
+    await expect(activityController.validateNewActivity("2020-10-10", "", "2020-01-11", "", mockCreateActivityRequest)
+    ).rejects.toThrow(
+      new Error("Please enter the location of the activity")
+    );
+  }
+)
+
+test.each([
+  ["iygtiiutgiut5g4f8uy", "~!#^&%&^@", "awdadwqadwadada", "qwertyuio"]
+  ])(
+  "expect validateNewActivity to throw an error if location could not be found",
+  async(invalidLocation) => {
+    mockCreateActivityRequest.location = invalidLocation;
+    await expect(activityController.validateNewActivity("2020-10-10", "", "2020-01-11", "", mockCreateActivityRequest)
+    ).rejects.toThrow(
+      new Error("Can't find a valid location with that address, try again")
+    );
+  }
+)
+test.each([
+  ["Christchurch new Zealand", "18b CLYDE ROAD UPPER RICCARTON", "Jack Erskine"]
+  ])(
+  "expect validateNewActivity to find and validate these locations",
+  async(validLocation) => {
+    
+    mockCreateActivityRequest.location = validLocation;
+    let result = await locationModel.getAddressCoordAndFormattedString(validLocation)
+    expect(result).toHaveLength(1)
+  }
+)
+/*
+  let result = await activityController.getIsParticipating(5, 10);
+  expect(result).toBe(false);
+});
+
+*/
