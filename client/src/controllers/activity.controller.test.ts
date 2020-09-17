@@ -519,13 +519,7 @@ test.each([
   async(validLocation) => {
     
     mockCreateActivityRequest.location = validLocation;
-    let result = await locationModel.getAddressCoordAndFormattedString(validLocation)
+    let result = await locationModel.getAddressFormattedString(validLocation)
     expect(result).toHaveLength(1)
   }
 )
-/*
-  let result = await activityController.getIsParticipating(5, 10);
-  expect(result).toBe(false);
-});
-
-*/

@@ -5,7 +5,7 @@ export async function checkCountryExistence(location: string) {
   return res.data;
 }
 
-export async function getAddressCoordAndFormattedString(location: string) {
+export async function getAddressFormattedString(location: string) {
 let res = await instance.get(externalApiRootUrls.nominatim + `/search/?q=${location}&format=json&addressdetails=1&accept-language=en&limit=1`);
 return res.data;
 }

@@ -2,7 +2,7 @@ import { CreateActivityRequest } from '../scripts/Activity';
 import * as activityModel from '../models/activity.model'
 import { UserApiFormat } from '@/scripts/User';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
-import { getAddressCoordAndFormattedString } from '../models/location.model'
+import { getAddressFormattedString } from '../models/location.model'
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -58,8 +58,8 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
     throw new Error("Please enter the location of the activity")
   }
   else {
-    
-    let locationObject = await getAddressCoordAndFormattedString(createActivityRequest.location)
+
+    let locationObject = await getAddressFormattedString(createActivityRequest.location)
     if (locationObject[0] === undefined) {
       throw new Error("Can't find a valid location with that address, try again")
     } else {
