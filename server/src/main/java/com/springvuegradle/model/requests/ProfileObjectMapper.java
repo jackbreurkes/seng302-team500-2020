@@ -81,17 +81,19 @@ public class ProfileObjectMapper {
     
     private List<String> parseErrors = new ArrayList<>();
 
-    public ProfileObjectMapper() {}
+    public ProfileObjectMapper() {
+        // Empty constructor required
+    }
 
     public String getPrimaryEmail() {
         return primaryEmail;
     }
 
-    public void setPrimaryEmail(String primary_email) {
-        if (!FormValidator.validateEmail(primary_email)) {
-            parseErrors.add(new String("Invalid e-mail address"));
+    public void setPrimaryEmail(String primaryEmail) {
+        if (!FormValidator.validateEmail(primaryEmail)) {
+            parseErrors.add("Invalid e-mail address");
         }
-        this.primaryEmail = primary_email;
+        this.primaryEmail = primaryEmail;
     }
 
     public String getFirstname() {
@@ -100,7 +102,7 @@ public class ProfileObjectMapper {
 
     public void setFirstname(String fname) {
         if (!FormValidator.validateName(fname)) {
-            parseErrors.add( new String("Invalid first name"));
+            parseErrors.add("Invalid first name");
         }
         this.fname = fname;
     }
@@ -111,7 +113,7 @@ public class ProfileObjectMapper {
 
     public void setLastname(String lname) {
         if (!FormValidator.validateName(lname)) {
-            parseErrors.add( new String("Invalid last name"));
+            parseErrors.add("Invalid last name");
         }
         this.lname = lname;
     }
@@ -125,7 +127,7 @@ public class ProfileObjectMapper {
             mname = null;
         }
         if (mname != null && !FormValidator.validateName(mname)) {
-            parseErrors.add( new String("Invalid middle name"));
+            parseErrors.add("Invalid middle name");
         }
         this.mname = mname;
     }
@@ -139,7 +141,7 @@ public class ProfileObjectMapper {
             nickname = null;
         }
         if (nickname != null && !FormValidator.validateNickname(nickname)) {
-            parseErrors.add( new String("Invalid nickname"));
+            parseErrors.add("Invalid nickname");
         }
         this.nickname = nickname;
     }
@@ -164,7 +166,7 @@ public class ProfileObjectMapper {
             bio = null;
         }
         if (bio != null && !FormValidator.validateBio(bio)) {
-            parseErrors.add( new String("Invalid bio"));
+            parseErrors.add("Invalid bio");
         }
         this.bio = bio;
     }
@@ -175,7 +177,7 @@ public class ProfileObjectMapper {
 
     public void setDateOfBirth(String dateOfBirth) {
         if (!FormValidator.validateDateOfBirth(dateOfBirth)) {
-            parseErrors.add( new String("Invalid date of birth"));
+            parseErrors.add("Invalid date of birth");
         }
         this.dob = dateOfBirth;
     }
@@ -186,7 +188,7 @@ public class ProfileObjectMapper {
 
     public void setGender(String gender) {
         if (!FormValidator.validateGender(gender)) {
-            parseErrors.add( new String("Invalid gender"));
+            parseErrors.add("Invalid gender");
         }
         this.gender = gender;
     }
@@ -233,7 +235,7 @@ public class ProfileObjectMapper {
 
 
     public void checkParseErrors() throws InvalidRequestFieldException {
-        if (parseErrors.size() > 0) {
+        if (!parseErrors.isEmpty()) {
             throw new InvalidRequestFieldException(parseErrors.get(0));
         }
     }
@@ -255,16 +257,16 @@ public class ProfileObjectMapper {
                                  ProfileRepository profileRepository,
                                  CountryRepository countryRepository,
                                  ActivityTypeRepository activityTypeRepository,
-                                 LocationRepository locationRepository) throws InvalidRequestFieldException, ParseException, NoSuchAlgorithmException, RecordNotFoundException {
+                                 LocationRepository locationRepository) throws InvalidRequestFieldException, NoSuchAlgorithmException, RecordNotFoundException {
         checkParseErrors();
         checkRequiredFields();
         if (emailRepository.existsById(getPrimaryEmail())) {
             throw new InvalidRequestFieldException("E-mail already in use");
         }
         User user = new User();
-        LocalDate dob = FormValidator.getValidDateOfBirth(getDateOfBirth());
-        Gender gender = Gender.matchGender(this.gender);
-        Profile profile = new Profile(user, getFirstname(), getLastname(), dob, gender);
+        LocalDate LocalDateDob = FormValidator.getValidDateOfBirth(getDateOfBirth());
+        Gender genderObject = Gender.matchGender(this.gender);
+        Profile profile = new Profile(user, getFirstname(), getLastname(), LocalDateDob, genderObject);
 
         profile.setBio(bio);
         profile.setMiddleName(getMiddlename());
@@ -287,7 +289,6 @@ public class ProfileObjectMapper {
 	        // validate activity types
 	        for (String activityTypeName : getActivities()) {
 	            Optional<ActivityType> optionalActivityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeName);
-	            System.out.println(activityTypeName);
 	            if (optionalActivityType.isPresent()) {
 	                activityTypes.add(optionalActivityType.get());
 	            } else {
@@ -296,7 +297,7 @@ public class ProfileObjectMapper {
 	        }
         }
         // if no activity types are to be associated with the profile
-        if (activityTypes.size() == 0) {
+        if (activityTypes.isEmpty()) {
         	activityTypes = null;
         }
                 
