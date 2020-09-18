@@ -106,10 +106,8 @@
         since the 'idle' event is called when the mapview has been resized, in addition to when
         the user has stopped dragging the map round. This throttles the client to only send
         a request every 300 milliseconds.
-
       */
       let timerId = -1;
-
       // @ts-ignore next line
       this.map.addListener('idle', () => {
         if (timerId !== -1) {
@@ -145,27 +143,21 @@
           }
 
           let highestRole = PinsController.getHighestRoleIndex(pins);
-
-          // @ts-ignore next line
-          let displayedPin = new window.google.maps.Marker({
-            position: {lat: position.lat, lng: position.lon}, 
-            map: this.map,
-            icon: this.mapIcons[highestRole]
-          });
-
-          displayedPin.addListener('click', () => {
-            this.createPinInfoWindow(this.map, displayedPin, pins);
-          });
-
-          this.displayedPins.push(displayedPin);
+          this.displayPin(pins, position, highestRole);
         })
       },
 
+      /**
+       * Returns whether the location falls within the given bounding box
+       */
       isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
         return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
           && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
       },
 
+      /**
+       * Gets the user's location and centers the map on this location
+       */
       centerMapOnUserLocation: async function() {
         let userId = getMyUserId();
 
@@ -178,6 +170,10 @@
         }
       },
 
+      /**
+       * Create an info window for the specified pin, representing the activities.
+       * This will also trigger Vue to load information about these activities
+       */
       createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: Pin[]) {
         this.displayedActivities = [];
         for (let activityIndex in allActivities) {
@@ -199,6 +195,9 @@
         this.openInfoWindow = infoWindow;
       },
 
+      /**
+       * Tells Vue to navigate the map panel to the given activity
+       */
       visitActivity: function(activity: CreateActivityRequest) {
         if (activity.activity_id == null || activity.creator_id == null) {
           return;
@@ -211,6 +210,9 @@
         this.openInfoWindow.close();
       },
 
+      /**
+       * Deletes pins that are outside what's visible on the map view
+       */
       deletePinsOutsideBounds: function(boundingBox: BoundingBoxInterface) {
         //clear all the pins no longer in view
         this.displayedPins.forEach((marker, index) => {
@@ -226,6 +228,24 @@
             });
           }
         });
+      },
+
+      /**
+       * Constructs and displays a pin with the given parameters on the map
+       */
+      displayPin: function(pins: Pin[], position: LocationCoordinatesInterface, highestRole: number) {
+        // @ts-ignore next line
+        let displayedPin = new window.google.maps.Marker({
+          position: {lat: position.lat, lng: position.lon}, 
+          map: this.map,
+          icon: this.mapIcons[highestRole]
+        });
+
+        displayedPin.addListener('click', () => {
+          this.createPinInfoWindow(this.map, displayedPin, pins);
+        });
+
+        this.displayedPins.push(displayedPin);
       }
     },
 
