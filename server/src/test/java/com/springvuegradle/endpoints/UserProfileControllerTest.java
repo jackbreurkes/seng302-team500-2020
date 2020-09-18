@@ -7,11 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigInteger;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.json.JSONParser;
@@ -145,19 +141,21 @@ class UserProfileControllerTest {
     	return emailList;
     }
 
-
     @Test
-    @Disabled
     public void testGetProfileById() throws Exception {
 
+        User user5 = new User(5);
+        Mockito.when(userRepository.findById(5l)).thenReturn(Optional.of(user5));
+        Mockito.when(profileRepository.findById(5l)).thenReturn(Optional.of(new Profile(user5, "Mary", "Bean", LocalDate.now(), Gender.FEMALE)));
+        Mockito.when(userRepository.findById(6l)).thenReturn(Optional.of(new User(6)));
+
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/{id}", 5)
+                .get("/profiles/{id}", 5l)
+                .requestAttr("authenticatedid", 6l)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.employees").exists())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.employees[*].employeeId").isNotEmpty());
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(5));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(5l));
     }
  
     @Test
