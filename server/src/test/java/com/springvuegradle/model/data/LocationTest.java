@@ -1,9 +1,12 @@
 package com.springvuegradle.model.data;
 
+import com.springvuegradle.model.repository.ActivityPinRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 public class LocationTest {
 
@@ -211,12 +214,13 @@ public class LocationTest {
     @BeforeEach
     void setup(){
         testLocation = Mockito.mock(Location.class);
-        Mockito.when(testLocation.getCity()).thenReturn("Test City");
+		Mockito.when(testLocation.getCity()).thenReturn("Test City");
         Mockito.when(testLocation.getState()).thenReturn("Test State");
         Mockito.when(testLocation.getCountry()).thenReturn("Test Country");
         Mockito.when(testLocation.getLatitude()).thenReturn(null);
         Mockito.when(testLocation.getLongitude()).thenReturn(null);
-        
+
+
         testLocation2 = Mockito.mock(Location.class);
         Mockito.when(testLocation2.getCity()).thenReturn("Test City");
         Mockito.when(testLocation2.getState()).thenReturn("");

@@ -61,6 +61,7 @@ public class ActivitiesController {
     private static final String PROFILE_NOT_FOUND = "profile with id %d not found";
     private static final String ACTIVITY_NOT_FOUND = "activity with id %d not found";
 
+
     @Autowired
     private ProfileRepository profileRepository;
 
