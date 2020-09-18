@@ -119,61 +119,75 @@
           // @ts-ignore next line
           let bounds = this.map.getBounds();
 
+          let northEast = bounds.getNorthEast();
+          let southWest = bounds.getSouthWest();
+
           let boundingBox = {
-            sw_lat: bounds['ab']['i'],
-            ne_lat: bounds['ab']['j'],
-            sw_lon: bounds['Va']['i'],
-            ne_lon: bounds['Va']['j']
+            sw_lat: southWest.lat(),
+            ne_lat: northEast.lat(),
+            sw_lon: southWest.lng(),
+            ne_lon: northEast.lng()
           } as BoundingBoxInterface;
 
-          this.loadPinsInArea(boundingBox);
+          this.displayPinsInArea(boundingBox);
         }, 300);
       });
     },
 
     methods: {
-      loadPinsInArea: async function(boundingBox: BoundingBoxInterface) {
+      /**
+       * Loads and displays all pins in the area defined by the bounding box
+       * @param boundingBox The bounding box to display the pins inside of
+       */
+      displayPinsInArea: async function(boundingBox: BoundingBoxInterface) {
         let pins = await getActivitiesInBoundingBox(boundingBox);        
-        let createdPositions = [] as any[];
+        let uniquePinLocations = [] as LocationCoordinatesInterface[];
+        let locationToActivityPinMapping = {} as Record<number, Pin[]>;
 
-        //clear all the pins
+        //find unique locations
+        for (let pinIndex in pins) {
+          let pin = pins[pinIndex] as Pin;
+          let position = {lat: pin.location.lat, lon: pin.location.lon} as LocationCoordinatesInterface;
+          
+          let potentialDuplicate = uniquePinLocations.find(element => element.lat == position.lat && element.lon == position.lon);
+          if (potentialDuplicate === undefined) {
+            uniquePinLocations.push(position);
+            locationToActivityPinMapping[uniquePinLocations.length - 1] = [pin];
+          } else {
+            let index = uniquePinLocations.indexOf(potentialDuplicate);
+            locationToActivityPinMapping[index].push(pin);
+          }
+        }
+
+        //clear all the pins no longer in view
         this.displayedPins.forEach((marker, index) => {
-          for (let pinIndex in pins) {
-            let pin = pins[pinIndex];
-            if (pin.location.lat == marker.position.lat() && pin.location.lon == marker.position.lng()) {
-              createdPositions.push({lat: pin.location.lat, lng: pin.location.lon});
-              return;
-            }
-          }
-          // @ts-ignore next line
-          marker.setMap(null);
-          delete this.displayedPins[index];
-        });
+          let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
 
-        pins.forEach((pin: Pin) =>  {
-          let position = {lat: pin.location.lat, lng: pin.location.lon};
-          if (createdPositions.includes(position)) {
-            return;
+          if (!this.isInBounds(boundingBox, position)) {
+            // @ts-ignore next line
+            marker.setMap(null);
+            delete this.displayedPins[index];
           }
+        });
+        
+        uniquePinLocations.forEach((position: LocationCoordinatesInterface, index: number) =>  {
           let allActivities = [] as number[];
           let highestRole = 3;
           
-          pins.forEach((pin: Pin) =>  {
-            if (pin.location.lat == position.lat && pin.location.lon == position.lng) {
-              allActivities.push(pin.activity_id);
-              let role = pin.role;
-              if (role == "creator") {
-                highestRole = 0;
-              } else if (role == "participant" && highestRole > 1) {
-                highestRole = 1;
-              } else if (role == "follower" && highestRole > 2) {
-                highestRole = 2;
-              }
+          locationToActivityPinMapping[index].forEach((pin: Pin) =>  {
+            allActivities.push(pin.activity_id);
+            let role = pin.role;
+            if (role == "creator") {
+              highestRole = 0;
+            } else if (role == "participant" && highestRole > 1) {
+              highestRole = 1;
+            } else if (role == "follower" && highestRole > 2) {
+              highestRole = 2;
             }
           });
           // @ts-ignore next line
           let displayedPin = new window.google.maps.Marker({
-            position: position, 
+            position: {lat: position.lat, lng: position.lon}, 
             map: this.map,
             icon: this.mapIcons[highestRole]
           });
@@ -183,8 +197,13 @@
           });
 
           this.displayedPins.push(displayedPin);
-          createdPositions.push(position);
+          uniquePinLocations.push(position);
         })
+      },
+
+      isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
+        return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
+          && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
       },
 
       centerMapOnUserLocation: async function() {

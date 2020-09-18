@@ -4,20 +4,20 @@
       <h3>{{activity.activity_name}}</h3>
     </v-row>
     <v-row no-gutters v-if="!activity.continuous">
-        <v-col><b>Starts</b></v-col>
+        <v-col><strong>Starts</strong></v-col>
         <v-col>{{formatDate(activity.start_time)}}</v-col>
     </v-row>
     <v-row no-gutters v-if="!activity.continuous">
-        <v-col><b>Ends</b></v-col>
+        <v-col><strong>Ends</strong></v-col>
         <v-col>{{formatDate(activity.end_time)}}</v-col>
     </v-row>
     <v-row no-gutters>
-        <v-col><b>Activity Types</b></v-col>
+        <v-col><strong>Activity Types</strong></v-col>
         <v-col>{{activity.activity_type.join(", ")}}</v-col>
     </v-row>
-    <v-row no-gutters>
-        <v-col><b>Your involvement</b></v-col>
-        <v-col>{{creator ? "Creator" : (participating ? "Participating" : (following ? "Following" : "Not following"))}}</v-col>
+    <v-row no-gutters v-if="role !== null">
+        <v-col><strong>Your involvement</strong></v-col>
+        <v-col>{{role}}</v-col>
     </v-row>
     <v-row>
       <v-col cols="12">
@@ -30,16 +30,17 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { describeDate, getIsFollowingActivity, getIsParticipating } from "../controllers/activity.controller"
+import { describeDate, getIsFollowingActivity, getIsParticipating, getIsOrganising } from "../controllers/activity.controller"
 import * as authService from '../services/auth.service';
 
 // app Vue instance
 const MapInfoWindowView = Vue.extend({
-  name: "ActivitiesList",
+  name: "MapInfoWindowView",
   props: ["activity"],
   data: function() {
     return {
       following: false as boolean,
+      organising: false as boolean,
       participating: false as boolean,
       creator: false as boolean
     }
@@ -49,25 +50,44 @@ const MapInfoWindowView = Vue.extend({
     let myProfileId = authService.getMyUserId();
     if (myProfileId == null) {
       return;
-    } else if (myProfileId == this.activity.creator_id) {
+    }
+    if (myProfileId == this.activity.creator_id) {
       this.creator = true;
     }
     getIsFollowingActivity(myProfileId, this.activity.activity_id)
-      .then((booleanResponse) => {
-        this.following = booleanResponse;
+      .then((isFollowing) => {
+        this.following = isFollowing;
+      })
+    getIsOrganising(myProfileId, this.activity.activity_id)
+      .then((isOrganising) => {
+        this.organising = isOrganising;
       })
     getIsParticipating(myProfileId, this.activity.activity_id)
-      .then((booleanResponse) => {
-        this.participating = booleanResponse;
+      .then((isParticipating) => {
+        this.participating = isParticipating;
       })
   },
 
   methods: {
-
     formatDate: function(dateString: string) {
       return describeDate(dateString);
     }
+  },
 
+  computed: {
+    role: function() {
+      if (this.creator) {
+        return "Creator";
+      } else if (this.organising) {
+        return "Organiser";
+      } else if (this.participating) {
+        return "Participating";
+      } else if (this.following) {
+        return "Following";
+      } else {
+        return null;
+      }
+    }
   }
 });
 
