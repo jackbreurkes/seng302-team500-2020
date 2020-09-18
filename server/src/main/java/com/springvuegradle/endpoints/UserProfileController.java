@@ -111,7 +111,8 @@ public class UserProfileController {
     @Autowired
     private LocationRepository locationRepository;
     
-    private static final String invalidFullNameErrorMessage = "Has not provided a valid full name (made up of at least a first and last name)";
+    private static final String INVALID_FULL_NAME_ERROR_MESSAGE = "Has not provided a valid full name (made up of at least a first and last name)";
+    private static final String NOT_FOUND_ERROR_MESSAGE = " not found";
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -183,7 +184,7 @@ public class UserProfileController {
         for (String countryName : countryNames) {
             Optional<Country> country = countryRepository.findByName(countryName);
             if (country.isEmpty()) {
-                throw new RecordNotFoundException("country " + countryName + " not found");
+                throw new RecordNotFoundException("country " + countryName + NOT_FOUND_ERROR_MESSAGE);
             }
             countries.add(country.get());
         }
@@ -262,7 +263,7 @@ public class UserProfileController {
     private List<Profile> getUsersByFullname(String fullname) throws InvalidRequestFieldException {
     	String[] names = fullname.strip().split(" ");
     	if (names.length < 2) {
-    		throw new InvalidRequestFieldException(invalidFullNameErrorMessage);
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
     	String firstname = "";
@@ -277,10 +278,10 @@ public class UserProfileController {
 	    	lastname = names[1];
     	}
     	if (firstname.length() == 0 || lastname.length() == 0) {
-    		throw new InvalidRequestFieldException(invalidFullNameErrorMessage);
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
-    	List<Profile> profiles = new ArrayList<>();
+    	List<Profile> profiles;
     	if (middlename.length() == 0) {
     		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
@@ -295,16 +296,16 @@ public class UserProfileController {
      * @param firstname initial (or full) part of the firstname to find
      * @param middlename initial (or full) part of the middlename to find
      * @param lastname initial (or full) part of the lastname to find
-     * @return list of profiles whose first, middle and last names match the portions specified
-     * @throws InvalidRequestFieldException if there is not at least one character in both of the first and last names
+     * @return list of profiles whose first, middle and last names match the portions specified (case insensitive)
+     * @throws InvalidRequestFieldException if there is not at least one character in either of the first and last names
      */
     private List<Profile> getUsersByNamePieces(String firstname, String middlename, String lastname) throws InvalidRequestFieldException {
 
     	if (lastname == null || lastname.length() == 0) {
-    		throw new InvalidRequestFieldException(invalidFullNameErrorMessage);
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
-    	List<Profile> profiles = new ArrayList<>();
+    	List<Profile> profiles;
     	if (middlename == null || middlename.length() == 0) {
     		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
@@ -406,13 +407,8 @@ public class UserProfileController {
     @CrossOrigin
     public Object createprofile(@Valid @RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
 
-        User user = null;
-        try {
-            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository, activityTypeRepository, locationRepository);
-        } catch (ParseException ex) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
-        }
-        // an InvalidRequestFieldException will be caught by ExceptionHandlerController
+        User user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository,
+                countryRepository, activityTypeRepository, locationRepository);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ProfileCreatedResponse(user.getUserId()));
     }
@@ -461,7 +457,7 @@ public class UserProfileController {
             
             return new GeoPosition(location.getLatitude(), location.getLongitude());
         } else {
-            throw new RecordNotFoundException("Profile with id " + profileId + " not found");
+            throw new RecordNotFoundException("Profile with id " + profileId + NOT_FOUND_ERROR_MESSAGE);
         }
     }
 
@@ -532,7 +528,7 @@ public class UserProfileController {
             Profile profile = optionalProfile.get();
             return new ProfileResponse(profile, emailRepository);
         } else {
-            throw new RecordNotFoundException("Profile with id " + id + " not found");
+            throw new RecordNotFoundException("Profile with id " + id + NOT_FOUND_ERROR_MESSAGE);
         }
     }
     

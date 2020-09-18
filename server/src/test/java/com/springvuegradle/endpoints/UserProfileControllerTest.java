@@ -353,7 +353,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(nickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -380,7 +380,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -407,7 +407,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -438,7 +438,7 @@ class UserProfileControllerTest {
     	profileList.add(profile1);
     	profileList.add(profile2);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -461,7 +461,7 @@ class UserProfileControllerTest {
     public void testGetUserByNonExistentNickname() throws Exception {
     	String nickname = "mika";
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(new ArrayList<Profile>());
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(nickname)).thenReturn(new ArrayList<Profile>());
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -486,7 +486,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Bobby", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bobby", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -512,7 +512,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith("Bobby", "B", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bobby", "B", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -540,7 +540,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Bob", "Bro")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bob", "Bro")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -561,7 +561,7 @@ class UserProfileControllerTest {
     	    	
     	String fullname = "Bobby B Brown";
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Billy", "Bob")).thenReturn(new ArrayList<Profile>());
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Billy", "Bob")).thenReturn(new ArrayList<Profile>());
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -591,7 +591,7 @@ class UserProfileControllerTest {
     	profileList.add(profile1);
     	profileList.add(profile2);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("B", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("B", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
