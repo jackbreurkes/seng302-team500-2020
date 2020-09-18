@@ -284,7 +284,6 @@ const Search = Vue.extend({
       }
     },
   beforeRouteLeave (to, from, next){
-    console.log(to);
     this.prepareToExit(to);
     next()
   }
