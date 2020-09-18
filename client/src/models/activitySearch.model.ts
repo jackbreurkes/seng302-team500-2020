@@ -4,8 +4,6 @@ import instance from "../services/axios.service";
 
 
 export async function searchAppActivities(termsToSend: string[]) {
-    console.log(termsToSend)
-    let res = await instance.get("activities", {params: {"searchTerms": termsToSend}});
-    console.log(res.data);
+    let res = await instance.get("/activities", {params: {"searchTerms": termsToSend.join(","), "page": 0}});
     return res.data;
   }

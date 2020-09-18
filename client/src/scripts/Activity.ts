@@ -10,6 +10,7 @@ export interface CreateActivityRequest {
     outcomes?: ActivityOutcomes[];
     num_followers?: number;
     num_participants?: number;
+    creator_id?: number;
   }
 
 export interface ActivityOutcomes {
