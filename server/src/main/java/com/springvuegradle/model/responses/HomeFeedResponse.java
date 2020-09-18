@@ -86,9 +86,9 @@ public class HomeFeedResponse {
         }
     }
     /**
-     * Constructs a homefeed response for reccomended activities
-     * @param activity The activity being reccomended to the user
-     * @param activityFollowers The follower count of the activity being reccomended
+     * Constructs a homefeed response for recommended activities
+     * @param activity The activity being recommended to the user
+     * @param activityFollowers The follower count of the activity being recommended
      * @param changedAttribute the attribute being changed, normally should be recommended_activity
      */
     public HomeFeedResponse(Activity activity, Long activityFollowers, ChangedAttribute changedAttribute){

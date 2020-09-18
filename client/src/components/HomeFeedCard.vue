@@ -50,7 +50,7 @@ const HomeFeedCard = Vue.extend({
             creatorName: this.cardData.creator_name,
             editorName: this.cardData.editorName,
             editorAction: "edited",
-            userActionTimeStamp: this.cardData.edited_timestamp,
+            userActionTimeStamp: this.cardData.edited_timestamp || null,
             entityId: this.cardData.entity_id,
             creatorId: this.cardData.creator_id,
             oldValue: "",

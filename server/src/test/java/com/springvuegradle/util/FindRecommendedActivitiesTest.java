@@ -41,6 +41,9 @@ public class FindRecommendedActivitiesTest {
     @Mock
     ProfileRepository profileRepository;
 
+    @Mock
+    SubscriptionRepository subscriptionRepository;
+
     private Profile selfProfile;
     private ActivityType selfActivityType;
     private Profile otherProfile;
@@ -79,7 +82,6 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
-    //Broken
     void findRecommendedActivities_OneFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(selfActivityType);
@@ -93,7 +95,6 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
-    //Borken
     void findRecommendedActivitiesDifferentActivityTypes_OneFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(new ActivityType("Running"));
@@ -130,8 +131,7 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
-    //b
-    void findRecommendedActivitiesSameCreator_OneFound(){
+    void findRecommendedActivitiesExcludingSameCreator_OneFound(){
         Set<ActivityType> activityTypes2 = new HashSet<>();
         activityTypes2.add(selfActivityType);
 
@@ -148,7 +148,6 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
-    //broke
     void findRecommendedActivitiesSameActivityType_MultipleFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(new ActivityType("Running Fast"));

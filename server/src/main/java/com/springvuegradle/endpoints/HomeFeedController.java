@@ -33,7 +33,7 @@ public class HomeFeedController {
     UserRepository userRepository;
 
     @Autowired
-    UserActivityRoleRepository userActivityRoleReporsitory;
+    UserActivityRoleRepository userActivityRoleRepository;
 
     @Autowired
     ActivityRepository activityRepository;
@@ -41,9 +41,12 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
     /**
-     * Float value for distance from user set location that
-     * recommended activities will be shown
+     * Float value for maximum distance that recommended activities
+     * will be shown from users location, in degrees
      */
     private static float BOUNDING_BOX_SIZE = 0.2f;
 
@@ -113,12 +116,16 @@ public class HomeFeedController {
      */
     public List<Activity> findRecommendedActivities(Profile profile){
         //Get the activities within the range of the users profile location
-        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
+        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
+                profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,
+                profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
         List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
         List<Activity> candidateActivities = new ArrayList<Activity>();
         for(Activity activity : activityList){
-            UserActivityRole role = userActivityRoleReporsitory.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0){
+            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
+            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
                 candidateActivities.add(activity);
             }
         }

@@ -68,6 +68,9 @@ public class HomeFeedControllerTest {
     @MockBean
     ProfileRepository profileRepository;
 
+    @MockBean
+    SubscriptionRepository subscriptionRepository;
+
     User user;
     Profile profile;
     List<ChangeLog> changeLogList;
