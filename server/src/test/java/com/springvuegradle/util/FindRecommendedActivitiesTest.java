@@ -45,7 +45,7 @@ public class FindRecommendedActivitiesTest {
     private ActivityType selfActivityType;
     private Profile otherProfile;
 
-    private static int BOUNDING_BOX_SIZE = 1;
+    private static float BOUNDING_BOX_SIZE = 0.2f;
 
     @BeforeAll
     public void setUp(){
@@ -79,6 +79,7 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
+    //Broken
     void findRecommendedActivities_OneFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(selfActivityType);
@@ -92,6 +93,7 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
+    //Borken
     void findRecommendedActivitiesDifferentActivityTypes_OneFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(new ActivityType("Running"));
@@ -128,6 +130,7 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
+    //b
     void findRecommendedActivitiesSameCreator_OneFound(){
         Set<ActivityType> activityTypes2 = new HashSet<>();
         activityTypes2.add(selfActivityType);
@@ -145,9 +148,10 @@ public class FindRecommendedActivitiesTest {
     }
 
     @Test
+    //broke
     void findRecommendedActivitiesSameActivityType_MultipleFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
-        activityTypes1.add(new ActivityType("Gapping"));
+        activityTypes1.add(new ActivityType("Running Fast"));
 
         Set<ActivityType> activityTypes2 = new HashSet<>();
         activityTypes2.add(selfActivityType);

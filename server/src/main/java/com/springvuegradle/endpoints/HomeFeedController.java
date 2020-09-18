@@ -41,7 +41,11 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
-    private static int BOUNDING_BOX_SIZE = 0.1;
+    /**
+     * Float value for distance from user set location that
+     * recommended activities will be shown
+     */
+    private static float BOUNDING_BOX_SIZE = 0.2f;
 
     /**
      * Retrieve and respond to a request to get a user's home feed updates
