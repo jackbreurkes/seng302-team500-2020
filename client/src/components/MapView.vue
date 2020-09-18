@@ -71,6 +71,7 @@
           },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
           displayedPins: [] as any[],
+          displayedPinLocations: [] as LocationCoordinatesInterface[],
           displayedActivities: [] as CreateActivityRequest[],
           openInfoWindow: null as any,
           mapIcons: [
@@ -159,21 +160,16 @@
           }
         }
 
-        //clear all the pins no longer in view
-        this.displayedPins.forEach((marker, index) => {
-          let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
+        this.deletePinsOutsideBounds(boundingBox);
 
-          if (!this.isInBounds(boundingBox, position)) {
-            // @ts-ignore next line
-            marker.setMap(null);
-            delete this.displayedPins[index];
-          }
-        });
-        
         uniquePinLocations.forEach((position: LocationCoordinatesInterface, index: number) =>  {
+          if (this.displayedPinLocations.find(element => element.lat == position.lat && element.lon == position.lon) !== undefined) {
+            return; //this pin is already being displayed so no point recreating it
+          }
           let allActivities = [] as number[];
           let highestRole = 3;
           
+          //this isn't O(n^2), this is looping over every activity at the pin
           locationToActivityPinMapping[index].forEach((pin: Pin) =>  {
             allActivities.push(pin.activity_id);
             let role = pin.role;
@@ -185,6 +181,7 @@
               highestRole = 2;
             }
           });
+          
           // @ts-ignore next line
           let displayedPin = new window.google.maps.Marker({
             position: {lat: position.lat, lng: position.lon}, 
@@ -197,7 +194,7 @@
           });
 
           this.displayedPins.push(displayedPin);
-          uniquePinLocations.push(position);
+          this.displayedPinLocations.push(position);
         })
       },
 
@@ -249,6 +246,23 @@
           }
         });
         this.openInfoWindow.close();
+      },
+
+      deletePinsOutsideBounds: function(boundingBox: BoundingBoxInterface) {
+        //clear all the pins no longer in view
+        this.displayedPins.forEach((marker, index) => {
+          let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
+
+          if (!this.isInBounds(boundingBox, position)) {
+            // @ts-ignore next line
+            marker.setMap(null);
+            delete this.displayedPins[index];
+            
+            this.displayedPinLocations = this.displayedPinLocations.filter(function(location){
+              return location.lat != position.lat && location.lon != position.lon;
+            });
+          }
+        });
       }
     },
 
