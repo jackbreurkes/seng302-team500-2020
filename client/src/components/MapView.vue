@@ -35,8 +35,8 @@
   import { Pin } from '@/scripts/Pin';
   // eslint-disable-next-line no-unused-vars
   import { CreateActivityRequest } from '@/scripts/Activity';
-
-  import MapInfoWindowView from './MapInfoWindowView.vue'
+  import * as PinsController from '../controllers/pins.controller';
+  import MapInfoWindowView from './MapInfoWindowView.vue';
 
   // app Vue instance
   const MapView = Vue.extend({
@@ -50,36 +50,35 @@
           legend: {
             created: {
               title: 'Created',
-              colour: 'rgba(255, 0, 0, 1)',
+              colour: 'rgba(253, 117, 103, 1)',
               icon: 'mdi-square'
             },
             following: {
               title: 'Following',
-              colour: 'rgba(255, 145, 0, 1)',
+              colour: 'rgba(255, 153, 0, 1)',
               icon: 'mdi-square'
             },
             participating: {
               title: 'Participating',
-              colour: 'rgba(162, 0, 255, 1)',
+              colour: 'rgba(142, 103, 253, 1)',
               icon: 'mdi-square'
             },
             miscellaneous: {
               title: 'Miscellaneous',
-              colour: 'rgba(120, 144, 156, 1)',
+              colour: 'rgba(105, 145, 253, 1)',
               icon: 'mdi-square'
             }
           },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
-          displayedPins: [] as any[],
-          displayedPinLocations: [] as LocationCoordinatesInterface[],
-          displayedActivities: [] as CreateActivityRequest[],
-          openInfoWindow: null as any,
+          displayedActivities: [] as CreateActivityRequest[], //activities being displayed in an active info window
+          displayedPins: [] as any[], //'Marker' objects of pins being displayed
+          openInfoWindow: null as any, //'InfoWindow' object of the activity summary popup by a pin
           mapIcons: [
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-          ] //in the order: creator, participant, following, miscellaneous
+          ] //in the order: creator/organiser, participant, following, miscellaneous
       }
     },
 
@@ -119,16 +118,7 @@
         timerId = setTimeout(() => {
           // @ts-ignore next line
           let bounds = this.map.getBounds();
-
-          let northEast = bounds.getNorthEast();
-          let southWest = bounds.getSouthWest();
-
-          let boundingBox = {
-            sw_lat: southWest.lat(),
-            ne_lat: northEast.lat(),
-            sw_lon: southWest.lng(),
-            ne_lon: northEast.lng()
-          } as BoundingBoxInterface;
+          let boundingBox = PinsController.convertFromGoogleBounds(bounds);
 
           this.displayPinsInArea(boundingBox);
         }, 300);
@@ -141,47 +131,21 @@
        * @param boundingBox The bounding box to display the pins inside of
        */
       displayPinsInArea: async function(boundingBox: BoundingBoxInterface) {
-        let pins = await getActivitiesInBoundingBox(boundingBox);        
-        let uniquePinLocations = [] as LocationCoordinatesInterface[];
-        let locationToActivityPinMapping = {} as Record<number, Pin[]>;
-
-        //find unique locations
-        for (let pinIndex in pins) {
-          let pin = pins[pinIndex] as Pin;
-          let position = {lat: pin.location.lat, lon: pin.location.lon} as LocationCoordinatesInterface;
-          
-          let potentialDuplicate = uniquePinLocations.find(element => element.lat == position.lat && element.lon == position.lon);
-          if (potentialDuplicate === undefined) {
-            uniquePinLocations.push(position);
-            locationToActivityPinMapping[uniquePinLocations.length - 1] = [pin];
-          } else {
-            let index = uniquePinLocations.indexOf(potentialDuplicate);
-            locationToActivityPinMapping[index].push(pin);
-          }
-        }
-
         this.deletePinsOutsideBounds(boundingBox);
 
-        uniquePinLocations.forEach((position: LocationCoordinatesInterface, index: number) =>  {
-          if (this.displayedPinLocations.find(element => element.lat == position.lat && element.lon == position.lon) !== undefined) {
+        let pins = await getActivitiesInBoundingBox(boundingBox);
+        let pinsAtLocationMapping = PinsController.sortPinsByLocation(pins);
+
+        //create pins on the map for each unique location
+        pinsAtLocationMapping.forEach((pins: Pin[]) =>  {
+          let position = {lat: pins[0].location.lat, lon: pins[0].location.lon} as LocationCoordinatesInterface;
+
+          if (this.displayedPins.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon) !== undefined) {
             return; //this pin is already being displayed so no point recreating it
           }
-          let allActivities = [] as number[];
-          let highestRole = 3;
-          
-          //this isn't O(n^2), this is looping over every activity at the pin
-          locationToActivityPinMapping[index].forEach((pin: Pin) =>  {
-            allActivities.push(pin.activity_id);
-            let role = pin.role;
-            if (role == "creator") {
-              highestRole = 0;
-            } else if (role == "participant" && highestRole > 1) {
-              highestRole = 1;
-            } else if (role == "follower" && highestRole > 2) {
-              highestRole = 2;
-            }
-          });
-          
+
+          let highestRole = PinsController.getHighestRoleIndex(pins);
+
           // @ts-ignore next line
           let displayedPin = new window.google.maps.Marker({
             position: {lat: position.lat, lng: position.lon}, 
@@ -190,11 +154,10 @@
           });
 
           displayedPin.addListener('click', () => {
-            this.createPinInfoWindow(this.map, displayedPin, allActivities);
+            this.createPinInfoWindow(this.map, displayedPin, pins);
           });
 
           this.displayedPins.push(displayedPin);
-          this.displayedPinLocations.push(position);
         })
       },
 
@@ -215,11 +178,11 @@
         }
       },
 
-      createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: number[]) {
+      createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: Pin[]) {
         this.displayedActivities = [];
         for (let activityIndex in allActivities) {
           let activityId = allActivities[activityIndex];
-          let activity = await getActivityById(activityId);
+          let activity = await getActivityById(activityId.activity_id);
           this.displayedActivities.push(activity);
         }
 
@@ -258,8 +221,8 @@
             marker.setMap(null);
             delete this.displayedPins[index];
             
-            this.displayedPinLocations = this.displayedPinLocations.filter(function(location){
-              return location.lat != position.lat && location.lon != position.lon;
+            this.displayedPins = this.displayedPins.filter(function(pin){
+              return pin.getPosition().lat() != position.lat && pin.getPosition().lng() != position.lon;
             });
           }
         });
