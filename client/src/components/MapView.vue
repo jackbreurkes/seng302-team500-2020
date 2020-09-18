@@ -136,7 +136,7 @@
 
         //create pins on the map for each unique location
         pinsAtLocationMapping.forEach((pins: Pin[]) =>  {
-          let position = {lat: pins[0].location.lat, lon: pins[0].location.lon} as LocationCoordinatesInterface;
+          let position = {lat: pins[0].coordinates.lat, lon: pins[0].coordinates.lon} as LocationCoordinatesInterface;
 
           if (this.displayedPins.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon) !== undefined) {
             return; //this pin is already being displayed so no point recreating it
