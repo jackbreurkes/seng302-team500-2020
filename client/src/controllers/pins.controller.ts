@@ -14,7 +14,7 @@ export function sortPinsByLocation(pins: Pin[]) {
     //find unique locations
     for (let pinIndex in pins) {
         let pin = pins[pinIndex] as Pin;
-        let position = {lat: pin.location.lat, lon: pin.location.lon} as LocationCoordinatesInterface;
+        let position = {lat: pin.coordinates.lat, lon: pin.coordinates.lon} as LocationCoordinatesInterface;
         
         let potentialDuplicate = uniquePinLocations.find(element => element.lat == position.lat && element.lon == position.lon);
         if (potentialDuplicate === undefined) {
