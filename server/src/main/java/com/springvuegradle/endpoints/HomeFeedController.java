@@ -3,10 +3,7 @@ package com.springvuegradle.endpoints;
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +27,13 @@ public class HomeFeedController {
     ChangeLogRepository changeLogRepository;
 
     @Autowired
+    ActivityPinRepository activityPinRepository;
+
+    @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    UserActivityRoleRepository userActivityRoleRepository;
 
     @Autowired
     ActivityRepository activityRepository;
@@ -38,10 +41,19 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
+    /**
+     * Float value for maximum distance that recommended activities
+     * will be shown from users location, in degrees
+     */
+    private static float BOUNDING_BOX_SIZE = 0.2f;
+
     /**
      * Retrieve and respond to a request to get a user's home feed updates
      * @param profileId id of the user whose home feed it should return
-     * @param paginatedChangeId the ID of the last changelog ID the frontend received in the last query (used for pagination)
+     * @param lastId the ID of the last changelog ID the frontend received in the last query (used for pagination)
      * @param httpRequest http request made
      * @return list of HomeFeedResponse objects which give appropriately formatted information about changes
      * @throws ForbiddenOperationException if trying to retrieve another user's home feed
@@ -95,6 +107,29 @@ public class HomeFeedController {
             changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
         }
         return getHomeFeedResponsesFromChanges(changeLogList);
+    }
+
+    /**
+     * Finds recommended activities for a user based on profile location and interested activity types
+     * @param profile the profile that the recommendations are for
+     * @return List of candidate recommended activities
+     */
+    public List<Activity> findRecommendedActivities(Profile profile){
+        //Get the activities within the range of the users profile location
+        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
+                profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,
+                profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
+        List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
+        List<Activity> candidateActivities = new ArrayList<Activity>();
+        for(Activity activity : activityList){
+            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
+            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
+                candidateActivities.add(activity);
+            }
+        }
+        return candidateActivities;
     }
 
     /**
@@ -152,6 +187,7 @@ public class HomeFeedController {
      * @return Activity with the given id
      * @throws RecordNotFoundException if no activity with the id given exists
      */
+    @Deprecated(since="sprint 6")
     private Activity getActivityIfExists(Long activityId) throws RecordNotFoundException {
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if (optionalActivity.isEmpty()) {
@@ -166,6 +202,7 @@ public class HomeFeedController {
      * @return the profile with the given id
      * @throws RecordNotFoundException if no profile exists
      */
+    @Deprecated(since="sprint 6")
     private Profile getProfileIfExists(Long profileId) throws RecordNotFoundException {
         Optional<Profile> optionalEditor = profileRepository.findById(profileId);
         if (optionalEditor.isEmpty()) {
