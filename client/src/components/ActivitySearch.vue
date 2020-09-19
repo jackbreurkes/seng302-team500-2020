@@ -115,12 +115,13 @@ const Activities = Vue.extend({
      */
     search: async function() {
       this.errorMessage = "";
-      this.searchTerms = this.searchString.split(" ");
+      this.searchTerms = activitySearch.getSearchArguments(this.searchString);
       try {
         this.searchResults = await activitySearch.searchActivities(
           this.searchTerms
         );
       } catch (e) {
+        this.searchResults = []
         this.errorMessage = e.message;
       }
       this.setActivityCreatorNames();
