@@ -144,38 +144,38 @@ public class ProfileRepositoryTest {
     @Test
     public void retrieveSingleUserWithPartialValidNickname() {
         String nickName = "And";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
         assertEquals(1, result.size());
     }
     @Test
     public void retrieveSingleUserWithFullValidNickname() {
         String nickName = "Andyc123";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
         assertEquals(1, result.size());
     }
     @Test
     public void retrieveMultipleUsersWithPartialValidNickname() {
         String nickName = "Br";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
         assertEquals(2, result.size());
     }
     @Test
     public void retrieveNoUsersWithInvalidNickname() {
         String nickName = "INVALIDNICKNAME";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
         assertEquals(0, result.size());
     }
     @Test
     public void retrieveMultipleUsersWithFullValidNickname() {
         String nickName = "JacknJill";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
         assertEquals(2, result.size());
     }
     @Test
-    public void retrieveSingleUserWithPartialInvalidCaseSensitiveNickname() {
+    public void retrieveSingleUserWithPartialValidCaseInsensitiveNickname() {
         String nickName = "brILLy";
-        List<Profile> result = profileRepository.findByNickNameStartingWith(nickName);
-        assertEquals(0, result.size());
+        List<Profile> result = profileRepository.findByNickNameStartingWithIgnoreCase(nickName);
+        assertEquals(1, result.size());
     }
     //TESTS FOR NAMING
     @ParameterizedTest
@@ -185,39 +185,37 @@ public class ProfileRepositoryTest {
             "Brie,Calaris,10",
             "Jack,Sandler,11",
             "Jill,Sandler,12",
+            "JILL,sandler,12",
     })
     public void searchForUsersGivenFullFirstLastNames(String Fname, String Lname, String userId) {
-        Long userIdNum = Long.parseLong(userId);
-        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname);
         assertEquals(1, result.size());
-        //assertEquals(userIdNum, result.get(0).getUser().getUserId());
     }
     @ParameterizedTest
     @CsvSource({
             "Bi,Te,8",
             "A,W,9",
+            "a,w,9",
             "Br,Cal,10",
             "Jack,San,11",
             "Ji,Sandler,12",
     })
     public void searchForUsersGivenPartialFirstLastNames(String Fname, String Lname, String userId) {
-        Long userIdNum = Long.parseLong(userId);
-        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname);
         assertEquals(1, result.size());
-        //assertEquals(userIdNum, result.get(0).getUser().getUserId());
     }
     @Test
     public void searchForUsersGivenIncorrectPartialFirstLastNames() {
         String Fname = "QQQ";
         String Lname = "YYY";
-        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname);
         assertEquals(0, result.size());
     }
     @Test
     public void searchForUsersGivenIncorrectFullFirstLastNames() {
         String Fname = "Joshua";
         String Lname = "Joshua";
-        List<Profile> result = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname);
+        List<Profile> result = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname);
         assertEquals(0, result.size());
     }
 
@@ -227,7 +225,7 @@ public class ProfileRepositoryTest {
             "Andy,",
     })
     public void searchForUsersGivenOnlyFullAndPartialFirstName(String Fname, String Lname) {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname));
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname));
     }
     @ParameterizedTest
     @CsvSource({
@@ -235,6 +233,6 @@ public class ProfileRepositoryTest {
             ",WarShaw",
     })
     public void searchForUsersGivenOnlyFullAndPartialLastName(String Fname, String Lname) {
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(Fname, Lname));
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(Fname, Lname));
     }
 }
