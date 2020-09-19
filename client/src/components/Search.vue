@@ -190,12 +190,12 @@ const Search = Vue.extend({
   methods: {
       search: function() {
           if (this.searchTerm.trim().length >= 1 ||
-                (this.firstname.trim().length >= 1 && this.lastname.trim().length >= 1) ||
+                (this.firstname.trim().length >= 1 || this.lastname.trim().length >= 1) ||
                 (this.searchBy == "Interests" && this.selectedActivityTypes.length != 0)
           ) {
             if (this.searchBy == "Name") {
-              if (this.firstname == "" || this.lastname == "") {
-                this.errorMessage = "Must enter characters from first and last names (or entire names)";
+              if (this.firstname == "" && this.lastname == "") {
+                this.errorMessage = "Must enter characters in at least either first or last name to search for.";
               } else {
                 this.errorMessage = "";
                 this.searchTerms = {"firstname": this.firstname, "middlename": this.middlename, "lastname": this.lastname};
@@ -215,7 +215,7 @@ const Search = Vue.extend({
 
           }  else {
             if (this.searchBy == "Name") {
-              this.errorMessage = "Must enter at least 1 character for both first and last names";
+              this.errorMessage = "Must enter at least 1 character for at least either first or last name";
             } else if (this.searchBy == "Interests") {
               this.errorMessage = "Must select at least 1 activity";
             } else {
@@ -284,7 +284,6 @@ const Search = Vue.extend({
       }
     },
   beforeRouteLeave (to, from, next){
-    console.log(to);
     this.prepareToExit(to);
     next()
   }

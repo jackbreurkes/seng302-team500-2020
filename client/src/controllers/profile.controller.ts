@@ -177,8 +177,6 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
  * @param profileId the id of the profile belonging to the user being updated
  */
 export async function updateUserEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
-    console.log(primaryEmail)
-    console.log(additionalEmails)
     let user = await getProfileById(profileId);
     if (user === null) {
         throw new Error("user not found");
@@ -188,8 +186,6 @@ export async function updateUserEmails(primaryEmail: string, additionalEmails: s
         throw new Error("Invalid primary email " + primaryEmail);
     }
     for (let i = 0; i < additionalEmails.length; i++) {
-        console.log(additionalEmails[i])
-        console.log(additionalEmails)
         if (additionalEmails[i] == null || !formValidator.isValidEmail(additionalEmails[i])) {
             throw new Error("Invalid email " + additionalEmails[i]);
         }
