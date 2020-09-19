@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ActivityRepository extends JpaRepository<Activity, Long> {
-    public List<Activity> findActivitiesByCreator(Profile creator);
-    public List<Activity> findActivitiesByActivityNameContaining(String partialName);
+public interface ActivityRepository extends JpaRepository<Activity, Long>, ActivitySearchRepository {
+    List<Activity> findActivitiesByCreator(Profile creator);
+    List<Activity> findActivitiesByActivityNameContaining(String partialName);
 }
