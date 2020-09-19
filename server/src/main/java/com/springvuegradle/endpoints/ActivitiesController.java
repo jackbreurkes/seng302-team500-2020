@@ -50,6 +50,7 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.model.responses.UserActivityRoleResponse;
 import com.springvuegradle.util.FormValidator;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -351,7 +352,7 @@ public class ActivitiesController {
      * @param location Frontend verified string of a location
      * @return The created activity pin.
      */
-    private ActivityPin validateCreatePinLocation(Activity activity, String location) throws RecordNotFoundException {
+    private ActivityPin validateCreatePinLocation(Activity activity, String location) throws RecordNotFoundException, InvalidRequestFieldException {
         final String uri = "https://nominatim.openstreetmap.org/search/?q=" + location
                 + "&format=json&addressdetails=1&accept-language=en&limit=1";
 
@@ -359,7 +360,7 @@ public class ActivitiesController {
         String result = restTemplate.getForObject(uri, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = null;
+        JsonNode rootNode;
 
         float locationLat = 0;
         float locationLon = 0;
@@ -370,10 +371,13 @@ public class ActivitiesController {
         float boundingNELon = 0;
 
         try {
+            if (result == null) {
+                throw new RecordNotFoundException("Couldn't find this location");
+            }
             rootNode = mapper.readTree(result);
 
             if (rootNode instanceof ArrayNode) {
-                for (JsonNode node : ((ArrayNode)rootNode)) {
+                for (JsonNode node : rootNode) {
                     JsonNode boundingNode = node.get("boundingbox");
 
                     locationLat = (float) node.get("lat").asDouble();
@@ -388,7 +392,8 @@ public class ActivitiesController {
                 }
             }
         } catch (JsonProcessingException | NullPointerException e) {
-            e.printStackTrace();
+            String errorMessage = e.getMessage();
+            throw new InvalidRequestFieldException(errorMessage);
         }
 
         if (boundingSWLat == boundingNELat) {
