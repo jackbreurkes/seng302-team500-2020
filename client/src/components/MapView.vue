@@ -86,12 +86,11 @@
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {
-          lat: -43.525, 
-          lng: 172.58
+          lat: 0, 
+          lng: 0
         },
-        zoom: 4,
-        streetViewControl: false,
-        clickableIcons: false
+        zoom: 3,
+        streetViewControl: false
       })
       Vue.prototype.$map = this.map; //make this globally accessible
 
