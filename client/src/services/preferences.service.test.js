@@ -42,3 +42,24 @@ test.each([true, false])(
         expect(localStorage.getItem(prefersHorizontalSplitKey)).toBe(value ? "true" : "false");
     }
 );
+
+test.each([["my search query", 10, 5]])(
+    "expect saveActivitySearchPosition to store the given search information for later retrieval", (query, pageNumber, pageSize) => {
+        preferences.saveActivitySearchPosition(query, pageNumber, pageSize);
+        expect(preferences.getSavedActivitySearchQuery()).toBe(query);
+        expect(preferences.getSavedActivitySearchPage()).toBe(pageNumber);
+        expect(preferences.getPreferredSearchPageSize()).toBe(pageSize);
+    }
+);
+
+test("expect getSavedActivitySearchQuery to return the empty string by default", () => {
+    expect(preferences.getSavedActivitySearchQuery()).toBe("");
+})
+
+test("expect getSavedActivitySearchPage to return 1 by default", () => {
+    expect(preferences.getSavedActivitySearchPage()).toBe(1);
+})
+
+test("expect getPreferredSearchPageSize to return 15 by default", () => {
+    expect(preferences.getPreferredSearchPageSize()).toBe(15);
+})
