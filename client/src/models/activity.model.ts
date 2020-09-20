@@ -79,6 +79,16 @@ export async function getActivity(creatorId: number, activityId: number): Promis
   return res.data;
 }
 
+/**
+ * Gets an activity by its activity id
+ * @param {number} activityId id of the activity to retrieve
+ * @return {CreateActivityRequest} retrieved activity data
+ */
+export async function getActivityById(activityId: number): Promise<CreateActivityRequest> {
+  let res = await instance.get(`/activities/${activityId}`);
+  return res.data;
+}
+
 
 /**
  * Deletes an activity by its creator's id and the activity id
@@ -193,7 +203,7 @@ export async function getParticipants(activityId: number): Promise<UserRoleForma
  */
 export async function getActivitiesInBoundingBox(boundingBox: BoundingBoxInterface) {
 
-  let res = await instance.get(`/map?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
+  let res = await instance.get(`/maps?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
     &sw_lat=${boundingBox.sw_lat}&sw_lon=${boundingBox.sw_lon}`);
   return res.data;
 }

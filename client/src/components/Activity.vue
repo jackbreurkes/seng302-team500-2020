@@ -346,9 +346,19 @@ const Activity = Vue.extend({
 
     const activityId: number = parseInt(this.$route.params.activityId);
     const creatorId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(creatorId) || isNaN(activityId)) {
-      this.$router.back();
-    } else {
+    
+    this.displayActivity(activityId, creatorId);
+  },
+
+  methods: {
+    /**
+     * Displays the activity (populates the page)
+     */
+    displayActivity: function(activityId: number, creatorId: number) {
+      if (isNaN(creatorId) || isNaN(activityId)) {
+        this.$router.back();
+        return;
+      }
       this.activityId = activityId;
       this.creatorId = creatorId;
 
@@ -362,12 +372,12 @@ const Activity = Vue.extend({
             this.participants = this.activity.num_participants;
         }
         getIsFollowingActivity(this.currentUsersProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.following = booleanResponse;
+        .then((isFollowing) => {
+          this.following = isFollowing;
         })
         activityController.getIsParticipating(this.currentUsersProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.participating = booleanResponse;
+        .then((isParticipating) => {
+          this.participating = isParticipating;
         })
         if (this.creatorId == this.currentUsersProfileId) {
           this.organiser = true;
@@ -408,13 +418,10 @@ const Activity = Vue.extend({
       .catch(() => {
         this.$router.back();
       });
-    }
 
-    // Populates the datatable that holds all the participants/oraganisers
-    this.search();
-},
-
-  methods: {
+      // Populates the datatable that holds all the participants/oraganisers
+      this.search();
+    },
     /**
      * Send the user to the activity's edit page
      */
@@ -585,8 +592,15 @@ const Activity = Vue.extend({
         this.users = [];
       }
     },
-  }
+  },
 
+  watch: {
+    $route(to) {
+      const activityId: number = parseInt(to.params.activityId);
+      const creatorId: number = parseInt(to.params.profileId);
+      this.displayActivity(activityId, creatorId);
+    }
+  }
 });
 
 export default Activity;

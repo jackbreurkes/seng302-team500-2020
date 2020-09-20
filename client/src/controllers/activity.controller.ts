@@ -296,6 +296,16 @@ export async function getActivity(creatorId: number, activityId: number) {
   return activityModel.getActivity(creatorId, activityId);
 }
 
+/**
+ * Gets an activity by the activity ID
+ * 
+ * @param {number} activityId Activity ID
+ * @return {CreateActivityRequest} Retrieved activity data
+ */
+export async function getActivityById(activityId: number) {
+  return activityModel.getActivityById(activityId);
+}
+
 
 /**
  * Registers user's account to follow the activity with the given id
@@ -398,6 +408,19 @@ export function describeDurationTimeFrame(startTime: string, endTime: string) {
     year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
   });
   return "Starts at: " + dtf.format(start) + "Ends: " + dtf.format(end);
+}
+
+/**
+ * returns a reader-friendly formatted date
+ * @param dateString the ISO datetime string representing the time to be formatted
+ * @return the formatted date string
+ */
+export function describeDate(dateString: string) {
+  let start = new Date(dateString);
+  const dtf = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
+  });
+  return dtf.format(start);
 }
 
 export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
