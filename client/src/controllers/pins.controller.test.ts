@@ -10,7 +10,7 @@ test('expect 1 location to be sorted',
             coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
         } as Pin;
 
-        let result = PinsController.sortPinsByLocation([pin]);
+        let result = PinsController.groupPinsByLocation([pin]);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(1);
@@ -27,7 +27,7 @@ test('expect 2 locations with different lat to be sorted as different locations'
             coordinates: {lat: 11, lon: 10} as LocationCoordinatesInterface
         } as Pin;
 
-        let result = PinsController.sortPinsByLocation([pin, pin2]);
+        let result = PinsController.groupPinsByLocation([pin, pin2]);
 
         expect(result).toHaveLength(2);
     }
@@ -42,7 +42,7 @@ test('expect 2 locations with different lon to be sorted as different locations'
             coordinates: {lat: 10, lon: 11} as LocationCoordinatesInterface
         } as Pin;
 
-        let result = PinsController.sortPinsByLocation([pin, pin2]);
+        let result = PinsController.groupPinsByLocation([pin, pin2]);
 
         expect(result).toHaveLength(2);
     }
@@ -57,7 +57,7 @@ test('expect 2 identical locations to be grouped',
             coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
         } as Pin;
 
-        let result = PinsController.sortPinsByLocation([pin, pin2]);
+        let result = PinsController.groupPinsByLocation([pin, pin2]);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(2);

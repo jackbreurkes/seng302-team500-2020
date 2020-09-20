@@ -3,11 +3,11 @@ import { Pin } from '@/scripts/Pin';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 
 /**
- * sorts all of the pins into an array of pins at the same location
+ * groups all of the pins into an array of pins at the same location
  * @param pins All of the unsorted pins
  * @returns Array of arrays of pins, where the inner arrays are activities occuring at the same location
  */
-export function sortPinsByLocation(pins: Pin[]) {
+export function groupPinsByLocation(pins: Pin[]) {
     let uniquePinLocations = [] as LocationCoordinatesInterface[];
     let locationToActivityPinMapping = {} as Record<number, Pin[]>;
 

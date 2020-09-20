@@ -132,7 +132,7 @@
         this.deletePinsOutsideBounds(boundingBox);
 
         let pins = await getActivitiesInBoundingBox(boundingBox);
-        let pinsAtLocationMapping = PinsController.sortPinsByLocation(pins);
+        let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
 
         //create pins on the map for each unique location
         pinsAtLocationMapping.forEach((pins: Pin[]) =>  {
@@ -165,6 +165,9 @@
       /**
        * Create an info window for the specified pin, representing the activities.
        * This will also trigger Vue to load information about these activities
+       * @param map The instance of the google maps object (google.maps.Map) that the info window should created on
+       * @param displayedPin The instance of the marker (google.maps.Marker) that the info window should be anchored to
+       * @param allActivities The list of pins representing activities happening at the location of the displayed pin
        */
       createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: Pin[]) {
         this.displayedActivities = [];
@@ -213,7 +216,6 @@
           if (!PinsController.isInBounds(boundingBox, position)) {
             // @ts-ignore next line
             marker.setMap(null);
-            delete this.displayedPins[index];
             
             this.displayedPins = this.displayedPins.filter(function(pin){
               return pin.getPosition().lat() != position.lat && pin.getPosition().lng() != position.lon;
