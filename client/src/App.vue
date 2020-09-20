@@ -102,7 +102,7 @@
             <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
               <router-view></router-view>
             </pane>
-            <pane id="map-pane" :size="mapPaneSize">
+            <pane v-if="showNavBar()" id="map-pane" :size="mapPaneSize">
               <MapView id="map-view"></MapView>
             </pane>
           </splitpanes>
