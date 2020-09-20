@@ -62,6 +62,10 @@ const ActivitySearchResults = Vue.extend({
   },
 
   methods: {
+    /**
+     * takes the user to the activity corresponding with the given search result.
+     * @param activity the activity the user wants to navigate to
+     */
     goToActivity: function(activity: CreateActivityRequest & {creator_name : string}) {
       if (activity.creator_id === undefined || activity.activity_id === undefined) {
         return;
@@ -69,6 +73,10 @@ const ActivitySearchResults = Vue.extend({
       this.$router.push(`/profiles/${activity.creator_id}/activities/${activity.activity_id}`);
     },
 
+    /**
+     * converts the given list of activity types as a single string.
+     * @param activities the list of activity type names to put into a string
+     */
     getActivitiesString(activities: string[]) {
       return getShortenedActivityTypesString(activities);
     },

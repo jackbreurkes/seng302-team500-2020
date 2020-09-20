@@ -8,7 +8,6 @@ import * as auth from "../services/auth.service";
 
 
 export async function searchAppUsers(searchTerms: Dictionary<string>) {
-    console.log(searchTerms)
     let res = await instance.get("profiles", { params: searchTerms });
     return res.data;
   }

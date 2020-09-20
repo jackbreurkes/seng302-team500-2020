@@ -15,8 +15,12 @@ export async function searchActivities(searchQuery: string, pageNumber: number, 
  * returns the list of activity types given as a single string.
  * @param activityTypes the list of activity types to join together
  */
-export function getShortenedActivityTypesString(activityTypes: string[]) {
-  return activityTypes.join(", ")
+export function getShortenedActivityTypesString(activityTypes: string[]): string {
+  activityTypes = activityTypes.sort();
+  if (activityTypes.length > 3) {
+    activityTypes[3] = "...";
+  }
+  return activityTypes.slice(0, 4).join(", ");
 }
 
 /**

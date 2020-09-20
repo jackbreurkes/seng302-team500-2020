@@ -2,7 +2,6 @@
  * service to handle storage of a user's local preferences.
  */
 
-
 const prefersHorizontalSplitKey = "prefersHorizontalSplit";
 const activitySearchQueryKey = "activitySearchQuery";
 const activitySearchPageKey = "activitySearchPage";
@@ -33,11 +32,7 @@ export function setPrefersHorizontalSplit(horizontal: boolean) {
  * @param pageNumber the page number the user was on
  * @param pageSize the size of the pages the user was looking through
  */
-export function saveActivitySearchPosition(
-  searchQuery: string,
-  pageNumber: number,
-  pageSize: number
-) {
+export function saveActivitySearchPosition(searchQuery: string, pageNumber: number, pageSize: number) {
   localStorage.setItem(activitySearchQueryKey, searchQuery);
   localStorage.setItem(activitySearchPageKey, pageNumber.toString());
   localStorage.setItem(preferredResultPageSizeKey, pageSize.toString());
@@ -47,23 +42,23 @@ export function saveActivitySearchPosition(
  * returns the saved activity search query, or the empty string if none is saved.
  */
 export function getSavedActivitySearchQuery(): string {
-    return localStorage.getItem(activitySearchQueryKey) || "";
+  return localStorage.getItem(activitySearchQueryKey) || "";
 }
 
 /**
  * returns the saved activity search page number, or 1 if none is saved.
  */
 export function getSavedActivitySearchPage(): number {
-    const savedPage = localStorage.getItem(activitySearchPageKey) || "NaN";
-    const pageNumber = parseInt(savedPage);
-    return isNaN(pageNumber) ? 1 : pageNumber;
+  const savedPage = localStorage.getItem(activitySearchPageKey) || "NaN";
+  const pageNumber = parseInt(savedPage);
+  return isNaN(pageNumber) ? 1 : pageNumber;
 }
 
 /**
  * returns the user's preferred search result page size, or the default value if none is saved.
  */
 export function getPreferredSearchPageSize(): number {
-    const savedPageSize = localStorage.getItem(preferredResultPageSizeKey) || "NaN";
-    const pageSize = parseInt(savedPageSize);
-    return isNaN(pageSize) ? defaultResultPageSize : pageSize;
+  const savedPageSize = localStorage.getItem(preferredResultPageSizeKey) || "NaN";
+  const pageSize = parseInt(savedPageSize);
+  return isNaN(pageSize) ? defaultResultPageSize : pageSize;
 }

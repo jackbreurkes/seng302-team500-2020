@@ -1,5 +1,19 @@
 import * as searchController from "./activitySearch.controller";
 
+test.each([
+    [["running", "walking"], "running, walking"],
+    [["testing"], "testing"],
+    [["running", "jumping", "climbing"], "climbing, jumping, running"],
+])("expect getShortenedActivityTypesString to return lists of three or less strings as comma separated strings in alphabetical order", (activityTypes, expected) => {
+    expect(searchController.getShortenedActivityTypesString(activityTypes)).toBe(expected);
+})
+
+test.each([
+    [["flying", "running", "swimming", "walking"], "flying, running, swimming, ..."],
+    [Array(50).fill("type"), "type, type, type, ..."],
+])("expect getShortenedActivityTypesString to return lists of over three strings in alphabetical order with an ellipsis", (activityTypes, expected) => {
+    expect(searchController.getShortenedActivityTypesString(activityTypes)).toBe(expected);
+})
 
 test.each([
     [`test`, [`test`]],
