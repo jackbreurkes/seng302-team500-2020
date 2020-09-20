@@ -148,14 +148,6 @@
       },
 
       /**
-       * Returns whether the location falls within the given bounding box
-       */
-      isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
-        return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
-          && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
-      },
-
-      /**
        * Gets the user's location and centers the map on this location
        */
       centerMapOnUserLocation: async function() {
@@ -218,7 +210,7 @@
         this.displayedPins.forEach((marker, index) => {
           let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
 
-          if (!this.isInBounds(boundingBox, position)) {
+          if (!PinsController.isInBounds(boundingBox, position)) {
             // @ts-ignore next line
             marker.setMap(null);
             delete this.displayedPins[index];

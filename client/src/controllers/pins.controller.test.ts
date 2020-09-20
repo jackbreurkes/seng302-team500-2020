@@ -173,17 +173,65 @@ for (let testCaseId in testCases) {
     let testCase = testCases[testCaseId];
 
     test('expect google bounds object to have same bounds when converted to our own bounds object', 
+        () => {
+            let northEast = {lat: () => { return testCase[0]; }, lng: () => { return testCase[1]; }};
+            let southWest = {lat: () => { return testCase[2]; }, lng: () => { return testCase[3]; }};
+            let googleBounds = {getNorthEast: () => { return northEast; }, getSouthWest: () => { return southWest }};
+
+            let result = PinsController.convertFromGoogleBounds(googleBounds) as BoundingBoxInterface;
+
+            expect(result.ne_lat).toBe(testCase[0]);
+            expect(result.ne_lon).toBe(testCase[1]);
+            expect(result.sw_lat).toBe(testCase[2]);
+            expect(result.sw_lon).toBe(testCase[3]);
+        }
+    )
+}
+
+// --------- IS IN BOUNDS ---------- //
+test('expect location within bounds to return true', 
     () => {
-        let northEast = {lat: () => { return testCase[0]; }, lng: () => { return testCase[1]; }};
-        let southWest = {lat: () => { return testCase[2]; }, lng: () => { return testCase[3]; }};
-        let googleBounds = {getNorthEast: () => { return northEast; }, getSouthWest: () => { return southWest }};
+        let bounds = {ne_lat: 10, ne_lon: 10, sw_lat: -10, sw_lon: -10} as BoundingBoxInterface;
+        let location = {lat: 0, lon: 0} as LocationCoordinatesInterface;
 
-        let result = PinsController.convertFromGoogleBounds(googleBounds) as BoundingBoxInterface;
+        let result = PinsController.isInBounds(bounds, location);
 
-        expect(result.ne_lat).toBe(testCase[0]);
-        expect(result.ne_lon).toBe(testCase[1]);
-        expect(result.sw_lat).toBe(testCase[2]);
-        expect(result.sw_lon).toBe(testCase[3]);
+        expect(result).toBe(true);        
     }
 )
+
+test('expect location outside bounds to return false', 
+    () => {
+        let bounds = {ne_lat: 10, ne_lon: 10, sw_lat: -10, sw_lon: -10} as BoundingBoxInterface;
+        let location = {lat: 11, lon: 11} as LocationCoordinatesInterface;
+
+        let result = PinsController.isInBounds(bounds, location);
+
+        expect(result).toBe(false);        
+    }
+)
+
+
+let testCasesForInBounds = [
+    {lat: 10, lon: 10} as LocationCoordinatesInterface,
+    {lat: -10, lon: 10} as LocationCoordinatesInterface,
+    {lat: 10, lon: -10} as LocationCoordinatesInterface,
+    {lat: -10, lon: -10} as LocationCoordinatesInterface,
+    {lat: 10, lon: 5} as LocationCoordinatesInterface,
+    {lat: -10, lon: 5} as LocationCoordinatesInterface,
+    {lat: 5, lon: -10} as LocationCoordinatesInterface,
+    {lat: 5, lon: 10} as LocationCoordinatesInterface
+];
+for (let testCaseId in testCasesForInBounds) {
+    let testCase = testCasesForInBounds[testCaseId];
+
+    test('expect location on edge of bounds to return true', 
+        () => {
+            let bounds = {ne_lat: 10, ne_lon: 10, sw_lat: -10, sw_lon: -10} as BoundingBoxInterface;
+
+            let result = PinsController.isInBounds(bounds, testCase);
+
+            expect(result).toBe(true);        
+        }
+    )
 }

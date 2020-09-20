@@ -70,3 +70,14 @@ export function convertFromGoogleBounds(bounds: any) {
         ne_lon: northEast.lng()
     } as BoundingBoxInterface;
 }
+
+/**
+ * Returns whether the location falls within the given bounding box
+ * @param boundingBox The bounding box to compare the location with
+ * @param location The location to test if it falls within the bounding box
+ * @returns true if the location is within the bounds of the given bounding box
+ */
+export function isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
+    return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
+        && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
+}
