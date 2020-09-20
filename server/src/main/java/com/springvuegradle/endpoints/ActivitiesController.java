@@ -270,9 +270,17 @@ public class ActivitiesController {
         if(activityToDelete.isEmpty()){
             throw new RecordNotFoundException("Activity Does not exist");
         }
-
-        activityRepository.delete(activityToDelete.get());
-        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(activityToDelete.get(), editingUser.get()));
+        
+        Activity toDelete = activityToDelete.get();
+        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(toDelete, editingUser.get()));
+        
+        ActivityPin pinToDelete = toDelete.getActivityPin();
+        if (pinToDelete != null) {
+        	toDelete.setActivityPin(null);
+        	activityPinRepository.delete(pinToDelete);
+        }
+        activityRepository.delete(toDelete);
+        
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
