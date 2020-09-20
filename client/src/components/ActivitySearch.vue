@@ -14,7 +14,7 @@
               </v-col>
 
               <v-col md="12" class="d-flex justify-center">
-                <v-btn x-large color="primary" v-on:click="search()">Search</v-btn>
+                <v-btn x-large color="primary" v-on:click="searchClicked()">Search</v-btn>
               </v-col>
             </div>
 
@@ -58,8 +58,9 @@
               </v-col>
             </v-row>
             <p class="pl-1" style="color: red">{{ errorMessage }}</p>
+            <v-pagination v-model="pageNumber" :length="pageCount.count" @input="search()"></v-pagination>
             <div id="activitySearchResults">
-              <ActivitySearchResults :results="searchResults"></ActivitySearchResults>
+              <ActivitySearchResults :results="searchResults" :pageSize="pageSize"></ActivitySearchResults>
             </div>
           </v-card>
         </v-col>
@@ -77,6 +78,7 @@ import { CreateActivityRequest } from "@/scripts/Activity";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from "vue-router/types/router";
 import * as activitySearch from "../controllers/activitySearch.controller";
+import * as preferences from "../services/preferences.service";
 import { fetchProfileWithId } from "../controllers/profile.controller"
 
 // app Vue instance
@@ -97,34 +99,87 @@ const Activities = Vue.extend({
         { text: "Follower Count", value: "num_followers" }
       ],
       searchString: "",
-      searchTerms: [] as string[],
       searchResults: [] as (CreateActivityRequest & {creator_name : string})[],
       creatorNames: {} as Dictionary<string>,
-      pageNumber: 0,
+      pageNumber: NaN, // loaded in created hook
+      pageSize: NaN, // loaded in created hook
+      pageCount: {query: "", count: 0}, // used to keep track of how the paginator should be displayed
       errorMessage: ""
     };
   },
 
   created() {
-    this.searchTerms = [];
+    this.searchString = preferences.getSavedActivitySearchQuery();
+    this.pageNumber = preferences.getSavedActivitySearchPage();
+    this.pageSize = preferences.getPreferredSearchPageSize();
+    if (this.searchString !== "") {
+      this.search();
+    }
   },
 
   methods: {
+    /**
+     * starts a search from at the first page.
+     */
+    searchClicked() {
+      this.pageNumber = 1;
+      this.search();
+    },
+
     /**
      * sends a search request and updates the search results list accordingly.
      */
     search: async function() {
       this.errorMessage = "";
-      this.searchTerms = activitySearch.getSearchArguments(this.searchString);
       try {
         this.searchResults = await activitySearch.searchActivities(
-          this.searchTerms
+          this.searchString,
+          this.pageNumber - 1,
+          this.pageSize,
         );
       } catch (e) {
-        this.searchResults = []
+        this.searchResults = [];
         this.errorMessage = e.message;
       }
+      preferences.saveActivitySearchPosition(this.searchString, this.pageNumber, this.pageSize);
+      this.updateTotalPageCount();
       this.setActivityCreatorNames();
+    },
+
+    /**
+     * used to update the paginator displayed below the results table.
+     * if there are more pages after the current page, will add one page to the list of accessible pages in the paginator.
+     * this means we do not have to get the total number of results returned by a search to know how many pages there are.
+     */
+    async updateTotalPageCount() {
+      const previousQuery = this.pageCount.query;
+      const previousPageCount = this.pageCount.count;
+      if (this.searchString !== previousQuery) {
+        this.pageCount = {
+          query: this.searchString,
+          count: this.pageNumber
+        }
+      }
+      if (this.pageNumber < previousPageCount) {
+        return;
+      }
+      let nextPageResults = [];
+      try {
+        nextPageResults = await activitySearch.searchActivities(
+          this.searchString,
+          this.pageNumber,
+          this.pageSize,
+        );
+      } catch (e) {
+        // do nothing
+      }
+      if (nextPageResults.length === 0) {
+        return; // there is no next page
+      }
+      this.pageCount = {
+        query: this.searchString,
+        count: this.pageNumber + 1
+      }
     },
 
     /**

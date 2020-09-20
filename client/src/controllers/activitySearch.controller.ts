@@ -1,9 +1,14 @@
 import { searchAppActivities } from '../models/activitySearch.model';
-// eslint-disable-next-line no-unused-vars
-import { Dictionary } from 'vue-router/types/router';
 
-export async function searchActivities(searchTerms: string[]) {
-  return await searchAppActivities(searchTerms);
+/**
+ * sends a request to search activities based on the search query entered by the user.
+ * @param searchQuery the search query entered by the user
+ * @param pageNumber the page number to fetch
+ * @param pageSize the max number of results to fetch on this page
+ */
+export async function searchActivities(searchQuery: string, pageNumber: number, pageSize: number) {
+  const searchTerms = getSearchArguments(searchQuery);
+  return await searchAppActivities(searchTerms, pageNumber, pageSize);
 }
 
 /**

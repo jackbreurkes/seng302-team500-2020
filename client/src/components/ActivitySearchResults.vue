@@ -8,8 +8,9 @@
     :items="results"
     item-key="activity_id"
     @click:row="goToActivity"
-    :page.sync="page"
+    :items-per-page="pageSize"
     single-select
+    hide-default-footer
     >
     <template #item.short_interests="{ item }">{{getActivitiesString(item.activity_type)}}</template>
     <template v-slot:items="activities">
@@ -38,7 +39,7 @@ import { Dictionary } from 'vue-router/types/router';
 // app Vue instance
 const ActivitySearchResults = Vue.extend({
   name: "ActivitySearchResults",
-  props: ['results'],
+  props: ['results', 'pageSize'],
 
   data () {
     return {
@@ -57,14 +58,8 @@ const ActivitySearchResults = Vue.extend({
       noDataText: "No activities",
       searchRulesModal: false,
       creatorId: NaN as number,
-      page: 1,
     }
   },
-
-  computed: {
-    
-  },
-
 
   methods: {
     goToActivity: function(activity: CreateActivityRequest & {creator_name : string}) {
@@ -76,13 +71,6 @@ const ActivitySearchResults = Vue.extend({
 
     getActivitiesString(activities: string[]) {
       return getShortenedActivityTypesString(activities);
-    },
-    
-    checkPage: function(){
-      if(localStorage.getItem("searchPage")){
-        this.page = parseInt(localStorage.getItem("searchPage")!);
-        localStorage.removeItem("searchPage");
-      }
     },
 
   },
