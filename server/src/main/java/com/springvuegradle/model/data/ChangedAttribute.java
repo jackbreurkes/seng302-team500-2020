@@ -11,8 +11,8 @@ public enum ChangedAttribute {
 	ACTIVITY_EXISTENCE("activity_existence"),
 	ACTIVITY_ACTIVITY_TYPES("activity_activity_types"),
 	ACTIVITY_OUTCOME("activity_outcome"),
-	ACTIVITY_RESULT("activity_result");
-
+	ACTIVITY_RESULT("activity_result"),
+	RECOMMENDED_ACTIVITY("recommended_activity");
 	/**
 	 * Name of the attribute changed when sent by json
 	 */

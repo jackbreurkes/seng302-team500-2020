@@ -44,6 +44,12 @@ public class HomeFeedControllerTest {
     @InjectMocks
     private HomeFeedController homeFeedController;
 
+    @MockBean
+    private ActivityPinRepository activityPinRepostory;
+
+    @MockBean
+    private UserActivityRoleRepository userActivityRoleReporsitory;
+
     @Autowired
     private MockMvc mvc;
 
@@ -61,6 +67,9 @@ public class HomeFeedControllerTest {
 
     @MockBean
     ProfileRepository profileRepository;
+
+    @MockBean
+    SubscriptionRepository subscriptionRepository;
 
     User user;
     Profile profile;

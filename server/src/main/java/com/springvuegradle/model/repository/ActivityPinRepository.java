@@ -1,6 +1,7 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.ActivityPin;
+import com.springvuegradle.model.data.ActivityType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
