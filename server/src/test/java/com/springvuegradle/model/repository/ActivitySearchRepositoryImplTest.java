@@ -56,14 +56,10 @@ class ActivitySearchRepositoryImplTest {
         return activityRepository.save(activity);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "This",
-            "is",
-            "a",
-            "run"
-    })
-    void testSingleWord_singleResult(String searchTerm) {
+
+    @Test
+    void testSingleWord_singleResult() {
+        String searchTerm = "superfun";
         String activityName = "This is a superfun run";
         createActivityWithName(activityName);
         List<Activity> results = activityRepository.findUniqueActivitiesByListOfNames(Collections.singletonList(searchTerm), PageRequest.of(0, 25));
@@ -72,14 +68,9 @@ class ActivitySearchRepositoryImplTest {
         assertEquals(activityName, results.get(0).getActivityName());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "Awesome Activity",
-            "This is a fun run",
-            "Test Test Test",
-            "oneword"
-    })
-    void testSearchByAllWordsInName_singleResult(String activityName) {
+    @Test
+    void testSearchByAllWordsInName_singleResult() {
+        String activityName = "Hello I am dave";
         List<String> searchTerms = Arrays.asList(activityName.split(" "));
         createActivityWithName(activityName);
         List<Activity> results = activityRepository.findUniqueActivitiesByListOfNames(searchTerms, PageRequest.of(0, 25));
