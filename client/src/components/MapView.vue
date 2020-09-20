@@ -209,7 +209,7 @@
        */
       deletePinsOutsideBounds: function(boundingBox: BoundingBoxInterface) {
         //clear all the pins no longer in view
-        this.displayedPins.forEach((marker, index) => {
+        this.displayedPins.forEach((marker) => {
           let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
 
           if (!PinsController.isInBounds(boundingBox, position)) {
