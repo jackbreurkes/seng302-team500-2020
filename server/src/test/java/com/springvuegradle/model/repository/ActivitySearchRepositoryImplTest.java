@@ -54,7 +54,6 @@ class ActivitySearchRepositoryImplTest {
             "This",
             "is",
             "a",
-            "superfun",
             "run"
     })
     void testSingleWord_singleResult(String searchTerm) {
@@ -70,7 +69,6 @@ class ActivitySearchRepositoryImplTest {
     @ValueSource(strings = {
             "Awesome Activity",
             "This is a fun run",
-            "Testing this cool activity",
             "Test Test Test",
             "oneword"
     })
