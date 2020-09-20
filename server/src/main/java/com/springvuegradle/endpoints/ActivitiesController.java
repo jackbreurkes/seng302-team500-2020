@@ -8,13 +8,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -34,24 +42,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityChangeLog;
-import com.springvuegradle.model.data.ActivityOutcome;
-import com.springvuegradle.model.data.ActivityParticipantResult;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
-import com.springvuegradle.model.repository.ActivityOutcomeRepository;
-import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ActivityOutcomeRequest;
 import com.springvuegradle.model.requests.CreateActivityRequest;
 import com.springvuegradle.model.requests.RecordActivityResultsRequest;
@@ -60,6 +50,8 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import com.springvuegradle.model.responses.ParticipantResultResponse;
 import com.springvuegradle.model.responses.UserActivityRoleResponse;
 import com.springvuegradle.util.FormValidator;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Controller for all endpoints relating to activities
@@ -69,6 +61,7 @@ public class ActivitiesController {
 
     private static final String PROFILE_NOT_FOUND = "profile with id %d not found";
     private static final String ACTIVITY_NOT_FOUND = "activity with id %d not found";
+
 
     @Autowired
     private ProfileRepository profileRepository;
@@ -90,6 +83,9 @@ public class ActivitiesController {
 
     @Autowired
     private ChangeLogRepository changeLogRepository;
+
+    @Autowired
+    private ActivityPinRepository activityPinRepository;
 
     @Autowired
     private ActivityOutcomeRepository activityOutcomeRepository;
@@ -131,6 +127,26 @@ public class ActivitiesController {
 
         for (ChangeLog change : ActivityChangeLog.getLogsForUpdateActivity(activity, updateActivityRequest, editingUser)) {
             changeLogRepository.save(change);
+        }
+
+        if(!activity.getLocation().equals(updateActivityRequest.getLocation())) {
+            ActivityPin pin = validateCreatePinLocation(activity,updateActivityRequest.getLocation());
+            if (activity.getActivityPin() != null) {
+                // overwrite
+                ActivityPin oldPin = activity.getActivityPin();
+                oldPin.setNortheastBoundingLongitude(pin.getNortheastBoundingLongitude());
+                oldPin.setSouthwestBoundingLongitude(pin.getSouthwestBoundingLongitude());
+                oldPin.setNortheastBoundingLatitude(pin.getNortheastBoundingLatitude());
+                oldPin.setSouthwestBoundingLatitude(pin.getSouthwestBoundingLatitude());
+                oldPin.setLongitude(pin.getLongitude());
+                oldPin.setLatitude(pin.getLatitude());
+
+                activityPinRepository.save(oldPin);
+            } else {
+                activity.setActivityPin(pin);
+                activityPinRepository.save(pin);
+            }
+
         }
 
         activity.setActivityName(updateActivityRequest.getActivityName());
@@ -318,9 +334,73 @@ public class ActivitiesController {
         for (ActivityOutcomeRequest outcome : createActivityRequest.getOutcomes()) {
             activity.addOutcome(new ActivityOutcome(outcome.getDescription(), outcome.getUnits()));
         }
+
+        ActivityPin pin = validateCreatePinLocation(activity, createActivityRequest.getLocation());
+
+        activity.setActivityPin(pin);
         activity = activityRepository.save(activity);
+        activityPinRepository.save(pin);
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
+
         return new ActivityResponse(activity, 1L, 1L);
+    }
+
+    /**
+     * Validates the location given with the nominatim API and returns a created pin with appropriate lat, lon and
+     * bounding box coordinates
+     * @param activity The activity for the pin.
+     * @param location Frontend verified string of a location
+     * @return The created activity pin.
+     */
+    private ActivityPin validateCreatePinLocation(Activity activity, String location) throws RecordNotFoundException, InvalidRequestFieldException {
+        final String uri = "https://nominatim.openstreetmap.org/search/?q=" + location
+                + "&format=json&addressdetails=1&accept-language=en&limit=1";
+
+        RestTemplate restTemplate = new RestTemplate();
+        String result = restTemplate.getForObject(uri, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode;
+
+        float locationLat = 0;
+        float locationLon = 0;
+
+        float boundingSWLat = 0;
+        float boundingNELat = 0;
+        float boundingSWLon = 0;
+        float boundingNELon = 0;
+
+        try {
+            if (result == null) {
+                throw new RecordNotFoundException("Couldn't find this location");
+            }
+            rootNode = mapper.readTree(result);
+
+            if (rootNode instanceof ArrayNode) {
+                for (JsonNode node : rootNode) {
+                    JsonNode boundingNode = node.get("boundingbox");
+
+                    locationLat = (float) node.get("lat").asDouble();
+                    locationLon = (float) node.get("lon").asDouble();
+
+                    boundingSWLat = (float) boundingNode.get(0).asDouble();
+                    boundingNELat = (float) boundingNode.get(1).asDouble();
+                    boundingSWLon = (float) boundingNode.get(2).asDouble();
+                    boundingNELon = (float) boundingNode.get(3).asDouble();
+
+
+                }
+            }
+        } catch (JsonProcessingException | NullPointerException e) {
+            String errorMessage = e.getMessage();
+            throw new InvalidRequestFieldException(errorMessage);
+        }
+
+        if (boundingSWLat == boundingNELat) {
+            throw new RecordNotFoundException("Cannot find this location");
+        }
+
+        return new ActivityPin(activity,locationLat, locationLon,boundingSWLat,boundingNELat, boundingSWLon, boundingNELon);
     }
 
     /**

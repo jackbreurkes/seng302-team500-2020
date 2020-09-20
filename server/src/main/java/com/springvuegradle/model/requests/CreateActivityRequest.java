@@ -1,8 +1,10 @@
 package com.springvuegradle.model.requests;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.springvuegradle.model.data.GeoPosition;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -33,10 +35,10 @@ public class CreateActivityRequest {
 
     @NotNull(message = "missing continuous field")
     private Boolean continuous;
-
     private String startTime;
     private String endTime;
     private String location;
+
 
     public CreateActivityRequest() {}
 
