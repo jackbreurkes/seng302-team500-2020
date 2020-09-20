@@ -48,7 +48,7 @@ const ActivitySearchResults = Vue.extend({
         { text: 'Type', sortable: false, value: 'short_interests' },
         { text: 'Creator', value: 'creator_name' },
         { text: 'Location', value: 'location' },
-        { text: 'Particpant Count', value: 'num_participants' },
+        { text: 'Participant Count', value: 'num_participants' },
         { text: 'Follower Count', value: 'num_followers'}
       ],
       activities: [] as CreateActivityRequest[],
@@ -66,11 +66,14 @@ const ActivitySearchResults = Vue.extend({
      * takes the user to the activity corresponding with the given search result.
      * @param activity the activity the user wants to navigate to
      */
-    goToActivity: function(activity: CreateActivityRequest & {creator_name : string}) {
+    goToActivity: function(activity: CreateActivityRequest) {
       if (activity.creator_id === undefined || activity.activity_id === undefined) {
         return;
       }
-      this.$router.push(`/profiles/${activity.creator_id}/activities/${activity.activity_id}`);
+      this.$router.push({ name: "activity", params: {
+        profileId: activity.creator_id.toString(),
+        activityId: activity.activity_id.toString()
+      }});
     },
 
     /**

@@ -60,7 +60,7 @@
             <p class="pl-1" style="color: red">{{ errorMessage }}</p>
             <v-pagination v-model="pageNumber" :length="pageCount.count" @input="search()"></v-pagination>
             <div id="activitySearchResults">
-              <ActivitySearchResults :results="searchResults" :pageSize="pageSize"></ActivitySearchResults>
+              <ActivitySearchResults :results="searchResults" :pageSize="pageSize" :key="resultsKey"></ActivitySearchResults>
             </div>
           </v-card>
         </v-col>
@@ -99,12 +99,13 @@ const Activities = Vue.extend({
         { text: "Follower Count", value: "num_followers" }
       ],
       searchString: "",
-      searchResults: [] as (CreateActivityRequest & {creator_name : string})[],
+      searchResults: [] as (CreateActivityRequest & {creator_name? : string})[],
       creatorNames: {} as Dictionary<string>,
       pageNumber: NaN, // loaded in created hook
       pageSize: NaN, // loaded in created hook
       pageCount: {query: "", count: 0}, // used to keep track of how the paginator should be displayed
-      errorMessage: ""
+      errorMessage: "",
+      resultsKey: 0
     };
   },
 
@@ -152,13 +153,15 @@ const Activities = Vue.extend({
      * this means we do not have to get the total number of results returned by a search to know how many pages there are.
      */
     async updateTotalPageCount() {
-      const previousQuery = this.pageCount.query;
-      const previousPageCount = this.pageCount.count;
+      let previousQuery = this.pageCount.query;
+      let previousPageCount = this.pageCount.count;
       if (this.searchString !== previousQuery) {
         this.pageCount = {
           query: this.searchString,
           count: this.pageNumber
         }
+        previousQuery = this.searchString;
+        previousPageCount = this.pageCount.count;
       }
       if (this.pageNumber < previousPageCount) {
         return;
@@ -196,20 +199,23 @@ const Activities = Vue.extend({
             this.getCreatorName(creatorId).then(name => {
                 this.creatorNames[creatorId] = name;
                 this.searchResults[index].creator_name = this.creatorNames[creatorId];
-                this.forceUpdateResultsList();
+                this.forceUpdateResultsTable();
             });
         }
         this.searchResults[index].creator_name = this.creatorNames[creatorId];
       });
-      this.forceUpdateResultsList();
+      this.forceUpdateResultsTable();
     },
 
     /**
-     * forces the results list to update, thereby updating the data in the results table.
+     * forces the results table to update.
+     * updates using the Vue.js key attribute
+     * https://michaelnthiessen.com/understanding-the-key-attribute/
+     * to implement the key changing technique
+     * https://michaelnthiessen.com/key-changing-technique/
      */
-    forceUpdateResultsList() {
-        this.searchResults.push({} as CreateActivityRequest & {creator_name : string});
-        this.searchResults.pop();
+    forceUpdateResultsTable() {
+        this.resultsKey += 1;
     },
 
     /**

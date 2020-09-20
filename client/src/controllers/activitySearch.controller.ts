@@ -5,6 +5,7 @@ import { searchAppActivities } from '../models/activitySearch.model';
  * @param searchQuery the search query entered by the user
  * @param pageNumber the page number to fetch
  * @param pageSize the max number of results to fetch on this page
+ * @returns the list of activities that were matched by the search
  */
 export async function searchActivities(searchQuery: string, pageNumber: number, pageSize: number) {
   const searchTerms = getSearchArguments(searchQuery);
@@ -12,8 +13,10 @@ export async function searchActivities(searchQuery: string, pageNumber: number, 
 }
 
 /**
- * returns the list of activity types given as a single string.
+ * takes a list of activity types and returns a user-readable string representation.
+ * sorts the activity types and displays at most three.
  * @param activityTypes the list of activity types to join together
+ * @returns a string of comma separated activity types
  */
 export function getShortenedActivityTypesString(activityTypes: string[]): string {
   activityTypes = [...activityTypes];
@@ -27,6 +30,7 @@ export function getShortenedActivityTypesString(activityTypes: string[]): string
 /**
  * splits a search query, possibly containing quotation marks, into words or quoted chunks.
  * @param searchQuery the search query to split into words
+ * @returns the list of search terms, exluding any leading or trailing whitespaces or quotation marks
  */
 export function getSearchArguments(searchQuery: string): string[] {
   // eslint-disable-next-line no-useless-escape
