@@ -15,6 +15,13 @@ test.each([
     expect(searchController.getShortenedActivityTypesString(activityTypes)).toBe(expected);
 })
 
+test("expect getShortenedActivityTypesString not to sort the original list", () => {
+    let list = ["b", "a"];
+    expect(searchController.getShortenedActivityTypesString(list)).toBe("a, b");
+    expect(list[0]).toBe("b");
+    expect(list[1]).toBe("a");
+})
+
 test.each([
     [`test`, [`test`]],
     [`test multiple words`, [`test`, `multiple`, `words`]],

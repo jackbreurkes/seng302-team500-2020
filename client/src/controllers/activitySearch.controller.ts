@@ -16,7 +16,8 @@ export async function searchActivities(searchQuery: string, pageNumber: number, 
  * @param activityTypes the list of activity types to join together
  */
 export function getShortenedActivityTypesString(activityTypes: string[]): string {
-  activityTypes = activityTypes.sort();
+  activityTypes = [...activityTypes];
+  activityTypes.sort();
   if (activityTypes.length > 3) {
     activityTypes[3] = "...";
   }
