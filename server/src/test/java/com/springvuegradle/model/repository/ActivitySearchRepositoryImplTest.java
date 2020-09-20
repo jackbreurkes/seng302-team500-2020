@@ -2,6 +2,7 @@ package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,12 @@ class ActivitySearchRepositoryImplTest {
     @BeforeAll
     void beforeAll(){
         activityType = activityTypeRepository.save(new ActivityType("Walkin"));
+    }
+
+    @BeforeEach
+    void beforeEach(){
+        profileRepository.flush();
+        activityRepository.flush();
     }
 
     Activity createActivityWithName(String name) {
