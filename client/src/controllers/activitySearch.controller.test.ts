@@ -49,13 +49,14 @@ test.each([
     [`""quotes within quotes""`, [`quotes within quotes`]],
     [`"quotes as words" """`, [`quotes as words`]],
     [`"  spaces \t within \n quotes  "`, [`spaces`, `within`, `quotes`]],
+    [`"\t\nwhitespace\n\t"`, [`whitespace`]],
     [`"`, []],
     [`""`, []],
     [`"""`, []],
     [`"""""`, []],
     [`""""""`, []],
     [`"" " """"`, []],
-    [`"   ""   "`, []]
+    [`"   ""   "`, []],
 ])('expect getSearchArguments to split the query %s with edge case quotation marks into the list %s',
     (query: string, expectedWords: string[]) => {
         expect(searchController.getSearchArguments(query)).toEqual(expectedWords)

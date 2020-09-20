@@ -46,12 +46,15 @@ export function getSearchArguments(searchQuery: string): string[] {
     if (quotesOrWhitespaceRegex.test(match)) {
       return;
     }
-    while (match.length > 0 && quotesOrWhitespaceRegex.test(match[0])) {
-      match = match.slice(1);
+    let firstValidCharLeft = 0;
+    while (firstValidCharLeft < match.length && quotesOrWhitespaceRegex.test(match[firstValidCharLeft])) {
+      firstValidCharLeft += 1;
     }
-    while (match.length > 0 && quotesOrWhitespaceRegex.test(match[match.length-1])) {
-      match = match.slice(0, match.length-1);
+    let firstValidCharRight = match.length - 1;
+    while (firstValidCharRight > 0 && quotesOrWhitespaceRegex.test(match[firstValidCharRight])) {
+      firstValidCharRight -= 1;
     }
+    match = match.slice(firstValidCharLeft, firstValidCharRight + 1);
     if (match.length > 0) {
       result.push(match);
     }
