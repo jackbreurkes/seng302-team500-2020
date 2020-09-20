@@ -54,11 +54,11 @@ class ActivitySearchRepositoryImplTest {
             "This",
             "is",
             "a",
-            "fun",
+            "superfun",
             "run"
     })
     void testSingleWord_singleResult(String searchTerm) {
-        String activityName = "This is a fun run";
+        String activityName = "This is a superfun run";
         createActivityWithName(activityName);
         List<Activity> results = activityRepository.findUniqueActivitiesByListOfNames(Collections.singletonList(searchTerm), PageRequest.of(0, 25));
 
@@ -68,9 +68,9 @@ class ActivitySearchRepositoryImplTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "Test Activity",
+            "Awesome Activity",
             "This is a fun run",
-            "Test this activity",
+            "Testing this cool activity",
             "Test Test Test",
             "oneword"
     })
