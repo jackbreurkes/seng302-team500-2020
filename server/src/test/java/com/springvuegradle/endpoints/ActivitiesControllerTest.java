@@ -76,6 +76,9 @@ public class ActivitiesControllerTest {
 	private ActivityRepository activityRepo;
 
 	@MockBean
+	private ActivityPinRepository activityPinRepository;
+
+	@MockBean
 	private ActivityTypeRepository activityTypeRepo;
 
 	@MockBean
@@ -150,6 +153,7 @@ public class ActivitiesControllerTest {
 				.andDo(print());
 	}
 
+
 	@Test
 	public void testCreateValidActivity() throws Exception {
 		String json = "{\n" +
@@ -175,6 +179,143 @@ public class ActivitiesControllerTest {
 		assertEquals(user.getUserId(), createLog.getEditingUser().getUserId());
 		assertEquals(ActionType.CREATED, createLog.getActionType());
 	}
+
+	@Test
+	public void testCreateValidActivityWithPins() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I need more hours in SENG302 so lets do it together\",\n" +
+				"  \"activity_type\":[ \n" +
+				"    \"coding\"\n" +
+				"  ],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Jack Erskine, Christchurch\"\n" +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isCreated());
+		ArgumentCaptor<ActivityPin> changeLogCaptor = ArgumentCaptor.forClass(ActivityPin.class);
+		Mockito.verify(activityPinRepository).save(changeLogCaptor.capture());
+		assertEquals(1, changeLogCaptor.getAllValues().size());
+	}
+
+	@Test
+	public void testCreateInvalidActivityWithPins_404() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I need more hours in SENG302 so lets do it together\",\n" +
+				"  \"activity_type\":[ \n" +
+				"    \"coding\"\n" +
+				"  ],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"iufhiwqhiqlhdqlid\"\n" +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testCreateInvalidActivityWithNoLocation_400() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"I need more hours in SENG302 so lets do it together\",\n" +
+				"  \"activity_type\":[ \n" +
+				"    \"coding\"\n" +
+				"  ],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testUpdateInvalidActivityWithNoLocation_400() throws Exception {
+		long activityId = 3L;
+		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
+		testActivity.setId(activityId);
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"This is a description\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"}";
+
+		mvc.perform(MockMvcRequestBuilders
+				.put("/profiles/"+user.getUserId()+"/activities/" + activityId)
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", user.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testUpdateInvalidActivityWithInvalidLocation_400() throws Exception {
+		long activityId = 3L;
+		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
+		testActivity.setId(activityId);
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"This is a description\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"iufhiwqhiqlhdqlid\"\n" +
+				"}";
+
+		mvc.perform(MockMvcRequestBuilders
+				.put("/profiles/"+user.getUserId()+"/activities/" + activityId)
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", user.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void testUpdateValidActivity_200() throws Exception {
+		long activityId = 3L;
+		Activity testActivity = new Activity("Old Name", false, "Test Location", profile, testActivityTypes);
+		testActivity.setDescription("the old activity description");
+		testActivity.setId(activityId);
+		Mockito.when(activityRepo.findById(activityId)).thenReturn(Optional.of(testActivity));
+		String json = "{\n" +
+				"  \"activity_name\": \"SENG302\",\n" +
+				"  \"description\": \"This is a description\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Jack Erskine, Christchurch\"\n" +
+				"}";
+
+		mvc.perform(MockMvcRequestBuilders
+				.put("/profiles/"+user.getUserId()+"/activities/" + activityId)
+				.content(json).contentType(MediaType.APPLICATION_JSON)
+				.requestAttr("authenticatedid", user.getUserId())
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk());
+		ArgumentCaptor<ActivityPin> changeLogCaptor = ArgumentCaptor.forClass(ActivityPin.class);
+		Mockito.verify(activityPinRepository).save(changeLogCaptor.capture());
+		assertEquals(1, changeLogCaptor.getAllValues().size());
+	}
+
 
 	@ParameterizedTest
 	@CsvSource({
