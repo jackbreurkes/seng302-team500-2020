@@ -8,12 +8,14 @@ import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.responses.ActivityResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/activities")
@@ -27,50 +29,33 @@ public class ActivitySearchController {
      * @param request the request
      * @param requestSearchTerms the search terms being requested
      * @param page the page number to return
+     * @param pageSize the size of the pages being used
      * @return List of activity response objects
-     * @throws UserNotAuthenticatedException
-     * @throws InvalidRequestFieldException
-     * @throws  RecordNotFoundException
+     * @throws UserNotAuthenticatedException if user not authenticated
+     * @throws InvalidRequestFieldException if a parameter is not in the correct format
      */
     @GetMapping
     @CrossOrigin
     public List<ActivityResponse> searchActivities(@RequestParam(value="searchTerms")String[] requestSearchTerms,
                                                    @RequestParam(value="page") int page,
-                                                   @RequestParam(value="pageSize")
-                                                   HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+                                                   @RequestParam(value="pageSize") int pageSize,
+                                                   HttpServletRequest request) throws UserNotAuthenticatedException, InvalidRequestFieldException {
 
         UserAuthorizer.getInstance().checkIsAuthenticated(request);
         ArrayList<String> searchTerms = new ArrayList<>(Arrays.asList(requestSearchTerms));
         //Expecting frontend to strip/split strings appropriate, for both quotation marks and space separated. Pages start at 0
-        if(searchTerms.size() == 0){
-            throw new InvalidRequestFieldException("No Search Terms Entered");
+        List<String> queryTerms = searchTerms.stream().filter(term -> term.length() > 0).collect(Collectors.toList());
+        if(queryTerms.size() == 0){
+            throw new InvalidRequestFieldException("No non-empty search terms were entered");
         }
-        List<ActivityResponse> searchResults = new ArrayList<>();
-        List<ActivityResponse> highPrioritySearchResults = new ArrayList<>();
-        for(String term : searchTerms){
-            List<Activity> activitySearchResults = activityRepository.findActivitiesByActivityNameContaining(term);
-            for(Activity activity : activitySearchResults){
-                //check not already in list
-                ActivityResponse activityResponse = new ActivityResponse(activity);
-                searchResults.add(new ActivityResponse(activity));
-            }
+        if (page < 0) {
+            throw new InvalidRequestFieldException("page number must be non-negative");
         }
-        if(searchResults.size() == 0){
-            throw new RecordNotFoundException("No Activities Found");
-        }else if(searchResults.size() <= 25){
-            //Return everything as there are not enough results to paginatie
-            return searchResults;
-        }else{
-            //Pagination
-            int startIndex = 25 * page;
-            if(startIndex >= searchResults.size()){
-                throw new InvalidRequestFieldException("Page index out of range");
-            }
-            int endIndex = startIndex + 25;
-            if(searchResults.size() < endIndex){
-                endIndex = searchResults.size();
-            }
-            return searchResults.subList(startIndex, endIndex);
+        if(pageSize <= 0){
+            throw new InvalidRequestFieldException("page size must be at least one");
         }
+        List<Activity> searchResults = activityRepository.findUniqueActivitiesByListOfNames(queryTerms, PageRequest.of(page, pageSize));
+        return searchResults.stream().map(ActivityResponse::new).collect(Collectors.toList());
+
     }
 }
