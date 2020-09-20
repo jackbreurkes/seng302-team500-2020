@@ -1,14 +1,10 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,10 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityPin;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityPinRepository;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.UserRepository;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DeleteActivitiesControllerTest {
@@ -33,6 +34,9 @@ public class DeleteActivitiesControllerTest {
 
     @Mock
     private ActivityRepository activityRepository;
+    
+    @Mock
+    private ActivityPinRepository activityPinRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -100,5 +104,28 @@ public class DeleteActivitiesControllerTest {
         assertThrows(UserNotAuthorizedException.class,() -> {
             activitiesController.deleteActivity(3L, 2L, request);
         });
+    }
+    
+    @Test
+    void testDeleteActivityWithLocation_ShouldDeletePin() throws Exception {
+        //Mock user
+        User testDeleter = new User(1L);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(testDeleter));
+
+        //Mock activity
+        Activity activity = new Activity();
+        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
+        
+        ActivityPin pin = new ActivityPin(activity, 1, 1, 1, 1, 1, 1);
+        activity.setActivityPin(pin);
+
+        //mock request
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        ResponseEntity<Object> response = activitiesController.deleteActivity(1L, 2L, request);
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        
+        Mockito.verify(activityPinRepository, Mockito.times(1)).delete(pin);        
     }
 }
