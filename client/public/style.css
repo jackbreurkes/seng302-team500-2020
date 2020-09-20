@@ -399,6 +399,8 @@ html .clear-checked:active {
 #main-pane {
     background: url('background.jpg');
     background-repeat: no-repeat;
+	background-size:     cover;
+	background-position: center center;
     background-attachment: fixed;
 }
 
