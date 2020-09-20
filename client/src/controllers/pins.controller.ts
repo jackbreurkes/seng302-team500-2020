@@ -18,11 +18,11 @@ export function sortPinsByLocation(pins: Pin[]) {
         
         let potentialDuplicate = uniquePinLocations.find(element => element.lat == position.lat && element.lon == position.lon);
         if (potentialDuplicate === undefined) {
-        uniquePinLocations.push(position);
-        locationToActivityPinMapping[uniquePinLocations.length - 1] = [pin];
+            uniquePinLocations.push(position);
+            locationToActivityPinMapping[uniquePinLocations.length - 1] = [pin];
         } else {
-        let index = uniquePinLocations.indexOf(potentialDuplicate);
-        locationToActivityPinMapping[index].push(pin);
+            let index = uniquePinLocations.indexOf(potentialDuplicate);
+            locationToActivityPinMapping[index].push(pin);
         }
     }
 

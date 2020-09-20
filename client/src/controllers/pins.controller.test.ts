@@ -1,0 +1,189 @@
+import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
+import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
+import { Pin } from "@/scripts/Pin";
+import * as PinsController from '../controllers/pins.controller';
+
+// --------- SORT PINS BY LOCATION ---------- //
+test('expect 1 location to be sorted', 
+    () => {
+        let pin = {activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+
+        let result = PinsController.sortPinsByLocation([pin]);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toHaveLength(1);
+        expect(result[0][0]).toBe(pin);
+    }
+)
+
+test('expect 2 locations with different lat to be sorted as different locations', 
+    () => {
+        let pin = {activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+        let pin2 = {activity_id: 1,
+            coordinates: {lat: 11, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+
+        let result = PinsController.sortPinsByLocation([pin, pin2]);
+
+        expect(result).toHaveLength(2);
+    }
+)
+
+test('expect 2 locations with different lon to be sorted as different locations', 
+    () => {
+        let pin = {activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+        let pin2 = {activity_id: 1,
+            coordinates: {lat: 10, lon: 11} as LocationCoordinatesInterface
+        } as Pin;
+
+        let result = PinsController.sortPinsByLocation([pin, pin2]);
+
+        expect(result).toHaveLength(2);
+    }
+)
+
+test('expect 2 identical locations to be grouped', 
+    () => {
+        let pin = {activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+        let pin2 = {activity_id: 1,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface
+        } as Pin;
+
+        let result = PinsController.sortPinsByLocation([pin, pin2]);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toHaveLength(2);
+    }
+)
+
+// --------- GET HIGHEST ROLE ---------- //
+test('expect activity we created to give creator role (0) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: "creator"
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(0);
+    }
+)
+
+test('expect activity we organise to give creator role (0) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: "organiser"
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(0);
+    }
+)
+
+test('expect activity we participate in to give participant role (1) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: "participant"
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(1);
+    }
+)
+
+test('expect activity we follow to give follower role (2) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: "follower"
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(2);
+    }
+)
+
+test('expect activity we have no role in to give misc role (3) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: null
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(3);
+    }
+)
+
+let roleMap = {"creator": 0, "organiser": 0, "participant": 1, "follower": 2, "null": 3} as Record<string, number>;
+
+for (let [roleName, roleLevel] of Object.entries(roleMap)) {
+    for (let [roleName2, roleLevel2] of Object.entries(roleMap)) {
+        let correctResult = roleLevel < roleLevel2 ? roleLevel : roleLevel2;
+        test('expect activity we have '+roleName+' role and activity we have '+roleName2+' role in to give role ID '+correctResult+' as highest role', 
+            () => {
+                let pin = {
+                    activity_id: 0,
+                    coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+                    role: roleName
+                } as Pin;
+
+                let pin2 = {
+                    activity_id: 1,
+                    coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+                    role: roleName2
+                } as Pin;
+
+                let result = PinsController.getHighestRoleIndex([pin, pin2]);
+
+                expect(result).toBe(correctResult);
+            }
+        )
+    }
+}
+
+// --------- CONVERT FROM GOOGLE BOUNDS ---------- //
+let testCases = [
+    [1, 1, 0, 0],
+    [30.45, 19.123, 30.34, 19.012],
+    [123.456789, 89.123456, 123.123456, 89.0123456],
+    [-1, -1, -2, -2]
+];
+for (let testCaseId in testCases) {
+    let testCase = testCases[testCaseId];
+
+    test('expect google bounds object to have same bounds when converted to our own bounds object', 
+    () => {
+        let northEast = {lat: () => { return testCase[0]; }, lng: () => { return testCase[1]; }};
+        let southWest = {lat: () => { return testCase[2]; }, lng: () => { return testCase[3]; }};
+        let googleBounds = {getNorthEast: () => { return northEast; }, getSouthWest: () => { return southWest }};
+
+        let result = PinsController.convertFromGoogleBounds(googleBounds) as BoundingBoxInterface;
+
+        expect(result.ne_lat).toBe(testCase[0]);
+        expect(result.ne_lon).toBe(testCase[1]);
+        expect(result.sw_lat).toBe(testCase[2]);
+        expect(result.sw_lon).toBe(testCase[3]);
+    }
+)
+}
