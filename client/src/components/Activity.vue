@@ -593,14 +593,6 @@ const Activity = Vue.extend({
         this.users = [];
       }
     },
-  },
-
-  watch: {
-    $route(to) {
-      const activityId: number = parseInt(to.params.activityId);
-      const creatorId: number = parseInt(to.params.profileId);
-      this.displayActivity(activityId, creatorId);
-    }
 
     /** Place a pin for this activity on the map */
     viewOnMap: async function() {
@@ -617,9 +609,19 @@ const Activity = Vue.extend({
         role = "participating";
       }
 
+      console.log("HI")
+
       this.$root.$emit('showActivityOnMap', this.activityId, this.activity.location, role);
 
 
+    }
+  },
+
+  watch: {
+    $route(to) {
+      const activityId: number = parseInt(to.params.activityId);
+      const creatorId: number = parseInt(to.params.profileId);
+      this.displayActivity(activityId, creatorId);
     }
   }
 });
