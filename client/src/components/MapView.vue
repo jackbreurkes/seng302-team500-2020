@@ -249,13 +249,24 @@
     },
 
     watch: {
-      $route() {
+      $route(to , from) {
         let userId = getMyUserId();
 
         if (userId !== null && userId != this.loggedInUserId) {
           this.centerMapOnUserLocation();
           this.loggedInUserId = userId;
         }
+        //Checks if an activity has been updated or created and refreshes the map pane
+        if(from.name === 'createActivity' || from.name === 'editActivity'){
+          console.log(from);
+          // @ts-ignore next line
+          let bounds = this.map.getBounds();
+          let boundingBox = PinsController.convertFromGoogleBounds(bounds);
+          this.displayPinsInArea(boundingBox);
+          //Not working when the location is moved out of the users field of view, but works for the rest
+          this.deletePinsOutsideBounds(boundingBox);
+        }
+
       }
     }
   })
