@@ -14,7 +14,6 @@ public class ActivityPin {
      * Id for this pin
      */
     @Id
-    @GeneratedValue
     private long pin_id;
 
     /**
@@ -56,7 +55,8 @@ public class ActivityPin {
     /**
      * Activity which this pin is for
      */
-    @OneToOne(mappedBy = "activityPin")
+    @OneToOne
+    @MapsId
     private Activity activity;
 
     /**
