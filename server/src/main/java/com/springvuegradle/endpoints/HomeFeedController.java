@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,10 +87,21 @@ public class HomeFeedController {
         }
 
         List<ChangeLog> changeLogList;
+        List<HomeFeedResponse> recommendationResponses;
         final Pageable pageable = PageRequest.of(0, 15); // return 15 results
         if (paginatedChangeId == null) {
             changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile, pageable);
+            List<Activity> recommendedActivities = findRecommendedActivities(profile);
+            System.out.println("recommended size = " + recommendedActivities.size());
+            recommendationResponses = new ArrayList<>();
+            for (int i = 0; i < Math.min(3, recommendedActivities.size()); i++) {
+                recommendationResponses.add(new HomeFeedResponse(recommendedActivities.get(i),
+                        subscriptionRepository.getFollowerCount(recommendedActivities.get(i).getId()),
+                        ChangedAttribute.RECOMMENDED_ACTIVITY));
+            }
+            System.out.println("recommended responses size = " + recommendationResponses.size());
         } else {
+            recommendationResponses = new ArrayList<>();
             ChangeLog lastChangeReceived = changeLogRepository.findById(paginatedChangeId).orElse(null);
             if (lastChangeReceived == null) {
                 // this should never happen since changelogs shouldn't be deleted, and definitely not between pagination requests
@@ -106,7 +118,15 @@ public class HomeFeedController {
 
             changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
         }
-        return getHomeFeedResponsesFromChanges(changeLogList);
+        List<HomeFeedResponse> homeFeedResponses = getHomeFeedResponsesFromChanges(changeLogList);
+
+        for (int i = 0; i < Math.min(3, recommendationResponses.size()) && (i+1)*8 < homeFeedResponses.size(); i++) {
+            // Add the three recommended activities which were retrieved for this set of results
+            homeFeedResponses.add((i+1)*8, recommendationResponses.get(i));
+        }
+
+        System.out.println("sent responses size = " + homeFeedResponses.size());
+        return homeFeedResponses;
     }
 
     /**
@@ -122,6 +142,9 @@ public class HomeFeedController {
                 profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,
                 profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
         List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
+        System.out.println("Num activityiss = " + activityList.size());
+        System.out.println("location lat = " + profile.getLocation().getLatitude());
+        System.out.println("location long = " + profile.getLocation().getLongitude());
         List<Activity> candidateActivities = new ArrayList<Activity>();
         for(Activity activity : activityList){
             UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
@@ -129,6 +152,7 @@ public class HomeFeedController {
                 candidateActivities.add(activity);
             }
         }
+        System.out.println("actual returned size " + candidateActivities.size());
         return candidateActivities;
     }
 
