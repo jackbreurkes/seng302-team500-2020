@@ -14,8 +14,7 @@ export async function createActivity(
   data: CreateActivityRequest,
   profileId: number
 ) {
-  let res = await instance.post(`/profiles/${profileId}/activities`, data);
-  // TODO handle response
+  await instance.post(`/profiles/${profileId}/activities`, data);
 }
 
 /**
@@ -26,8 +25,7 @@ export async function createActivity(
  */
 export async function editActivity(data: CreateActivityRequest, profileId: number,
   activityId: number) {
-  let res = await instance.put(`/profiles/${profileId}/activities/${activityId}`, data);
-  // TODO handle response
+  await instance.put(`/profiles/${profileId}/activities/${activityId}`, data);
 }
 
 /**
@@ -47,7 +45,7 @@ export async function createParticipantOutcome(activityId: number, outcomeId: nu
       }
     ]
   }
-  let res = await instance.post(`/activities/${activityId}/results`, data);
+  await instance.post(`/activities/${activityId}/results`, data);
 }
 
 /**
@@ -116,7 +114,7 @@ export async function getFollowingActivity(profileId: number, activityId: number
  * @param activityId id of the activity to follow
  */
 export async function addActivityFollower(profileId: number, activityId: number) {
-  let res = await instance.post(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+  await instance.post(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
 
 /**
@@ -125,7 +123,7 @@ export async function addActivityFollower(profileId: number, activityId: number)
  * @param activityId id of the activity to unfollow
  */
 export async function removeActivityFollower(profileId: number, activityId: number) {
-  let res = await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+  await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
 
 /**

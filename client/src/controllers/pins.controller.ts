@@ -12,7 +12,7 @@ export function groupPinsByLocation(pins: Pin[]) {
 
     // find unique locations
     for (let pinIndex in pins) {
-        let pin = pins[pinIndex] as Pin;
+        let pin = pins[pinIndex];
         let position = {lat: pin.coordinates.lat, lon: pin.coordinates.lon} as LocationCoordinatesInterface;
         
         if (position.lat in uniquePinLocations && position.lon in uniquePinLocations[position.lat]) {
