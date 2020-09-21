@@ -71,7 +71,7 @@
           },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
           displayedActivities: [] as CreateActivityRequest[], //activities being displayed in an active info window
-          displayedPins: [] as any[], //'Marker' objects of pins being displayed
+          displayedMarkers: [] as any[], //'Marker' objects of pins being displayed
           openInfoWindow: null as any, //'InfoWindow' object of the activity summary popup by a pin
           mapIcons: [
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
@@ -138,17 +138,31 @@
 
         let pins = await getActivitiesInBoundingBox(boundingBox);
         let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
+        let positionsOfNewPins = {} as Record<number, number[]>;
 
         //create pins on the map for each unique location
         pinsAtLocationMapping.forEach((pins: Pin[]) =>  {
           let position = {lat: pins[0].coordinates.lat, lon: pins[0].coordinates.lon} as LocationCoordinatesInterface;
-
-          if (this.displayedPins.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon) !== undefined) {
-            return; //this pin is already being displayed so no point recreating it
+          if (!(position.lat in positionsOfNewPins)) {
+            positionsOfNewPins[position.lat] = [];
           }
-
+          positionsOfNewPins[position.lat].push(position.lon);
+          
+          if (this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon) !== undefined) {
+            return; // this pin is already being displayed so no point recreating it
+          }
           let highestRole = PinsController.getHighestRoleIndex(pins);
           this.displayPin(pins, position, highestRole);
+        })
+
+        this.displayedMarkers = this.displayedMarkers.filter((marker) => {
+          let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
+          const shouldKeep = (position.lat in positionsOfNewPins && positionsOfNewPins[position.lat].includes(position.lon));
+          if (!shouldKeep) {
+            // @ts-ignore next line
+            marker.setMap(null);
+          }
+          return shouldKeep;
         })
       },
 
@@ -214,8 +228,7 @@
        * Deletes pins that are outside what's visible on the map view
        */
       deletePinsOutsideBounds: function(boundingBox: BoundingBoxInterface) {
-        //clear all the pins no longer in view
-        this.displayedPins.filter((marker) => {
+        this.displayedMarkers = this.displayedMarkers.filter((marker) => {
           let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
           const shouldDelete = !PinsController.isInBounds(boundingBox, position);
           if (shouldDelete) {
@@ -231,17 +244,17 @@
        */
       displayPin: function(pins: Pin[], position: LocationCoordinatesInterface, highestRole: number) {
         // @ts-ignore next line
-        let displayedPin = new window.google.maps.Marker({
+        let displayedMarker = new window.google.maps.Marker({
           position: {lat: position.lat, lng: position.lon}, 
           map: this.map,
           icon: this.mapIcons[highestRole]
         });
 
-        displayedPin.addListener('click', () => {
-          this.createPinInfoWindow(this.map, displayedPin, pins);
+        displayedMarker.addListener('click', () => {
+          this.createPinInfoWindow(this.map, displayedMarker, pins);
         });
 
-        this.displayedPins.push(displayedPin);
+        this.displayedMarkers.push(displayedMarker);
       }
     },
 
