@@ -120,6 +120,12 @@
           this.displayPinsInArea(boundingBox);
         }, 300);
       });
+      // @ts-ignore next line
+      this.map.addListener('click', () => {
+          if (this.openInfoWindow !== null) {
+            this.openInfoWindow.close();
+          }
+        });
     },
 
     methods: {
