@@ -56,8 +56,7 @@ public class ActivityPin {
     /**
      * Activity which this pin is for
      */
-    @OneToOne
-    @JoinColumn(name = "activity", nullable = false)
+    @OneToOne(mappedBy = "activityPin")
     private Activity activity;
 
     /**

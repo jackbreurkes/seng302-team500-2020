@@ -18,7 +18,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
 import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ChangeLog;
 import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.ActivityPinRepository;
@@ -104,28 +103,5 @@ public class DeleteActivitiesControllerTest {
         assertThrows(UserNotAuthorizedException.class,() -> {
             activitiesController.deleteActivity(3L, 2L, request);
         });
-    }
-    
-    @Test
-    void testDeleteActivityWithLocation_ShouldDeletePin() throws Exception {
-        //Mock user
-        User testDeleter = new User(1L);
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(testDeleter));
-
-        //Mock activity
-        Activity activity = new Activity();
-        Mockito.when(activityRepository.findById(2L)).thenReturn(Optional.of(activity));
-        
-        ActivityPin pin = new ActivityPin(activity, 1, 1, 1, 1, 1, 1);
-        activity.setActivityPin(pin);
-
-        //mock request
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 1L);
-
-        ResponseEntity<Object> response = activitiesController.deleteActivity(1L, 2L, request);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
-        
-        Mockito.verify(activityPinRepository, Mockito.times(1)).delete(pin);        
     }
 }
