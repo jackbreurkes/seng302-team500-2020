@@ -82,7 +82,7 @@
             </v-list-item-icon>
 
             <v-list-item-content>
-              <v-list-item-title>Split Direction</v-list-item-title>
+              <v-list-item-title>Change Map Orientation</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           
@@ -184,15 +184,18 @@ import "splitpanes/dist/splitpanes.css";
       updateNavInfo: function() {
           this.items = [ //USE https://materialdesignicons.com/ to find icons!!
             {title: 'Home Feed', icon: 'mdi-home', pathing: "/homefeed" },
+            {title: 'Create an Activity', icon: 'mdi-plus', pathing:"/profiles/" + auth.getMyUserId() + "/createActivity" },
             {title: 'Search for Activities', icon: 'mdi-bike', pathing:"/activities/"},
             {title: 'Search for Users', icon: 'mdi-magnify', pathing:"/search/"},
             {title: 'My Profile ', icon: 'mdi-account', pathing:"/profiles/" + auth.getMyUserId()},
             {title: 'Edit My Profile ', icon: 'mdi-cog', pathing:"/profiles/" + auth.getMyUserId() + "/edit"},
             {title: 'Logout', icon: 'mdi-logout', pathing:"LOGOUT"},
           ]
+          
           if (auth.isAdmin()) {
             this.items.push({title: 'Admin Dashboard', icon: 'mdi-account-cog', pathing:"/admin"}, )
           }
+          
 
       },
       goTo: function(pathing : string) {

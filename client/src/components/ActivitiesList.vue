@@ -1,3 +1,4 @@
+
 <template>
   <div v-if="activities.length > 0">
     <v-card v-for="activity of activities" :key="activity.activity_id" class="mb-4" @click="goToActivity(activity.activity_id)">
@@ -5,13 +6,14 @@
     </v-card>
   </div>
   <div v-else>
-    <p>this user has created no activities!</p>
+    <p>You haven't created any activities of this time category yet - <router-link :to="'/profiles/' + this.userId + '/createActivity'"><p>Click here to make one!</p></router-link></p>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import ActivityCard from "./ActivityCard.vue"
+import * as auth from "../services/auth.service";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
 
@@ -24,6 +26,7 @@ const ActivitiesList = Vue.extend({
   // app initial state
   data: function() {
     return {
+      userId: auth.getMyUserId(),
       hasAuthority: this.authority as boolean,
     };
   },
