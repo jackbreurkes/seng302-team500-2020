@@ -41,7 +41,7 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository{
             queryBuilder.append(String.format(searchForNameNestedQuery, i));
         }
 
-        queryBuilder.append(" ) all_results GROUP BY activity_id) unique_results NATURAL JOIN activity a GROUP BY a.activity_id ORDER BY matches DESC, a.activity_name ASC");
+        queryBuilder.append(" ) all_results GROUP BY activity_id) grouped_results NATURAL JOIN activity a GROUP BY a.activity_id ORDER BY matches DESC, a.activity_name ASC");
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), Activity.class);
         for (int i = 1; i < searchTerms.size() + 1; i++) {
             query.setParameter(i, "%" + searchTerms.get(i - 1) + "%");
