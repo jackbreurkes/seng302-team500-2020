@@ -612,6 +612,8 @@ const Activity = Vue.extend({
         role = "participating";
       }
 
+      console.log("HI")
+
       this.$root.$emit('showActivityOnMap', this.activityId, this.activity.location, role);
 
 

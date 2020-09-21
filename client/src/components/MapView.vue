@@ -90,14 +90,38 @@
 
     mounted: async function() {
       this.$root.$on('showActivityOnMap', (activityId: number, location: LocationCoordinatesInterface, role: string) => {
-        let pin = {
-          activity_id: activityId,
-          location: location,
-          role: role
-        } /* as Pin */
-        let pins = [pin] /* as Pin[] */;
 
-        
+        getActivityById(activityId)
+        .then((activity) => {
+
+          let boundingBox = activity.bounding_box;
+
+          let northEast = {lat: -34, lng: 151};
+          let southWest = {lat: -35, lng: 150};
+
+          if (boundingBox != undefined) {
+            northEast.lat = boundingBox[1].lat;
+            northEast.lat = boundingBox[1].lat;
+            southWest.lng = boundingBox[0].lon;
+            southWest.lng = boundingBox[0].lon;
+          }
+
+          console.log(role)
+
+          // @ts-ignore next line
+          let bounds = new window.google.maps.LatLngBounds(southWest, northEast)
+
+          // let padding = 20; //pixels around the activity, eg to show the streets around the activity's location
+          // @ts-ignore next line
+          // this.$map.panToBounds({ south:southWest.lng, north:northEast.lng, west:southWest.lat, east:northEast.lat});
+          this.$map.panToBounds(bounds);
+          // @ts-ignore next line
+          this.$map.fitBounds(bounds);
+
+          // @ts-ignore next line
+          // this.map.setCenter({lat: activity.geoposition.lat, lng: activity.geoposition.lon})
+          
+        })        
       })
 
       // @ts-ignore next line
@@ -239,7 +263,9 @@
        * Tells Vue to navigate the map panel to the given activity
        */
       visitActivity: function(activity: CreateActivityRequest) {
+        console.log("visiting activity")
         if (activity.activity_id == null || activity.creator_id == null) {
+          console.log("crap")
           return;
         }
         this.$router.push({ name: "activity", params: {
