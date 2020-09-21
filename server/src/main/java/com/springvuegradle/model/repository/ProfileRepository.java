@@ -14,14 +14,12 @@ import com.springvuegradle.model.data.User;
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 
-	public List<List<String>> findByFirstLastname(String firstName, String lastName);
-
-	public List<String> findByFirstName(String firstLetterName);
-
     public Optional<Profile> findById(User user);
-	public List<Profile> findByNickNameStartingWith(String nickname);
-	public List<Profile> findByFirstNameStartingWithAndLastNameStartingWith(String firstname, String lastname);
-	public List<Profile> findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(String firstname, String middlename, String lastname);
+	public List<Profile> findByNickNameStartingWithIgnoreCase(String nickname);
+	public List<Profile> findByFirstNameStartingWithIgnoreCase(String firstname);
+	public List<Profile> findByLastNameStartingWithIgnoreCase(String lastname);
+	public List<Profile> findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(String firstname, String lastname);
+	public List<Profile> findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(String firstname, String middlename, String lastname);
 
 	/**
 	 * fetches all Profiles whose activity types contain any of the given activity types.

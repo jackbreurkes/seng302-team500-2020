@@ -9,20 +9,17 @@ import com.springvuegradle.model.responses.ActivityResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ActivitySearchControllerTest {
@@ -32,35 +29,10 @@ public class ActivitySearchControllerTest {
     @Mock
     private ActivityRepository activityRepository;
 
-    @Mock
-    private ProfileRepository profileRepository;
-
-    private Profile profile;
-
     @BeforeAll
     public void setUp(){
         //Initialize the mocks we create
         MockitoAnnotations.initMocks(this);
-        profile = new Profile(new User(1L), "David", "Clarke", LocalDate.now(), Gender.FEMALE);
-    }
-
-    @Test
-    void searchActivity_200() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 1L);
-
-        String terms[] = new String[1];
-        terms[0] = "Test";
-
-        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-        activity.setId(2L);
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>(Arrays.asList(activity)));
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        List<ActivityResponse> response = activitySearchController.searchActivities(terms,0, request);
-
-        assertEquals(1, response.size(), "There should be one search result");
     }
 
 
@@ -71,141 +43,109 @@ public class ActivitySearchControllerTest {
         String terms[] = new String[1];
         terms[0] = "Test";
 
-        Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-        activity.setId(2L);
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>(Arrays.asList(activity)));
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
         assertThrows(UserNotAuthenticatedException.class, () -> {
-            activitySearchController.searchActivities(terms, 0, request);
+            activitySearchController.searchActivities(terms, 0, 25, request);
         });
     }
 
     @Test
-    void searchActivityNoResults_404() {
+    void searchActivityNoResults_ReturnsEmptyList() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        String terms[] = new String[1];
-        terms[0] = "Test";
+        Mockito.when(activityRepository.findUniqueActivitiesByListOfNames(Mockito.anyList(), Mockito.any(PageRequest.class))).thenReturn(new ArrayList<>());
 
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>());
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
+        List<ActivityResponse> responses = activitySearchController.searchActivities(new String[] { "Terms" }, 0, 25, request);
+        assertTrue(responses.isEmpty());
+    }
 
-        assertThrows(RecordNotFoundException.class, () -> {
-            activitySearchController.searchActivities(terms, 0, request);
+    @Test
+    void searchNoTerms_InvalidFieldException() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authenticatedid", 1L);
+
+        String[] terms = new String[0];
+        InvalidRequestFieldException e = assertThrows(InvalidRequestFieldException.class, () -> {
+            activitySearchController.searchActivities(terms, 0, 25, request);
         });
+        assertEquals("No non-empty search terms were entered", e.getMessage());
     }
 
     @Test
-    void searchBadRequest_400() {
+    void searchWithEmptyTerms_InvalidFieldException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        String terms[] = new String[0];
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(new ArrayList<Activity>());
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        assertThrows(InvalidRequestFieldException.class, () -> {
-            activitySearchController.searchActivities(terms, 0, request);
+        String[] terms = new String[] {"", "", ""};
+        InvalidRequestFieldException e = assertThrows(InvalidRequestFieldException.class, () -> {
+            activitySearchController.searchActivities(terms, 0, 25, request);
         });
+        assertEquals("No non-empty search terms were entered", e.getMessage());
     }
 
-    @Test
-    void searchActivityPaginateFirstPage_200() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+    @ParameterizedTest
+    @CsvSource({
+            "0, 25",
+            "5, 10",
+            "1, 1",
+            "0, 1",
+            "10, 3"
+    })
+    void searchActivityPaginateFirstPage_usesRepositoryWithPagination(String pageNumberString, String pageSizeString) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
+        final int pageNumber = Integer.parseInt(pageNumberString);
+        final int pageSize = Integer.parseInt(pageSizeString);
+
         String terms[] = new String[1];
         terms[0] = "Test";
+        Mockito.reset(activityRepository);
+        Mockito.when(activityRepository.findUniqueActivitiesByListOfNames(Mockito.anyList(), Mockito.any(PageRequest.class))).thenReturn(new ArrayList<>());
 
-        ArrayList<Activity> returnActivities = new ArrayList<>();
+        List<ActivityResponse> response = activitySearchController.searchActivities(terms, pageNumber, pageSize, request);
 
-        for(int i = 0; i <= 30; i++){
-            Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-            activity.setId(i);
-            returnActivities.add(activity);
-        }
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(returnActivities);
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        List<ActivityResponse> response = activitySearchController.searchActivities(terms, 1, request);
-
-        assertEquals(6, response.size(), "There should be 6 search results");
+        ArgumentCaptor<List<String>> searchTermCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<PageRequest> pageRequestCaptor = ArgumentCaptor.forClass(PageRequest.class);
+        Mockito.verify(activityRepository).findUniqueActivitiesByListOfNames(searchTermCaptor.capture(), pageRequestCaptor.capture());
+        assertEquals(1, searchTermCaptor.getAllValues().size());
+        assertEquals(1, pageRequestCaptor.getAllValues().size());
+        PageRequest pageRequest = pageRequestCaptor.getValue();
+        assertTrue(pageRequest.isPaged());
+        assertEquals(pageNumber, pageRequest.getPageNumber());
+        assertEquals(pageSize, pageRequest.getPageSize());
     }
 
-    @Test
-    void searchActivityPaginateSecondPage_200() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+    @ParameterizedTest
+    @ValueSource(ints = {
+            -1, -4, -5, -10000
+    })
+    void searchActivityNegativePageNumber_InvalidFieldException(int pageNum) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        String terms[] = new String[1];
+        String[] terms = new String[1];
         terms[0] = "Test";
-
-        ArrayList<Activity> returnActivities = new ArrayList<>();
-
-        for(int i = 0; i <= 55; i++){
-            Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-            activity.setId(i);
-            returnActivities.add(activity);
-        }
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(returnActivities);
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        List<ActivityResponse> response = activitySearchController.searchActivities(terms, 2, request);
-
-        assertEquals(6, response.size(), "There should be 6 search results");
-    }
-
-    @Test
-    void searchActivityBadPage_400() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("authenticatedid", 1L);
-
-        String terms[] = new String[1];
-        terms[0] = "Test";
-
-        ArrayList<Activity> returnActivities = new ArrayList<>();
-
-        for(int i = 0; i <= 55; i++){
-            Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-            activity.setId(i);
-            returnActivities.add(activity);
-        }
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(returnActivities);
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        assertThrows(InvalidRequestFieldException.class, () -> {
-            activitySearchController.searchActivities(terms, 5, request);
+        InvalidRequestFieldException e = assertThrows(InvalidRequestFieldException.class, () -> {
+            activitySearchController.searchActivities(terms, pageNum, 25, request);
         });
+        assertEquals("page number must be non-negative", e.getMessage());
     }
 
-    @Test
-    void searchActivityPaginateNoPageNumber_200() throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
+    @ParameterizedTest
+    @ValueSource(ints = {
+            -1, -4, -5, -10000, 0
+    })
+    void searchActivityPageSizeLessThanOne_InvalidFieldException(int pageSize) throws UserNotAuthenticatedException, RecordNotFoundException, InvalidRequestFieldException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authenticatedid", 1L);
 
-        String terms[] = new String[1];
+        String[] terms = new String[1];
         terms[0] = "Test";
-        ArrayList<Activity> returnActivities = new ArrayList<>();
-
-        for(int i = 0; i <= 55; i++){
-            Activity activity = new Activity("Test", false, "Dunedin", profile, new HashSet<ActivityType>(Arrays.asList(new ActivityType("Swimming"))));
-            activity.setId(i);
-            returnActivities.add(activity);
-        }
-
-        Mockito.when(activityRepository.findActivitiesByActivityNameContaining("Test")).thenReturn(returnActivities);
-        Mockito.when(profileRepository.getOne(3l)).thenReturn(profile);
-
-        List<ActivityResponse> response = activitySearchController.searchActivities(terms, 0, request);
-
-        assertEquals(25, response.size(), "There should be 25 search results");
+        InvalidRequestFieldException e = assertThrows(InvalidRequestFieldException.class, () -> {
+            activitySearchController.searchActivities(terms, 0, pageSize, request);
+        });
+        assertEquals("page size must be at least one", e.getMessage());
     }
 }
 

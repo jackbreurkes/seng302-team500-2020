@@ -7,6 +7,9 @@ import com.springvuegradle.model.data.*;
 import org.apache.tomcat.util.json.JSONParser;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Response class to present information about an individual activity update to the client
@@ -23,9 +26,8 @@ public class HomeFeedResponse {
     private Long creatorId = null;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String creatorName = null;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+
     private Long editorId = null;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String editorName = null;
 
     private String editedTimestamp;
@@ -33,6 +35,10 @@ public class HomeFeedResponse {
     private ActionType actionType;
     private Object oldValue; // either a string or a JSON object
     private Object newValue; // either a string or a JSON object
+
+    private String activityLocation;
+    private long activityFollowers;
+    private List<String> activityTypes;
 
     /**
      * default constructor used for serialising response JSON in tests
@@ -78,6 +84,25 @@ public class HomeFeedResponse {
         if (changeLog.getNewValue() != null) {
             this.newValue = getJsonFromString(changeLog.getNewValue());
         }
+    }
+    /**
+     * Constructs a homefeed response for recommended activities
+     * @param activity The activity being recommended to the user
+     * @param activityFollowers The follower count of the activity being recommended
+     * @param changedAttribute the attribute being changed, normally should be recommended_activity
+     */
+    public HomeFeedResponse(Activity activity, Long activityFollowers, ChangedAttribute changedAttribute){
+        this.entityId = activity.getId();
+        this.entityName = activity.getActivityName();
+
+        this.creatorId = activity.getCreator().getUser().getUserId();
+        this.creatorName = activity.getCreator().getFullName(false);
+
+        this.changedAttribute = changedAttribute;
+
+        this.activityLocation = activity.getLocation();
+        this.activityFollowers = activityFollowers;
+        this.activityTypes = activity.getActivityTypes().stream().map(object -> object.getActivityTypeName()).collect(Collectors.toList());
     }
 
     /**
