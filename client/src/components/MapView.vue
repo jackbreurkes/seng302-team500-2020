@@ -99,7 +99,6 @@
       // Places the legend in the top right-hand corner
       // @ts-ignore next line
       this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(this.$refs['legend']);
-
       /*
         everything below related to timeouts is to prevent sending tens of requests per second
         since the 'idle' event is called when the mapview has been resized, in addition to when
@@ -120,6 +119,12 @@
           this.displayPinsInArea(boundingBox);
         }, 300);
       });
+      // @ts-ignore next line
+      this.map.addListener('click', () => {
+          if (this.openInfoWindow !== null) {
+            this.openInfoWindow.close();
+          }
+        });
     },
 
     methods: {
