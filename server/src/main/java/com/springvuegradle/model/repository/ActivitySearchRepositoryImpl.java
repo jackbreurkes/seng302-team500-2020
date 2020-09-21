@@ -33,7 +33,7 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository{
             return new ArrayList<>();
         }
 
-        final String searchForNameNestedQuery = " (SELECT DISTINCT a%1$d.activity_id, a%1$d.activity_name FROM activity a%1$d WHERE LOWER(a%1$d.activity_name) LIKE LOWER( ?%1$d ) ) ";
+        final String searchForNameNestedQuery = " (SELECT a%1$d.activity_id, a%1$d.activity_name FROM activity a%1$d WHERE LOWER(a%1$d.activity_name) LIKE LOWER( ?%1$d ) ) ";
         StringBuilder queryBuilder = new StringBuilder("SELECT a.* FROM (SELECT activity_id, count(activity_id) AS matches FROM ( ");
         queryBuilder.append(String.format(searchForNameNestedQuery, 1));
         for (int i = 2; i < searchTerms.size() + 1; i++) {
