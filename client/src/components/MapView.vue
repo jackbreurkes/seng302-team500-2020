@@ -215,17 +215,14 @@
        */
       deletePinsOutsideBounds: function(boundingBox: BoundingBoxInterface) {
         //clear all the pins no longer in view
-        this.displayedPins.forEach((marker) => {
+        this.displayedPins.filter((marker) => {
           let position = {lat: marker.position.lat(), lon: marker.position.lng()} as LocationCoordinatesInterface;
-
-          if (!PinsController.isInBounds(boundingBox, position)) {
+          const shouldDelete = !PinsController.isInBounds(boundingBox, position);
+          if (shouldDelete) {
             // @ts-ignore next line
             marker.setMap(null);
-            
-            this.displayedPins = this.displayedPins.filter(function(pin){
-              return pin.getPosition().lat() != position.lat && pin.getPosition().lng() != position.lon;
-            });
           }
+          return shouldDelete;
         });
       },
 

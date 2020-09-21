@@ -8,25 +8,32 @@ import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
  * @returns Array of arrays of pins, where the inner arrays are activities occuring at the same location
  */
 export function groupPinsByLocation(pins: Pin[]) {
-    let uniquePinLocations = [] as LocationCoordinatesInterface[];
-    let locationToActivityPinMapping = {} as Record<number, Pin[]>;
+    let uniquePinLocations = {} as Record<number, Record<number, Pin[]>>; // first key is lat, second is lon
 
-    //find unique locations
+    // find unique locations
     for (let pinIndex in pins) {
         let pin = pins[pinIndex] as Pin;
         let position = {lat: pin.coordinates.lat, lon: pin.coordinates.lon} as LocationCoordinatesInterface;
         
-        let potentialDuplicate = uniquePinLocations.find(element => element.lat == position.lat && element.lon == position.lon);
-        if (potentialDuplicate === undefined) {
-            uniquePinLocations.push(position);
-            locationToActivityPinMapping[uniquePinLocations.length - 1] = [pin];
+        if (position.lat in uniquePinLocations && position.lon in uniquePinLocations[position.lat]) {
+            uniquePinLocations[position.lat][position.lon].push(pin);
+        } else if (position.lat in uniquePinLocations) {
+            uniquePinLocations[position.lat][position.lon] = [pin];
         } else {
-            let index = uniquePinLocations.indexOf(potentialDuplicate);
-            locationToActivityPinMapping[index].push(pin);
+            let lonsAtLat = {} as Record<number, Pin[]>;
+            lonsAtLat[position.lon] = [pin];
+            uniquePinLocations[position.lat] = lonsAtLat;
         }
     }
 
-    return Object.values(locationToActivityPinMapping);
+    let pinsGroupedByLocation = [] as Pin[][];
+    for (let lat of Object.keys(uniquePinLocations)) {
+        for (let lon of Object.keys(uniquePinLocations[parseFloat(lat)])) {
+            pinsGroupedByLocation.push(uniquePinLocations[parseFloat(lat)][parseFloat(lon)]);
+        }
+    }
+
+    return pinsGroupedByLocation;
 }
 
 /**
