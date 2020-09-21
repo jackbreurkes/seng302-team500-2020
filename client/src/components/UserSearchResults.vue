@@ -177,7 +177,7 @@ const UserSearchResults = Vue.extend({
       return getShortenedActivitiesString(activities, this.searchTerms)
     },
     search: async function(searchTerms: Dictionary<string>) {
-      this.noDataText = "No users found, try read the search rules";
+      this.noDataText = "No users found. If you are unsure how to start, try reading the search rules";
       this.errorMessage = "";
       try {
         let users = await searchUsers(searchTerms)

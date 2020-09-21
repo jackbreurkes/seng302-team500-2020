@@ -124,7 +124,7 @@
                 </v-tabs>
                 <v-tabs-items v-model="durationTab">
                   <v-tab-item v-for="item in activityList" :key="item.tab">
-                    <ActivitiesList :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
+                    <ActivitiesList :authority="currentlyHasAuthority" :activities="item.content" :tabState="item.tab"></ActivitiesList>
                   </v-tab-item>
                 </v-tabs-items>
               </v-card-text>

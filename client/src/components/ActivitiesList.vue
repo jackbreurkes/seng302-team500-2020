@@ -6,7 +6,7 @@
     </v-card>
   </div>
   <div v-else>
-    <p>You haven't created any activities of this time category yet - <router-link :to="'/profiles/' + this.userId + '/createActivity'"><p>Click here to make one!</p></router-link></p>
+        <p>You haven't created any activities in the {{tabState}} time category yet - <router-link :to="{ name: 'createActivity', params: { profileId: this.userId }}"><p>Click here to make one!</p></router-link></p>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ import { CreateActivityRequest } from "../scripts/Activity";
 // app Vue instance
 const ActivitiesList = Vue.extend({
   name: "ActivitiesList",
-  props: ["authority", "activities"], // props are passed in from the parent component
+  props: ["authority", "activities","tabState"], // props are passed in from the parent component
   components: { ActivityCard },
 
   // app initial state
