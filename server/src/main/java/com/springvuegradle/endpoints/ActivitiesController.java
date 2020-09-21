@@ -286,6 +286,8 @@ public class ActivitiesController {
             throw new RecordNotFoundException("Activity Does not exist");
         }
         
+        changeLogRepository.save(ActivityChangeLog.getLogForDeleteActivity(activityToDelete.get(), editingUser.get()));
+        
         Activity toDelete = activityToDelete.get();
         activityRepository.delete(toDelete);
         
