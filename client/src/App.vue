@@ -40,27 +40,14 @@
           </v-list-item>
 
           <v-divider></v-divider>
+          
 
-          <v-list-item
-              v-for="item in items"
-              :key="item.title"
-              link
-              @click="goTo(item.pathing)"
-            >
-            <v-list-item-icon>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
 
           <!-- map toggle -->
           <v-list-item
               link
               @click="setDisplayMap(!displayMap)"
-              class="mt-10"
+              :class="displayMap ? '' : 'mb-12'"
             >
             <v-list-item-icon>
               <v-icon>{{ displayMap ? "mdi-map-minus" : "mdi-map-search" }}</v-icon>
@@ -85,7 +72,22 @@
               <v-list-item-title>Change Map Orientation</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          
+          <v-divider></v-divider>
+          <v-list-item
+              v-for="item in items"
+              :key="item.title"
+              link
+              @click="goTo(item.pathing)"
+            >
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
         </v-list>
       </v-navigation-drawer >
 
