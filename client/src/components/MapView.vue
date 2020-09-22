@@ -90,7 +90,8 @@
           lng: 0
         },
         zoom: 3,
-        streetViewControl: false
+        streetViewControl: false,
+        clickableIcons: false
       })
       Vue.prototype.$map = this.map; //make this globally accessible
 
@@ -148,10 +149,18 @@
           }
           positionsOfNewPins[position.lat].push(position.lon);
           
-          if (this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon) !== undefined) {
+          let potentialFoundMarker = this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon);
+          let highestRole = PinsController.getHighestRoleIndex(pins);
+
+          if (potentialFoundMarker !== undefined) {
+            let currentIcon = potentialFoundMarker.getIcon();
+            let correctIcon = this.mapIcons[highestRole];
+            if (currentIcon != correctIcon) {
+              potentialFoundMarker.setIcon(correctIcon);
+            }
             return; // this pin is already being displayed so no point recreating it
           }
-          let highestRole = PinsController.getHighestRoleIndex(pins);
+          
           this.displayPin(pins, position, highestRole);
         })
 
