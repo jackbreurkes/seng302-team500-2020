@@ -8,6 +8,7 @@
               <v-toolbar-title>Search Activities</v-toolbar-title>
             </v-toolbar>
 
+            <v-container>
             <div class="mt-3 mx-2" fill-height fill-width>
               <v-col cs="12" sm="12" md="9" lg="9">
                 <v-text-field label="Activity Name" outlined v-model="searchString"></v-text-field>
@@ -50,7 +51,7 @@
 
                     <v-card-actions>
                       <v-col class="text-right">
-                        <v-btn text @click="searchRulesModal = false">Close</v-btn>
+                        <v-btn class="ml-3" text @click="searchRulesModal = false">Close</v-btn>
                       </v-col>
                     </v-card-actions>
                   </v-card>
@@ -62,6 +63,7 @@
             <div id="activitySearchResults">
               <ActivitySearchResults :results="searchResults" :pageSize="pageSize" :key="resultsKey"></ActivitySearchResults>
             </div>
+            </v-container>
           </v-card>
         </v-col>
       </v-row>
@@ -74,7 +76,7 @@
 import Vue from "vue";
 import ActivitySearchResults from "./ActivitySearchResults.vue";
 // eslint-disable-next-line no-unused-vars
-import { CreateActivityRequest } from "@/scripts/Activity";
+import { CreateActivityRequest } from "../scripts/Activity";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from "vue-router/types/router";
 import * as activitySearch from "../controllers/activitySearch.controller";
