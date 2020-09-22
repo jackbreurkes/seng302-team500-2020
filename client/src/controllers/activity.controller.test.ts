@@ -115,8 +115,8 @@ test.each(["tes", "rat"])(
 );
 
 test.each([
-  "asdasdasdasdasdasdasdasdasdasdsasdasdasdasdasdasdasdasdasdasds",
-  "asdasdasdasdasdasdasdasdasdasdsaaaaasdasdasdasdasdasdasdasdasdasdsaaaa",
+  "x".repeat(51), //51 x's
+  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".repeat(65), //65 x's
 ])("test that activity names over 50 characters are invalid", (validName) => {
   const validatorReturns = activityController.validateActivityName(validName);
   expect(validatorReturns).toBe(false);
