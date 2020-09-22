@@ -258,7 +258,6 @@
         }
         //Checks if an activity has been updated or created and refreshes the map pane
         if(from.name === 'createActivity' || from.name === 'editActivity'){
-          console.log(from);
           // @ts-ignore next line
           let bounds = this.map.getBounds();
           let boundingBox = PinsController.convertFromGoogleBounds(bounds);
