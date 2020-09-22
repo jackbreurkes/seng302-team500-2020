@@ -45,10 +45,7 @@ public class HomeFeedControllerTest {
     private HomeFeedController homeFeedController;
 
     @MockBean
-    private ActivityPinRepository activityPinRepostory;
-
-    @MockBean
-    private UserActivityRoleRepository userActivityRoleReporsitory;
+    private ActivityPinRepository activityPinRepository;
 
     @Autowired
     private MockMvc mvc;
@@ -70,6 +67,9 @@ public class HomeFeedControllerTest {
 
     @MockBean
     SubscriptionRepository subscriptionRepository;
+
+    @MockBean
+    UserActivityRoleRepository userActivityRoleRepository;
 
     User user;
     Profile profile;
@@ -356,5 +356,192 @@ public class HomeFeedControllerTest {
                 .andExpect(jsonPath("$[0].old_value").doesNotExist())
                 .andExpect(jsonPath("$[0].new_value").exists());
 
+    }
+
+    // ======================== GET Recommendations tests ==============================
+
+    @Test
+    public void testGetValidUserActivityRecommendations() throws Exception {
+
+        Set<ActivityType> activityTypes = new HashSet<>();
+        activityTypes.add(new ActivityType("Running"));
+        profile.setActivityTypes(new ArrayList<ActivityType>(activityTypes));
+
+        Location location = new Location("Kaikoura", "Canterbury", "New Zealand", -42.24f,173.61f);
+        profile.setLocation(location);
+
+        List<Activity> recommendedActivities = new ArrayList<>();
+        List<ActivityPin> activityPins = new ArrayList<>();
+        String expectedRecommendationsString = "[";
+
+        for (int i = 0; i < 5; i++) {   // Make 5 activities in the same location
+            Activity activity = new Activity("Activity "+i, false, location.getCity(), profile, activityTypes);
+            // Make the activity's location near where the user is (the filter requires the activity to be within 0.2 degrees in both lat and lng)
+            ActivityPin activityPin = new ActivityPin(activity, location.getLatitude()-0.1f, location.getLongitude()-0.1f,
+                    location.getLatitude()-10, location.getLatitude()+10,
+                    location.getLongitude()-10, location.getLongitude()+10);
+            activity.setActivityPin(activityPin);
+
+            recommendedActivities.add(activity);
+            activityPins.add(activityPin);
+
+            // Mock the repository queries for this activity
+            Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(user.getUserId(), activity.getId())).thenReturn(Optional.empty());
+            Mockito.when(subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)).thenReturn(false);
+            Mockito.when(subscriptionRepository.getFollowerCount(activity.getId())).thenReturn(20l);
+
+            String activityResponseString =             // All 0 and null values in this string are the default
+                    "{" +                         //      for recommended activity home feed responses
+                    "\"change_id\":0," +
+                    "\"entity_type\":null," +
+                    "\"entity_id\":" + activity.getId() + "," +
+                    "\"entity_name\":\"" + activity.getActivityName() + "\"," +
+                    "\"creator_id\":" + activity.getCreator().getUser().getUserId() + "," +
+                    "\"creator_name\":\"" + activity.getCreator().getFullName(false) + "\"," +
+                    "\"editor_id\":null," +
+                    "\"editor_name\":null," +
+                    "\"edited_timestamp\":null," +
+                    "\"changed_attribute\":\"RECOMMENDED_ACTIVITY\"," +
+                    "\"action_type\":null," +
+                    "\"old_value\":null," +
+                    "\"new_value\":null" +
+                    "},";
+            expectedRecommendationsString += activityResponseString;
+        }
+        expectedRecommendationsString = expectedRecommendationsString.substring(0, expectedRecommendationsString.length()-1) + "]";
+
+        Mockito.when(userRepository.getOne(user.getUserId())).thenReturn(user);
+        Mockito.when(profileRepository.getOne(profile.getUser().getUserId())).thenReturn(profile);
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.any(Float.class), Mockito.any(Float.class),
+                Mockito.any(Float.class), Mockito.any(Float.class), Mockito.any(Pageable.class))).thenReturn(activityPins);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+user.getUserId()+"/recommendations")
+                .requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(expectedRecommendationsString, result.getResponse().getContentAsString());
+        String responseJson = result.getResponse().getContentAsString();
+        List<HomeFeedResponse> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<List<HomeFeedResponse>>() {});
+        assertEquals(recommendedActivities.size(), recommendationResponses.size());
+    }
+
+    @Test
+    public void testGetActivityRecommendationsWithNoInterestsInCommon() throws Exception {
+
+        profile.setActivityTypes(new ArrayList<ActivityType>());    // Make user have no interests
+
+        Location location = new Location("Kaikoura", "Canterbury", "New Zealand", -42.24f,173.61f);
+        profile.setLocation(location);
+
+        List<Activity> activities = new ArrayList<>();
+        List<ActivityPin> activityPins = new ArrayList<>();
+        String expectedRecommendationsString = "[]";
+
+        Set<ActivityType> activityTypes = new HashSet<>();
+        activityTypes.add(new ActivityType("Running"));
+
+        for (int i = 0; i < 5; i++) {   // Make 5 activities in the same location
+            Activity activity = new Activity("Activity "+i, false, location.getCity(), profile, activityTypes);
+            // Make the activity's location near where the user is (the filter requires the activity to be within 0.2 degrees in both lat and lng)
+            ActivityPin activityPin = new ActivityPin(activity, location.getLatitude()-0.1f, location.getLongitude()-0.1f,
+                    location.getLatitude()-10, location.getLatitude()+10,
+                    location.getLongitude()-10, location.getLongitude()+10);
+            activity.setActivityPin(activityPin);
+
+            activities.add(activity);
+            activityPins.add(activityPin);
+
+            // Mock the repository queries for this activity
+            Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(user.getUserId(), activity.getId())).thenReturn(Optional.empty());
+            Mockito.when(subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)).thenReturn(false);
+            Mockito.when(subscriptionRepository.getFollowerCount(activity.getId())).thenReturn(20l);
+        }
+
+        Mockito.when(userRepository.getOne(user.getUserId())).thenReturn(user);
+        Mockito.when(profileRepository.getOne(profile.getUser().getUserId())).thenReturn(profile);
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.any(Float.class), Mockito.any(Float.class),
+                Mockito.any(Float.class), Mockito.any(Float.class), Mockito.any(Pageable.class))).thenReturn(activityPins);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+user.getUserId()+"/recommendations")
+                .requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(expectedRecommendationsString, result.getResponse().getContentAsString());
+        String responseJson = result.getResponse().getContentAsString();
+        List<HomeFeedResponse> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<List<HomeFeedResponse>>() {});
+        assertEquals(0, recommendationResponses.size());
+    }
+
+    @Test
+    public void testGetActivityRecommendationsWithNoActivitiesWithinBounds() throws Exception {
+
+        Location location = new Location("Kaikoura", "Canterbury", "New Zealand", -42.24f,173.61f);
+        profile.setLocation(location);
+
+        String expectedRecommendationsString = "[]";
+
+        Mockito.when(userRepository.getOne(user.getUserId())).thenReturn(user);
+        Mockito.when(profileRepository.getOne(profile.getUser().getUserId())).thenReturn(profile);
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.any(Float.class), Mockito.any(Float.class),
+                Mockito.any(Float.class), Mockito.any(Float.class), Mockito.any(Pageable.class))).thenReturn(new ArrayList<>());
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+user.getUserId()+"/recommendations")
+                .requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(expectedRecommendationsString, result.getResponse().getContentAsString());
+        String responseJson = result.getResponse().getContentAsString();
+        List<HomeFeedResponse> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<>() {});
+        assertEquals(0, recommendationResponses.size());
+    }
+
+    @Test
+    public void testGetActivityRecommendationsWithNoAuthentication() throws Exception {
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+user.getUserId()+"/recommendations")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetActivityRecommendationsOfNonExistentUser() throws Exception {
+
+        Long fakeUserId = 99l;
+        Mockito.when(userRepository.findById(fakeUserId)).thenReturn(Optional.empty());
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+fakeUserId+"/recommendations")
+                .requestAttr("authenticatedid", fakeUserId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetActivityRecommendationsOfOtherUser() throws Exception {
+
+        User otherUser = new User(3);
+        Mockito.when(userRepository.findById(otherUser.getUserId())).thenReturn(Optional.of(otherUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/homefeed/"+otherUser.getUserId()+"/recommendations")
+                .requestAttr("authenticatedid", user.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 }
