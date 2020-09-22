@@ -67,8 +67,7 @@ public class Activity {
     /**
      * Pin specifying the location of this activity
      */
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "activity_pin")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "activity")
     private ActivityPin activityPin;
 
     /**
