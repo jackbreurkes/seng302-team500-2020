@@ -235,7 +235,7 @@
             // @ts-ignore next line
             marker.setMap(null);
           }
-          return shouldDelete;
+          return !shouldDelete;
         });
       },
 
