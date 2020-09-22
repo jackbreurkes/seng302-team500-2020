@@ -29,7 +29,7 @@ public class Activity {
      * Name of the activity
      */
     @NotNull
-    @Column(columnDefinition = "varchar(30)")
+    @Column(columnDefinition = "varchar(50)")
     private String activityName;
 
     /**

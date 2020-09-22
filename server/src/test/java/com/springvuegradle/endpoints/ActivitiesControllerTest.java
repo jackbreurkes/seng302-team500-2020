@@ -235,6 +235,55 @@ public class ActivitiesControllerTest {
 		postActivityJson(json)
 				.andExpect(status().isBadRequest());
 	}
+	@Test
+	public void testCreateInvalidActivityWithNameTooLarge_400() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"VERYVERYVERYVERYVERYVERYVERYVERYVERYVERYVERYVERYLARGENAME\",\n" +
+				"  \"description\": \"I need more hours in SENG302 so lets do it together\",\n" +
+				"  \"activity_type\":[ \n" +
+				"    \"coding\"\n" +
+				"  ],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Jack Erskine, Christchurch\"\n" +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest());
+	}
+	@Test
+	public void testCreateInvalidActivityWithNameTooSmall_400() throws Exception {
+		String json = "{\n" +
+				"  \"activity_name\": \"sml\",\n" +
+				"  \"description\": \"I need more hours in \",\n" +
+				"  \"activity_type\":[ \n" +
+				"    \"coding\"\n" +
+				"  ],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Jack Erskine, Christchurch\"\n" +
+				"}";
+
+		postActivityJson(json)
+				.andExpect(status().isBadRequest());
+	}
+	@Test
+	public void testUpdateValidActivityWithNameEdgeCheck_200() throws Exception {
+
+		String json = "{\n" +
+				"  \"activity_name\": \"NAMETHATISEXACTLYEXACTLYEXACTLYEXACTLY49CHARACTER\",\n" +
+				"  \"description\": \"hiyaaaaaaa!\",\n" +
+				"  \"activity_type\":[\"walking\"],\r\n" +
+				"  \"continuous\": false,\n" +
+				"  \"start_time\": \"2020-02-20T08:00:00+1300\", \n" +
+				"  \"end_time\": \"2020-02-20T08:00:00+1300\",\n" +
+				"  \"location\": \"Jack Erskine, Christchurch\"\n" +
+				"}";
+		postActivityJson(json)
+				.andExpect(status().isCreated());
+	}
 
 	@Test
 	public void testUpdateInvalidActivityWithNoLocation_400() throws Exception {

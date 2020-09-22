@@ -19,7 +19,7 @@ import java.util.List;
 public class CreateActivityRequest {
 
     @NotNull(message = "missing activity_name field")
-    @Size(min = 4, max = 30, message = "activity_name must be between 4 and 30 characters inclusive")
+    @Size(min = 4, max = 50, message = "activity_name must be between 4 and 50 characters inclusive")
     private String activityName;
 
     @Size(min = 8, message = "activity description must be at least 8 characters")
