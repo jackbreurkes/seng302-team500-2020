@@ -97,14 +97,14 @@ public class MapsController {
 
 
         List<ActivityPinResponse> responses = new ArrayList<>();
-        for (ActivityPin pin : pinsWithinBounds) {
-
         for(ActivityPin pin : pinsWithinBounds){
             boolean isRecommended = false;
             Activity activity = pin.getActivity();
             UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
-                System.out.println("Recommending " + activity.getActivityName());
+
+            if(role == null && profile.getActivityTypes() != null && activity.getActivityTypes() != null &&
+                    profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 &&
+                    !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
                 isRecommended = true;
             }
             String userRole = this.getActivityRoleString(userId, pin.getActivity());
