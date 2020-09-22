@@ -2,9 +2,9 @@
   <div id="HomeFeedCard">
     <v-layout justify-center class="pt-1">
         <v-card width='600' height='100%'>
-            <v-toolbar color="blue" dark flat height='50'>
+            <v-toolbar  :color="suggestion ? 'green' : 'blue'" dark flat height='50'>
                 <v-icon class="mr-2">mdi-account-edit</v-icon>
-                <v-toolbar-title>{{activityName}}</v-toolbar-title>
+                <v-toolbar-title >{{activityName}}</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-menu bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
@@ -56,6 +56,7 @@ const HomeFeedCard = Vue.extend({
             oldValue: "",
             newValue: "",
             infoString: "",
+            suggestion: false,
         };
     },
     created(){
@@ -116,11 +117,23 @@ const HomeFeedCard = Vue.extend({
                     activityTypesString += element + ", ";
                 });
                 return activityTypesString.substring(0, activityTypesString.length - 2);
+            } else if (this.cardData.changed_attribute == "RECOMMENDED_ACTIVITY"){
+                let actName = this.activityName;
+                this.activityName = "Recommended: " + actName;
+                this.suggestion = true;
+                return "Because you are interested in one or more of these activities: " + this.cardData.activityTypesString;
             }
             return this.cardData.changed_attribute;
         },
         parseChangelogResponse: function(){
-            this.infoString = this.cardData.editor_name + " " + this.parseEditorAction() + " on " + this.parseTime(this.cardData.edited_timestamp);
+            let string = this.parseEditorAction();
+            
+            if(!this.suggestion) {
+                this.infoString = this.cardData.editor_name + " " + string + " on " + this.parseTime(this.cardData.edited_timestamp);
+            } else {
+                
+                this.infoString = "Suggested Activity: " + string;
+            }
         },
         unsubscribe: async function() {
             let myProfileId = await authService.getMyUserId();
