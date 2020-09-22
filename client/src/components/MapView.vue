@@ -67,6 +67,11 @@
               title: 'Miscellaneous',
               colour: 'rgba(105, 145, 253, 1)',
               icon: 'mdi-square'
+            },
+            recommended : {
+              title: 'Recommended',
+              colour: 'rgba(0,230,77)',
+              icon: 'mdi-square'
             }
           },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
@@ -77,7 +82,8 @@
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
           ] //in the order: creator/organiser, participant, following, miscellaneous
       }
     },
