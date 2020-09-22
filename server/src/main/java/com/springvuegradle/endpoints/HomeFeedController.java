@@ -109,9 +109,7 @@ public class HomeFeedController {
 
             changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
         }
-        List<HomeFeedResponse> homeFeedResponses = getHomeFeedResponsesFromChanges(changeLogList);
-
-        return homeFeedResponses;
+        return getHomeFeedResponsesFromChanges(changeLogList);
     }
 
     /**
@@ -170,10 +168,9 @@ public class HomeFeedController {
                     && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0
                     && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
                     && activity.getCreator() != profile
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime()).isAfter(LocalDateTime.now()))
             ){
-                if(!activity.isDuration() || LocalDateTime.parse(activity.getStartTime()).isAfter(LocalDateTime.now())){
-                    candidateActivities.add(activity);
-                }
+                candidateActivities.add(activity);
             }
         }
         return candidateActivities;
