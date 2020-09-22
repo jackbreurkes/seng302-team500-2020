@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -164,9 +166,14 @@ public class HomeFeedController {
         List<Activity> candidateActivities = new ArrayList<>();
         for(Activity activity : activityList){
             UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null && !profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).isEmpty()
-                    && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
-                candidateActivities.add(activity);
+            if(role == null
+                    && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0
+                    && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
+                    && activity.getCreator() != profile
+            ){
+                if(!activity.isDuration() || LocalDateTime.parse(activity.getStartTime()).isAfter(LocalDateTime.now())){
+                    candidateActivities.add(activity);
+                }
             }
         }
         return candidateActivities;
