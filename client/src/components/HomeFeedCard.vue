@@ -121,7 +121,7 @@ const HomeFeedCard = Vue.extend({
                 let actName = this.activityName;
                 this.activityName = "Recommended: " + actName;
                 this.suggestion = true;
-                return "Because you are interested in one or more of these activities: " + this.cardData.activityTypesString;
+                return "Recommended because it is near your area";
             }
             return this.cardData.changed_attribute;
         },
