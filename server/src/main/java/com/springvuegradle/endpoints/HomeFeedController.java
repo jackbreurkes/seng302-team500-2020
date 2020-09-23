@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +50,7 @@ public class HomeFeedController {
      * Float value for maximum distance that recommended activities
      * will be shown from users location, in degrees
      */
-    private static float BOUNDING_BOX_SIZE = 0.2f;
+    private static final float BOUNDING_BOX_SIZE = 0.2f;
 
     /**
      * Retrieve and respond to a request to get a user's home feed updates
@@ -90,6 +92,7 @@ public class HomeFeedController {
         if (paginatedChangeId == null) {
             changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile, pageable);
         } else {
+
             ChangeLog lastChangeReceived = changeLogRepository.findById(paginatedChangeId).orElse(null);
             if (lastChangeReceived == null) {
                 // this should never happen since changelogs shouldn't be deleted, and definitely not between pagination requests
@@ -110,6 +113,42 @@ public class HomeFeedController {
     }
 
     /**
+     * Get a list of recommended activities to display on the user's home feed.
+     * @param profileId id of the profile to retrieve recommendations for
+     * @param httpRequest http request made
+     * @return list of HomeFeedResponse objects which represent the recommended activities for the user
+     * @throws UserNotAuthorizedException if the user is not allowed to view this feed (i.e. they are a different user and not an admin)
+     * @throws UserNotAuthenticatedException if there is no authentication information in the request
+     * @throws RecordNotFoundException
+     */
+    @GetMapping("/{profileId}/recommendations")
+    @CrossOrigin
+    public List<HomeFeedResponse> getActivitySuggestions(@PathVariable("profileId") long profileId, HttpServletRequest httpRequest)
+            throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+
+        UserAuthorizer.getInstance().checkIsTargetUser(httpRequest, profileId);
+
+        Profile profile = profileRepository.findById(profileId).orElse(null);
+        if (profile == null) {
+            throw new RecordNotFoundException("user profile does not exist");
+        }
+
+        List<HomeFeedResponse> recommendationResponses = new ArrayList<>();
+
+        if (profile.getLocation() != null &&    // Only recommend activities if the user has a location to get activities around
+                profile.getLocation().getLatitude() != null && profile.getLocation().getLongitude() != null) {
+
+            for (Activity activity : findRecommendedActivities(profile)) {
+                recommendationResponses.add(new HomeFeedResponse(activity,
+                        subscriptionRepository.getFollowerCount(activity.getId()),
+                        ChangedAttribute.RECOMMENDED_ACTIVITY));
+            }
+        }
+
+        return recommendationResponses;
+    }
+
+    /**
      * Finds recommended activities for a user based on profile location and interested activity types
      * @param profile the profile that the recommendations are for
      * @return List of candidate recommended activities
@@ -121,11 +160,16 @@ public class HomeFeedController {
                 profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,
                 profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,
                 profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
-        List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
-        List<Activity> candidateActivities = new ArrayList<Activity>();
+        List<Activity> activityList = activityPinsInBox.stream().map(ActivityPin::getActivity).collect(Collectors.toList());
+        List<Activity> candidateActivities = new ArrayList<>();
         for(Activity activity : activityList){
             UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
+            if(role == null
+                    && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0
+                    && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
+                    && activity.getCreator() != profile
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime()).isAfter(LocalDateTime.now()))
+            ){
                 candidateActivities.add(activity);
             }
         }
@@ -186,6 +230,7 @@ public class HomeFeedController {
      * @param activityId id of the activity
      * @return Activity with the given id
      * @throws RecordNotFoundException if no activity with the id given exists
+     * @deprecated since sprint 6
      */
     @Deprecated(since="sprint 6")
     private Activity getActivityIfExists(Long activityId) throws RecordNotFoundException {
@@ -201,6 +246,7 @@ public class HomeFeedController {
      * @param profileId the id of the profile to retrieve
      * @return the profile with the given id
      * @throws RecordNotFoundException if no profile exists
+     * @deprecated since sprint 6
      */
     @Deprecated(since="sprint 6")
     private Profile getProfileIfExists(Long profileId) throws RecordNotFoundException {

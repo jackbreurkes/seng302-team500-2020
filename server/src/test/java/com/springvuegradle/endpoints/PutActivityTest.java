@@ -113,7 +113,7 @@ public class PutActivityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "1", "12", "this one is over thirty characs"
+            "1", "12", "this one is over fifyfifyfifyfifyfifyfifyfify characters"
     })
     void testInvalidActivityName_BadLength_400(String name) throws Exception {
         long activityId = 10;
@@ -135,7 +135,7 @@ public class PutActivityTest {
                 .andDo(result -> {
                     Exception thrown = result.getResolvedException();
                     assertTrue(thrown instanceof InvalidRequestFieldException);
-                    assertEquals("activity_name must be between 4 and 30 characters inclusive", thrown.getMessage());
+                    assertEquals("activity_name must be between 4 and 50 characters inclusive", thrown.getMessage());
                 });
 
         Mockito.verify(activityRepository, never()).save(Mockito.any());
