@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-card>
     <div id="infowindow" ref="infowindow" v-show="this.openInfoWindow !== null">
       <div v-for="activity in displayedActivities" :key="activity.activity_id" class="ma-2">
         <MapInfoWindowView v-bind:activity="activity" v-on:clicked-goto-activity="visitActivity(activity)"></MapInfoWindowView>
@@ -15,7 +15,17 @@
         </v-list-item-icon>
       </div>
     </div>
-  </div>
+    <div>
+      <v-snackbar
+        absolute
+        bottom
+        v-model="showingFiftyPins"
+        timeout="-1"
+      >
+        There may be more activities in this area than currently shown
+      </v-snackbar>
+    </div>
+  </v-card>
 </template>
 
 <script lang="ts">
@@ -84,7 +94,8 @@
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-          ] //in the order: creator/organiser, participant, following, miscellaneous
+          ], //in the order: creator/organiser, participant, following, miscellaneous
+          showingFiftyPins: false as boolean
       }
     },
 
@@ -164,6 +175,8 @@
         let pins = await getActivitiesInBoundingBox(boundingBox);
         let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
         let positionsOfNewPins = {} as Record<number, number[]>;
+
+        this.showingFiftyPins = pins.length >= 50;
 
         //create pins on the map for each unique location
         pinsAtLocationMapping.forEach((pins: Pin[]) =>  {
