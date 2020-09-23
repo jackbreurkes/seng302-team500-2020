@@ -115,9 +115,9 @@ test.each(["tes", "rat"])(
 );
 
 test.each([
-  "asdasdasdasdasdasdasdasdasdasds",
-  "asdasdasdasdasdasdasdasdasdasdsaaaa",
-])("test that activity names over 30 characters are invalid", (validName) => {
+  "x".repeat(51), //51 x's
+  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".repeat(65), //65 x's
+])("test that activity names over 50 characters are invalid", (validName) => {
   const validatorReturns = activityController.validateActivityName(validName);
   expect(validatorReturns).toBe(false);
 });
@@ -401,12 +401,12 @@ test.each([
 )
 
 
-test.each(["", "sm", "this one is way too long and shouldnt be allowed"])(
+test.each(["", "sm", "this one is way too long and shouldnt be alloweduyuytfytfytf"])(
   "expect validateNewActivity to throw an error if the activity name is invalid",
   async (name) => {
     mockCreateActivityRequest.activity_name = name;
     await expect((activityController.validateNewActivity("", "", "", "", mockCreateActivityRequest))
-    ).rejects.toThrow("Please enter an activity name of 4-30 characters long")
+    ).rejects.toThrow("Please enter an activity name of 4-50 characters long")
   }
 )
 
