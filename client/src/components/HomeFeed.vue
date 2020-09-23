@@ -50,7 +50,7 @@ const Homefeed = Vue.extend({
 
     this.changeLogList = await HomefeedController.getHomeFeedData();
     this.suggestions = await HomefeedController.getSuggestionsForHomeFeed();
-    this.changeLogList = this.changeLogList.concat(this.suggestions);
+    this.changeLogList = this.suggestions.concat(this.changeLogList); // done in this order so that suggestions are first
     this.updateLastId();
 
     let target = document.querySelector('#loadMoreButton');
