@@ -57,7 +57,7 @@ export function getHighestRoleIndex(pins: Pin[]) {
             highestRole = 1;
         } else if (role == "follower" && highestRole > 2) {
             highestRole = 2;
-        } else if (pin.isRecommended === true && highestRole > 3) {
+        } else if (pin.is_recommended === true && highestRole > 3) {
             highestRole = 3;
         }
     });

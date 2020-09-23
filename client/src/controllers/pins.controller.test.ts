@@ -128,7 +128,7 @@ test('expect activity we are recommended to give recommended role (3) as highest
             activity_id: 0,
             coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
             role: null,
-            isRecommended: true
+            is_recommended: true
         } as Pin;
 
         let result = PinsController.getHighestRoleIndex([pin]);
