@@ -113,11 +113,13 @@ export function convertToPins(activityList: CreateActivityRequest[]) {
     let output = [];
 
     for (let activity of activityList) {
-        let pin = {
-            activity_id: activity.activity_id,
-            coordinates: activity.geoposition
-        } as Pin;
-        output.push(pin);
+        if (activity.geoposition !== undefined) {
+            let pin = {
+                activity_id: activity.activity_id,
+                coordinates: activity.geoposition
+            } as Pin;
+            output.push(pin);   
+        }
     }
 
     return output;

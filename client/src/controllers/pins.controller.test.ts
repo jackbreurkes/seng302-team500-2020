@@ -281,3 +281,15 @@ test('expect multiple converted to pins to have same activity id',
         expect(pins[4].activity_id).toBe(73);
     }
 )
+
+test('expect activity without pin to not be converted', 
+    () => {
+        let activity = {
+            activity_id: 69
+        } as CreateActivityRequest;
+
+        let pins = PinsController.convertToPins([activity]);
+
+        expect(pins).toHaveLength(0);
+    }
+)
