@@ -1,6 +1,7 @@
 package com.springvuegradle.endpoints;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +53,7 @@ public class MapsController {
     @Autowired
     ProfileRepository profileRepository;
 
+
     /**
      * endpoint for returning all of the activities within the given bounds that have not already finished
      * @param request request from an authenticated user containing the parameters
@@ -88,9 +90,11 @@ public class MapsController {
             );
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
         List<ActivityPinResponse> responses = new ArrayList<>();
         for (ActivityPin pin : pinsWithinBounds) {
-            if(!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime()).isAfter(LocalDateTime.now())){
+            if(!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())){
                 String userRole = this.getActivityRoleString(userId, pin.getActivity());
                 responses.add(new ActivityPinResponse(pin, userRole));
             }
