@@ -41,17 +41,15 @@ const Homefeed = Vue.extend({
     return {
       changeLogList: [] as HomeFeedCardType[],
       lastId: NaN as number,
-      suggestions: [] as HomeFeedCardType[],
       loadingMore: false as boolean,
       observer: null as IntersectionObserver | null,
     };
   },
   created: async function() {
-
-    this.changeLogList = await HomefeedController.getHomeFeedData();
-    this.suggestions = await HomefeedController.getSuggestionsForHomeFeed();
-    this.changeLogList = this.suggestions.concat(this.changeLogList); // done in this order so that suggestions are first
-    this.updateLastId();
+    const suggestions = await HomefeedController.getSuggestionsForHomeFeed();
+    const homeFeed = await HomefeedController.getHomeFeedData();
+    this.changeLogList.push(...suggestions);
+    this.changeLogList.push(...homeFeed);
 
     let target = document.querySelector('#loadMoreButton');
     if (target !== null && this.observer !== null) {
