@@ -1,5 +1,7 @@
 package com.springvuegradle.endpoints;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -7,10 +9,14 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +30,6 @@ import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ActivityRole;
 import com.springvuegradle.model.data.Profile;
 import com.springvuegradle.model.data.UserActivityRole;
-import com.springvuegradle.model.repository.ActivityPinRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.responses.ActivityPinResponse;
 
 /**
@@ -43,6 +45,9 @@ public class MapsController {
 
     @Autowired
     ActivityPinRepository activityPinRepository;
+
+    @Autowired
+    ActivityRepository activityRepository;
 
     @Autowired
     UserActivityRoleRepository userActivityRoleRepository;
@@ -61,10 +66,12 @@ public class MapsController {
      * @return the pins within the requested bounds
      * @throws InvalidRequestFieldException if a field is missing or not parseable as a lat/lon value
      * @throws UserNotAuthenticatedException if the user is not authorized
+     * @throws RecordNotFoundException if the user is not found
      */
     @GetMapping
     @CrossOrigin
-    public List<ActivityPinResponse> getActivityPinsWithinBounds(HttpServletRequest request) throws InvalidRequestFieldException, UserNotAuthenticatedException {
+    public List<ActivityPinResponse> getActivityPinsWithinBounds(HttpServletRequest request)
+            throws InvalidRequestFieldException, UserNotAuthenticatedException, RecordNotFoundException {
 
         long userId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
@@ -90,17 +97,39 @@ public class MapsController {
             );
         }
 
+        Optional<Profile> optionalProfile = profileRepository.findById(userId);
+        if (optionalProfile.isEmpty()) {
+            throw new RecordNotFoundException("User not found");
+        }
+        Profile profile = optionalProfile.get();
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
         List<ActivityPinResponse> responses = new ArrayList<>();
-        for (ActivityPin pin : pinsWithinBounds) {
-            if(!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())){
+
+        for(ActivityPin pin : pinsWithinBounds){
+            if (!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())) {
+                boolean isRecommended = false;
+                Activity activity = pin.getActivity();
+                UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
+
+                if (role == null && profile.getActivityTypes() != null && activity.getActivityTypes() != null &&
+                        profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 &&
+                        !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)) {
+                    isRecommended = true;
+                }
                 String userRole = this.getActivityRoleString(userId, pin.getActivity());
-                responses.add(new ActivityPinResponse(pin, userRole));
+                responses.add(new ActivityPinResponse(pin, userRole, isRecommended));
             }
         }
         return responses;
     }
+
+    /**
+     * Float value for maximum distance that recommended activities
+     * will be shown from users location, in degrees
+     */
+    private static float BOUNDING_BOX_SIZE = 0.2f;
     
     /**
      * Gets the activity role string for the given activity and user

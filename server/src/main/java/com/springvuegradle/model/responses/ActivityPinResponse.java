@@ -14,6 +14,7 @@ public class ActivityPinResponse {
     private final long activityId;
     private final GeoPosition coordinates;
     private final String role;
+    private boolean isRecommended;
     
     /**
      * empty constructor used to map JSON responses to objects within tests.
@@ -22,6 +23,7 @@ public class ActivityPinResponse {
     	activityId = 0;
     	coordinates = null;
     	role = null;
+        isRecommended = false;
     }
 
     /**
@@ -33,6 +35,20 @@ public class ActivityPinResponse {
         activityId = pin.getActivity().getId();
         coordinates = new GeoPosition(pin.getLatitude(), pin.getLongitude());
         this.role = role;
+        this.isRecommended = false;
+    }
+
+    /**
+     * constructor for a activity pin response which specifies whether the activity is simply a recommended one.
+     * @param pin the pin to create the response object for
+     * @param role the role of the user making the request
+     * @param recommended whether the activity is one of the user's recommended activities (true = is recommended, false otherwise)
+     */
+    public ActivityPinResponse(ActivityPin pin, String role, boolean recommended) {
+        activityId = pin.getActivity().getId();
+        coordinates = new GeoPosition(pin.getLatitude(), pin.getLongitude());
+        this.role = role;
+        this.isRecommended = recommended;
     }
 
     public long getActivityId() {
@@ -45,5 +61,13 @@ public class ActivityPinResponse {
 
     public String getRole() {
         return role;
+    }
+
+    public boolean getIsRecommended() {
+        return isRecommended;
+    }
+
+    public void setIsRecommended(boolean recommended) {
+        this.isRecommended = recommended;
     }
 }
