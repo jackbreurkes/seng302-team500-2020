@@ -1,10 +1,13 @@
 package com.springvuegradle.endpoints;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,8 +53,9 @@ public class MapsController {
     @Autowired
     ProfileRepository profileRepository;
 
+
     /**
-     * endpoint for returning all of the activities within the given bounds.
+     * endpoint for returning all of the activities within the given bounds that have not already finished
      * @param request request from an authenticated user containing the parameters
      *              ne_lat, ne_lon, sw_lat, sw_lon
      * @return the pins within the requested bounds
@@ -86,10 +90,14 @@ public class MapsController {
             );
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
         List<ActivityPinResponse> responses = new ArrayList<>();
         for (ActivityPin pin : pinsWithinBounds) {
-            String userRole = this.getActivityRoleString(userId, pin.getActivity());
-            responses.add(new ActivityPinResponse(pin, userRole));
+            if(!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())){
+                String userRole = this.getActivityRoleString(userId, pin.getActivity());
+                responses.add(new ActivityPinResponse(pin, userRole));
+            }
         }
         return responses;
     }

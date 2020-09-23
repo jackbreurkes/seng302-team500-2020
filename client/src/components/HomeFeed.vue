@@ -18,6 +18,9 @@
             </v-card>
           </v-layout>
         </div>
+        <v-layout justify-center class="pt-1">
+          <v-btn :loading="loadingMore" @click="loadMore" color="primary" id="loadMoreButton">Load more</v-btn>
+        </v-layout>
       </v-col>
     </v-layout>
   </div>
@@ -39,6 +42,8 @@ const Homefeed = Vue.extend({
       changeLogList: [] as HomeFeedCardType[],
       lastId: NaN as number,
       suggestions: [] as HomeFeedCardType[],
+      loadingMore: false as boolean,
+      observer: null as IntersectionObserver | null,
     };
   },
   created: async function() {
@@ -48,31 +53,35 @@ const Homefeed = Vue.extend({
     this.changeLogList = this.changeLogList.concat(this.suggestions);
     this.updateLastId();
 
+    let target = document.querySelector('#loadMoreButton');
+    if (target !== null && this.observer !== null) {
+      this.observer.observe(target);
+    }
   },
   methods: {
-    /**
-     * Sets the callback to be called anytime when the user scrolls the document.
-     */
-    setOnScroll: function() {
-      window.onscroll = () => {
-
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-
-        if (bottomOfWindow) {
-          HomefeedController.getAdditionalUsersHomefeed(this.lastId)
-          .then(response => {
-              this.changeLogList.push.apply(this.changeLogList, response)
-              this.updateLastId();
-          });
-        }
-      };
+    loadMore: function() {
+      this.loadingMore = true;
+      HomefeedController.getAdditionalUsersHomefeed(this.lastId)
+        .then(response => {
+            this.changeLogList.push.apply(this.changeLogList, response)
+            this.updateLastId();
+        })
+        .finally(() => {
+          this.loadingMore = false;
+        });
     },
     updateLastId: function() {
       this.lastId = this.changeLogList[this.changeLogList.length -1].change_id;
     }
   },
-  mounted() {
-    this.setOnScroll()
+  mounted: function() {
+    // uses IntersectionObserver API built into the browser
+    // https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
+    this.observer = new IntersectionObserver((event) => {
+      if (event[0] !== undefined && event[0].isIntersecting) { //if the button is now in view
+        this.loadMore();
+      }  
+    }, {threshold: 0.5});
   }
 });
 
