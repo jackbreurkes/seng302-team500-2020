@@ -37,11 +37,15 @@ const Homefeed = Vue.extend({
   data: function() {
     return {
       changeLogList: [] as HomeFeedCardType[],
-      lastId: NaN as number
+      lastId: NaN as number,
+      suggestions: [] as HomeFeedCardType[],
     };
   },
   created: async function() {
+
     this.changeLogList = await HomefeedController.getHomeFeedData();
+    this.suggestions = await HomefeedController.getSuggestionsForHomeFeed();
+    this.changeLogList = this.changeLogList.concat(this.suggestions);
     this.updateLastId();
 
   },

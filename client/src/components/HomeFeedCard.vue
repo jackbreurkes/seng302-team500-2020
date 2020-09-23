@@ -13,8 +13,9 @@
                         icon
                         v-bind="attrs"
                         v-on="on"
+                        v-if="!suggestion"
                       >
-                        <v-icon>mdi-dots-vertical</v-icon>
+                        <v-icon >mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
 
@@ -40,6 +41,9 @@
 import Vue from 'vue'
 import {unfollowActivity} from '../controllers/activity.controller';
 import * as authService from '../services/auth.service';
+// eslint-disable-next-line no-unused-vars
+import { CreateActivityRequest } from '../scripts/Activity';
+import { getActivity } from '../controllers/activity.controller'
 
 const HomeFeedCard = Vue.extend({
     name: "HomeFeedCard",
@@ -57,9 +61,11 @@ const HomeFeedCard = Vue.extend({
             newValue: "",
             infoString: "",
             suggestion: false,
+            activity: [] as CreateActivityRequest,
         };
     },
-    created(){
+    async created(){
+        this.activity = await getActivity(this.cardData.creator_id, this.cardData.entity_id);
         this.parseChangelogResponse();
     },
 
@@ -121,7 +127,7 @@ const HomeFeedCard = Vue.extend({
                 let actName = this.activityName;
                 this.activityName = "Recommended: " + actName;
                 this.suggestion = true;
-                return "Recommended because it is near your area";
+                return "Suggested because it is in " + this.activity.location + " and because you are interested in " + this.activity.activity_type;
             }
             return this.cardData.changed_attribute;
         },
@@ -131,8 +137,7 @@ const HomeFeedCard = Vue.extend({
             if(!this.suggestion) {
                 this.infoString = this.cardData.editor_name + " " + string + " on " + this.parseTime(this.cardData.edited_timestamp);
             } else {
-                
-                this.infoString = "Suggested Activity: " + string;
+                this.infoString = string;
             }
         },
         unsubscribe: async function() {
