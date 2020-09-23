@@ -397,20 +397,6 @@ export async function removeParticipantResult(activityId: number, outcomeId: num
 }
 
 /**
- * returns a reader-friendly description of the duration of a duration activity.
- * @param startTime the ISO datetime string representing the start time
- * @param endTime the ISO datetime string representing the end time
- */
-export function describeDurationTimeFrame(startTime: string, endTime: string) {
-  let start = new Date(startTime);
-  let end = new Date(endTime);
-  const dtf = new Intl.DateTimeFormat(undefined, {
-    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short'
-  });
-  return "Starts at: " + dtf.format(start) + "Ends: " + dtf.format(end);
-}
-
-/**
  * returns a reader-friendly formatted date
  * @param dateString the ISO datetime string representing the time to be formatted
  * @return the formatted date string
