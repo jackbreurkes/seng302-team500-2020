@@ -140,8 +140,19 @@
                 ></v-autocomplete>
                 <v-expansion-panels flat style="border: 1px solid silver;">
                   <v-expansion-panel>
-                    <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
-                    <v-expansion-panel-content>
+                    <v-expansion-panel-header>
+                      <v-container>
+                    <v-row>Activity Outcomes</v-row>
+                    <br>
+                    <v-divider> </v-divider>
+                    <br>
+                    <v-row>
+                      Let participants record their own results against challenges/milestones that you create
+                     </v-row>
+                      </v-container>
+                    </v-expansion-panel-header>
+                    
+                    <v-expansion-panel-content> 
                       <v-sheet>
                         <v-row
                           align="start"
