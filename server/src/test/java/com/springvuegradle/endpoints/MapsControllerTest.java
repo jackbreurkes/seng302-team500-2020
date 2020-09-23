@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -123,7 +125,7 @@ public class MapsControllerTest {
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         
         mvc.perform(MockMvcRequestBuilders
@@ -138,12 +140,12 @@ public class MapsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
         
-        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any());
+        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any());
     }
 
     @Test
     void testGetActivitiesInBounds_BoundsCrossDateLine_BoundsAreSplit() throws Exception {
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), any()))
     		.thenReturn(new ArrayList<>());
         
         mvc.perform(MockMvcRequestBuilders
@@ -157,8 +159,8 @@ public class MapsControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
         
-        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(100f), Mockito.eq(180f), Mockito.eq(80f), Mockito.eq(170f), Mockito.any());
-        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(100f), Mockito.eq(-170f), Mockito.eq(80f), Mockito.eq(-180f), Mockito.any());
+        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(100f), Mockito.eq(180f), Mockito.eq(80f), Mockito.eq(170f), any());
+        Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(100f), Mockito.eq(-170f), Mockito.eq(80f), Mockito.eq(-180f), any());
     }
 
     @Test
@@ -237,7 +239,7 @@ public class MapsControllerTest {
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         
         MvcResult result = mvc.perform(MockMvcRequestBuilders
@@ -261,7 +263,9 @@ public class MapsControllerTest {
     
     @Test
     void testGetActivitiesInBounds_AsOrganiser_ActivityRoleIsOrganiser() throws Exception {
-    	final User organiser = new User(2L); 
+    	final User organiser = new User(2L);
+    	Profile organiserProfile = new Profile(organiser, "A", "Name", LocalDate.now(), Gender.NON_BINARY);
+        Mockito.when(profileRepository.findById(organiserProfile.getUser().getUserId())).thenReturn(Optional.of(organiserProfile));
         List<ActivityPin> pins = new ArrayList<>();
         
         ActivityPin pin1 = this.setupActivityPinMock(1, 8, 8);
@@ -269,7 +273,7 @@ public class MapsControllerTest {
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(organiser.getUserId(), activity1.getId()))
         	.thenReturn(Optional.of(new UserActivityRole(activity1, organiser, ActivityRole.ORGANISER)));
@@ -298,13 +302,15 @@ public class MapsControllerTest {
     void testGetActivitiesInBounds_AsParticipant_ActivityRoleIsParticipant() throws Exception {
     	final User participant = new User(2L); 
         List<ActivityPin> pins = new ArrayList<>();
-        
+        Profile participantProfile = new Profile(participant, "A", "Name", LocalDate.now(), Gender.NON_BINARY);
+        Mockito.when(profileRepository.findById(participantProfile.getUser().getUserId())).thenReturn(Optional.of(participantProfile));
+
         ActivityPin pin1 = this.setupActivityPinMock(1, 8, 8);
         Activity activity1 = pin1.getActivity();
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(participant.getUserId(), activity1.getId()))
         	.thenReturn(Optional.of(new UserActivityRole(activity1, participant, ActivityRole.PARTICIPANT)));
@@ -339,7 +345,7 @@ public class MapsControllerTest {
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(follower.getUserId(), activity1.getId()))
         	.thenReturn(Optional.empty());
@@ -376,7 +382,7 @@ public class MapsControllerTest {
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(follower.getUserId(), activity1.getId()))
         	.thenReturn(Optional.empty());
@@ -407,18 +413,20 @@ public class MapsControllerTest {
     void testGetActivitiesInBounds_AsSuperAdmin_Returns() throws Exception {
     	final User superAdmin = new User(2L);
     	superAdmin.setPermissionLevel(127);
-    	
+        Profile superAdminProfile = new Profile(superAdmin, "A", "Name", LocalDate.now(), Gender.NON_BINARY);
+        Mockito.when(profileRepository.findById(superAdminProfile.getUser().getUserId())).thenReturn(Optional.of(superAdminProfile));
+
         List<ActivityPin> pins = new ArrayList<>();
         ActivityPin pin1 = this.setupActivityPinMock(1, 8, 8);
         Activity activity1 = pin1.getActivity();
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
         
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), any()))
     		.thenReturn(pins);
         Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(superAdmin.getUserId(), activity1.getId()))
         	.thenReturn(Optional.empty());
-        Mockito.when(profileRepository.findById(superAdmin.getUserId())).thenReturn(Optional.empty());
+        Mockito.when(profileRepository.findById(superAdmin.getUserId())).thenReturn(Optional.of(superAdminProfile));
         
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/maps")
@@ -483,7 +491,7 @@ public class MapsControllerTest {
         Mockito.when(subscriptionRepository.isSubscribedToActivity(miscActivity.getId(), senderProfile)).thenReturn(false);
         pins.add(miscPin);
 
-        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.any()))
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), any()))
                 .thenReturn(pins);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
@@ -512,6 +520,68 @@ public class MapsControllerTest {
         assertEquals("follower", response.get(3).getRole());
         assertEquals(5L, response.get(4).getActivityId());
         assertNull(response.get(4).getRole());
+    }
+
+    @Test
+    void testGetActivitiesWithSomeRecommended() throws Exception {
+        User requestSender = new User(6L);
+        Profile senderProfile = new Profile(requestSender, "It", "DoesNotMatter", LocalDate.now(), Gender.NON_BINARY);
+        HashSet<ActivityType> activityTypes = new HashSet<>();
+        activityTypes.add(new ActivityType("Walking"));
+        senderProfile.setActivityTypes(new ArrayList<>(activityTypes));
+        Mockito.when(profileRepository.findById(requestSender.getUserId())).thenReturn(Optional.of(senderProfile));
+
+        User activityCreator = new User(7L);
+        Profile creatorProfile = new Profile(activityCreator, "ItAlso", "DoesNotMatter", LocalDate.now(), Gender.NON_BINARY);
+        Mockito.when(profileRepository.findById(activityCreator.getUserId())).thenReturn(Optional.of(creatorProfile));
+
+        Mockito.when(userActivityRoleRepository.getRoleEntryByUserId(any(Long.class), any(Long.class)))
+                .thenReturn(Optional.empty());
+
+        List<ActivityPin> pins = new ArrayList<>();
+
+        // Create first activity - should be recommended
+        Activity activity1 = new Activity("Activity 1", false, "Location", creatorProfile, activityTypes);
+        activity1.setActivityTypes(activityTypes);
+        ActivityPin pin1 = new ActivityPin(activity1, 8, 8, 0f, 0f, 0f, 0f);
+        pins.add(pin1);
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(activity1.getId(), senderProfile)).thenReturn(false);
+
+        // Create second activity - should be recommended
+        Activity activity2 = new Activity("Activity 2", false, "Location", creatorProfile, activityTypes);
+        activity2.setActivityTypes(new HashSet<>(activityTypes));
+        ActivityPin pin2 = new ActivityPin(activity2, 8, 8, 0f, 0f, 0f, 0f);
+        pins.add(pin2);
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(activity2.getId(), senderProfile)).thenReturn(false);
+
+        // Create third activity - should not be recommended as has no activity types that match user's interests
+        Activity activity3 = new Activity("Activity 3", false, "Location", creatorProfile, new HashSet<>());
+        ActivityPin pin3 = new ActivityPin(activity3, 8, 8, 0f, 0f, 0f, 0f);
+        pins.add(pin3);
+        Mockito.when(subscriptionRepository.isSubscribedToActivity(activity3.getId(), senderProfile)).thenReturn(false);
+
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), any()))
+                .thenReturn(pins);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/maps")
+                .param("ne_lat", "10.0")
+                .param("ne_lon", "10.0")
+                .param("sw_lat", "0.0")
+                .param("sw_lon", "0.0")
+                .requestAttr("authenticatedid", requestSender.getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        List<ActivityPinResponse> response = objectMapper.readValue(responseJson, new TypeReference<>() {});
+
+        assertEquals(3, response.size());
+        assertTrue(response.get(0).getIsRecommended());
+        assertTrue(response.get(1).getIsRecommended());
+        assertFalse(response.get(2).getIsRecommended());
     }
 
     @Test

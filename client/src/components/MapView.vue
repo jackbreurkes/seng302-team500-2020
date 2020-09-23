@@ -35,6 +35,14 @@
           </v-btn>
         </template>
       </v-snackbar>
+      <v-snackbar
+        absolute
+        bottom
+        v-model="showingFiftyPins"
+        timeout="-1"
+      >
+        There may be more activities in this area than currently shown
+      </v-snackbar>
     </div>
   </v-card>
 </template>
@@ -117,6 +125,7 @@
             "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
           ], //in the order: creator/organiser, participant, following, miscellaneous, search result
+          showingFiftyPins: false as boolean,
       }
     },
 
@@ -220,6 +229,8 @@
         let pins = this.isShowingSearchResults ? this.storedSearchResultsPins : await getActivitiesInBoundingBox(boundingBox);
         let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
         let positionsOfNewPins = {} as Record<number, number[]>;
+
+        this.showingFiftyPins = pins.length >= 50;
 
         //create pins on the map for each unique location
         pinsAtLocationMapping.forEach((pins: Pin[]) =>  {

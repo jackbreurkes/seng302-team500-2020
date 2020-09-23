@@ -19,7 +19,10 @@
           </v-layout>
         </div>
         <v-layout justify-center class="pt-1">
-          <v-btn :loading="loadingMore" @click="loadMore" color="primary" id="loadMoreButton">Load more</v-btn>
+          <v-btn :loading="loadingMore" @click="goToSearchPage" id="loadMoreButton">
+            <!-- show no text if loading to minimise button width -->
+            {{ loadingMore ? "" : "search for other activities" }}
+          </v-btn>
         </v-layout>
       </v-col>
     </v-layout>
@@ -65,6 +68,12 @@ const Homefeed = Vue.extend({
         .finally(() => {
           this.loadingMore = false;
         });
+    },
+    /**
+     * takes the user to the activity search page.
+     */
+    goToSearchPage() {
+      this.$router.push({ name: "activities" });
     },
     updateLastId: function() {
       this.lastId = this.changeLogList[this.changeLogList.length -1].change_id;
