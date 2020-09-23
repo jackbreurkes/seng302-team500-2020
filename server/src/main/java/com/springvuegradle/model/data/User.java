@@ -61,6 +61,20 @@ public class User {
 			mappedBy = "user")
 	private List<Email> emails = new ArrayList<>();
 
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			mappedBy = "user",
+			orphanRemoval = true
+	)
+	private List<ActivityParticipantResult> results = new ArrayList<>();
+
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			mappedBy = "user",
+			orphanRemoval = true
+	)
+	private List<UserActivityRole> roles = new ArrayList<>();
+
 	/**
 	 * Construct a user and automatically assign their ID
 	 */
@@ -132,4 +146,19 @@ public class User {
 		this.emails = emails;
 	}
 
+	public List<ActivityParticipantResult> getResults() {
+		return results;
+	}
+
+	public void setResults(List<ActivityParticipantResult> results) {
+		this.results = results;
+	}
+
+	public List<UserActivityRole> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<UserActivityRole> roles) {
+		this.roles = roles;
+	}
 }

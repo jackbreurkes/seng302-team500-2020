@@ -2,15 +2,7 @@ package com.springvuegradle.model.data;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * JPA POJO class representing the relation between a user and
@@ -30,7 +22,7 @@ public class Subscription {
 	/**
 	 * The profile this subscription is relevant to
 	 */
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="subscriber", nullable=false)
 	private Profile subscriber;
 	

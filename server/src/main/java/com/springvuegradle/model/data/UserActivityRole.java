@@ -29,8 +29,8 @@ public class UserActivityRole {
     /**
      * The ID of the user
      */
-    @OneToOne
-    @JoinColumn(columnDefinition = "uuid")
+    @ManyToOne
+    @JoinColumn(columnDefinition = "uuid", nullable = false)
     private User user;
 
     /**

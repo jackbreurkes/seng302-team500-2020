@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NamedQuery(name = "Profile.findByFirstLastname", query = "SELECT p.firstName, p.lastName FROM Profile p WHERE p.firstName LIKE '?1%' AND p.lastName LIKE '?2%' ")
 
 
-public class Profile implements Serializable {
+public class Profile {
 
 	/**
 	 * Auto generated serial ID
@@ -99,6 +99,13 @@ public class Profile implements Serializable {
 			inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
 	)
 	private List<ActivityType> activityTypes;
+
+	@OneToMany(
+			mappedBy = "subscriber",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true
+	)
+	private List<Subscription> subscriptions;
 
     /**
      * Constructor required by spring
@@ -323,5 +330,13 @@ public class Profile implements Serializable {
 		} else {
 			return this.firstName + " " + this.lastName;
 		}
+	}
+
+	public List<Subscription> getSubscriptions() {
+		return subscriptions;
+	}
+
+	public void setSubscriptions(List<Subscription> subscriptions) {
+		this.subscriptions = subscriptions;
 	}
 }
