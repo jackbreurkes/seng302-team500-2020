@@ -22,7 +22,7 @@
         v-model="isShowingSearchResults"
         timeout="-1"
       >
-        Showing {{storedSearchResultsPins.length}} search results on map
+        Showing {{storedSearchResultsPins.length}} search {{storedSearchResultsPins.length == 1 ? "result" : "results"}} on map
 
         <template v-slot:action="{ attrs }">
           <v-btn
