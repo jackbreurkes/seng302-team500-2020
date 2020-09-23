@@ -274,13 +274,21 @@
     },
 
     watch: {
-      $route() {
+      $route(to , from) {
         let userId = getMyUserId();
 
         if (userId !== null && userId != this.loggedInUserId) {
           this.centerMapOnUserLocation();
           this.loggedInUserId = userId;
         }
+        //Checks if an activity has been updated or created and refreshes the map pane
+        if(from.name === 'createActivity' || from.name === 'editActivity'){
+          // @ts-ignore next line
+          let bounds = this.map.getBounds();
+          let boundingBox = PinsController.convertFromGoogleBounds(bounds);
+          this.displayPinsInArea(boundingBox);
+        }
+
       }
     }
   })
