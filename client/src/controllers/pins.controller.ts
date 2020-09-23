@@ -1,6 +1,7 @@
 import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 import { Pin } from '@/scripts/Pin';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
+import { CreateActivityRequest } from '@/scripts/Activity'
 
 /**
  * groups all of the pins into an array of pins at the same location
@@ -101,4 +102,23 @@ export function convertToGoogleBounds(swPoint: LocationCoordinatesInterface, neP
 export function isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
     return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
         && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
+}
+
+/**
+ * Convert a list of activities into a list of pins
+ * @param activityList List of activities to convert
+ * @returns list of pins representing the activities
+ */
+export function convertToPins(activityList: CreateActivityRequest[]) {
+    let output = [];
+
+    for (let activity of activityList) {
+        let pin = {
+            activity_id: activity.activity_id,
+            coordinates: activity.geoposition
+        } as Pin;
+        output.push(pin);
+    }
+
+    return output;
 }

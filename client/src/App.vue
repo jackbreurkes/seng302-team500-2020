@@ -93,22 +93,22 @@
 
       <v-content
       :class="showNavBar() ? 'nav-drawer-margin' : ''">
-        <transition name="page-transition">
-          <!-- SplitPanes API: https://antoniandre.github.io/splitpanes/ -->
-          <splitpanes
-              class="default-theme"
-              :horizontal="horizontalSplit"
-              @resize="mapPaneSize = 100 - $event[0].size"
-              @pane-maximize="displayMap = true"
-          >
-            <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
+        <!-- SplitPanes API: https://antoniandre.github.io/splitpanes/ -->
+        <splitpanes
+            class="default-theme"
+            :horizontal="horizontalSplit"
+            @resize="mapPaneSize = 100 - $event[0].size"
+            @pane-maximize="displayMap = true"
+        >
+          <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
+            <transition name="page-transition">
               <router-view></router-view>
-            </pane>
-            <pane v-if="showNavBar()" id="map-pane" :size="mapPaneSize">
-              <MapView id="map-view"></MapView>
-            </pane>
-          </splitpanes>
-        </transition>
+            </transition>
+          </pane>
+          <pane v-if="showNavBar()" id="map-pane" :size="mapPaneSize">
+            <MapView id="map-view"></MapView>
+          </pane>
+        </splitpanes>
       </v-content>
     </v-app>
   </div>
