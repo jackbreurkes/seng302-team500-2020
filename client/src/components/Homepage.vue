@@ -72,7 +72,8 @@
   
                 <div v-if="currentUser.location !== undefined && currentUser.location.city !==null && currentUser.location.city.length != 0">
                 <br />
-                <p> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+                <p v-if="currentUser.location.state !== undefined"> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+                <p v-if="currentUser.location.state === undefined"> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.country }}</p>
                 <br />
                 </div>
   
