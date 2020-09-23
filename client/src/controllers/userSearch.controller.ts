@@ -25,14 +25,12 @@ export function getShortenedActivitiesString(activities: string[], searchTerms :
       for (let activityIndex in activities) {
         activitiesString = activitiesString + activities[activityIndex] + ", ";
       }
-      activitiesString.trim();
       activitiesString = activitiesString.substring(0, activitiesString.length-2);
       return activitiesString;
     } else {
       for (let i = 0; i < 3; i++) {
         activitiesString = activitiesString + activities[i] + ", ";
       }
-      activitiesString.trim();
       activitiesString = activitiesString.substring(0, activitiesString.length-2);
       return activitiesString+"...";
     }
