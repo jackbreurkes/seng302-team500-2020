@@ -263,9 +263,7 @@
        * Tells Vue to navigate the map panel to the given activity
        */
       visitActivity: function(activity: CreateActivityRequest) {
-        console.log("visiting activity")
         if (activity.activity_id == null || activity.creator_id == null) {
-          console.log("crap")
           return;
         }
         this.$router.push({ name: "activity", params: {
