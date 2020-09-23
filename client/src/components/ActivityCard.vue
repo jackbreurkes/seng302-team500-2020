@@ -75,7 +75,8 @@ const ActivityCard = Vue.extend({
 
     methods: {
         getDurationDescription(startTime: string, endTime: string): string {
-            return activityController.describeDurationTimeFrame(startTime, endTime);
+            return "Starts: " + activityController.describeDate(startTime)
+            + " Ends: " + activityController.describeDate(endTime);
         },
         editActivity(activityId: number) {
             this.$router.push(

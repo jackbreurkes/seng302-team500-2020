@@ -152,6 +152,10 @@ import "splitpanes/dist/splitpanes.css";
       this.updateUserData();
       this.updateNavInfo();
       this.horizontalSplit = preferences.getPrefersHorizontalSplit();
+
+      this.$root.$on('mapPaneToggle', (isOpen: boolean) => {
+        this.setDisplayMap(isOpen)
+      })
     },
 
     watch: {
