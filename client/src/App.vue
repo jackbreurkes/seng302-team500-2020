@@ -29,7 +29,6 @@
         >
           <v-list-item two-line :class="this.smallForm && 'px-0'">
             <v-list-item-avatar>
-              <img src="">
               <!-- this avatar component here makes a nice little barrier line, unable to replicate with other components -->
             </v-list-item-avatar>
 
