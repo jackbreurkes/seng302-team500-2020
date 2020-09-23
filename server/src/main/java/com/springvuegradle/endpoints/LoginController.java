@@ -35,7 +35,7 @@ public class LoginController {
 	/**
 	 * How long a user should stay logged in for
 	 */
-	private static final int loginSeconds = 24 * 60 * 60;
+	private static final int LOGIN_TOKEN_LIFETIME = 24 * 60 * 60;
 
 	/**
 	 * Repository of email addresses stored in the database
@@ -74,7 +74,7 @@ public class LoginController {
 			String token = ChecksumUtils.generateToken(user.getUserId());
 
 			Session session = new Session(user, token, 
-					Instant.now().plus(loginSeconds, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
+					Instant.now().plus(LOGIN_TOKEN_LIFETIME, ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
 			sessionRepo.save(session);
 			
 			return new LoginSuccessResponse(token, user.getUserId(), user.getPermissionLevel());

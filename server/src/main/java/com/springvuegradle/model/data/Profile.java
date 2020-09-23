@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NamedQuery(name = "Profile.findByFirstLastname", query = "SELECT p.firstName, p.lastName FROM Profile p WHERE p.firstName LIKE '?1%' AND p.lastName LIKE '?2%' ")
 
 
-public class Profile implements Serializable {
+public class Profile {
 
 	/**
 	 * Auto generated serial ID
