@@ -339,7 +339,6 @@ const Activity = Vue.extend({
 
   created() {
     let myProfileId = authService.getMyUserId();
-    console.log("me: " + myProfileId)
     if (myProfileId == null) {
       this.$router.push('login');
     } else {
@@ -351,13 +350,7 @@ const Activity = Vue.extend({
     
     this.displayActivity(activityId, creatorId);
 
-    console.log(`${myProfileId} should not be ${creatorId}`)
-    console.log(`${authService.isAdmin()} should be false`)
-    if (myProfileId == creatorId) {
-      this.currentlyHasAuthority = true;
-    } else if (authService.isAdmin()) {
-      this.currentlyHasAuthority = true;
-    }
+    this.currentlyHasAuthority = myProfileId == creatorId || authService.isAdmin();
   },
 
   methods: {

@@ -265,14 +265,14 @@ describe("testEditButton", () => {
         })
     }
 
-    it('should say unfollow if we are kkk22 the activity', async() => {
+    it('If we are logged in, not as creator/organister or admin we shouldnt see an edit button', async() => {
         isAdmin.mockImplementation(() => false)
         mountFunction(); // need to re-mount after changing mock resolve
         await Vue.nextTick() // resolves getActivity
         expect(wrapper.find('#editBurger').exists()).toBe(false)
     })
 
-    it('should say unfollow if we are kkk22 the activity', async() => {
+    it('If we are logged in as an admin, we should see an edit button for activity', async() => {
         isAdmin.mockImplementation(() => true)
         mountFunction(); // need to re-mount after changing mock resolve
         await Vue.nextTick() // resolves getActivity
