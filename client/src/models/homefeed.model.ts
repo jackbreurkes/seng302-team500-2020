@@ -11,6 +11,14 @@ import { HomeFeedCardType } from '@/scripts/HomeFeedCardType';
  }
 
  /**
+ * Retrieves suggested activities from "/homefeed/{{profileId}}/recommnedations" endpoint
+ */
+export async function getSuggestedActivities(){
+    let res = await instance.get("homefeed/" + auth.getMyUserId() + "/recommendations");
+    return res.data as HomeFeedCardType[];
+}
+
+ /**
  * Retrieves data from "/homefeed/{{profileId}}" endpoint
  * @param paginationId the id of the last loaded homefeed changelog entry
  */
