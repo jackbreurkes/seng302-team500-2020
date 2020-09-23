@@ -60,10 +60,12 @@ public class MapsController {
      * @return the pins within the requested bounds
      * @throws InvalidRequestFieldException if a field is missing or not parseable as a lat/lon value
      * @throws UserNotAuthenticatedException if the user is not authorized
+     * @throws RecordNotFoundException if the user is not found
      */
     @GetMapping
     @CrossOrigin
-    public List<ActivityPinResponse> getActivityPinsWithinBounds(HttpServletRequest request) throws InvalidRequestFieldException, UserNotAuthenticatedException, RecordNotFoundException {
+    public List<ActivityPinResponse> getActivityPinsWithinBounds(HttpServletRequest request)
+            throws InvalidRequestFieldException, UserNotAuthenticatedException, RecordNotFoundException {
 
         long userId = UserAuthorizer.getInstance().checkIsAuthenticated(request);
 
@@ -118,26 +120,6 @@ public class MapsController {
      * will be shown from users location, in degrees
      */
     private static float BOUNDING_BOX_SIZE = 0.2f;
-
-    /**
-     * Finds recommended activities for a user based on profile location and interested activity types
-     * @param profile profile of the user to recommend activities to
-     * @param activityPinsInBox list of the activities to filter to get those currently recommended
-     * @return List of candidate recommended activities
-     */
-    public List<Activity> findRecommendedActivities(Profile profile, List<ActivityPin> activityPinsInBox){
-        //Get the activities within the range of the users profile location
-
-        List<Activity> activityList = activityPinsInBox.stream().map(object -> object.getActivity()).collect(Collectors.toList());
-        List<Activity> candidateActivities = new ArrayList<Activity>();
-        for(Activity activity : activityList){
-            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
-                candidateActivities.add(activity);
-            }
-        }
-        return candidateActivities;
-    }
     
     /**
      * Gets the activity role string for the given activity and user
