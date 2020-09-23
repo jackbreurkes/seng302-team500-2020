@@ -518,7 +518,7 @@ public class MapsControllerTest {
     void testActivityHasAlreadyFinished_ReturnNone() throws Exception {
         List<ActivityPin> pins = new ArrayList<>();
 
-        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55");
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
         Activity activity1 = pin1.getActivity();
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
@@ -543,12 +543,12 @@ public class MapsControllerTest {
     void testActivityHasAlreadyFinished_ReturnOne() throws Exception {
         List<ActivityPin> pins = new ArrayList<>();
 
-        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55");
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
         Activity activity1 = pin1.getActivity();
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
 
-        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55");
+        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55+1200");
         Activity activity2 = pin2.getActivity();
         Mockito.when(activity2.getCreator()).thenReturn(profile);
         pins.add(pin2);
@@ -573,12 +573,12 @@ public class MapsControllerTest {
     void testActivityMixDurationAndNot_Return2() throws Exception {
         List<ActivityPin> pins = new ArrayList<>();
 
-        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55");
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
         Activity activity1 = pin1.getActivity();
         Mockito.when(activity1.getCreator()).thenReturn(profile);
         pins.add(pin1);
 
-        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55");
+        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55+1200");
         Activity activity2 = pin2.getActivity();
         Mockito.when(activity2.getCreator()).thenReturn(profile);
         pins.add(pin2);
