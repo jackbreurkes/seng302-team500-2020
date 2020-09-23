@@ -28,13 +28,13 @@
   import { getActivitiesInBoundingBox, getActivityById } from "../controllers/activity.controller";
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
-  import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
+  import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
   // eslint-disable-next-line no-unused-vars
-  import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
+  import { BoundingBoxInterface } from '../scripts/BoundingBoxInterface';
   // eslint-disable-next-line no-unused-vars
-  import { Pin } from '@/scripts/Pin';
+  import { Pin } from '../scripts/Pin';
   // eslint-disable-next-line no-unused-vars
-  import { CreateActivityRequest } from '@/scripts/Activity';
+  import { CreateActivityRequest } from '../scripts/Activity';
   import * as PinsController from '../controllers/pins.controller';
   import MapInfoWindowView from './MapInfoWindowView.vue';
 
@@ -89,39 +89,22 @@
     },
 
     mounted: async function() {
-      this.$root.$on('showActivityOnMap', (activityId: number, location: LocationCoordinatesInterface, role: string) => {
+      this.$root.$on('showActivityOnMap', (activity : CreateActivityRequest) => {
+        // @ts-ignore next line
+        const mapWidth = this.$refs.map.clientWidth;
+        // @ts-ignore next line
+        const mapHeight = this.$refs.map.clientHeight;
 
-        getActivityById(activityId)
-        .then((activity) => {
+        let shouldWait = mapWidth < 50 || mapHeight < 50;
 
-          let boundingBox = activity.bounding_box;
-
-          let northEast = {lat: -34, lng: 151};
-          let southWest = {lat: -35, lng: 150};
-
-          if (boundingBox != undefined) {
-            northEast.lat = boundingBox[1].lat;
-            northEast.lat = boundingBox[1].lat;
-            southWest.lng = boundingBox[0].lon;
-            southWest.lng = boundingBox[0].lon;
-          }
-
-          console.log(role)
-
-          // @ts-ignore next line
-          let bounds = new window.google.maps.LatLngBounds(southWest, northEast)
-
-          // let padding = 20; //pixels around the activity, eg to show the streets around the activity's location
-          // @ts-ignore next line
-          // this.$map.panToBounds({ south:southWest.lng, north:northEast.lng, west:southWest.lat, east:northEast.lat});
-          this.$map.panToBounds(bounds);
-          // @ts-ignore next line
-          this.$map.fitBounds(bounds);
-
-          // @ts-ignore next line
-          // this.map.setCenter({lat: activity.geoposition.lat, lng: activity.geoposition.lon})
-          
-        })        
+        if (shouldWait) {
+          this.$root.$emit('mapPaneToggle', true);
+          setTimeout(() => {
+            this.centerMapOnActivity(activity);
+          }, 250)
+        } else {
+          this.centerMapOnActivity(activity);
+        }
       })
 
       // @ts-ignore next line
@@ -228,6 +211,23 @@
           this.map.setCenter({lat: location.lat, lng: location.lon})
           // @ts-ignore next line
           this.map.setZoom(11);
+        }
+      },
+
+      /**
+       * Centers the map on the activity with an appropriate zoom level
+       */
+      centerMapOnActivity: function(activity: CreateActivityRequest) {
+        if (activity.bounding_box === undefined ){
+          return
+        }
+        let googleBounds = PinsController.convertToGoogleBounds(activity.bounding_box[0], activity.bounding_box[1])
+        // @ts-ignore next line
+        this.$map.fitBounds(googleBounds,50);
+        // @ts-ignore next line
+        if (this.$map.getZoom() >= 18) {
+          // @ts-ignore next line
+          this.$map.setZoom(18)
         }
       },
 
