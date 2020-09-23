@@ -19,7 +19,7 @@ export async function getSuggestedActivities(){
 }
 
  /**
- * Retrieves data from "/homefeed/{{profileId}}" endpoint
+ * Retrieves data from "/homefeed/{{profileId}}" endpoint after a given changelog id
  * @param paginationId the id of the last loaded homefeed changelog entry
  */
 export async function getAdditionalUsersHomefeed(paginationId: number): Promise<HomeFeedCardType[]> {
