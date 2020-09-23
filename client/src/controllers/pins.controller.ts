@@ -79,6 +79,20 @@ export function convertFromGoogleBounds(bounds: any) {
 }
 
 /**
+ * Converts both the NE and SW points to google maps api format boundingbox
+ * @param swPoint the SW point of the bounding box for the location 
+ * @param nePoint the NE point of the bounding box for the location
+ * @return google maps api BoundingBox format given by location boundingbox
+ */
+export function convertToGoogleBounds(swPoint: LocationCoordinatesInterface, nePoint: LocationCoordinatesInterface) {
+
+    let northEast = {lat: nePoint.lat, lng: nePoint.lon};
+    let southWest = {lat: swPoint.lat, lng: swPoint.lon};
+    // @ts-ignore next line
+    return new window.google.maps.LatLngBounds(southWest, northEast)
+}
+
+/**
  * Returns whether the location falls within the given bounding box
  * @param boundingBox The bounding box to compare the location with
  * @param location The location to test if it falls within the bounding box
