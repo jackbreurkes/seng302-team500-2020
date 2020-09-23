@@ -14,6 +14,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.springvuegradle.model.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,16 +40,6 @@ import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityChangeLog;
-import com.springvuegradle.model.data.ActivityOutcome;
-import com.springvuegradle.model.data.ActivityParticipantResult;
-import com.springvuegradle.model.data.ActivityPin;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
 import com.springvuegradle.model.repository.ActivityOutcomeRepository;
 import com.springvuegradle.model.repository.ActivityParticipantResultRepository;
 import com.springvuegradle.model.repository.ActivityPinRepository;
@@ -358,6 +349,9 @@ public class ActivitiesController {
         activity.setActivityPin(pin);
         activity = activityRepository.save(activity);
         activityPinRepository.save(pin);
+
+        subscriptionRepository.save(new Subscription(creator, ChangeLogEntity.ACTIVITY, activity.getId()));
+
         changeLogRepository.save(ActivityChangeLog.getLogForCreateActivity(activity));
 
         return new ActivityResponse(activity, 1L, 1L);
