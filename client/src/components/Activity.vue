@@ -88,7 +88,7 @@
               <v-row>
                 <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
                 <v-col cols="6">{{activity.location}}</v-col>
-                <v-col ><v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+                <v-col ><v-btn v-if="hasPin" v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
               </v-row>
               <v-row v-if="hasTimeFrame(activity)">
                 <v-col cols="2"><v-icon class="mr-2">mdi-clock-outline</v-icon> Timeframe:</v-col>
@@ -316,6 +316,7 @@ const Activity = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
+      hasPin: false as boolean,
       currentUsersProfileId: NaN as number,
       activityId: NaN as number,
       creatorId: NaN as number,
@@ -386,6 +387,9 @@ const Activity = Vue.extend({
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        if(this.activity.geoposition !== undefined) {
+          this.hasPin = true;
+        }
         if (this.activity.num_followers != null) {
             this.followers = this.activity.num_followers;
         }
