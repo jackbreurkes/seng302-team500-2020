@@ -49,8 +49,10 @@ const Homefeed = Vue.extend({
     };
   },
   created: async function() {
-    this.changeLogList = await HomefeedController.getHomeFeedData();
-    this.updateLastId();
+    const suggestions = await HomefeedController.getSuggestionsForHomeFeed();
+    const homeFeed = await HomefeedController.getHomeFeedData();
+    this.changeLogList.push(...suggestions);
+    this.changeLogList.push(...homeFeed);
 
     let target = document.querySelector('#loadMoreButton');
     if (target !== null && this.observer !== null) {
