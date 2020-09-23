@@ -27,7 +27,7 @@ export async function getAvailableActivityTypes(force = false) {
 export async function validateNewActivity(sDate: string, sTime: string, eDate: string, eTime: string, 
     createActivityRequest: CreateActivityRequest) {
   if (!validateActivityName(createActivityRequest.activity_name)) {
-    throw new Error("Please enter an activity name of 4-30 characters long");
+    throw new Error("Please enter an activity name of 4-50 characters long");
   }
   if (createActivityRequest.continuous === undefined) {
     throw new Error("Please select a time frame");
@@ -210,7 +210,7 @@ export function getApiDateTimeString(dateString: string, timeString: string) {
   return dateString + "T" + timeString + ":00" + offSetString;
 }
 
-export const INVALID_ACTIVITY_NAME_MESSAGE = "activity name must be between 4 and 30 characters"
+export const INVALID_ACTIVITY_NAME_MESSAGE = "Activity name must be between 4 and 50 characters"
 /**
  * Validates that activity name is in compliance with our specification of 
  * having between 4 to 30 characters
@@ -220,14 +220,14 @@ export function validateActivityName(activityName: string | undefined): boolean 
   if (activityName === undefined) {
     return false;
   }
-  if (activityName.length >= 4 && activityName.length <= 30) {
+  if (activityName.length >= 4 && activityName.length <= 50) {
     return true;
   } else {
     return false;
   }
 }
 
-export const INVALID_DESCRIPTION_MESSAGE = "description must be at least 8 characters"
+export const INVALID_DESCRIPTION_MESSAGE = "Description must be at least 8 characters"
 export function validateDescription(activityDescription: string | undefined): boolean {
   if (activityDescription !== undefined && activityDescription.length >= 8) {
     return true;
@@ -236,7 +236,7 @@ export function validateDescription(activityDescription: string | undefined): bo
   }
 }
 
-export const INVALID_ACTIVITY_TYPE = "activity type already added"
+export const INVALID_ACTIVITY_TYPE = "Activity type already added"
 export function validateActivityType(activityType: string, createActivityRequest: CreateActivityRequest): boolean { 
   if(createActivityRequest.activity_type === undefined) {
     createActivityRequest.activity_type = [];
@@ -423,9 +423,9 @@ export function describeDate(dateString: string) {
   return dtf.format(start);
 }
 
-export const INVALID_CONTINUOUS_MESSAGE = "please pick between continuous or duration"
+export const INVALID_CONTINUOUS_MESSAGE = "Please pick between continuous or duration"
 
-export const INVALID_END_DATE_MESSAGE = "end date must be after start date and in YYYY-MM-DD format"
+export const INVALID_END_DATE_MESSAGE = "End date must be after start date and in YYYY-MM-DD format"
 /**
  * Checks if end date and time is after start date and time.
  * @param startDateString start date as a string

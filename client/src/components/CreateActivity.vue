@@ -25,7 +25,7 @@
                 <v-sheet style="border: 1px solid silver;" class="pa-2 mb-4">
                   <v-switch
                     v-model="createActivityRequest.continuous"
-                    label="Time frame"
+                    label="Does this activity have a set start and end date?"
                     :true-value="false"
                     :false-value="true"
                   ></v-switch>

@@ -248,8 +248,8 @@ public class ActivitiesController {
         if (request.getActivityName() == null) {
             throw new InvalidRequestFieldException("missing activity_name field");
         }
-        if (request.getActivityName().length() < 4 || request.getActivityName().length() > 30) {
-            throw new InvalidRequestFieldException("activity_name must be between 4 and 30 characters inclusive");
+        if (request.getActivityName().length() < 4 || request.getActivityName().length() > 50) {
+            throw new InvalidRequestFieldException("activity_name must be between 4 and 50 characters inclusive");
         }
         if (request.getActivityTypes() == null) {
             throw new InvalidRequestFieldException("missing activity_type field");
