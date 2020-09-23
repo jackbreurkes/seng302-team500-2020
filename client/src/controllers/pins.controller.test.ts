@@ -1,5 +1,6 @@
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
+import { CreateActivityRequest } from '@/scripts/Activity';
 import { Pin } from "@/scripts/Pin";
 import * as PinsController from '../controllers/pins.controller';
 
@@ -235,3 +236,48 @@ for (let testCaseId in testCasesForInBounds) {
         }
     )
 }
+
+// --------- CONVERT TO PINS ---------- //
+test('expect activity converted to pin to have same location and activity id', 
+    () => {
+        let activity = {
+            geoposition: {
+                lat: 30,
+                lon: 31
+            } as LocationCoordinatesInterface,
+            activity_id: 69
+        } as CreateActivityRequest;
+
+        let pins = PinsController.convertToPins([activity]);
+
+        expect(pins).toHaveLength(1);   
+        expect(pins[0].activity_id).toBe(69);
+        expect(pins[0].coordinates.lat).toBe(30);
+        expect(pins[0].coordinates.lon).toBe(31);
+    }
+)
+
+test('expect multiple converted to pins to have same activity id', 
+    () => {
+        let activityArray = [];
+        for (let i = 0; i < 5; i++) {
+            let activity = {
+                geoposition: {
+                    lat: 30,
+                    lon: 31
+                } as LocationCoordinatesInterface,
+                activity_id: 69 + i
+            } as CreateActivityRequest;
+            activityArray.push(activity);
+        }
+
+        let pins = PinsController.convertToPins(activityArray);
+
+        expect(pins).toHaveLength(5);   
+        expect(pins[0].activity_id).toBe(69);
+        expect(pins[1].activity_id).toBe(70);
+        expect(pins[2].activity_id).toBe(71);
+        expect(pins[3].activity_id).toBe(72);
+        expect(pins[4].activity_id).toBe(73);
+    }
+)
