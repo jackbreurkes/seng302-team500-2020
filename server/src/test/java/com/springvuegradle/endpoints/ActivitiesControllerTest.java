@@ -87,7 +87,7 @@ public class ActivitiesControllerTest {
 	@MockBean
 	private ActivityParticipantResultRepository activityParticipantResultRepository;
 	@MockBean
-    private SubscriptionRepository subscriptionRepo;
+    private SubscriptionRepository subscriptionRepository;
 
 	@MockBean
 	private UserActivityRoleRepository userActivityRoleRepository;
@@ -136,7 +136,6 @@ public class ActivitiesControllerTest {
 		});
 
 		Mockito.when(changeLogRepository.save(Mockito.any(ChangeLog.class))).thenReturn(null);
-
 	}
 
 
@@ -178,6 +177,8 @@ public class ActivitiesControllerTest {
 		assertEquals(ChangedAttribute.ACTIVITY_EXISTENCE, createLog.getChangedAttribute());
 		assertEquals(user.getUserId(), createLog.getEditingUser().getUserId());
 		assertEquals(ActionType.CREATED, createLog.getActionType());
+
+		Mockito.verify(subscriptionRepository).save(Mockito.any(Subscription.class));
 	}
 
 	@Test
@@ -199,6 +200,7 @@ public class ActivitiesControllerTest {
 		ArgumentCaptor<ActivityPin> changeLogCaptor = ArgumentCaptor.forClass(ActivityPin.class);
 		Mockito.verify(activityPinRepository).save(changeLogCaptor.capture());
 		assertEquals(1, changeLogCaptor.getAllValues().size());
+		Mockito.verify(subscriptionRepository).save(Mockito.any(Subscription.class));
 	}
 
 	@Test
