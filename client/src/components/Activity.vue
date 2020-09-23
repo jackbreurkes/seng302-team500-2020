@@ -77,19 +77,35 @@
                     Participants: {{participants}}
                 </v-chip>
                 <br>
+              <v-container>
+                <v-row>
               <h3>Activity Information</h3>
-              <br>
-              <p> Description: {{ activity.description }} </p>
-              <br>
-              <p> Location: {{ activity.location }} </p>
-              <p v-on:click="viewOnMap"> Show activity on map </p>
-
-              <div v-if="hasTimeFrame(activity)"> <!-- Activity has a start and end time -->
-                <p> {{ getDurationDescription(activity.start_time, activity.end_time) }} </p>
-              </div>
-              <div v-else>
-                <p> Activity is continuous </p>
-              </div>
+                </v-row>
+              <v-row>
+                <v-col cols="2"><v-icon class="mr-2">mdi-text</v-icon>Description:</v-col>
+                <v-col>{{activity.description}}</v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
+                <v-col cols="6">{{activity.location}}</v-col>
+                <v-col ><v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+              </v-row>
+              <v-row v-if="hasTimeFrame(activity)">
+                <v-col cols="2"><v-icon class="mr-2">mdi-clock-outline</v-icon> Timeframe:</v-col>
+                <v-col md="auto">
+                  Starts:<br>
+                  Ends:
+                </v-col>
+                <v-col>
+                  {{formatDate(activity.start_time)}}
+                  <br>
+                  {{formatDate(activity.end_time)}}
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col cols="4">Timeframe:</v-col>
+                <v-col cols="8">Activity is continuous</v-col>
+              </v-row>
 
               <v-chip
                 class="mr-2 mb-2"
@@ -98,6 +114,7 @@
                 outlined
               >{{ activityType }}</v-chip> 
               <br>
+              </v-container>
 
               <v-divider></v-divider><br>
 
@@ -490,11 +507,11 @@ const Activity = Vue.extend({
           alert("An error occured while deleting the activity:\n" + err);
         });
     },
-    /** Get a user-readable version of the start and end times
+    /** Get a user-readable version of a timestamp
      *  Returns a string representing activity time frame
      */
-    getDurationDescription: function(startTime: string, endTime: string): string {
-      return activityController.describeDurationTimeFrame(startTime, endTime);
+    formatDate: function(time: string): string {
+      return activityController.describeDate(time);
     },
     /**
      * Get whether activity has start and end times
@@ -599,24 +616,7 @@ const Activity = Vue.extend({
 
     /** Place a pin for this activity on the map */
     viewOnMap: async function() {
-      // TODO: Think about how the pin will be removed!
-
-      let role = "";
-      if (this.currentUsersProfileId === this.creatorId) {
-        role = "creator";
-      } else if (this.organiser) {
-        role = "organiser";
-      } else if (this.following) {
-        role = "follower";
-      } else if (this.participating) {
-        role = "participating";
-      }
-
-      console.log("HI")
-
-      this.$root.$emit('showActivityOnMap', this.activityId, this.activity.location, role);
-
-
+      this.$root.$emit('showActivityOnMap', this.activity);
     }
   },
 
