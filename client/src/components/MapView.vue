@@ -383,6 +383,8 @@
         }
         //Checks if an activity has been updated or created and refreshes the map pane
         if(from.name === 'createActivity' || from.name === 'editActivity'){
+          this.displayedMarkers.forEach(marker => {marker.setMap(null)});
+          this.displayedMarkers = [];
           this.displayPinsOnMap();
         }
       },
