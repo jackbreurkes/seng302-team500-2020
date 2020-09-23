@@ -8,11 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import com.springvuegradle.model.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -42,13 +40,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springvuegradle.exceptions.ExceptionHandlerController;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityPin;
-import com.springvuegradle.model.data.ActivityRole;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.data.UserActivityRole;
 import com.springvuegradle.model.repository.ActivityPinRepository;
 import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.ProfileRepository;
@@ -114,6 +105,14 @@ public class MapsControllerTest {
     	Mockito.when(activity.getId()).thenReturn(id);
         return new ActivityPin(activity, lat, lon, 0f, 0f, 0f, 0f);
     }
+
+    public ActivityPin setupActivityPinWithDuration(long id, float lat, float lon, String endTime){
+        Activity activity = Mockito.mock(Activity.class);
+        Mockito.when(activity.getId()).thenReturn(id);
+        Mockito.when(activity.isDuration()).thenReturn(true);
+        Mockito.when(activity.getEndTime()).thenReturn(endTime);
+        return new ActivityPin(activity, lat, lon, 0f, 0f, 0f, 0f);
+    }
     
     @Test
     void testGetActivitiesInBounds_ShouldReturnOne() throws Exception {
@@ -141,7 +140,7 @@ public class MapsControllerTest {
         
         Mockito.verify(activityPinRepository, Mockito.times(1)).findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any());
     }
-    
+
     @Test
     void testGetActivitiesInBounds_BoundsCrossDateLine_BoundsAreSplit() throws Exception {
         Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.any()))
@@ -513,5 +512,95 @@ public class MapsControllerTest {
         assertEquals("follower", response.get(3).getRole());
         assertEquals(5L, response.get(4).getActivityId());
         assertNull(response.get(4).getRole());
+    }
+
+    @Test
+    void testActivityHasAlreadyFinished_ReturnNone() throws Exception {
+        List<ActivityPin> pins = new ArrayList<>();
+
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
+        Activity activity1 = pin1.getActivity();
+        Mockito.when(activity1.getCreator()).thenReturn(profile);
+        pins.add(pin1);
+
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+                .thenReturn(pins);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/maps")
+                .param("ne_lat", "10.0")
+                .param("ne_lon", "10.0")
+                .param("sw_lat", "0.0")
+                .param("sw_lon", "0.0")
+                .requestAttr("authenticatedid", profile.getUser().getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void testActivityHasAlreadyFinished_ReturnOne() throws Exception {
+        List<ActivityPin> pins = new ArrayList<>();
+
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
+        Activity activity1 = pin1.getActivity();
+        Mockito.when(activity1.getCreator()).thenReturn(profile);
+        pins.add(pin1);
+
+        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55+1200");
+        Activity activity2 = pin2.getActivity();
+        Mockito.when(activity2.getCreator()).thenReturn(profile);
+        pins.add(pin2);
+
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+                .thenReturn(pins);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/maps")
+                .param("ne_lat", "10.0")
+                .param("ne_lon", "10.0")
+                .param("sw_lat", "0.0")
+                .param("sw_lon", "0.0")
+                .requestAttr("authenticatedid", profile.getUser().getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void testActivityMixDurationAndNot_Return2() throws Exception {
+        List<ActivityPin> pins = new ArrayList<>();
+
+        ActivityPin pin1 = this.setupActivityPinWithDuration(1, 8, 8, "2018-07-14T17:45:55+1200");
+        Activity activity1 = pin1.getActivity();
+        Mockito.when(activity1.getCreator()).thenReturn(profile);
+        pins.add(pin1);
+
+        ActivityPin pin2 = this.setupActivityPinWithDuration(2, 8, 8, "2030-07-14T17:45:55+1200");
+        Activity activity2 = pin2.getActivity();
+        Mockito.when(activity2.getCreator()).thenReturn(profile);
+        pins.add(pin2);
+
+        ActivityPin pin3 = this.setupActivityPinMock(3, 8, 8);
+        Activity activity3 = pin3.getActivity();
+        Mockito.when(activity3.getCreator()).thenReturn(profile);
+        pins.add(pin3);
+
+        Mockito.when(activityPinRepository.findPinsInBounds(Mockito.eq(10f), Mockito.eq(10f), Mockito.eq(0f), Mockito.eq(0f), Mockito.any()))
+                .thenReturn(pins);
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/maps")
+                .param("ne_lat", "10.0")
+                .param("ne_lon", "10.0")
+                .param("sw_lat", "0.0")
+                .param("sw_lon", "0.0")
+                .requestAttr("authenticatedid", profile.getUser().getUserId())
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)));
     }
 }

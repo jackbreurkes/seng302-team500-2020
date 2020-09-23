@@ -21,8 +21,7 @@ import {
     removeActivityRole
 } from "../../controllers/activity.controller";
 jest.mock("../../controllers/activity.controller.ts")
-
-import { getMyUserId } from "../../services/auth.service";
+import {isAdmin, getMyUserId} from "../../services/auth.service";
 jest.mock("../../services/auth.service")
 
 Vue.use(Vuetify)
@@ -207,4 +206,76 @@ describe("activityPageTests", () => {
         expect(participateInActivity.mock.calls.length).toBe(0)
     })
 
+})
+
+describe("testEditButton", () => {
+
+    let wrapper
+
+    fetchProfileWithId.mockResolvedValue( //mocks fetchProfileWithId, give fake info to display
+        {
+            "profile_id": mockProfileId,
+            "permission_level": 0,
+            "lastname": "breurkes",
+            "firstname": "jash",
+            "middlename": null,
+            "nickname": null,
+            "primary_email": "jack@josh.com",
+            "bio": null,
+            "date_of_birth": "1998-11-11",
+            "gender": "male",
+            "fitness": -1,
+            "passports": [],
+            "additional_email": [],
+            "activities": []
+        }
+    )
+    getActivity.mockResolvedValue({
+        "activity_id": mockActivityId,
+        "activity_name": "durationboi",
+        "continuous": false,
+        "start_time": "2020-08-05T11:11:00+1200",
+        "end_time": "2020-08-07T11:11:00+1200",
+        "description": "awdawdadw",
+        "location": "awd",
+        "creator_id": mockActivityCreatorId,
+        "outcomes": [],
+        "num_followers": 15,
+        "num_participants": 0,
+        "activity_type": ["Running"]
+    })
+
+
+    beforeEach(() => {
+        getMyUserId.mockImplementation(() => mockProfileId);
+    })
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    })
+
+    function mountFunction() {
+        let vuetify = new Vuetify()
+        wrapper = mount(Activity, {
+            localVue,
+            vuetify,
+            mocks,
+            sync: false,
+            stubs
+        })
+    }
+
+    it('If we are logged in, not as creator/organister or admin we shouldnt see an edit button', async() => {
+        isAdmin.mockImplementation(() => false)
+        mountFunction(); // need to re-mount after changing mock resolve
+        await Vue.nextTick() // resolves getActivity
+        expect(wrapper.find('#editBurger').exists()).toBe(false)
+    })
+
+    it('If we are logged in as an admin, we should see an edit button for activity', async() => {
+        isAdmin.mockImplementation(() => true)
+        mountFunction(); // need to re-mount after changing mock resolve
+        await Vue.nextTick() // resolves getActivity
+        expect(wrapper.find('#editBurger').exists()).toBe(true)
+    })
 })

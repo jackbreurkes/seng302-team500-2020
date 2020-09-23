@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -168,4 +169,38 @@ public class FindRecommendedActivitiesTest {
         assertEquals(2, homeFeedController.findRecommendedActivities(selfProfile).size());
     }
 
+    @Test
+    void findRecommendedActivitiesStartInPast_NoneFound(){
+        Set<ActivityType> activityTypes1 = new HashSet<>();
+        activityTypes1.add(selfActivityType);
+
+        Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
+        tempActivity.setStartTime("1990-11-01T12:11:28");
+
+        List<ActivityPin> returnList = new ArrayList<>();
+        returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
+
+        Mockito.when(activityPinRepository.findPinsInBounds(selfProfile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,selfProfile.getLocation().getLongitude() + BOUNDING_BOX_SIZE, selfProfile.getLocation().getLatitude() - BOUNDING_BOX_SIZE, selfProfile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged())).thenReturn(returnList);
+
+        assertEquals(0, homeFeedController.findRecommendedActivities(selfProfile).size());
+    }
+
+    @Test
+    void findRecommendedActivitiesOneInPast_OneFound(){
+        Set<ActivityType> activityTypes1 = new HashSet<>();
+        activityTypes1.add(selfActivityType);
+
+        Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
+        tempActivity.setStartTime("1990-11-01T12:11:28");
+
+        List<ActivityPin> returnList = new ArrayList<>();
+        returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
+        returnList.add(new ActivityPin(new Activity("Activity Name 2", false, "Nowhere", otherProfile, activityTypes1), 9.5f, 9.5f, 0,0,0,0 ));
+        returnList.add(new ActivityPin(new Activity("Activity Name 2", false, "Nowhere", selfProfile, activityTypes1), 9.5f, 9.5f, 0,0,0,0 ));
+
+
+        Mockito.when(activityPinRepository.findPinsInBounds(selfProfile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,selfProfile.getLocation().getLongitude() + BOUNDING_BOX_SIZE, selfProfile.getLocation().getLatitude() - BOUNDING_BOX_SIZE, selfProfile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged())).thenReturn(returnList);
+
+        assertEquals(1, homeFeedController.findRecommendedActivities(selfProfile).size());
+    }
 }

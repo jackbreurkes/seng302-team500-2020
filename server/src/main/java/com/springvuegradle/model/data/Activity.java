@@ -29,7 +29,7 @@ public class Activity {
      * Name of the activity
      */
     @NotNull
-    @Column(columnDefinition = "varchar(30)")
+    @Column(columnDefinition = "varchar(50)")
     private String activityName;
 
     /**
@@ -67,8 +67,7 @@ public class Activity {
     /**
      * Pin specifying the location of this activity
      */
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "activity_pin")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "activity")
     private ActivityPin activityPin;
 
     /**
