@@ -78,7 +78,7 @@ export async function updateActivityTypes(
   profileId: number
 ) {
   let activityDict = { activities: selectedActivities };
-  let res = await instance.put(
+  await instance.put(
     "profiles/" + profileId + "/activity-types",
     activityDict
   );
@@ -99,7 +99,7 @@ export async function updateEmailList(newEmails: string[], profileId: number) {
     emails = newEmails;
   }
   let emailDict = { additional_email: emails };
-  let res = await instance.post("profiles/" + profileId + "/emails", emailDict);
+  await instance.post("profiles/" + profileId + "/emails", emailDict);
 }
 
 /**
@@ -113,7 +113,7 @@ export async function updateEmails(
   additionalEmails: string[],
   profileId: number
 ) {
-  let res = await instance.put("profiles/" + profileId + "/emails", null, {
+  await instance.put("profiles/" + profileId + "/emails", null, {
     data: { additional_email: additionalEmails, primary_email: primaryEmail },
   });
 }
@@ -144,7 +144,7 @@ export async function updateCurrentPassword(
   repeat_password: string,
   profileId: number
 ) {
-  let res = await instance.put("profiles/" + profileId + "/password", {
+  await instance.put("profiles/" + profileId + "/password", {
     old_password,
     new_password,
     repeat_password,
@@ -152,7 +152,7 @@ export async function updateCurrentPassword(
 }
 
 export async function deleteAccount(profileId: number) {
-  let res = await instance.delete("profiles/" + profileId);
+  await instance.delete("profiles/" + profileId);
 }
 
 /**
