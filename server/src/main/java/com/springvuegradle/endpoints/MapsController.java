@@ -103,27 +103,24 @@ public class MapsController {
         }
         Profile profile = optionalProfile.get();
 
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
         List<ActivityPinResponse> responses = new ArrayList<>();
-        for (ActivityPin pin : pinsWithinBounds) {
-            if(!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())){
-                String userRole = this.getActivityRoleString(userId, pin.getActivity());
-                responses.add(new ActivityPinResponse(pin, userRole));
-            }
-        for(ActivityPin pin : pinsWithinBounds){
-            boolean isRecommended = false;
-            Activity activity = pin.getActivity();
-            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
 
-            if(role == null && profile.getActivityTypes() != null && activity.getActivityTypes() != null &&
-                    profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 &&
-                    !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)){
-                isRecommended = true;
+        for(ActivityPin pin : pinsWithinBounds){
+            if (!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())) {
+                boolean isRecommended = false;
+                Activity activity = pin.getActivity();
+                UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
+
+                if (role == null && profile.getActivityTypes() != null && activity.getActivityTypes() != null &&
+                        profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 &&
+                        !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)) {
+                    isRecommended = true;
+                }
+                String userRole = this.getActivityRoleString(userId, pin.getActivity());
+                responses.add(new ActivityPinResponse(pin, userRole, isRecommended));
             }
-            String userRole = this.getActivityRoleString(userId, pin.getActivity());
-            responses.add(new ActivityPinResponse(pin, userRole, isRecommended));
         }
         return responses;
     }
