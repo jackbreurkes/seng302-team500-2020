@@ -287,8 +287,6 @@
           let bounds = this.map.getBounds();
           let boundingBox = PinsController.convertFromGoogleBounds(bounds);
           this.displayPinsInArea(boundingBox);
-          //Not working when the location is moved out of the users field of view, but works for the rest
-          this.deletePinsOutsideBounds(boundingBox);
         }
 
       }
