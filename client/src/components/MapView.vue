@@ -101,7 +101,7 @@
           searchResultLegend: {
             searchResult: {
               title: 'Search Result',
-              colour: 'rgba(253, 117, 103, 1)',
+              colour: 'rgba(0, 230, 77, 1)',
               icon: 'mdi-square'
             },
           },
@@ -189,23 +189,20 @@
         this.legend = this.searchResultLegend;
         this.isShowingSearchResults = true;
         this.storedSearchResultsPins = results;
+        this.displayPinsOnMap();
 
-        let boundingBox = {
-          sw_lat: results[0].coordinates.lat, 
-          sw_lon: results[0].coordinates.lon,
-          ne_lat: results[0].coordinates.lat, 
-          ne_lon: results[0].coordinates.lon
-        } as BoundingBoxInterface;
+        let nePoint = {lat: results[0].coordinates.lat, lon: results[0].coordinates.lon} as LocationCoordinatesInterface;
+        let swPoint = {lat: results[0].coordinates.lat, lon: results[0].coordinates.lon} as LocationCoordinatesInterface;
 
         for (let pin of results) {
-          boundingBox.sw_lat = Math.min(pin.coordinates.lat, boundingBox.sw_lat);
-          boundingBox.sw_lon = Math.min(pin.coordinates.lon, boundingBox.sw_lon);
-          boundingBox.ne_lat = Math.max(pin.coordinates.lat, boundingBox.ne_lat);
-          boundingBox.ne_lon = Math.max(pin.coordinates.lon, boundingBox.ne_lon);
+          swPoint.lat = Math.min(pin.coordinates.lat, swPoint.lat);
+          swPoint.lon = Math.min(pin.coordinates.lon, swPoint.lon);
+          nePoint.lat = Math.max(pin.coordinates.lat, nePoint.lat);
+          nePoint.lon = Math.max(pin.coordinates.lon, nePoint.lon);
         }
 
         // @ts-ignore next line
-        this.map.fitInBounds(PinsController.convertToGoogleBounds(boundingBox));
+        this.map.fitBounds(PinsController.convertToGoogleBounds(swPoint, nePoint));
       });
     },
 
@@ -220,7 +217,7 @@
 
         this.deletePinsOutsideBounds(boundingBox);
 
-        let pins = await getActivitiesInBoundingBox(boundingBox);
+        let pins = this.isShowingSearchResults ? this.storedSearchResultsPins : await getActivitiesInBoundingBox(boundingBox);
         let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
         let positionsOfNewPins = {} as Record<number, number[]>;
 
@@ -331,9 +328,7 @@
        * Tells Vue to navigate the map panel to the given activity
        */
       visitActivity: function(activity: CreateActivityRequest) {
-        console.log("visiting activity")
         if (activity.activity_id == null || activity.creator_id == null) {
-          console.log("crap")
           return;
         }
         this.$router.push({ name: "activity", params: {
