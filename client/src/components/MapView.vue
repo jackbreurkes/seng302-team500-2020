@@ -121,9 +121,9 @@
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-          ], //in the order: creator/organiser, participant, following, miscellaneous, recommended activity & search result
+            "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          ], //in the order: creator/organiser, participant, following, recommended activity & search result, miscellaneous
           showingFiftyPins: false as boolean,
       }
     },
@@ -240,7 +240,7 @@
           positionsOfNewPins[position.lat].push(position.lon);
           
           let potentialFoundMarker = this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon);
-          let highestRole = this.isShowingSearchResults ? 4 : PinsController.getHighestRoleIndex(pins);
+          let highestRole = this.isShowingSearchResults ? 3 : PinsController.getHighestRoleIndex(pins);
 
           if (potentialFoundMarker !== undefined) {
             let currentIcon = potentialFoundMarker.getIcon();

@@ -122,7 +122,22 @@ test('expect activity we follow to give follower role (2) as highest role',
     }
 )
 
-test('expect activity we have no role in to give misc role (3) as highest role', 
+test('expect activity we are recommended to give recommended role (3) as highest role', 
+    () => {
+        let pin = {
+            activity_id: 0,
+            coordinates: {lat: 10, lon: 10} as LocationCoordinatesInterface,
+            role: null,
+            isRecommended: true
+        } as Pin;
+
+        let result = PinsController.getHighestRoleIndex([pin]);
+
+        expect(result).toBe(3);
+    }
+)
+
+test('expect activity we have no role in to give misc role (4) as highest role', 
     () => {
         let pin = {
             activity_id: 0,
@@ -132,11 +147,11 @@ test('expect activity we have no role in to give misc role (3) as highest role',
 
         let result = PinsController.getHighestRoleIndex([pin]);
 
-        expect(result).toBe(3);
+        expect(result).toBe(4);
     }
 )
 
-let roleMap = {"creator": 0, "organiser": 0, "participant": 1, "follower": 2, "null": 3} as Record<string, number>;
+let roleMap = {"creator": 0, "organiser": 0, "participant": 1, "follower": 2, "null": 4} as Record<string, number>;
 
 for (let [roleName, roleLevel] of Object.entries(roleMap)) {
     for (let [roleName2, roleLevel2] of Object.entries(roleMap)) {
