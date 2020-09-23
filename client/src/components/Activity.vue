@@ -21,7 +21,7 @@
                   <v-chip v-if="organiser" outlined class="mr-1">Organiser</v-chip>
                   <v-chip v-if="following" outlined class="mr-1">Following</v-chip>
                   <v-chip v-if="participating" outlined class="mr-1">Participating</v-chip>
-                  <v-menu v-if="currentUsersProfileId === creatorId || organiser" bottom left offset-y>
+                  <v-menu v-if="organiser || currentlyHasAuthority" bottom left offset-y id="editBurger">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         dark
@@ -39,7 +39,7 @@
                       >
                         <v-list-item-title>Edit Activity</v-list-item-title>
                       </v-list-item>
-                      <v-list-item v-if="currentUsersProfileId === creatorId" @click="confirmDeleteModal = true">
+                      <v-list-item v-if="currentlyHasAuthority" @click="confirmDeleteModal = true">
                         <v-dialog v-model="confirmDeleteModal" width="290">
                           <template v-slot:activator="{ on }">
                             <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
@@ -333,6 +333,7 @@ const Activity = Vue.extend({
       followers: NaN as number,
       participants: NaN as number,
       displayConfirmTimeframeModal: false,
+      currentlyHasAuthority: false as Boolean
     };
   },
 
@@ -348,6 +349,8 @@ const Activity = Vue.extend({
     const creatorId: number = parseInt(this.$route.params.profileId);
     
     this.displayActivity(activityId, creatorId);
+
+    this.currentlyHasAuthority = myProfileId == creatorId || authService.isAdmin();
   },
 
   methods: {
