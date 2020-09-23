@@ -100,6 +100,13 @@ public class Profile implements Serializable {
 	)
 	private List<ActivityType> activityTypes;
 
+	@OneToMany(
+			mappedBy = "subscriber",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true
+	)
+	private List<Subscription> subscriptions;
+
     /**
      * Constructor required by spring
      */
@@ -323,5 +330,13 @@ public class Profile implements Serializable {
 		} else {
 			return this.firstName + " " + this.lastName;
 		}
+	}
+
+	public List<Subscription> getSubscriptions() {
+		return subscriptions;
+	}
+
+	public void setSubscriptions(List<Subscription> subscriptions) {
+		this.subscriptions = subscriptions;
 	}
 }
