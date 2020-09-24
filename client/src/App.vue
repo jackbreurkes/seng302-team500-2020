@@ -3,8 +3,8 @@
     <v-app>
       <v-app-bar color="primary" dark app clipped-left:true-value style="z-index: 1000;">
         <v-app-bar-nav-icon @click="burgerSelected" :color="this.burgerColour" v-if="showNavBar()"></v-app-bar-nav-icon>
-        <v-toolbar-title>Intitulada</v-toolbar-title>
-        <v-img max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
+        <v-toolbar-title @click="routeToProfile()" onmouseover="" style="cursor: pointer;">Intitulada</v-toolbar-title>
+        <v-img @click="routeToProfile()" onmouseover="" style="cursor: pointer;" max-height="80" max-width="80" src="../public/naviconlogo.png"></v-img>
 
         <v-spacer></v-spacer>
         <div v-if="isLoggedIn">
@@ -203,6 +203,12 @@ import "splitpanes/dist/splitpanes.css";
           
 
       },
+
+      routeToProfile: function() {
+        this.$router.push('/profiles/' + auth.getMyUserId());
+      
+      },
+
       goTo: function(pathing : string) {
         this.updateNavInfo(); // updates user id information in path links
         if(!(pathing == "LOGOUT")){
