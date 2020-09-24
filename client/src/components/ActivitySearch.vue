@@ -11,7 +11,7 @@
             <v-container>
             <div class="mt-3 mx-2" fill-height fill-width>
               <v-col cs="12" sm="12" md="9" lg="9">
-                <v-text-field label="Activity Name" outlined v-model="searchString"></v-text-field>
+                <v-text-field label="Activity Name" outlined v-model="searchString" @keyup.enter.native="search()"></v-text-field>
               </v-col>
 
               <v-col md="12" class="d-flex justify-center">
