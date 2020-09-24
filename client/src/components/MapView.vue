@@ -147,6 +147,24 @@
         }
       })
 
+      /**
+       * This method listens for a call that refreshes the map and pins,
+       * currently used for when the user updates their location
+       */
+      this.$root.$on('refreshMapAndPins', () => {
+        this.centerMapOnUserLocation();
+        this.displayPinsOnMap();
+      })
+
+
+      /**
+       * This method listens for a call that refreshes pins,
+       * currently used for when the user follows or unfollows etc
+       */
+      this.$root.$on('refreshPins', () => {
+        this.displayPinsOnMap();
+      })
+
       this.legend = this.defaultLegend;
 
       // @ts-ignore next line
@@ -166,7 +184,6 @@
       // Places the legend in the top right-hand corner
       // @ts-ignore next line
       this.map.controls[window.google.maps.ControlPosition.TOP_RIGHT].push(this.$refs['legend']);
-
       /*
         everything below related to timeouts is to prevent sending tens of requests per second
         since the 'idle' event is called when the mapview has been resized, in addition to when
@@ -285,14 +302,17 @@
        */
       centerMapOnUserLocation: async function() {
         let userId = getMyUserId();
-
-        if (userId !== null) {
-          let location = await getProfileLocation(userId);
-          // @ts-ignore next line
-          this.map.setCenter({lat: location.lat, lng: location.lon})
-          // @ts-ignore next line
-          this.map.setZoom(11);
+        if (userId === null) {
+          return;
         }
+        let location = await getProfileLocation(userId);
+        if (location === null) {
+          return;
+        }
+        // @ts-ignore next line
+        this.map.setCenter({lat: location.lat, lng: location.lon})
+        // @ts-ignore next line
+        this.map.setZoom(11);
       },
 
       /**

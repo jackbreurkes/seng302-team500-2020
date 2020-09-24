@@ -592,6 +592,7 @@ const CreateActivity = Vue.extend({
       activityController
         .deleteActivity(this.currentProfileId, this.editingId)
         .then(() => {
+          this.$root.$emit('refreshPins');
           this.$router.push({ name: "profilePage" });
         })
         .catch(err => {

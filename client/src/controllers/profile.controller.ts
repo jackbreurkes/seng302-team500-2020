@@ -6,6 +6,7 @@ import FormValidator from '../scripts/FormValidator';
 import { getAvailableActivityTypes } from './activity.controller';
 import { checkCountryExistence } from '../models/location.model';
 import { LocationInterface } from '@/scripts/LocationInteface'
+import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 
 let formValidator = new FormValidator();
 
@@ -238,12 +239,16 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
 }
 
 /**
- * Gets the specified user's profile including lat/lon.
- * 
+ * Gets the specified user's profile including lat/lon, or null if the profile does not have a location.
  * @param profileId Profile ID to get the city location of
+ * @returns the profile's set location, or null if the profile does not have a location
  */
-export async function getProfileLocation(profileId: number) {
-    return await getUserLocation(profileId);
+export async function getProfileLocation(profileId: number): Promise<LocationCoordinatesInterface | null> {
+    try {
+        return await getUserLocation(profileId);
+    } catch (e) {
+        return null;
+    }
 }
 
 /**

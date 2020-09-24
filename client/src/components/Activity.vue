@@ -489,6 +489,7 @@ const Activity = Vue.extend({
         .catch((err) => {
           console.error(err)
         })
+        .then(() => {this.$root.$emit('refreshPins')});
       } else {
           this.followers = this.followers + 1;
           followActivity(this.currentUsersProfileId, this.activityId)
@@ -498,6 +499,7 @@ const Activity = Vue.extend({
         .catch((err) => {
           console.error(err)
         })
+        .then(() => {this.$root.$emit('refreshPins')});
       }
     },
     /** Toggle the user's participation in this activity */
@@ -512,7 +514,8 @@ const Activity = Vue.extend({
         this.participating = false;
         this.participants = this.participants - 1;
       }
-
+      this.$root.$emit('refreshPins')
+      
       // Reload the datatable when you participate/unparticipate
       this.users = [];
       this.search();
