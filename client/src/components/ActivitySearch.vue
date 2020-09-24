@@ -140,6 +140,7 @@ const Activities = Vue.extend({
           this.pageNumber - 1,
           this.pageSize,
         );
+        this.$root.$emit('mapShowSearchResults', this.searchResults);
       } catch (e) {
         this.searchResults = [];
         this.errorMessage = e.message;

@@ -19,6 +19,25 @@
       <v-snackbar
         absolute
         bottom
+        v-model="isShowingSearchResults"
+        timeout="-1"
+      >
+        Showing {{storedSearchResultsPins.length}} search {{storedSearchResultsPins.length == 1 ? "result" : "results"}} on map
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="pink"
+            text
+            v-bind="attrs"
+            @click="stopSearchResults()"
+          >
+            Stop filtering
+          </v-btn>
+        </template>
+      </v-snackbar>
+      <v-snackbar
+        absolute
+        bottom
         v-model="showingFiftyPins"
         timeout="-1"
       >
@@ -57,7 +76,10 @@
       return {
           map: null,
           legendCurrentlyOnLeft: true as boolean,
-          legend: {
+          legend: {},
+          isShowingSearchResults: false as boolean,
+          storedSearchResultsPins: [] as Pin[],
+          defaultLegend: {
             created: {
               title: 'Created',
               colour: 'rgba(253, 117, 103, 1)',
@@ -84,6 +106,13 @@
               icon: 'mdi-square'
             }
           },
+          searchResultLegend: {
+            searchResult: {
+              title: 'Search Result',
+              colour: 'rgba(0, 230, 77, 1)',
+              icon: 'mdi-square'
+            },
+          },
           loggedInUserId: NaN as number, //used to detect changes in authentication, i.e. center on a user when they log in
           displayedActivities: [] as CreateActivityRequest[], //activities being displayed in an active info window
           displayedMarkers: [] as any[], //'Marker' objects of pins being displayed
@@ -92,10 +121,10 @@
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-          ], //in the order: creator/organiser, participant, following, miscellaneous
-          showingFiftyPins: false as boolean
+            "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          ], //in the order: creator/organiser, participant, following, recommended activity & search result, miscellaneous
+          showingFiftyPins: false as boolean,
       }
     },
 
@@ -118,6 +147,7 @@
         }
       })
 
+      this.legend = this.defaultLegend;
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {
@@ -149,30 +179,53 @@
           clearTimeout(timerId);
         }
         timerId = setTimeout(() => {
-          // @ts-ignore next line
-          let bounds = this.map.getBounds();
-          let boundingBox = PinsController.convertFromGoogleBounds(bounds);
-
-          this.displayPinsInArea(boundingBox);
+          this.displayPinsOnMap();
         }, 300);
       });
       // @ts-ignore next line
       this.map.addListener('click', () => {
-          if (this.openInfoWindow !== null) {
-            this.openInfoWindow.close();
-          }
-        });
+        if (this.openInfoWindow !== null) {
+          this.openInfoWindow.close();
+        }
+      });
+
+      this.$root.$on('mapShowSearchResults', (activityResults: CreateActivityRequest[]) => {
+        let results = PinsController.convertToPins(activityResults);
+        if (results.length == 0) {
+          return;
+        }
+        this.legend = this.searchResultLegend;
+        this.isShowingSearchResults = true;
+        this.storedSearchResultsPins = results;
+        this.displayPinsOnMap();
+
+        let nePoint = {lat: results[0].coordinates.lat, lon: results[0].coordinates.lon} as LocationCoordinatesInterface;
+        let swPoint = {lat: results[0].coordinates.lat, lon: results[0].coordinates.lon} as LocationCoordinatesInterface;
+
+        for (let pin of results) {
+          swPoint.lat = Math.min(pin.coordinates.lat, swPoint.lat);
+          swPoint.lon = Math.min(pin.coordinates.lon, swPoint.lon);
+          nePoint.lat = Math.max(pin.coordinates.lat, nePoint.lat);
+          nePoint.lon = Math.max(pin.coordinates.lon, nePoint.lon);
+        }
+
+        // @ts-ignore next line
+        this.map.fitBounds(PinsController.convertToGoogleBounds(swPoint, nePoint));
+      });
     },
 
     methods: {
       /**
-       * Loads and displays all pins in the area defined by the bounding box
-       * @param boundingBox The bounding box to display the pins inside of
+       * Loads and displays all pins visible on the map
        */
-      displayPinsInArea: async function(boundingBox: BoundingBoxInterface) {
+      displayPinsOnMap: async function() {
+        // @ts-ignore next line
+        let bounds = this.map.getBounds();
+        let boundingBox = PinsController.convertFromGoogleBounds(bounds);
+
         this.deletePinsOutsideBounds(boundingBox);
 
-        let pins = await getActivitiesInBoundingBox(boundingBox);
+        let pins = this.isShowingSearchResults ? this.storedSearchResultsPins : await getActivitiesInBoundingBox(boundingBox);
         let pinsAtLocationMapping = PinsController.groupPinsByLocation(pins);
         let positionsOfNewPins = {} as Record<number, number[]>;
 
@@ -187,7 +240,7 @@
           positionsOfNewPins[position.lat].push(position.lon);
           
           let potentialFoundMarker = this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon);
-          let highestRole = PinsController.getHighestRoleIndex(pins);
+          let highestRole = this.isShowingSearchResults ? 3 : PinsController.getHighestRoleIndex(pins);
 
           if (potentialFoundMarker !== undefined) {
             let currentIcon = potentialFoundMarker.getIcon();
@@ -210,6 +263,15 @@
           }
           return shouldKeep;
         })
+      },
+
+      /**
+       * Called when the user opts to stop showing their most recent activity search results on the map
+       */
+      stopSearchResults: function() {
+        this.isShowingSearchResults = false;
+        this.displayPinsOnMap();
+        this.legend = this.defaultLegend;
       },
 
       /**
@@ -331,13 +393,11 @@
         }
         //Checks if an activity has been updated or created and refreshes the map pane
         if(from.name === 'createActivity' || from.name === 'editActivity'){
-          // @ts-ignore next line
-          let bounds = this.map.getBounds();
-          let boundingBox = PinsController.convertFromGoogleBounds(bounds);
-          this.displayPinsInArea(boundingBox);
+          this.displayedMarkers.forEach(marker => {marker.setMap(null)});
+          this.displayedMarkers = [];
+          this.displayPinsOnMap();
         }
-
-      }
+      },
     }
   })
 

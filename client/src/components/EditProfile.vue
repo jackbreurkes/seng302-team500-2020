@@ -538,7 +538,6 @@ const Homepage = Vue.extend({
          }
         profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
           .then(() => {
-            console.log("Emails saved");
             // refresh the page after updating emails
             history.go(0);
           })

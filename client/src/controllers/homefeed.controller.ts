@@ -15,8 +15,7 @@ export async function getHomeFeedData(){
  * @param userId of the homefeed suggestions being requested
  */
 export async function getSuggestionsForHomeFeed(){
-    let suggestedActivities = await homefeedModel.getSuggestedActivities();
-    return suggestedActivities;
+    return await homefeedModel.getSuggestedActivities();
 
 }
 

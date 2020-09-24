@@ -1,6 +1,7 @@
 import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 import { Pin } from '@/scripts/Pin';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
+import { CreateActivityRequest } from '@/scripts/Activity'
 
 /**
  * groups all of the pins into an array of pins at the same location
@@ -47,7 +48,7 @@ export function groupPinsByLocation(pins: Pin[]) {
  * @returns role index of highest ranking role of the given pins
  */
 export function getHighestRoleIndex(pins: Pin[]) {
-    let highestRole = 3;
+    let highestRole = 4;
     pins.forEach((pin: Pin) =>  {
         let role = pin.role;
         if (role == "creator" || role == "organiser") {
@@ -56,6 +57,8 @@ export function getHighestRoleIndex(pins: Pin[]) {
             highestRole = 1;
         } else if (role == "follower" && highestRole > 2) {
             highestRole = 2;
+        } else if (pin.is_recommended === true && highestRole > 3) {
+            highestRole = 3;
         }
     });
     return highestRole;
@@ -101,4 +104,25 @@ export function convertToGoogleBounds(swPoint: LocationCoordinatesInterface, neP
 export function isInBounds(boundingBox: BoundingBoxInterface, location: LocationCoordinatesInterface) {
     return location.lat >= boundingBox.sw_lat && location.lat <= boundingBox.ne_lat
         && location.lon >= boundingBox.sw_lon && location.lon <= boundingBox.ne_lon;
+}
+
+/**
+ * Convert a list of activities into a list of pins
+ * @param activityList List of activities to convert
+ * @returns list of pins representing the activities
+ */
+export function convertToPins(activityList: CreateActivityRequest[]) {
+    let output = [];
+
+    for (let activity of activityList) {
+        if (activity.geoposition !== undefined) {
+            let pin = {
+                activity_id: activity.activity_id,
+                coordinates: activity.geoposition
+            } as Pin;
+            output.push(pin);   
+        }
+    }
+
+    return output;
 }
