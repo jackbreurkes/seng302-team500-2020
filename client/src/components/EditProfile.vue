@@ -40,8 +40,8 @@
                       :mandatory="false">
                       <v-radio label="No Fitness (Chocolate Muffin)" :value="0"></v-radio>
                       <v-radio label="Little Fitness (Fruit Muffin)" :value="1"></v-radio>
-                      <v-radio label="Moderate Fitness (Kale Muffin)" :value="2"></v-radio>
-                      <v-radio label="Enthusiastically Fit (Nut Muffin)" :value="3"></v-radio>
+                      <v-radio label="Moderate Fitness (Nut Muffin)" :value="2"></v-radio>
+                      <v-radio label="Enthusiastically Fit (Kale Muffin)" :value="3"></v-radio>
                       <v-radio label="Crazy Fit (No Muffin)" :value="4"></v-radio>
                       <v-radio label="Unspecified" :value="-1"></v-radio>
                     </v-radio-group>
