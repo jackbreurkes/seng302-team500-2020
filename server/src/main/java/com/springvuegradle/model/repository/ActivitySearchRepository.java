@@ -1,6 +1,7 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.Profile;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -20,4 +21,11 @@ public interface ActivitySearchRepository {
      * @return a List of activities returned by the search
      */
     List<Activity> findUniqueActivitiesByListOfNames(List<String> searchTerms, Pageable pageable);
+
+    /**
+     * Given a profile, finds the activities that are recommended based on the profile's interests and their location.
+     * @param profile the profile to recommend activities for
+     * @return the list of activities to recommend
+     */
+    List<Activity> findRecommendedActivitiesByProfile(Profile profile);
 }

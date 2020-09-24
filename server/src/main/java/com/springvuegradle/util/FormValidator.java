@@ -1,14 +1,13 @@
 package com.springvuegradle.util;
 
+import com.springvuegradle.model.data.Gender;
+
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Pattern;
-
-import javax.validation.constraints.NotNull;
-
-import com.springvuegradle.model.data.Gender;
 
 /**
  * Used to consistently validate form fields between endpoints.
@@ -198,7 +197,7 @@ public class FormValidator {
 		if (input.length() == 0) return false;
 
 		// check if there is exactly 1 '@'
-		if (!input.contains("@") || input.indexOf("@") != input.lastIndexOf("@")) {
+		if (!input.contains("@") || input.indexOf('@') != input.lastIndexOf('@')) {
 			return false;
 		}
 

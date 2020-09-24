@@ -1,14 +1,13 @@
 package com.springvuegradle.endpoints;
 
-import java.util.List;
-
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.repository.ActivityTypeRepository;
+import java.util.List;
 
 /**
  * REST endpoint for getting a list of activity types
@@ -32,12 +31,7 @@ public class ActivityTypeController {
 	@CrossOrigin
 	public String[] getActivities() {
 		List<ActivityType> allActivityTypes = activityRepo.findAll();
-		
-		String[] activityTypeStrings = allActivityTypes.stream().map(ActivityType::getActivityTypeName).toArray(String[]::new);
-		
-		System.out.println("Hit activity-types");
-		
-		return activityTypeStrings;
+		return allActivityTypes.stream().map(ActivityType::getActivityTypeName).toArray(String[]::new);
 	}
 
 }

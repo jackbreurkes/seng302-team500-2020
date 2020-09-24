@@ -1,36 +1,27 @@
 package com.springvuegradle.endpoints;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.springvuegradle.auth.UserAuthorizer;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.model.data.*;
 import com.springvuegradle.model.repository.*;
-import com.springvuegradle.model.responses.HomeFeedResponse;
-import org.apache.tomcat.jni.Local;
+import com.springvuegradle.model.responses.ActivityPinResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityPin;
-import com.springvuegradle.model.data.ActivityRole;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.UserActivityRole;
-import com.springvuegradle.model.responses.ActivityPinResponse;
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Controller for maps related endpoints.
@@ -97,27 +88,21 @@ public class MapsController {
             );
         }
 
-        Optional<Profile> optionalProfile = profileRepository.findById(userId);
-        if (optionalProfile.isEmpty()) {
-            throw new RecordNotFoundException("User not found");
-        }
-        Profile profile = optionalProfile.get();
+        Profile profile = profileRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found"));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
         List<ActivityPinResponse> responses = new ArrayList<>();
 
+        Set<Long> recommendedActivityIds = activityRepository
+                .findRecommendedActivitiesByProfile(profile)
+                .stream()
+                .map(Activity::getId)
+                .collect(Collectors.toSet());
+
         for(ActivityPin pin : pinsWithinBounds){
             if (!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())) {
-                boolean isRecommended = false;
-                Activity activity = pin.getActivity();
-                UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-
-                if (role == null && profile.getActivityTypes() != null && activity.getActivityTypes() != null &&
-                        profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0 &&
-                        !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)) {
-                    isRecommended = true;
-                }
+                boolean isRecommended = recommendedActivityIds.contains(pin.getActivity().getId());
                 String userRole = this.getActivityRoleString(userId, pin.getActivity());
                 responses.add(new ActivityPinResponse(pin, userRole, isRecommended));
             }
