@@ -117,15 +117,23 @@
                   :rules="inputRules.descriptionRules"
                   outlined
                 ></v-textarea>
-                <v-text-field
-                  label="Location"
-                  ref="location"
-                  id="location"
-                  type="text"
-                  v-model="createActivityRequest.location"
-                  :rules="inputRules.locationRules"
-                ></v-text-field>
-
+                <v-row align="baseline">
+                  <v-col>
+                    <v-text-field
+                      label="Location"
+                      ref="location"
+                      id="location"
+                      type="text"
+                      v-model="createActivityRequest.location"
+                      :rules="inputRules.locationRules"
+                      @keyup.enter.native="viewOnMap"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="3">
+                    <v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Map</v-btn>
+                  </v-col>
+                </v-row>
+              
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -293,6 +301,8 @@ import * as activityModel from "../models/activity.model";
 import * as userSearch from "../controllers/userSearch.controller";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
+// eslint-disable-next-line no-unused-vars
+import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
 
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -505,6 +515,26 @@ const CreateActivity = Vue.extend({
       this.selectedActivityType = "";
     },
 
+    /*
+    Opens the selected location on the map
+    */
+    viewOnMap: async function() {
+      if(this.createActivityRequest.location === undefined || this.createActivityRequest.location === ""){
+        this.errorMessage = "Please enter a location"
+        return;
+      }
+
+      let res = await activityController.validateLocation(this.createActivityRequest.location);
+      if(res === undefined || res[0] === undefined){
+        this.errorMessage = "Specified location does not exist"
+        return;
+      }
+      let pinLocation = {lon: parseFloat(res[0].lon), lat: parseFloat(res[0].lat)} as LocationCoordinatesInterface;
+      let pinRequest = {geoposition: pinLocation, activity_id: -1} as CreateActivityRequest;
+      this.$root.$emit('mapPaneToggle', true);
+      this.$root.$emit('mapShowSearchResults', [pinRequest]);
+      this.errorMessage = ""
+    },
     removeActivityType: function(activityType: string) {
       activityController.removeActivityType(
         activityType,

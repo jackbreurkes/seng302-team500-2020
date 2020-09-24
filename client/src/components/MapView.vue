@@ -54,7 +54,7 @@
 
   import Vue from 'vue'
   import { getProfileLocation } from "../controllers/profile.controller";
-  import { getActivitiesInBoundingBox, getActivityById } from "../controllers/activity.controller";
+  import { getActivitiesInBoundingBox, getActivityById} from "../controllers/activity.controller";
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
   import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
@@ -148,6 +148,7 @@
       })
 
       this.legend = this.defaultLegend;
+
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {
@@ -211,6 +212,11 @@
 
         // @ts-ignore next line
         this.map.fitBounds(PinsController.convertToGoogleBounds(swPoint, nePoint));
+        // @ts-ignore next line
+        if (this.$map.getZoom() >= 18) {
+          // @ts-ignore next line
+          this.$map.setZoom(18)
+        }
       });
     },
 
@@ -314,6 +320,9 @@
        * @param allActivities The list of pins representing activities happening at the location of the displayed pin
        */
       createPinInfoWindow: async function(map: any, displayedPin: any, allActivities: Pin[]) {
+        if(allActivities.length === 1 && allActivities[0].activity_id === -1){
+          return;
+        }
         this.displayedActivities = [];
         for (let activityIndex in allActivities) {
           let activityId = allActivities[activityIndex];

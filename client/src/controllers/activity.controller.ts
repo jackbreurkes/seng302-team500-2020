@@ -3,6 +3,8 @@ import * as activityModel from '../models/activity.model'
 import { UserApiFormat } from '@/scripts/User';
 import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 import { getAddressFormattedString } from '../models/location.model';
+import { LocationInterface } from '@/scripts/LocationInteface';
+import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 
 
 let _availableActivityTypes: string[] | null = null;
@@ -72,6 +74,17 @@ export async function validateNewActivity(sDate: string, sTime: string, eDate: s
   }
 
 }
+
+/**
+ * Takes a location string and checks if it is valid
+ * @param location 
+ */
+export async function validateLocation(location : string){
+  let locationObject = await getAddressFormattedString(location);
+  return locationObject;
+}
+
+
 /**
  * Edit an activity
  * @param createActivityRequest Data related to the activity to edit
