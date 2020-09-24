@@ -54,7 +54,7 @@
 
   import Vue from 'vue'
   import { getProfileLocation } from "../controllers/profile.controller";
-  import { getActivitiesInBoundingBox, getActivityById } from "../controllers/activity.controller";
+  import { getActivitiesInBoundingBox, getActivityById, validateLocation } from "../controllers/activity.controller";
   import { getMyUserId } from "../services/auth.service"
   // eslint-disable-next-line no-unused-vars
   import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
@@ -148,6 +148,45 @@
       })
 
       this.legend = this.defaultLegend;
+      this.$root.$on('showActivityLocationOnMap', async (location: string) => {
+        //Passes the location string from the edited/created activity
+        //Need to validate location then drop a pin
+        if(location === undefined){
+          //return so error can be shown
+          console.log("ASS CITY");
+          return;
+        }
+        let res = await validateLocation(location);
+        console.log(res[0]);
+        if(res[0] === undefined){
+          console.log("DAB CITY");
+          return;
+        }
+
+        //we have a valid location
+        // @ts-ignore next line
+        const mapWidth = this.$refs.map.clientWidth;
+        // @ts-ignore next line
+        const mapHeight = this.$refs.map.clientHeight;
+
+        let shouldWait = mapWidth < 50 || mapHeight < 50;
+
+        let tempLocation = {lat: parseFloat(res[0].lat) as number, lon: parseFloat(res[0].lon) as number} as LocationCoordinatesInterface;
+        console.log(tempLocation);
+        let tempLocationMaps = {lat: tempLocation.lat, lng: tempLocation.lon};
+        // @ts-ignore next line
+        this.$map.setCenter(tempLocationMaps)
+        if (shouldWait) {
+          this.$root.$emit('mapPaneToggle', true);
+          setTimeout(() => {
+            this.displayPin([], tempLocation, 1);
+          }, 250)
+        } else {
+          this.displayPin([], tempLocation, 1);
+        }
+
+      })
+
       // @ts-ignore next line
       this.map = new window.google.maps.Map(this.$refs["map"], {
         center: {

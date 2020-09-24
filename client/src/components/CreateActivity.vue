@@ -125,7 +125,10 @@
                   v-model="createActivityRequest.location"
                   :rules="inputRules.locationRules"
                 ></v-text-field>
-
+                  <v-row>
+                <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
+                <v-col ><v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+              </v-row>
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -505,6 +508,12 @@ const CreateActivity = Vue.extend({
       this.selectedActivityType = "";
     },
 
+    /*
+    Opens the selected location on the map
+    */
+    viewOnMap: async function() {
+      this.$root.$emit('showActivityLocationOnMap', this.createActivityRequest.location);
+    },
     removeActivityType: function(activityType: string) {
       activityController.removeActivityType(
         activityType,
