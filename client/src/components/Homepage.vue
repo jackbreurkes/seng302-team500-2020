@@ -272,7 +272,6 @@ const Homepage = Vue.extend({
       return
     }
     next()
-    history.go(0)
   },
 
   methods: {
