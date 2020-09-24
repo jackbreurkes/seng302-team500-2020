@@ -531,6 +531,7 @@ const CreateActivity = Vue.extend({
       }
       let pinLocation = {lon: parseFloat(res[0].lon), lat: parseFloat(res[0].lat)} as LocationCoordinatesInterface;
       let pinRequest = {geoposition: pinLocation, activity_id: -1} as CreateActivityRequest;
+      this.createActivityRequest.location = res[0].display_name;
       this.$root.$emit('mapPaneToggle', true);
       this.$root.$emit('mapShowSearchResults', [pinRequest]);
       this.errorMessage = ""
