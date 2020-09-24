@@ -88,7 +88,7 @@
               <v-row>
                 <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
                 <v-col cols="6">{{activity.location}}</v-col>
-                <v-col ><v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+                <v-col ><v-btn v-if="hasPin" v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
               </v-row>
               <v-row v-if="hasTimeFrame(activity)">
                 <v-col cols="2"><v-icon class="mr-2">mdi-clock-outline</v-icon> Timeframe:</v-col>
@@ -249,7 +249,7 @@
                         <v-card-actions>
                           <v-btn text @click="displayConfirmTimeframeModal = false">Cancel</v-btn>
                           <v-spacer></v-spacer>
-                          <v-btn color="success" text @click="saveParticipantOutcome">Confirm</v-btn>
+                          <v-btn color="success" text @click="saveParticipantOutcome(selectedOutcomeId)">Confirm</v-btn>
                         </v-card-actions>
                       </v-card>
                     </v-dialog>
@@ -316,6 +316,7 @@ const Activity = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
+      hasPin: false as boolean,
       currentUsersProfileId: NaN as number,
       activityId: NaN as number,
       creatorId: NaN as number,
@@ -333,6 +334,7 @@ const Activity = Vue.extend({
             formValidator.checkResultValidity(v)
         ]
       },
+      selectedOutcomeId: NaN as number,
       currentResults: {} as Record<number, ParticipantResultDisplay>,
       removeResultModal: false,
       outcomeIdToRemove: NaN as number,
@@ -386,6 +388,9 @@ const Activity = Vue.extend({
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        if(this.activity.geoposition !== undefined) {
+          this.hasPin = true;
+        }
         if (this.activity.num_followers != null) {
             this.followers = this.activity.num_followers;
         }
@@ -529,6 +534,7 @@ const Activity = Vue.extend({
       let result = this.participantOutcome[outcomeId].score;
       let completedDate = this.participantOutcome[outcomeId].date;
       let completedTime = this.participantOutcome[outcomeId].time;
+      this.selectedOutcomeId = outcomeId;
 
       if (completedDate === undefined) {
         alert("You must select a date");
@@ -538,13 +544,13 @@ const Activity = Vue.extend({
         alert("You must select a time");
         return;
       }
-      if (result === undefined) {
+      if (result === undefined || result === "") {
         alert("You must enter a result");
         return;
       }
       let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
       if (!this.hasTimeFrame(this.activity) || activityController.timeIsWithinRange(this.activity.start_time!, this.activity.end_time!, completedTimestamp)) {
-        await this.saveParticipantOutcome(outcomeId, result, completedTimestamp);
+        await this.saveParticipantOutcome(outcomeId);
       } else {
         this.displayConfirmTimeframeModal = true;
       }
@@ -553,7 +559,11 @@ const Activity = Vue.extend({
     /**
      * Add a new participant result for the specified outcome on this activity.
      */
-    async saveParticipantOutcome(outcomeId: number, result: string, completedTimestamp: string) {
+    async saveParticipantOutcome(outcomeId: number) {
+      let result = this.participantOutcome[outcomeId].score;
+      let completedDate = this.participantOutcome[outcomeId].date;
+      let completedTime = this.participantOutcome[outcomeId].time;
+      let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
       this.displayConfirmTimeframeModal = false;
       if (this.currentUsersProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
         await this.toggleParticipation();
