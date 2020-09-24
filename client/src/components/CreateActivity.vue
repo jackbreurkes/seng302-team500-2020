@@ -280,6 +280,7 @@
                     color="primary"
                     class="ma-1 mr-3"
                     width="100"
+                    :loading="isSubmitting"
                   >{{this.isEditing ? "Save" : "Create"}}</v-btn>
                 </v-row>
               </v-card-text>
@@ -312,6 +313,7 @@ const CreateActivity = Vue.extend({
   data: function() {
     return {
       isActivityOutcomesExpanded: false,
+      isSubmitting: false as boolean,
       createActivityRequest: {
         continuous: true
       } as CreateActivityRequest,
@@ -549,6 +551,8 @@ const CreateActivity = Vue.extend({
 
     createButtonClicked: async function() {
 
+      this.isSubmitting = true;
+
       if (this.createActivityRequest.outcomes === undefined) {
         this.createActivityRequest.outcomes = [];
       }
@@ -584,6 +588,9 @@ const CreateActivity = Vue.extend({
             alert(err.message)
             history.go(0)
           }
+        })
+        .finally(() => {
+          this.isSubmitting = false;
         });
     },
 
