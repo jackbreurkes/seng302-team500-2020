@@ -497,11 +497,6 @@ const Homepage = Vue.extend({
             state: "",
             country: ""
           }
-      // if ((this.editedUser.location.city === undefined) ||(this.editedUser.location.city === undefined )|| (this.editedUser.location.city === undefined)) {
-      //   this.editedUser.location.city = '';
-      //   this.editedUser.location.state = '';
-      //   this.editedUser.location.country = '';
-      //} 
     },
     /**
      * persists the changes made on the edit page by the user
@@ -517,6 +512,9 @@ const Homepage = Vue.extend({
           })
           .catch((e) => {
             alert(e.message);
+          })
+          .then(() => {
+            this.$root.$emit('refreshMapAndPins');
           });
       }
     },

@@ -84,6 +84,10 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
      * @return the list of activities to recommend
      */
     public List<Activity> findRecommendedActivitiesByProfile(Profile profile) {
+        if (profile.getLocation() == null) {
+            return new ArrayList<>();
+        }
+
         //Get the activities within the range of the users profile location
         List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
                 profile.getLocation().getLatitude() + RECOMMENDATIONS_BOUNDING_BOX_SIZE,

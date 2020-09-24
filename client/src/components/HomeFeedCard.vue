@@ -157,6 +157,7 @@ const HomeFeedCard = Vue.extend({
             this.creatorName = null;
             this.activityName = "Unfollowed"
             this.infoString = "You have unfollowed this activity. You will no longer receive updates about this activity."
+            this.$root.$emit('refreshPins');
         }
     }
 })
