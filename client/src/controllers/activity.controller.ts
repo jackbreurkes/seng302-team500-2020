@@ -276,6 +276,12 @@ export function isFutureDate(dateString: string): boolean {
   return (today <= dateInput)
 }
 
+export function isFutureDateTime(dateString: string): boolean {
+  let today = new Date()
+  let dateTimeIn = new Date(dateString);
+  return (today <= dateTimeIn);
+}
+
 /**
  * Checks if date is in valid format of YYYY-MM-DD
  * @param dateString date in question
