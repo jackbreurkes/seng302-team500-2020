@@ -66,7 +66,7 @@
                 <p>Identifies as {{ currentUser.gender }}</p>
                 <br />
                 <div v-if="currentUser.fitness !== undefined && currentUser.fitness != -1">
-                  <p>Fitness level {{ currentUser.fitness }}</p>
+                  <p>Fitness level: {{ this.fitnessLevels[this.currentUser.fitness] }}</p>
                   <br />
                 </div>
   
@@ -178,6 +178,7 @@ const Homepage = Vue.extend({
       // newEmail: "",
       // email: "",
       editedUser: {} as UserApiFormat,
+      fitnessLevels: ["No Fitness", "A Little Fit", "Moderately Fit", "Enthusiastically Fit", "Crazy Fit"],
       formValidator: new FormValidator(),
       durationActivities: [] as CreateActivityRequest[],
       continuousActivities: [] as CreateActivityRequest[],
@@ -286,7 +287,6 @@ const Homepage = Vue.extend({
           this.$router.push({ name: "login" });
         });
     },
-
     editProfile: function() {
       this.$router.push(`/profiles/${this.idOfDisplayedUser}/edit`);
     },
