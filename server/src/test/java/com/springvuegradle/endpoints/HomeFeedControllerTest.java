@@ -423,6 +423,7 @@ public class HomeFeedControllerTest {
         Mockito.when(profileRepository.getOne(profile.getUser().getUserId())).thenReturn(profile);
         Mockito.when(activityPinRepository.findPinsInBounds(Mockito.any(Float.class), Mockito.any(Float.class),
                 Mockito.any(Float.class), Mockito.any(Float.class), Mockito.any(Pageable.class))).thenReturn(activityPins);
+        Mockito.when(activityRepository.findRecommendedActivitiesByProfile(profile)).thenReturn(recommendedActivities);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/homefeed/"+user.getUserId()+"/recommendations")
@@ -432,10 +433,18 @@ public class HomeFeedControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertEquals(expectedRecommendationsString, result.getResponse().getContentAsString());
         String responseJson = result.getResponse().getContentAsString();
-        List<HomeFeedResponse> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<List<HomeFeedResponse>>() {});
+        List<HomeFeedResponse> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<>() {});
         assertEquals(recommendedActivities.size(), recommendationResponses.size());
+        for (int i = 0; i < recommendedActivities.size(); i++) {
+            Activity activity = recommendedActivities.get(i);
+            HomeFeedResponse response = recommendationResponses.get(i);
+            assertEquals(activity.getActivityName(), response.getEntityName());
+            assertEquals(activity.getId(), response.getEntityId());
+            assertEquals(activity.getCreator().getUser().getUserId(), response.getCreatorId());
+            assertEquals(0, response.getChangeId());
+            assertEquals(ChangedAttribute.RECOMMENDED_ACTIVITY, response.getChangedAttribute());
+        }
     }
 
     @Test
