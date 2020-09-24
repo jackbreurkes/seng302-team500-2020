@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,17 +89,20 @@ public class MapsController {
             );
         }
 
-        Profile profile = profileRepository.findById(userId).orElseThrow(() -> new RecordNotFoundException("User not found"));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
         List<ActivityPinResponse> responses = new ArrayList<>();
 
-        Set<Long> recommendedActivityIds = activityRepository
-                .findRecommendedActivitiesByProfile(profile)
-                .stream()
-                .map(Activity::getId)
-                .collect(Collectors.toSet());
+        Set<Long> recommendedActivityIds = new HashSet<>();
+        Profile profile = profileRepository.findById(userId).orElse(null);
+        if (profile != null) {
+            recommendedActivityIds = activityRepository
+                    .findRecommendedActivitiesByProfile(profile)
+                    .stream()
+                    .map(Activity::getId)
+                    .collect(Collectors.toSet());
+        }
 
         for(ActivityPin pin : pinsWithinBounds){
             if (!pin.getActivity().isDuration() || LocalDateTime.parse(pin.getActivity().getEndTime(), formatter).isAfter(LocalDateTime.now())) {

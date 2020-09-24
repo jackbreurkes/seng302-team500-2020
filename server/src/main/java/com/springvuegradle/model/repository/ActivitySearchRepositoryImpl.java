@@ -102,7 +102,7 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
                     && profile.getActivityTypes().stream().anyMatch(activity.getActivityTypes()::contains)
                     && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
                     && activity.getCreator() != profile
-                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), DATE_FORMATTER).isAfter(LocalDateTime.now()))
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getEndTime(), DATE_FORMATTER).isAfter(LocalDateTime.now()))
             ){
                 candidateActivities.add(activity);
             }

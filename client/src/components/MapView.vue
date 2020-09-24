@@ -81,7 +81,7 @@
           storedSearchResultsPins: [] as Pin[],
           defaultLegend: {
             created: {
-              title: 'Created',
+              title: 'Organising',
               colour: 'rgba(253, 117, 103, 1)',
               icon: 'mdi-square'
             },

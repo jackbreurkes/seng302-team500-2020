@@ -267,7 +267,7 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
             location = `${city},${state},${country}`
         }
         if (!(await checkCountryValidity(location))) {
-            throw new Error("Location is not a city")
+            throw new Error("The location you entered could not be found.")
 
         } else if (city !== "" && state !== "" && country !== ""){
             let validLocation: LocationInterface = {city, state, country};
