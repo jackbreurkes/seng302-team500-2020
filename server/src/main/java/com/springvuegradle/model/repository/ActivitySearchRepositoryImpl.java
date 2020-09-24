@@ -29,6 +29,7 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
      * will be shown from users location, in degrees
      */
     private static final float RECOMMENDATIONS_BOUNDING_BOX_SIZE = 0.2f;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
     @Autowired
     UserActivityRoleRepository userActivityRoleRepository;
@@ -77,10 +78,12 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
         return (List<Activity>) query.getResultList();
     }
 
-
+    /**
+     * Given a profile, finds the activities that are recommended based on the profile's interests and their location.
+     * @param profile the profile to recommend activities for
+     * @return the list of activities to recommend
+     */
     public List<Activity> findRecommendedActivitiesByProfile(Profile profile) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
         //Get the activities within the range of the users profile location
         List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
                 profile.getLocation().getLatitude() + RECOMMENDATIONS_BOUNDING_BOX_SIZE,
@@ -95,7 +98,7 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
                     && profile.getActivityTypes().stream().anyMatch(activity.getActivityTypes()::contains)
                     && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
                     && activity.getCreator() != profile
-                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), formatter).isAfter(LocalDateTime.now()))
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), DATE_FORMATTER).isAfter(LocalDateTime.now()))
             ){
                 candidateActivities.add(activity);
             }
