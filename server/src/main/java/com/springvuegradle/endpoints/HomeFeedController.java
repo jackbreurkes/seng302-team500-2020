@@ -11,10 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -46,12 +43,6 @@ public class HomeFeedController {
 
     @Autowired
     SubscriptionRepository subscriptionRepository;
-
-    /**
-     * Float value for maximum distance that recommended activities
-     * will be shown from users location, in degrees
-     */
-    private static final float BOUNDING_BOX_SIZE = 0.2f;
 
     /**
      * Retrieve and respond to a request to get a user's home feed updates
@@ -139,7 +130,7 @@ public class HomeFeedController {
         if (profile.getLocation() != null &&    // Only recommend activities if the user has a location to get activities around
                 profile.getLocation().getLatitude() != null && profile.getLocation().getLongitude() != null) {
 
-            for (Activity activity : findRecommendedActivities(profile)) {
+            for (Activity activity : activityRepository.findRecommendedActivitiesByProfile(profile)) {
                 recommendationResponses.add(new HomeFeedResponse(activity,
                         subscriptionRepository.getFollowerCount(activity.getId()),
                         ChangedAttribute.RECOMMENDED_ACTIVITY));
@@ -147,37 +138,6 @@ public class HomeFeedController {
         }
 
         return recommendationResponses;
-    }
-
-    /**
-     * Finds recommended activities for a user based on profile location and interested activity types
-     * @param profile the profile that the recommendations are for
-     * @return List of candidate recommended activities
-     */
-    public List<Activity> findRecommendedActivities(Profile profile){
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
-        //Get the activities within the range of the users profile location
-        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
-                profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,
-                profile.getLocation().getLongitude() + BOUNDING_BOX_SIZE,
-                profile.getLocation().getLatitude() - BOUNDING_BOX_SIZE,
-                profile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged());
-        List<Activity> activityList = activityPinsInBox.stream().map(ActivityPin::getActivity).collect(Collectors.toList());
-        List<Activity> candidateActivities = new ArrayList<>();
-        for(Activity activity : activityList){
-            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
-            if(role == null
-                    && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0
-                    && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
-                    && activity.getCreator() != profile
-                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), formatter).isAfter(LocalDateTime.now()))
-            ){
-                candidateActivities.add(activity);
-            }
-        }
-        return candidateActivities;
     }
 
     /**

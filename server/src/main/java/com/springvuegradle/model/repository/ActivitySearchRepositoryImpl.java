@@ -1,21 +1,43 @@
 package com.springvuegradle.model.repository;
 
 import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ActivityPin;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.UserActivityRole;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * custom implementation for the activity search repository interface.
  * will be used when autowiring an ActivityRepository.
  */
 @Repository
-public class ActivitySearchRepositoryImpl implements ActivitySearchRepository{
+public class ActivitySearchRepositoryImpl implements ActivitySearchRepository {
+
+    /**
+     * Float value for maximum distance that recommended activities
+     * will be shown from users location, in degrees
+     */
+    private static final float RECOMMENDATIONS_BOUNDING_BOX_SIZE = 0.2f;
+
+    @Autowired
+    UserActivityRoleRepository userActivityRoleRepository;
+
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
+    @Autowired
+    ActivityPinRepository activityPinRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -53,5 +75,31 @@ public class ActivitySearchRepositoryImpl implements ActivitySearchRepository{
             query.setMaxResults(pageSize);
         }
         return (List<Activity>) query.getResultList();
+    }
+
+
+    public List<Activity> findRecommendedActivitiesByProfile(Profile profile) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
+        //Get the activities within the range of the users profile location
+        List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
+                profile.getLocation().getLatitude() + RECOMMENDATIONS_BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() + RECOMMENDATIONS_BOUNDING_BOX_SIZE,
+                profile.getLocation().getLatitude() - RECOMMENDATIONS_BOUNDING_BOX_SIZE,
+                profile.getLocation().getLongitude() - RECOMMENDATIONS_BOUNDING_BOX_SIZE, Pageable.unpaged());
+        List<Activity> activityList = activityPinsInBox.stream().map(ActivityPin::getActivity).collect(Collectors.toList());
+        List<Activity> candidateActivities = new ArrayList<>();
+        for(Activity activity : activityList){
+            UserActivityRole role = userActivityRoleRepository.getRoleEntryByUserId(profile.getUser().getUserId(), activity.getId()).orElse(null);
+            if(role == null
+                    && profile.getActivityTypes().stream().anyMatch(activity.getActivityTypes()::contains)
+                    && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
+                    && activity.getCreator() != profile
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), formatter).isAfter(LocalDateTime.now()))
+            ){
+                candidateActivities.add(activity);
+            }
+        }
+        return candidateActivities;
     }
 }
