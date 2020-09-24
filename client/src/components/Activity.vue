@@ -530,6 +530,7 @@ const Activity = Vue.extend({
       activityController.deleteActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.$router.back();
+          this.$root.$emit('refreshPins');
         })
         .catch(err => {
           alert("An error occured while deleting the activity:\n" + err);
