@@ -502,10 +502,10 @@ const Homepage = Vue.extend({
      * persists the changes made on the edit page by the user
      */
     saveButtonClicked: async function() {
-      this.isSubmitting = true;
       if (
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
+        this.isSubmitting = true;
         profileController
           .persistChangesToProfile(this.editedUser, this.currentProfileId)
           .then(() => {
@@ -532,11 +532,11 @@ const Homepage = Vue.extend({
      * saves the new state of the user's primary email and additional email list by making a http request to the backend
      */
     updateEmail: function() {
-      this.isSubmitting = true;
       if (this.editedUser.primary_email !== undefined) {
          if (this.editedUser.additional_email === undefined) {
            this.editedUser.additional_email = [];
          }
+         this.isSubmitting = true;
         profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
           .then(() => {
             // refresh the page after updating emails
@@ -599,12 +599,12 @@ const Homepage = Vue.extend({
     },
 
     updatePasswordButtonClicked: function() {
-      this.isSubmitting = true;
       this.passwordSuccessMessage = "";
       this.passwordErrorMessage = "";
 
       if (this.newPassword != this.repeatPassword) return;
 
+      this.isSubmitting = true;
       profileController
         .updatePassword(
           this.oldPassword,

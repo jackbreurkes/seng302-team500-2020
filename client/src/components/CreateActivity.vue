@@ -569,7 +569,7 @@ const CreateActivity = Vue.extend({
         );
       } catch (err) {
         this.errorMessage = err.message;
-      
+        this.isSubmitting = false;
         return; // don't try to save the activity
       }
       activityController
