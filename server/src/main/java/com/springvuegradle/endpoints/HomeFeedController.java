@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -154,6 +155,9 @@ public class HomeFeedController {
      * @return List of candidate recommended activities
      */
     public List<Activity> findRecommendedActivities(Profile profile){
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
         //Get the activities within the range of the users profile location
         List<ActivityPin> activityPinsInBox = activityPinRepository.findPinsInBounds(
                 profile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,
@@ -168,7 +172,7 @@ public class HomeFeedController {
                     && profile.getActivityTypes().stream().filter(activity.getActivityTypes()::contains).collect(Collectors.toList()).size() > 0
                     && !subscriptionRepository.isSubscribedToActivity(activity.getId(), profile)
                     && activity.getCreator() != profile
-                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime()).isAfter(LocalDateTime.now()))
+                    && (!activity.isDuration() || LocalDateTime.parse(activity.getStartTime(), formatter).isAfter(LocalDateTime.now()))
             ){
                 candidateActivities.add(activity);
             }

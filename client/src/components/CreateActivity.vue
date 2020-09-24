@@ -453,7 +453,6 @@ const CreateActivity = Vue.extend({
           this.organisers = this.organisers.filter(
             org => org.profile_id !== organiserToDelete.profile_id
           );
-          console.log(this.organisers);
         })
         .catch(err => {
           this.errorMessage = err.message;
