@@ -175,7 +175,7 @@ public class FindRecommendedActivitiesTest {
         activityTypes1.add(selfActivityType);
 
         Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
-        tempActivity.setStartTime("1990-11-01T12:11:28");
+        tempActivity.setStartTime("1990-11-01T12:11:28+1200");
 
         List<ActivityPin> returnList = new ArrayList<>();
         returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
@@ -191,7 +191,7 @@ public class FindRecommendedActivitiesTest {
         activityTypes1.add(selfActivityType);
 
         Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
-        tempActivity.setStartTime("1990-11-01T12:11:28");
+        tempActivity.setStartTime("1990-11-01T12:11:28+1200");
 
         List<ActivityPin> returnList = new ArrayList<>();
         returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));

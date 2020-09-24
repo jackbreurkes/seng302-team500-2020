@@ -92,8 +92,8 @@
             "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+            "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
             "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
           ], //in the order: creator/organiser, participant, following, miscellaneous
           showingFiftyPins: false as boolean
       }

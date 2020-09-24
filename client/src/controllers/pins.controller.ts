@@ -47,7 +47,7 @@ export function groupPinsByLocation(pins: Pin[]) {
  * @returns role index of highest ranking role of the given pins
  */
 export function getHighestRoleIndex(pins: Pin[]) {
-    let highestRole = 3;
+    let highestRole = 4;
     pins.forEach((pin: Pin) =>  {
         let role = pin.role;
         if (role == "creator" || role == "organiser") {
@@ -57,7 +57,7 @@ export function getHighestRoleIndex(pins: Pin[]) {
         } else if (role == "follower" && highestRole > 2) {
             highestRole = 2;
         } else if (pin.is_recommended) {
-            highestRole = 4;
+            highestRole = 3;
         }
     });
     return highestRole;
