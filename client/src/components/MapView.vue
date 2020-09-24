@@ -7,11 +7,11 @@
     </div>
     <div id="map" ref="map"></div>
     <!-- index of -1 below places the legend above the fullscreen button -->
-    <div id="legend" ref="legend" class="ma-1 pa-1 rounded white" index=-1>
+    <div id="legend" ref="legend" class="ma-1 pa-1 subtitle-2 rounded white" index=-1>
       <h3 class="ma-0 pa-0">Legend</h3>
       <div v-for="icon in legend" :key="icon.title" class="ma-0 pa-0">
         <v-list-item-icon class="ma-0 pa-0">
-          <p class="ma-0 pa-0"><v-icon small :color="icon.colour">{{ icon.icon }}</v-icon>{{ icon.title }}</p>
+          <p class="ma-0 pa-0 body-2"><v-icon :color="icon.colour">{{ icon.icon }}</v-icon>{{ icon.title }}</p>
         </v-list-item-icon>
       </div>
     </div>

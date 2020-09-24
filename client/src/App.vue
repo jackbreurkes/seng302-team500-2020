@@ -101,7 +101,7 @@
         >
           <pane id="main-pane" :size="100 - mapPaneSize" min-size="20">
             <transition name="page-transition">
-              <router-view></router-view>
+              <router-view :key="$route.path"></router-view>
             </transition>
           </pane>
           <pane v-if="showNavBar()" id="map-pane" :size="mapPaneSize">
