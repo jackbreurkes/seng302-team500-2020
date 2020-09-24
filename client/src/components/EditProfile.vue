@@ -38,11 +38,11 @@
                       v-model="editedUser.fitness"
                       label="Fitness Level"
                       :mandatory="false">
-                      <v-radio label="Muffin (no fitness)" :value="0"></v-radio>
-                      <v-radio label="Potato (little fitness)" :value="1"></v-radio>
-                      <v-radio label="Carrot (moderate fitness)" :value="2"></v-radio>
-                      <v-radio label="Blueberry (outdoors enthusiast)" :value="3"></v-radio>
-                      <v-radio label="Kale (fitness fanatic)" :value="4"></v-radio>
+                      <v-radio label="No Fitness (Chocolate Muffin)" :value="0"></v-radio>
+                      <v-radio label="Little Fitness (Fruit Muffin)" :value="1"></v-radio>
+                      <v-radio label="Moderate Fitness (Nut Muffin)" :value="2"></v-radio>
+                      <v-radio label="Enthusiastically Fit (Kale Muffin)" :value="3"></v-radio>
+                      <v-radio label="Crazy Fit (No Muffin)" :value="4"></v-radio>
                       <v-radio label="Unspecified" :value="-1"></v-radio>
                     </v-radio-group>
                   </v-container-fluid>
