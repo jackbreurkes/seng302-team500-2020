@@ -7,9 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * Class for update password requests
- * @author Michael Freeeman
- * @author Jack van Heugten Breurkes
- * @author Josh Yee
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UpdatePasswordRequest {

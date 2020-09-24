@@ -17,11 +17,13 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
-                  <v-chip v-if="currentProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
+                  <v-chip v-if="isHappeningNow()" class="mr-2" color="green">Happening Now</v-chip>
+                  <v-chip v-if="isInPast()" class="mr-2" color="red">Activity Finished</v-chip>
+                  <v-chip v-if="currentUsersProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
                   <v-chip v-if="organiser" outlined class="mr-1">Organiser</v-chip>
                   <v-chip v-if="following" outlined class="mr-1">Following</v-chip>
                   <v-chip v-if="participating" outlined class="mr-1">Participating</v-chip>
-                  <v-menu v-if="currentProfileId === creatorId || organiser" bottom left offset-y>
+                  <v-menu v-if="organiser || currentlyHasAuthority" bottom left offset-y id="editBurger">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                         dark
@@ -39,7 +41,7 @@
                       >
                         <v-list-item-title>Edit Activity</v-list-item-title>
                       </v-list-item>
-                      <v-list-item v-if="currentProfileId === creatorId" @click="confirmDeleteModal = true">
+                      <v-list-item v-if="currentlyHasAuthority" @click="confirmDeleteModal = true">
                         <v-dialog v-model="confirmDeleteModal" width="290">
                           <template v-slot:activator="{ on }">
                             <v-list-item-title v-on="on">Delete Activity</v-list-item-title>
@@ -77,26 +79,43 @@
                     Participants: {{participants}}
                 </v-chip>
                 <br>
+              <v-container>
+                <v-row>
               <h3>Activity Information</h3>
-              <br>
-              <p> Description: {{ activity.description }} </p>
-              <br>
-              <p> Location: {{ activity.location }} </p>
-
-              <div v-if="hasTimeFrame(activity)"> <!-- Activity has a start and end time -->
-                <p> {{ getDurationDescription(activity.start_time, activity.end_time) }} </p>
-              </div>
-              <div v-else>
-                <p> Activity is continuous </p>
-              </div>
-
-              <v-chip
+                </v-row>
+              <v-row>
+                <v-col cols="2"><v-icon class="mr-2">mdi-text</v-icon>Description:</v-col>
+                <v-col>{{activity.description}}</v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
+                <v-col cols="6">{{activity.location}}</v-col>
+                <v-col><v-btn v-if="hasPin" v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+                </v-row>
+              <v-row v-if="hasTimeFrame(activity)">
+                <v-col cols="2"><v-icon class="mr-2">mdi-clock-outline</v-icon> Timeframe:</v-col>
+                <v-col md="auto">
+                  Starts:<br>
+                  Ends:
+                </v-col>
+                <v-col>
+                  {{formatDate(activity.start_time)}}
+                  <br>
+                  {{formatDate(activity.end_time)}}
+                </v-col>
+              </v-row>
+              <v-row v-else>
+                <v-col cols="4">Timeframe:</v-col>
+                <v-col cols="8">Activity is continuous</v-col>
+              </v-row>
+                <v-chip
                 class="mr-2 mb-2"
                 v-for="activityType of activity.activity_type"
                 v-bind:key="activityType"
                 outlined
               >{{ activityType }}</v-chip> 
               <br>
+              </v-container>
 
               <v-divider></v-divider><br>
 
@@ -110,12 +129,12 @@
                   v-model="selectedUsers"
                   sort-by="role"
               >
-                <template #full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.activityRole }}</template>
+                <template #full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }} {{ item.role }}</template>
                 <template v-slot:items="users">
                   <td class="text-xs-right">{{ users.item.firstname }}</td>
                   <td class="text-xs-right">{{ users.item.lastname }}</td>
                   <td class="text-xs-right">{{ users.item.nickname }}</td>
-                  <td class="text-xs-right">{{ users.item.activityRole }}</td>
+                  <td class="text-xs-right">{{ users.item.role }}</td>
                 </template>
               </v-data-table>
 
@@ -205,7 +224,7 @@
                             <v-row justify="end">
                               <v-spacer></v-spacer>
                               <div class="mr-3">
-                                <v-btn @click="saveParticipantOutcome(item.outcome_id)" right color="primary">
+                                <v-btn @click="saveParticipantOutcomeClicked(item.outcome_id)" right color="primary">
                                   Save
                                 </v-btn>
                               </div>
@@ -216,6 +235,25 @@
                     </v-expansion-panel-content>
                   </v-expansion-panel>
                 </v-expansion-panels>
+
+                <!-- save outcome outside time frame confirmation modal -->
+                <v-dialog v-model="displayConfirmTimeframeModal" width="350">
+
+                      <v-card>
+                        <v-card-title class="headline" primary-title>Confirm Your Result Time</v-card-title>
+
+                        <v-card-text>The completion time you are trying to enter for this result is not within the activity's suggested duration.
+                          Are you sure you wish to continue?</v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-btn text @click="displayConfirmTimeframeModal = false">Cancel</v-btn>
+                          <v-spacer></v-spacer>
+                          <v-btn color="success" text @click="saveParticipantOutcome(selectedOutcomeId)">Confirm</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
 
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -268,7 +306,8 @@ import * as activityController from '../controllers/activity.controller';
 import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
-import { getActivityRole } from "../models/activity.model";
+// eslint-disable-next-line no-unused-vars
+import { UserRoleFormat } from '@/scripts/UserRoleFormat';
 
 // app Vue instance
 const Activity = Vue.extend({
@@ -278,7 +317,8 @@ const Activity = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
-      currentProfileId: NaN as number,
+      hasPin: false as boolean,
+      currentUsersProfileId: NaN as number,
       activityId: NaN as number,
       creatorId: NaN as number,
       activity: [] as CreateActivityRequest,
@@ -295,6 +335,7 @@ const Activity = Vue.extend({
             formValidator.checkResultValidity(v)
         ]
       },
+      selectedOutcomeId: NaN as number,
       currentResults: {} as Record<number, ParticipantResultDisplay>,
       removeResultModal: false,
       outcomeIdToRemove: NaN as number,
@@ -304,7 +345,7 @@ const Activity = Vue.extend({
         { text: 'First Name', value: 'firstname' },
         { text: 'Last Name', value: 'lastname' },
         { text: 'Nickname', value: 'nickname' },
-        { text: 'Role', value: 'activityRole' }
+        { text: 'Role', value: 'role' }
       ],
       noDataText: "No Participants",
       selectedUsers: [] as UserApiFormat[],
@@ -312,6 +353,8 @@ const Activity = Vue.extend({
       errorMessage: "",
       followers: NaN as number,
       participants: NaN as number,
+      displayConfirmTimeframeModal: false,
+      currentlyHasAuthority: false as Boolean
     };
   },
 
@@ -320,38 +363,57 @@ const Activity = Vue.extend({
     if (myProfileId == null) {
       this.$router.push('login');
     } else {
-      this.currentProfileId = myProfileId;
+      this.currentUsersProfileId = myProfileId;
     }
 
     const activityId: number = parseInt(this.$route.params.activityId);
     const creatorId: number = parseInt(this.$route.params.profileId);
-    if (isNaN(creatorId) || isNaN(activityId)) {
-      this.$router.back();
-    } else {
+    
+    this.displayActivity(activityId, creatorId);
+
+    this.currentlyHasAuthority = myProfileId == creatorId || authService.isAdmin();
+  },
+
+  methods: {
+    /**
+     * Displays the activity (populates the page)
+     */
+    displayActivity: function(activityId: number, creatorId: number) {
+      if (isNaN(creatorId) || isNaN(activityId)) {
+        this.$router.back();
+        return;
+      }
       this.activityId = activityId;
       this.creatorId = creatorId;
 
       getActivity(creatorId, activityId)
       .then((res) => {
         this.activity = res;
+        if(this.activity.geoposition !== undefined) {
+          this.hasPin = true;
+        }
         if (this.activity.num_followers != null) {
             this.followers = this.activity.num_followers;
         }
         if (this.activity.num_participants != null) {
             this.participants = this.activity.num_participants;
         }
-        getIsFollowingActivity(this.currentProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.following = booleanResponse;
+        getIsFollowingActivity(this.currentUsersProfileId, this.activityId)
+        .then((isFollowing) => {
+          this.following = isFollowing;
         })
-        activityController.getIsParticipating(this.currentProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.participating = booleanResponse;
+        activityController.getIsParticipating(this.currentUsersProfileId, this.activityId)
+        .then((isParticipating) => {
+          this.participating = isParticipating;
         })
-        activityController.getIsOrganising(this.currentProfileId, this.activityId)
-        .then((booleanResponse) => {
-          this.organiser = booleanResponse;
-        })
+        if (this.creatorId == this.currentUsersProfileId) {
+          this.organiser = true;
+        } else {
+          activityController.getIsOrganising(this.currentUsersProfileId, this.activityId)
+          .then((booleanResponse) => {
+            this.organiser = booleanResponse;
+          })
+        }
 
         let outcome_array = this.activity.outcomes as ActivityOutcomes[];
         for (let outcome_index in outcome_array) {
@@ -363,7 +425,7 @@ const Activity = Vue.extend({
         }
       })
       .then(() => {
-        activityController.getParticipantResults(this.currentProfileId, this.activityId)
+        activityController.getParticipantResults(this.currentUsersProfileId, this.activityId)
         .then((results) => {
           let participantResults = {} as Record<number, ParticipantResultDisplay>;
           for (let index in results) {
@@ -383,13 +445,29 @@ const Activity = Vue.extend({
       .catch(() => {
         this.$router.back();
       });
-    }
 
-    // Populates the datatable that holds all the participants/oraganisers
-    this.search();
-},
+      // Populates the datatable that holds all the participants/oraganisers
+      this.search();
+    },
 
-  methods: {
+    isHappeningNow: function(){
+      if(this.activity.end_time !== undefined && this.activity.start_time !== undefined){
+        if(activityController.isFutureDateTime(this.activity.end_time) && !activityController.isFutureDateTime(this.activity.start_time)){
+          return true;
+        }
+      }
+      return false;
+    },
+
+    isInPast: function() {
+      if(this.activity.end_time !== undefined){
+        if(!activityController.isFutureDateTime(this.activity.end_time)){
+          return true;
+        }
+      }
+      return false;
+    },
+
     /**
      * Send the user to the activity's edit page
      */
@@ -404,37 +482,40 @@ const Activity = Vue.extend({
     toggleFollowingActivity: function() {
       if (this.following) {
         this.followers = this.followers - 1;
-        unfollowActivity(this.currentProfileId, this.activityId)
+        unfollowActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.following = false
         })
         .catch((err) => {
           console.error(err)
         })
+        .then(() => {this.$root.$emit('refreshPins')});
       } else {
           this.followers = this.followers + 1;
-          followActivity(this.currentProfileId, this.activityId)
+          followActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.following = true
         })
         .catch((err) => {
           console.error(err)
         })
+        .then(() => {this.$root.$emit('refreshPins')});
       }
     },
     /** Toggle the user's participation in this activity */
     toggleParticipation: async function() {
       if (!this.participating) {
         this.organiser = false;
-        await activityController.participateInActivity(this.currentProfileId, this.activityId);
+        await activityController.participateInActivity(this.currentUsersProfileId, this.activityId);
         this.participating = true;
         this.participants = this.participants + 1;
       } else {
-        await activityController.removeActivityRole(this.currentProfileId, this.activityId)
+        await activityController.removeActivityRole(this.currentUsersProfileId, this.activityId)
         this.participating = false;
         this.participants = this.participants - 1;
       }
-
+      this.$root.$emit('refreshPins')
+      
       // Reload the datatable when you participate/unparticipate
       this.users = [];
       this.search();
@@ -446,7 +527,7 @@ const Activity = Vue.extend({
     /** Delete the activity */
     deleteActivity: async function() {
       this.confirmDeleteModal = false;
-      activityController.deleteActivity(this.currentProfileId, this.activityId)
+      activityController.deleteActivity(this.currentUsersProfileId, this.activityId)
         .then(() => {
           this.$router.back();
         })
@@ -454,11 +535,11 @@ const Activity = Vue.extend({
           alert("An error occured while deleting the activity:\n" + err);
         });
     },
-    /** Get a user-readable version of the start and end times
+    /** Get a user-readable version of a timestamp
      *  Returns a string representing activity time frame
      */
-    getDurationDescription: function(startTime: string, endTime: string): string {
-      return activityController.describeDurationTimeFrame(startTime, endTime);
+    formatDate: function(time: string): string {
+      return activityController.describeDate(time);
     },
     /**
      * Get whether activity has start and end times
@@ -467,46 +548,63 @@ const Activity = Vue.extend({
     hasTimeFrame: function(activity: CreateActivityRequest): boolean {
       return activity.start_time != undefined && activity.end_time != undefined;
     },
+
     /**
-     * Add a new participant result for the specified outcome on this activity
+     * Attempt to add a new participant result for the specified outcome on this activity.
+     * displays a modal if the time frame is outside the expected time frame.
      */
-    saveParticipantOutcome: async function(outcomeId: number) {
+    saveParticipantOutcomeClicked: async function(outcomeId: number) {
+      let result = this.participantOutcome[outcomeId].score;
+      let completedDate = this.participantOutcome[outcomeId].date;
+      let completedTime = this.participantOutcome[outcomeId].time;
+      this.selectedOutcomeId = outcomeId;
+
+      if (completedDate === undefined) {
+        alert("You must select a date");
+        return;
+      }
+      if (completedTime === undefined) {
+        alert("You must select a time");
+        return;
+      }
+      if (result === undefined || result === "") {
+        alert("You must enter a result");
+        return;
+      }
+      let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
+      if (!this.hasTimeFrame(this.activity) || activityController.timeIsWithinRange(this.activity.start_time!, this.activity.end_time!, completedTimestamp)) {
+        await this.saveParticipantOutcome(outcomeId);
+      } else {
+        this.displayConfirmTimeframeModal = true;
+      }
+    },
+
+    /**
+     * Add a new participant result for the specified outcome on this activity.
+     */
+    async saveParticipantOutcome(outcomeId: number) {
       let result = this.participantOutcome[outcomeId].score;
       let completedDate = this.participantOutcome[outcomeId].date;
       let completedTime = this.participantOutcome[outcomeId].time;
       let completedTimestamp = activityController.getApiDateTimeString(completedDate, completedTime);
-      if (this.currentProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
+      this.displayConfirmTimeframeModal = false;
+      if (this.currentUsersProfileId !== this.creatorId && this.participating === false && this.organiser === false) {
         await this.toggleParticipation();
       }
 
-      try {
-        if (completedDate === undefined) {
-          throw new Error("You must select a date");
-        }
-        if (completedTime === undefined) {
-          throw new Error("You must select a time");
-        }
-        if (result === undefined || result.length == 0 || result.length > 30) {
-          throw new Error("The entered result value must be at least one character but no more than 30");
-        }
-
-        await activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
-        .then((success) => {
-          if (success) {
-            this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
-            if (this.activity.outcomes==undefined) {
-              this.currentResults[outcomeId].description = "Description not found";
-              this.currentResults[outcomeId].units = "";
-            } else {
-              this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
-              this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
-            }
-            this.updated = !this.updated; // Force component showing outcomes to refresh
+      activityController.createParticipantResult(this.activityId, outcomeId, result, completedTimestamp)
+        .then(() => {
+          this.currentResults[outcomeId] = this.participantOutcome[outcomeId];
+          if (this.activity.outcomes === undefined) {
+            this.currentResults[outcomeId].description = "Description not found";
+            this.currentResults[outcomeId].units = "";
+          } else {
+            this.currentResults[outcomeId].description = this.possibleOutcomes[outcomeId].description;
+            this.currentResults[outcomeId].units = this.possibleOutcomes[outcomeId].units;
           }
-        });
-      } catch (err) {
-        alert(err.message);
-      }
+          this.updated = !this.updated; // Force component showing outcomes to refresh
+        })
+        .catch((err) => {alert(err.message)});
     },
 
     /** Remove the selected result from the activity */
@@ -533,15 +631,7 @@ const Activity = Vue.extend({
       this.errorMessage = "";
       try {
         let users = await getParticipants(this.activityId)
-        let user;
-        for (user of users) { // Gives every user part of the activity a role
-          if (this.creatorId == user.profile_id) {
-            user.activityRole = "CREATOR";
-          } else if (user.profile_id != undefined) {
-            user.activityRole = await getActivityRole(user.profile_id, this.activityId);
-          }
-        }
-        this.users = users as UserApiFormat[];
+        this.users = users as UserRoleFormat[];
       } catch (err) {
         if (err.response) {
           if (err.response.status == 400) {
@@ -556,8 +646,20 @@ const Activity = Vue.extend({
         this.users = [];
       }
     },
-  }
 
+    /** Place a pin for this activity on the map */
+    viewOnMap: async function() {
+      this.$root.$emit('showActivityOnMap', this.activity);
+    }
+  },
+
+  watch: {
+    $route(to) {
+      const activityId: number = parseInt(to.params.activityId);
+      const creatorId: number = parseInt(to.params.profileId);
+      this.displayActivity(activityId, creatorId);
+    }
+  }
 });
 
 export default Activity;

@@ -71,14 +71,11 @@
     v-model="selectedUsers"
     >
     <template #item.full_name="{ item }">{{ item.firstname }} {{ item.middlename }} {{ item.lastname }}</template>
-    <!-- <template #item.full_name="{ item }">{{ item.firstname }} {{ item.userId }}{{ item.middlename }} {{ item.lastname }}</template> -->
     <template #item.short_interests="{ item }">{{getActivitiesString(item.activities)}}</template>
     <template v-slot:items="users">
-      <!-- <td class="text-xs-right">{{ users.item.full_name }}</td> -->
       <td class="text-xs-right">{{ users.item.firstname }}</td>
       <td class="text-xs-right">{{ users.item.middlename }}</td>
       <td class="text-xs-right">{{ users.item.lastname }}</td>
-      <!-- <td class="text-xs-right">{{ users.item.userId }}</td> -->
       <td class="text-xs-right">{{ users.item.nickname }}</td>
       <td class="text-xs-right">{{ users.item.primary_email }}</td>
       <td class="text-xs-right">{{ users.item.short_interests }}</td>
@@ -96,7 +93,6 @@ import { UserApiFormat } from "@/scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { Dictionary } from 'vue-router/types/router';
 import * as auth from "../services/auth.service";
-import * as properties from "../services/properties.service";
 import * as adminController from "../controllers/admin.controller";
 import { deleteUserAccount } from "../controllers/profile.controller"
 
@@ -112,11 +108,9 @@ const UserSearchResults = Vue.extend({
   data () {
     return {
       headers: [
-        // { text: 'Name', value: 'full_name' },
         { text: 'First Name', value: 'firstname' },
         { text: 'Middle Name', value: 'middlename' },
         { text: 'Last Name', value: 'lastname' },
-        //{ text: 'User Id', value: 'profile_id'},
         { text: 'Nickname', value: 'nickname' },
         { text: 'Email', value: 'primary_email' },
         { text: 'Interests', sortable: false, value: 'short_interests' }
@@ -132,7 +126,7 @@ const UserSearchResults = Vue.extend({
     }
   },
   created: async function() {
-    if (properties.getAdminMode()) {
+    if (auth.isAdmin()) {
       this.isAdmin = true;
     }
     await this.search(this.searchTerms);
@@ -178,7 +172,7 @@ const UserSearchResults = Vue.extend({
       return getShortenedActivitiesString(activities, this.searchTerms)
     },
     search: async function(searchTerms: Dictionary<string>) {
-      this.noDataText = "No users found";
+      this.noDataText = "No users found. If you are unsure how to start, try reading the search rules";
       this.errorMessage = "";
       try {
         let users = await searchUsers(searchTerms)
@@ -210,7 +204,6 @@ const UserSearchResults = Vue.extend({
       deleteUserAccount(deleteId)
         .then(() => {
           if (auth.getMyUserId() == deleteId) {
-            properties.removeAdminMode();
             auth.clearAuthInfo();  
             this.$router.push({ name: "register" });  
           } else {

@@ -1,6 +1,5 @@
 package com.springvuegradle.model.data;
 
-import java.io.Serializable;
 import java.util.regex.Pattern;
 
 import javax.persistence.Entity;
@@ -29,9 +28,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
         @UniqueConstraint(columnNames = {"city", "country"})
 })
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class Location implements Serializable {
+public class Location {
 
-    @Id
+	@Id
     @GeneratedValue
     @JsonIgnore
     private long locationId;
@@ -44,6 +43,16 @@ public class Location implements Serializable {
 
     @NotNull
     private String country;
+    
+    /**
+     * Latitude of this city
+     */
+    private Float latitude;
+
+	/**
+     * Longitude of this city
+     */
+    private Float longitude;
 
     /**
      * Constructor required by Spring
@@ -71,6 +80,22 @@ public class Location implements Serializable {
         this.city = city;
         this.state = state;
         this.country = country;
+    }
+    
+    /**
+     * constructor with coordinates and optional state parameter
+     * @param city the city
+     * @param state optional state
+     * @param country the country the city is in
+     * @param latitude the latitude of the marker for the center of the city
+     * @param longitude the longitude of the marker for the center of the city
+     */
+    public Location(String city, String state, String country, float latitude, float longitude) {
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     /**
@@ -144,29 +169,31 @@ public class Location implements Serializable {
 			return null;
 		}
 		
-		String result = makeRequest(locationString);
+		String result = performLocationSearch(locationString);
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = null;
 		try {
 			rootNode = mapper.readTree(result);
 		
-			if (rootNode instanceof ArrayNode)
-			for (JsonNode node : ((ArrayNode)rootNode)) {
-				if ((node.get("class").asText().equals("boundary") && node.get("type").asText().equals("administrative"))
-						|| (node.get("class").asText().equals("place") && node.get("type").asText().equals("city"))) {
-					JsonNode addressNode = node.get("address");
-					String city = addressNode.has("city") ? addressNode.get("city").asText() :
-						(addressNode.toString().split(Pattern.quote("\""))[3]);
-					String state = addressNode.has("state") ? addressNode.get("state").asText() : 
-						(addressNode.has("province") ? addressNode.get("province").asText() : null);
-					String country = addressNode.get("country").asText();
-					
-					Location location = new Location(city, country);
-					if (state != null) {
-						location.setState(state);
+			if (rootNode instanceof ArrayNode) {
+				for (JsonNode node : ((ArrayNode)rootNode)) {
+					if (isJsonNodeCity(node)) {
+						JsonNode addressNode = node.get("address");
+						String searchedcity = addressNode.has("city") ? addressNode.get("city").asText() :
+							(addressNode.toString().split(Pattern.quote("\""))[3]);
+						String searchedstate = addressNode.has("state") ? addressNode.get("state").asText() : 
+							(addressNode.has("province") ? addressNode.get("province").asText() : null);
+						String searchedcountry = addressNode.get("country").asText();
+						
+						Location location = new Location(searchedcity, searchedcountry);
+						if (searchedstate != null) {
+							location.setState(searchedstate);
+						}
+						location.setLatitude((float)node.get("lat").asDouble());
+						location.setLongitude((float)node.get("lon").asDouble());
+						return location;
 					}
-					return location;
 				}
 			}
 		} catch (JsonProcessingException | NullPointerException e) {
@@ -175,13 +202,43 @@ public class Location implements Serializable {
 		return null;
 	}
 	
-	private String makeRequest(String locationString) {
+	/**
+	 * Returns whether a location from the nominatim API is considered a city
+	 * @param node Json node containing an individual location from the API
+	 * @return true if the location is a city, false otherwise
+	 */
+	private boolean isJsonNodeCity(JsonNode node) {
+		return (node.get("class").asText().equals("boundary") && node.get("type").asText().equals("administrative"))
+				|| (node.get("class").asText().equals("place") && node.get("type").asText().equals("city"));
+	}
+	
+	/**
+	 * Sends a network request to nominatim API with the given search query, then
+	 * returns the raw JSON reply as a string. NOTE this is a blocking method
+	 * @param locationString Search query
+	 * @return JSON response from nominatum API
+	 */
+	protected String performLocationSearch(String locationString) {
 		final String uri = "https://nominatim.openstreetmap.org/search/?q=" + locationString
 				+ "&format=json&addressdetails=1&accept-language=en&limit=10";
 
 		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(uri, String.class);
-		
-		return result;
+		return restTemplate.getForObject(uri, String.class);
+	}
+	
+	public Float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Float latitude) {
+		this.latitude = latitude;
+	}
+
+	public Float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Float longitude) {
+		this.longitude = longitude;
 	}
 }

@@ -25,7 +25,7 @@
                 <v-sheet style="border: 1px solid silver;" class="pa-2 mb-4">
                   <v-switch
                     v-model="createActivityRequest.continuous"
-                    label="Time frame"
+                    label="Does this activity have a set start and end date?"
                     :true-value="false"
                     :false-value="true"
                   ></v-switch>
@@ -117,15 +117,23 @@
                   :rules="inputRules.descriptionRules"
                   outlined
                 ></v-textarea>
-                <v-text-field
-                  label="Location"
-                  ref="location"
-                  id="location"
-                  type="text"
-                  v-model="createActivityRequest.location"
-                  :rules="inputRules.locationRules"
-                ></v-text-field>
-
+                <v-row align="baseline">
+                  <v-col>
+                    <v-text-field
+                      label="Location"
+                      ref="location"
+                      id="location"
+                      type="text"
+                      v-model="createActivityRequest.location"
+                      :rules="inputRules.locationRules"
+                      @keyup.enter.native="viewOnMap"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="3">
+                    <v-btn v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Map</v-btn>
+                  </v-col>
+                </v-row>
+              
                 <v-autocomplete
                   :items="activityTypes"
                   color="white"
@@ -140,8 +148,19 @@
                 ></v-autocomplete>
                 <v-expansion-panels flat style="border: 1px solid silver;">
                   <v-expansion-panel>
-                    <v-expansion-panel-header>Activity Outcomes</v-expansion-panel-header>
-                    <v-expansion-panel-content>
+                    <v-expansion-panel-header>
+                      <v-container>
+                    <v-row>Activity Outcomes</v-row>
+                    <br>
+                    <v-divider> </v-divider>
+                    <br>
+                    <v-row>
+                      Let participants record their own results against challenges/milestones that you create
+                     </v-row>
+                      </v-container>
+                    </v-expansion-panel-header>
+                    
+                    <v-expansion-panel-content> 
                       <v-sheet>
                         <v-row
                           align="start"
@@ -282,6 +301,8 @@ import * as activityModel from "../models/activity.model";
 import * as userSearch from "../controllers/userSearch.controller";
 // eslint-disable-next-line no-unused-vars
 import { UserApiFormat } from "../scripts/User";
+// eslint-disable-next-line no-unused-vars
+import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
 
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -442,7 +463,6 @@ const CreateActivity = Vue.extend({
           this.organisers = this.organisers.filter(
             org => org.profile_id !== organiserToDelete.profile_id
           );
-          console.log(this.organisers);
         })
         .catch(err => {
           this.errorMessage = err.message;
@@ -495,6 +515,27 @@ const CreateActivity = Vue.extend({
       this.selectedActivityType = "";
     },
 
+    /*
+    Opens the selected location on the map
+    */
+    viewOnMap: async function() {
+      if(this.createActivityRequest.location === undefined || this.createActivityRequest.location === ""){
+        this.errorMessage = "Please enter a location"
+        return;
+      }
+
+      let res = await activityController.validateLocation(this.createActivityRequest.location);
+      if(res === undefined || res[0] === undefined){
+        this.errorMessage = "Specified location does not exist"
+        return;
+      }
+      let pinLocation = {lon: parseFloat(res[0].lon), lat: parseFloat(res[0].lat)} as LocationCoordinatesInterface;
+      let pinRequest = {geoposition: pinLocation, activity_id: -1} as CreateActivityRequest;
+      this.createActivityRequest.location = res[0].display_name;
+      this.$root.$emit('mapPaneToggle', true);
+      this.$root.$emit('mapShowSearchResults', [pinRequest]);
+      this.errorMessage = ""
+    },
     removeActivityType: function(activityType: string) {
       activityController.removeActivityType(
         activityType,
@@ -515,11 +556,11 @@ const CreateActivity = Vue.extend({
         outcome => outcome.description && outcome.units
       );
       try {
-        activityController.validateNewActivity(
-          this.startDate,
-          this.startTime,
-          this.endDate,
-          this.endTime,
+        await activityController.validateNewActivity(
+          this.startDate || "",
+          this.startTime || "",
+          this.endDate || "",
+          this.endTime || "",
           this.createActivityRequest
         );
       } catch (err) {
@@ -551,6 +592,7 @@ const CreateActivity = Vue.extend({
       activityController
         .deleteActivity(this.currentProfileId, this.editingId)
         .then(() => {
+          this.$root.$emit('refreshPins');
           this.$router.push({ name: "profilePage" });
         })
         .catch(err => {

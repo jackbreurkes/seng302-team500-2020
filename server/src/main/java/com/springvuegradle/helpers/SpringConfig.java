@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +27,7 @@ public class SpringConfig {
     @Scheduled(cron = "0 0 0 * * SAT")
     public void checkPassportCountries(){
         String apiCountriesJSON = restService.getCountriesJSON("https://restcountries.eu/rest/v2/all?fields=name;numericCode");
-        //System.out.println(apiCountriesJSON);
         List<Country> countries = processJson(apiCountriesJSON);
-        //TODO
         for(Country country : countries){
             //Check if it exists in the repo
             if(countryRepository.existsById(country.numericCode)){
@@ -58,7 +55,7 @@ public class SpringConfig {
             return countryList;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
     }
 

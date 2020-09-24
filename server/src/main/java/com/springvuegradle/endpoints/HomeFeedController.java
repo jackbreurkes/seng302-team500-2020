@@ -3,10 +3,7 @@ package com.springvuegradle.endpoints;
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.*;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import com.springvuegradle.model.repository.*;
 import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +27,13 @@ public class HomeFeedController {
     ChangeLogRepository changeLogRepository;
 
     @Autowired
+    ActivityPinRepository activityPinRepository;
+
+    @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    UserActivityRoleRepository userActivityRoleRepository;
 
     @Autowired
     ActivityRepository activityRepository;
@@ -38,10 +41,13 @@ public class HomeFeedController {
     @Autowired
     ProfileRepository profileRepository;
 
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
     /**
      * Retrieve and respond to a request to get a user's home feed updates
      * @param profileId id of the user whose home feed it should return
-     * @param paginatedChangeId the ID of the last changelog ID the frontend received in the last query (used for pagination)
+     * @param lastId the ID of the last changelog ID the frontend received in the last query (used for pagination)
      * @param httpRequest http request made
      * @return list of HomeFeedResponse objects which give appropriately formatted information about changes
      * @throws ForbiddenOperationException if trying to retrieve another user's home feed
@@ -78,6 +84,7 @@ public class HomeFeedController {
         if (paginatedChangeId == null) {
             changeLogList = changeLogRepository.retrieveUserHomeFeedUpdates(profile, pageable);
         } else {
+
             ChangeLog lastChangeReceived = changeLogRepository.findById(paginatedChangeId).orElse(null);
             if (lastChangeReceived == null) {
                 // this should never happen since changelogs shouldn't be deleted, and definitely not between pagination requests
@@ -95,6 +102,42 @@ public class HomeFeedController {
             changeLogList = changeLogList.subList(paginateChangeListIndex + 1, changeLogList.size());
         }
         return getHomeFeedResponsesFromChanges(changeLogList);
+    }
+
+    /**
+     * Get a list of recommended activities to display on the user's home feed.
+     * @param profileId id of the profile to retrieve recommendations for
+     * @param httpRequest http request made
+     * @return list of HomeFeedResponse objects which represent the recommended activities for the user
+     * @throws UserNotAuthorizedException if the user is not allowed to view this feed (i.e. they are a different user and not an admin)
+     * @throws UserNotAuthenticatedException if there is no authentication information in the request
+     * @throws RecordNotFoundException
+     */
+    @GetMapping("/{profileId}/recommendations")
+    @CrossOrigin
+    public List<HomeFeedResponse> getActivitySuggestions(@PathVariable("profileId") long profileId, HttpServletRequest httpRequest)
+            throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+
+        UserAuthorizer.getInstance().checkIsTargetUser(httpRequest, profileId);
+
+        Profile profile = profileRepository.findById(profileId).orElse(null);
+        if (profile == null) {
+            throw new RecordNotFoundException("user profile does not exist");
+        }
+
+        List<HomeFeedResponse> recommendationResponses = new ArrayList<>();
+
+        if (profile.getLocation() != null &&    // Only recommend activities if the user has a location to get activities around
+                profile.getLocation().getLatitude() != null && profile.getLocation().getLongitude() != null) {
+
+            for (Activity activity : activityRepository.findRecommendedActivitiesByProfile(profile)) {
+                recommendationResponses.add(new HomeFeedResponse(activity,
+                        subscriptionRepository.getFollowerCount(activity.getId()),
+                        ChangedAttribute.RECOMMENDED_ACTIVITY));
+            }
+        }
+
+        return recommendationResponses;
     }
 
     /**
@@ -151,7 +194,9 @@ public class HomeFeedController {
      * @param activityId id of the activity
      * @return Activity with the given id
      * @throws RecordNotFoundException if no activity with the id given exists
+     * @deprecated since sprint 6
      */
+    @Deprecated(since="sprint 6")
     private Activity getActivityIfExists(Long activityId) throws RecordNotFoundException {
         Optional<Activity> optionalActivity = activityRepository.findById(activityId);
         if (optionalActivity.isEmpty()) {
@@ -165,7 +210,9 @@ public class HomeFeedController {
      * @param profileId the id of the profile to retrieve
      * @return the profile with the given id
      * @throws RecordNotFoundException if no profile exists
+     * @deprecated since sprint 6
      */
+    @Deprecated(since="sprint 6")
     private Profile getProfileIfExists(Long profileId) throws RecordNotFoundException {
         Optional<Profile> optionalEditor = profileRepository.findById(profileId);
         if (optionalEditor.isEmpty()) {

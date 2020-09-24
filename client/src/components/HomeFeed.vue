@@ -18,6 +18,12 @@
             </v-card>
           </v-layout>
         </div>
+        <v-layout justify-center class="pt-1">
+          <v-btn :loading="loadingMore" @click="goToSearchPage" id="loadMoreButton">
+            <!-- show no text if loading to minimise button width -->
+            {{ loadingMore ? "" : "search for other activities" }}
+          </v-btn>
+        </v-layout>
       </v-col>
     </v-layout>
   </div>
@@ -37,38 +43,52 @@ const Homefeed = Vue.extend({
   data: function() {
     return {
       changeLogList: [] as HomeFeedCardType[],
-      lastId: NaN as number
+      lastId: NaN as number,
+      loadingMore: false as boolean,
+      observer: null as IntersectionObserver | null,
     };
   },
   created: async function() {
-    this.changeLogList = await HomefeedController.getHomeFeedData();
-    this.updateLastId();
+    const suggestions = await HomefeedController.getSuggestionsForHomeFeed();
+    const homeFeed = await HomefeedController.getHomeFeedData();
+    this.changeLogList.push(...suggestions);
+    this.changeLogList.push(...homeFeed);
 
+    let target = document.querySelector('#loadMoreButton');
+    if (target !== null && this.observer !== null) {
+      this.observer.observe(target);
+    }
   },
   methods: {
+    loadMore: function() {
+      this.loadingMore = true;
+      HomefeedController.getAdditionalUsersHomefeed(this.lastId)
+        .then(response => {
+            this.changeLogList.push.apply(this.changeLogList, response)
+            this.updateLastId();
+        })
+        .finally(() => {
+          this.loadingMore = false;
+        });
+    },
     /**
-     * Sets the callback to be called anytime when the user scrolls the document.
+     * takes the user to the activity search page.
      */
-    setOnScroll: function() {
-      window.onscroll = () => {
-
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-
-        if (bottomOfWindow) {
-          HomefeedController.getAdditionalUsersHomefeed(this.lastId)
-          .then(response => {
-              this.changeLogList.push.apply(this.changeLogList, response)
-              this.updateLastId();
-          });
-        }
-      };
+    goToSearchPage() {
+      this.$router.push({ name: "activities" });
     },
     updateLastId: function() {
       this.lastId = this.changeLogList[this.changeLogList.length -1].change_id;
     }
   },
-  mounted() {
-    this.setOnScroll()
+  mounted: function() {
+    // uses IntersectionObserver API built into the browser
+    // https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
+    this.observer = new IntersectionObserver((event) => {
+      if (event[0] !== undefined && event[0].isIntersecting) { //if the button is now in view
+        this.loadMore();
+      }  
+    }, {threshold: 0.5});
   }
 });
 

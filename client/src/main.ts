@@ -9,6 +9,7 @@ import AdminDashboard from "./components/AdminDashboard.vue";
 import Search from './components/Search.vue';
 import HomeFeed from './components/HomeFeed.vue';
 import Activity from './components/Activity.vue';
+import ActivitySearch from './components/ActivitySearch.vue';
 
 Vue.config.productionTip = false;
 
@@ -16,7 +17,6 @@ import VueLogger from "vuejs-logger";
 import VueRouter from "vue-router";
 import * as auth from "./services/auth.service";
 import vuetify from "./plugins/vuetify";
-import { removeAdminMode } from './services/properties.service';
 
 const ROUTER_BASE_URL = process.env.VUE_APP_BASE_URL;
 
@@ -63,7 +63,8 @@ const routes = [
     path: "/homefeed",
     name: "homefeed",
     component: HomeFeed,
-  }
+  },
+  {path: "/activities", name: "activities", component: ActivitySearch}
 ];
 
 const router = new VueRouter({
@@ -92,8 +93,7 @@ router.beforeEach((to, from, next) => {
 
   //checking if route is going to admin dashboard, and if it is and 
   //the permission level is too low then they will be redirected
-  if(to.name === "adminDashboard" && auth.getMyPermissionLevel() < 120){
-    removeAdminMode();
+  if(to.name === "adminDashboard" && !auth.isAdmin()) {
     next({name: "homefeed"});
     return;
   }

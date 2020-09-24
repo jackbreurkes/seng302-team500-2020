@@ -2,23 +2,25 @@ package com.springvuegradle.model.data;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.springvuegradle.auth.ChecksumUtils;
 
 /**
  * JPA representation of a user (email and password, not tied to a profile)
- * @author Alex Hobson
- *
  */
 
-/**
- * Used so that the password is never returned to the client
- */
+//Used so that the password is never returned to the client
 @JsonIgnoreProperties(value = {"password"})
 
 @Entity
@@ -58,6 +60,20 @@ public class User {
 			cascade = CascadeType.ALL,
 			mappedBy = "user")
 	private List<Email> emails = new ArrayList<>();
+
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			mappedBy = "user",
+			orphanRemoval = true
+	)
+	private List<ActivityParticipantResult> results = new ArrayList<>();
+
+	@OneToMany(
+			cascade = CascadeType.ALL,
+			mappedBy = "user",
+			orphanRemoval = true
+	)
+	private List<UserActivityRole> roles = new ArrayList<>();
 
 	/**
 	 * Construct a user and automatically assign their ID
@@ -130,4 +146,19 @@ public class User {
 		this.emails = emails;
 	}
 
+	public List<ActivityParticipantResult> getResults() {
+		return results;
+	}
+
+	public void setResults(List<ActivityParticipantResult> results) {
+		this.results = results;
+	}
+
+	public List<UserActivityRole> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<UserActivityRole> roles) {
+		this.roles = roles;
+	}
 }

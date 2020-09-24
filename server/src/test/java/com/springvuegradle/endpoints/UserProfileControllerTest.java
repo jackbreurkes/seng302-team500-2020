@@ -1,15 +1,17 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.auth.UserAuthorizer;
-import com.springvuegradle.exceptions.ExceptionHandlerController;
-import com.springvuegradle.model.data.ActivityType;
-import com.springvuegradle.model.data.Email;
-import com.springvuegradle.model.data.Gender;
-import com.springvuegradle.model.data.Profile;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.json.JSONParser;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -17,34 +19,37 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.springvuegradle.exceptions.ExceptionHandlerController;
+import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.Email;
+import com.springvuegradle.model.data.Gender;
+import com.springvuegradle.model.data.Location;
+import com.springvuegradle.model.data.Profile;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.LocationRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.RoleRepository;
+import com.springvuegradle.model.repository.SessionRepository;
+import com.springvuegradle.model.repository.UserRepository;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -136,19 +141,21 @@ class UserProfileControllerTest {
     	return emailList;
     }
 
-
     @Test
-    @Disabled
     public void testGetProfileById() throws Exception {
 
+        User user5 = new User(5);
+        Mockito.when(userRepository.findById(5l)).thenReturn(Optional.of(user5));
+        Mockito.when(profileRepository.findById(5l)).thenReturn(Optional.of(new Profile(user5, "Mary", "Bean", LocalDate.now(), Gender.FEMALE)));
+        Mockito.when(userRepository.findById(6l)).thenReturn(Optional.of(new User(6)));
+
         mvc.perform(MockMvcRequestBuilders
-                .get("/profiles/{id}", 5)
+                .get("/profiles/{id}", 5l)
+                .requestAttr("authenticatedid", 6l)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.employees").exists())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.employees[*].employeeId").isNotEmpty());
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(5));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profile_id").value(5l));
     }
  
     @Test
@@ -344,7 +351,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(nickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -371,7 +378,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -398,7 +405,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -429,7 +436,7 @@ class UserProfileControllerTest {
     	profileList.add(profile1);
     	profileList.add(profile2);
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(partialNickname)).thenReturn(profileList);
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(partialNickname)).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -452,7 +459,7 @@ class UserProfileControllerTest {
     public void testGetUserByNonExistentNickname() throws Exception {
     	String nickname = "mika";
     	
-        Mockito.when(profileRepository.findByNickNameStartingWith(nickname)).thenReturn(new ArrayList<Profile>());
+        Mockito.when(profileRepository.findByNickNameStartingWithIgnoreCase(nickname)).thenReturn(new ArrayList<Profile>());
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -477,7 +484,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Bobby", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bobby", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -503,7 +510,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith("Bobby", "B", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bobby", "B", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -531,7 +538,7 @@ class UserProfileControllerTest {
     	List<Profile> profileList = new ArrayList<Profile>();
     	profileList.add(profile1);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Bob", "Bro")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Bob", "Bro")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -552,7 +559,7 @@ class UserProfileControllerTest {
     	    	
     	String fullname = "Bobby B Brown";
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("Billy", "Bob")).thenReturn(new ArrayList<Profile>());
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("Billy", "Bob")).thenReturn(new ArrayList<Profile>());
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -582,7 +589,7 @@ class UserProfileControllerTest {
     	profileList.add(profile1);
     	profileList.add(profile2);
     	
-        Mockito.when(profileRepository.findByFirstNameStartingWithAndLastNameStartingWith("B", "Brown")).thenReturn(profileList);
+        Mockito.when(profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase("B", "Brown")).thenReturn(profileList);
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/profiles")
@@ -816,5 +823,94 @@ class UserProfileControllerTest {
 		json = (ArrayList<LinkedHashMap<String, Object>>) parser.parse();
 		return json;
 	}
+
+	//----------------------------Testing GET Profile Location----------------------------//
+    @Test
+    public void testGetProfileLocation_Authorized_ReturnsLocationWithLookup() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        
+        Location realLocation = new Location("Christchurch", "Canterbury", "New Zealand", -43.530955f, 172.6366455f);
+        Location mockLocation = Mockito.mock(Location.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doReturn(realLocation).when(mockLocation).lookupAndValidate();
+        
+        profile.setLocation(mockLocation);
+        
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/latlon")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber());
+    }
+
+    @Test
+    public void testGetProfileLocation_Authorized_ReturnsLocationWithoutLookup() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        
+        Location realLocation = Mockito.mock(Location.class);
+        Mockito.when(realLocation.getLatitude()).thenReturn(-43.530955f);
+        Mockito.when(realLocation.getLongitude()).thenReturn(172.6366455f);
+        Mockito.doThrow(new RuntimeException("Location with latitude/longitude tried to make a network request")).when(realLocation).lookupAndValidate();
+        
+        profile.setLocation(realLocation);
+        
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/latlon")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber());
+    }
+    
+    @Test
+    public void testGetProfileLocation_Authorized_UpdatesProfilesLocation() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+        
+        Location realLocation = new Location("Christchurch", "Canterbury", "New Zealand", -43.530955f, 172.6366455f);
+        Location mockLocation = Mockito.mock(Location.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doReturn(realLocation).when(mockLocation).lookupAndValidate();
+        
+        profile.setLocation(mockLocation);
+        
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/latlon")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+        
+        Assert.assertTrue((profile.getLocation().getLatitude()-(-43.530955f)) < 0.0001f);
+    }
 
 }

@@ -17,10 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+/**
+ * Controller for all endpoints related to editing a user's password
+ */
 @RestController
 public class EditPasswordController {
 
-    int ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private final int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     @Autowired
     private UserRepository userRepository;

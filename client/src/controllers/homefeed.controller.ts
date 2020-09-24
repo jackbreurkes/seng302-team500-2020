@@ -11,6 +11,15 @@ export async function getHomeFeedData(){
 }
 
 /**
+ * Requests home feed suggestions and returns it in a list of objects for controller
+ * @param userId of the homefeed suggestions being requested
+ */
+export async function getSuggestionsForHomeFeed(){
+    return await homefeedModel.getSuggestedActivities();
+
+}
+
+/**
  * Requests additional home feed entries when infinite scrolling
  * @param lastId the id of the last changelog entry currently loaded
  */

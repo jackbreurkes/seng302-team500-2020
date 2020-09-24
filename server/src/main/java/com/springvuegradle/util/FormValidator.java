@@ -1,10 +1,8 @@
 package com.springvuegradle.util;
 
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.model.data.Gender;
 
 import javax.validation.constraints.NotNull;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,9 +12,6 @@ import java.util.regex.Pattern;
 /**
  * Used to consistently validate form fields between endpoints.
  * Tests are based on the rules laid out in the Form Field Rules page on the wiki.
- * 
- * @author Alex Hobson
- * @author Jack van Heugten Breurkes
  */
 public class FormValidator {
 
@@ -202,7 +197,7 @@ public class FormValidator {
 		if (input.length() == 0) return false;
 
 		// check if there is exactly 1 '@'
-		if (!input.contains("@") || input.indexOf("@") != input.lastIndexOf("@")) {
+		if (!input.contains("@") || input.indexOf('@') != input.lastIndexOf('@')) {
 			return false;
 		}
 

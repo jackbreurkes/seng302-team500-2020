@@ -1,3 +1,5 @@
+import { LocationCoordinatesInterface } from './LocationCoordinatesInterface'
+
 export interface CreateActivityRequest {
     activity_id?: number;
     activity_name?: string;
@@ -7,9 +9,12 @@ export interface CreateActivityRequest {
     start_time?: string;
     end_time?: string;
     location?: string;
+    geoposition?: LocationCoordinatesInterface;
+    bounding_box?: LocationCoordinatesInterface[];  // array of size 2 - first element is southwest point, second is northeast point
     outcomes?: ActivityOutcomes[];
     num_followers?: number;
     num_participants?: number;
+    creator_id?: number;
   }
 
 export interface ActivityOutcomes {
@@ -31,3 +36,4 @@ export interface ParticipantResultDisplay {
   description?: string;
   units?: string;
 }
+

@@ -2,6 +2,8 @@ import { CreateActivityRequest } from "../scripts/Activity";
 import instance from "../services/axios.service";
 import { AxiosResponse } from 'axios';
 import { UserApiFormat } from '@/scripts/User';
+import { UserRoleFormat } from '@/scripts/UserRoleFormat';
+import { BoundingBoxInterface } from '@/scripts/BoundingBoxInterface';
 
 /**
  * creates an activity.
@@ -12,8 +14,7 @@ export async function createActivity(
   data: CreateActivityRequest,
   profileId: number
 ) {
-  let res = await instance.post(`/profiles/${profileId}/activities`, data);
-  // TODO handle response
+  await instance.post(`/profiles/${profileId}/activities`, data);
 }
 
 /**
@@ -24,8 +25,7 @@ export async function createActivity(
  */
 export async function editActivity(data: CreateActivityRequest, profileId: number,
   activityId: number) {
-  let res = await instance.put(`/profiles/${profileId}/activities/${activityId}`, data);
-  // TODO handle response
+  await instance.put(`/profiles/${profileId}/activities/${activityId}`, data);
 }
 
 /**
@@ -34,7 +34,6 @@ export async function editActivity(data: CreateActivityRequest, profileId: numbe
  * @param outcomeId ID of the activity outcome to record against
  * @param result The user's result for the outcome (between 0-30 characters)
  * @param timestamp The ISO8601 format timestamp
- * @return Promise<boolean> of whether the participant outcome was recorded
  */
 export async function createParticipantOutcome(activityId: number, outcomeId: number, result: string, timestamp: string) {
   let data = {
@@ -46,8 +45,7 @@ export async function createParticipantOutcome(activityId: number, outcomeId: nu
       }
     ]
   }
-  let res = await instance.post(`/activities/${activityId}/results`, data);
-  return res.status == 201;
+  await instance.post(`/activities/${activityId}/results`, data);
 }
 
 /**
@@ -79,6 +77,16 @@ export async function getActivity(creatorId: number, activityId: number): Promis
   return res.data;
 }
 
+/**
+ * Gets an activity by its activity id
+ * @param {number} activityId id of the activity to retrieve
+ * @return {CreateActivityRequest} retrieved activity data
+ */
+export async function getActivityById(activityId: number): Promise<CreateActivityRequest> {
+  let res = await instance.get(`/activities/${activityId}`);
+  return res.data;
+}
+
 
 /**
  * Deletes an activity by its creator's id and the activity id
@@ -106,7 +114,7 @@ export async function getFollowingActivity(profileId: number, activityId: number
  * @param activityId id of the activity to follow
  */
 export async function addActivityFollower(profileId: number, activityId: number) {
-  let res = await instance.post(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+  await instance.post(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
 
 /**
@@ -115,7 +123,7 @@ export async function addActivityFollower(profileId: number, activityId: number)
  * @param activityId id of the activity to unfollow
  */
 export async function removeActivityFollower(profileId: number, activityId: number) {
-  let res = await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
+  await instance.delete(`/profiles/${profileId}/subscriptions/activities/${activityId}`)
 } 
 
 /**
@@ -182,7 +190,18 @@ export async function deleteParticipantResult(activityId: number, outcomeId: num
  * @param activityId The activity ID
  * @returns A list of profiles that participate/organise the activity
  */
-export async function getParticipants(activityId: number): Promise<UserApiFormat[]> {
+export async function getParticipants(activityId: number): Promise<UserRoleFormat[]> {
   let res = await instance.get(`/activities/${activityId}/involved`);
+  return res.data;
+}
+
+/**
+ * Gets activities that fall within a certain area
+ * @param boundingBox Bounding box to get activities inside
+ */
+export async function getActivitiesInBoundingBox(boundingBox: BoundingBoxInterface) {
+
+  let res = await instance.get(`/maps?ne_lat=${boundingBox.ne_lat}&ne_lon=${boundingBox.ne_lon}
+    &sw_lat=${boundingBox.sw_lat}&sw_lon=${boundingBox.sw_lon}`);
   return res.data;
 }

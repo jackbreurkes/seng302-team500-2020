@@ -72,7 +72,8 @@
   
                 <div v-if="currentUser.location !== undefined && currentUser.location.city !==null && currentUser.location.city.length != 0">
                 <br />
-                <p> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+                <p v-if="currentUser.location.state !== undefined"> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.state }}, {{ currentUser.location.country }}</p>
+                <p v-if="currentUser.location.state === undefined"> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.country }}</p>
                 <br />
                 </div>
   
@@ -106,8 +107,7 @@
                 <v-toolbar-title>{{`${currentUser.firstname} ${currentUser.lastname}`}}'s Activities</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div v-if="currentlyHasAuthority">
-                <!--TODO Menu for this plus make sure admin knows this will create it on their behalf-->
-                  <v-btn @click="createActivityClicked" outlined>Create Activity</v-btn>
+                  <v-btn @click="createActivityClicked" outlined>Create Activity {{editingAsAdmin ? "as " + currentUser.firstname : ""}}</v-btn>
                 </div>
               </v-toolbar>
   
@@ -125,7 +125,7 @@
                 </v-tabs>
                 <v-tabs-items v-model="durationTab">
                   <v-tab-item v-for="item in activityList" :key="item.tab">
-                    <ActivitiesList :authority="currentlyHasAuthority" :activities="item.content"></ActivitiesList>
+                    <ActivitiesList :authority="currentlyHasAuthority" :activities="item.content" :tabState="item.tab"></ActivitiesList>
                   </v-tab-item>
                 </v-tabs-items>
               </v-card-text>
@@ -156,11 +156,9 @@ import {
   getDurationActivities,
   getContinuousActivities,
 } from '../controllers/activity.controller';
-import { removeAdminMode } from "../services/properties.service";
 import { clearAuthInfo } from "../services/auth.service";
 // eslint-disable-next-line no-unused-vars
 import { CreateActivityRequest } from "../scripts/Activity";
-import * as PropertiesService from '../services/properties.service';
 import * as authService from "../services/auth.service"
 
 // app Vue instance
@@ -172,9 +170,10 @@ const Homepage = Vue.extend({
   data: function() {
     let formValidator = new FormValidator();
     return {
-      currentProfileId: NaN as number,
+      idOfDisplayedUser: NaN as number, // the ID of the profile the page is displaying
       currentUser: {} as UserApiFormat,
       currentlyHasAuthority: false as boolean,
+      editingAsAdmin: false as boolean,
       confirmDeleteModal: false,
       // newEmail: "",
       // email: "",
@@ -227,11 +226,14 @@ const Homepage = Vue.extend({
     if (isNaN(profileId)) {
       this.$router.push({ name: "login" });
     }
-    this.currentProfileId = profileId;
+    this.idOfDisplayedUser = profileId;
     
     let myProfileId = authService.getMyUserId()
-    if (myProfileId == profileId || PropertiesService.getAdminMode()) {
+    if (myProfileId == profileId) {
       this.currentlyHasAuthority = true;
+    } else if (authService.isAdmin()) {
+      this.currentlyHasAuthority = true;
+      this.editingAsAdmin = true;
     }
 
     fetchProfileWithId(profileId)
@@ -270,7 +272,6 @@ const Homepage = Vue.extend({
       return
     }
     next()
-    history.go(0)
   },
 
   methods: {
@@ -287,11 +288,11 @@ const Homepage = Vue.extend({
     },
 
     editProfile: function() {
-      this.$router.push(`/profiles/${this.currentProfileId}/edit`);
+      this.$router.push(`/profiles/${this.idOfDisplayedUser}/edit`);
     },
 
     createActivityClicked: function() {
-      this.$router.push(`/profiles/${this.currentProfileId}/createActivity`);
+      this.$router.push(`/profiles/${this.idOfDisplayedUser}/createActivity`);
     },
 
     /**
@@ -299,11 +300,10 @@ const Homepage = Vue.extend({
      * Can only be done by an admin or the user themself
      */
     deleteAccount: function() {
-        deleteUserAccount(this.currentProfileId)
+        deleteUserAccount(this.idOfDisplayedUser)
         .then(() => {
-          if (authService.getMyUserId() == this.currentProfileId) {
+          if (authService.getMyUserId() == this.idOfDisplayedUser) {
             //if we're editing ourself
-            removeAdminMode();
             clearAuthInfo();  
             this.$router.push({ name: "register" });  
           } else {

@@ -1,14 +1,10 @@
 package com.springvuegradle.endpoints;
 
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ChangeLog;
-import com.springvuegradle.model.data.User;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ChangeLogRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,10 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.data.Activity;
+import com.springvuegradle.model.data.ChangeLog;
+import com.springvuegradle.model.data.User;
+import com.springvuegradle.model.repository.ActivityPinRepository;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.UserRepository;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DeleteActivitiesControllerTest {
@@ -33,6 +33,9 @@ public class DeleteActivitiesControllerTest {
 
     @Mock
     private ActivityRepository activityRepository;
+    
+    @Mock
+    private ActivityPinRepository activityPinRepository;
 
     @Mock
     private UserRepository userRepository;

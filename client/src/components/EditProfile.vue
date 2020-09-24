@@ -278,7 +278,6 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import {updateActivityTypes} from "../models/user.model"
-import { removeAdminMode } from "../services/properties.service";
 import { clearAuthInfo } from "../services/auth.service";
 // app Vue instance
 const Homepage = Vue.extend({
@@ -415,7 +414,6 @@ const Homepage = Vue.extend({
       return
     }
     next()
-    history.go(0)
   },
 
   methods: {
@@ -498,11 +496,6 @@ const Homepage = Vue.extend({
             state: "",
             country: ""
           }
-      // if ((this.editedUser.location.city === undefined) ||(this.editedUser.location.city === undefined )|| (this.editedUser.location.city === undefined)) {
-      //   this.editedUser.location.city = '';
-      //   this.editedUser.location.state = '';
-      //   this.editedUser.location.country = '';
-      //} 
     },
     /**
      * persists the changes made on the edit page by the user
@@ -518,6 +511,9 @@ const Homepage = Vue.extend({
           })
           .catch((e) => {
             alert(e.message);
+          })
+          .then(() => {
+            this.$root.$emit('refreshMapAndPins');
           });
       }
     },
@@ -539,7 +535,6 @@ const Homepage = Vue.extend({
          }
         profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
           .then(() => {
-            console.log("Emails saved");
             // refresh the page after updating emails
             history.go(0);
           })
@@ -629,7 +624,6 @@ const Homepage = Vue.extend({
     deleteAccount: function() {
         profileController.deleteUserAccount(this.currentProfileId)
         .then(() => {
-          removeAdminMode();
           clearAuthInfo();
           this.$router.push({ name: "register" });
         })

@@ -161,6 +161,10 @@ public class UserActivityRoleController {
                 throw new RecordNotFoundException("Activity not found");
             }
             User user = userRepository.findById(profileId).orElseThrow(() -> new RecordNotFoundException("user " + profileId + " not found"));
+            
+            if (user.getUserId() == activity.get().getCreator().getUser().getUserId()) {
+            	throw new UserNotAuthorizedException("Cannot change role of activity creator");
+            }
 
             UserActivityRole userActivityRole = new UserActivityRole(activity.get(), user, updateUserActivityRoleRequest.getRole());
             userActivityRoleRepository.save(userActivityRole);

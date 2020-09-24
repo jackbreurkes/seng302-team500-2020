@@ -1,9 +1,10 @@
 package com.springvuegradle.model.repository;
 
-import com.springvuegradle.model.data.Location;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.springvuegradle.model.data.Location;
 
 public interface LocationRepository extends JpaRepository<Location, Long> {
     public Optional<Location> findLocationByCityAndCountry(String city, String country);

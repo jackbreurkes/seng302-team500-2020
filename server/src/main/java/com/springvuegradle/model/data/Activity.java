@@ -1,9 +1,5 @@
 package com.springvuegradle.model.data;
 
-import org.hibernate.annotations.Cascade;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +15,9 @@ import javax.validation.constraints.NotNull;
 @Table(name = "activity")
 public class Activity {
 
+    /**
+     * Activity id in the database
+     */
     @Id
     @GeneratedValue
     private long activity_id;
@@ -26,32 +25,62 @@ public class Activity {
     // the @NotNull annotation will automatically set the column to not null
     // if hibernate.validator.apply_to_ddl = true (true by default)
 
+    /**
+     * Name of the activity
+     */
     @NotNull
-    @Column(columnDefinition = "varchar(30)")
+    @Column(columnDefinition = "varchar(50)")
     private String activityName;
 
+    /**
+     * Boolean representing whether the activity is continuous - true if has a duration, false if it is continuous
+     */
     @NotNull
     @Column(columnDefinition = "boolean")
     private boolean isDuration;
 
+    /**
+     * Activity's start datetime
+     */
     @Column(columnDefinition = "varchar(30)", name = "start_time_string")
     private String startTime;
 
+    /**
+     * Activity's end datetime
+     */
     @Column(columnDefinition = "varchar(30)", name = "end_time_string")
     private String endTime;
 
+    /**
+     * Activity's description
+     */
     @Column(columnDefinition = "text")
     private String description;
 
+    /**
+     * The street address for the activity location
+     */
     @NotNull
-    @Column(columnDefinition = "varchar(30)")
+    @Column(columnDefinition = "varchar(255)")
     private String location;
 
+    /**
+     * Pin specifying the location of this activity
+     */
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "activity")
+    private ActivityPin activityPin;
+
+    /**
+     * Id of the profile belonging to the user who created the activity
+     */
     @NotNull
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="creator_uuid")
     private Profile creator;
 
+    /**
+     * Set of activity types for this activity
+     */
     @NotNull
     @ManyToMany
     @JoinTable(
@@ -61,9 +90,15 @@ public class Activity {
     )
     private Set<ActivityType> activityTypes = new HashSet<>();
 
+    /**
+     * List of possible outcomes that can be recorded against for this activity
+     */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "activity")
     private List<ActivityOutcome> outcomes = new ArrayList<>();
 
+    /**
+     * List of user roles related to this activity
+     */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "activity")
     private List<UserActivityRole> relatedRoles = new ArrayList<>(); // needed for cascading
 
@@ -71,7 +106,10 @@ public class Activity {
      * no arg constructor required by JPA
      */
     public Activity() {
-    	activityTypes = new HashSet<ActivityType>();
+    	activityTypes = new HashSet<>();
+        activityName = "";
+        isDuration = false;
+        location = "";
     }
 
     /**
@@ -197,6 +235,20 @@ public class Activity {
      */
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    /**
+     * @return the pin for this activity
+     */
+    public ActivityPin getActivityPin() {
+        return activityPin;
+    }
+
+    /**
+     * @param activityPin pin to associate with this activity
+     */
+    public void setActivityPin(ActivityPin activityPin) {
+        this.activityPin = activityPin;
     }
 
     /**

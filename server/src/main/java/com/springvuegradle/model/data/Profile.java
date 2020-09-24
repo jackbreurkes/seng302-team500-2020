@@ -8,29 +8,13 @@ import javax.persistence.*;
 
 /**
  * JPA class for user profiles in persistent storage
- * @author Alex Hobson
- *
  */
 @Entity
 @Table(name = "profile")
-/*@NamedQuery(name = "updateFirstName", query = "update profile p set p.firstName = ?1 where p.user = ?2")
-@NamedQuery(name = "updateLastName", query = "update profile p set p.lastName = ?1 where p.user = ?2")
-@NamedQuery(name = "updateMiddleName", query = "update profile p set p.middleName = ?1 where p.user = ?2")
-@NamedQuery(name = "updateNickName", query = "update profile p set p.nickname = ?1 where p.user = ?2")
-@NamedQuery(name = "updateFitness", query = "update profile p set p.fitness = ?1 where ^%p.user = ?2")
-@NamedQuery(name = "updateBio", query = "update profile p set p.bio = ?1 where p.user = ?2")
-@NamedQuery(name = "updateDOB", query = "update profile p set p.dob = ?1 where p.user = ?2")
-@NamedQuery(name = "updateGender", query = "update profile p set p.gender = ?1 where p.user = ?2")
-@NamedQuery(name = "Profile.findById", query = "select p from Profile p where p.user = ?1")
-@NamedQuery(name = "Profile.updateFitness", query = "update Profile p set p.fitness = ?2 where p.user = ?1")*/
-//@NamedQuery(name = "Profile.searchByNickname", query = "SELECT first_name FROM profile p WHERE p.nick_name LIKE '^The'")
-
-
-//@NamedQuery(name = "Profile.findByFirstName", query = "SELECT p.firstName FROM Profile p WHERE p.firstName LIKE '?1%'")
 @NamedQuery(name = "Profile.findByFirstLastname", query = "SELECT p.firstName, p.lastName FROM Profile p WHERE p.firstName LIKE '?1%' AND p.lastName LIKE '?2%' ")
 
 
-public class Profile implements Serializable {
+public class Profile {
 
 	/**
 	 * Auto generated serial ID
@@ -115,6 +99,13 @@ public class Profile implements Serializable {
 			inverseJoinColumns = {@JoinColumn(name = "activity_type_id")}
 	)
 	private List<ActivityType> activityTypes;
+
+	@OneToMany(
+			mappedBy = "subscriber",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true
+	)
+	private List<Subscription> subscriptions;
 
     /**
      * Constructor required by spring
@@ -339,5 +330,13 @@ public class Profile implements Serializable {
 		} else {
 			return this.firstName + " " + this.lastName;
 		}
+	}
+
+	public List<Subscription> getSubscriptions() {
+		return subscriptions;
+	}
+
+	public void setSubscriptions(List<Subscription> subscriptions) {
+		this.subscriptions = subscriptions;
 	}
 }

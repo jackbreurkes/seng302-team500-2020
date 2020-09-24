@@ -1,8 +1,10 @@
 package com.springvuegradle.model.requests;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.springvuegradle.model.data.GeoPosition;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -17,7 +19,7 @@ import java.util.List;
 public class CreateActivityRequest {
 
     @NotNull(message = "missing activity_name field")
-    @Size(min = 4, max = 30, message = "activity_name must be between 4 and 30 characters inclusive")
+    @Size(min = 4, max = 50, message = "activity_name must be between 4 and 50 characters inclusive")
     private String activityName;
 
     @Size(min = 8, message = "activity description must be at least 8 characters")
@@ -33,10 +35,10 @@ public class CreateActivityRequest {
 
     @NotNull(message = "missing continuous field")
     private Boolean continuous;
-
     private String startTime;
     private String endTime;
     private String location;
+
 
     public CreateActivityRequest() {}
 

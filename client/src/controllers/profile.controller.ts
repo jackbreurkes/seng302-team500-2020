@@ -1,4 +1,4 @@
-import { getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails, deleteAccount } from '../models/user.model'
+import { getCurrentUser, saveUser, updateCurrentPassword, getProfileById, saveActivityTypes, updateEmails, deleteAccount, getUserLocation } from '../models/user.model'
 import * as auth from "../services/auth.service";
 import { loadPassportCountries } from '../models/countries.model';
 import { UserApiFormat } from '@/scripts/User';
@@ -6,6 +6,7 @@ import FormValidator from '../scripts/FormValidator';
 import { getAvailableActivityTypes } from './activity.controller';
 import { checkCountryExistence } from '../models/location.model';
 import { LocationInterface } from '@/scripts/LocationInteface'
+import { LocationCoordinatesInterface } from '@/scripts/LocationCoordinatesInterface';
 
 let formValidator = new FormValidator();
 
@@ -177,8 +178,6 @@ export async function updatePassword(oldPassword: string, newPassword: string, r
  * @param profileId the id of the profile belonging to the user being updated
  */
 export async function updateUserEmails(primaryEmail: string, additionalEmails: string[], profileId: number) {
-    console.log(primaryEmail)
-    console.log(additionalEmails)
     let user = await getProfileById(profileId);
     if (user === null) {
         throw new Error("user not found");
@@ -188,8 +187,6 @@ export async function updateUserEmails(primaryEmail: string, additionalEmails: s
         throw new Error("Invalid primary email " + primaryEmail);
     }
     for (let i = 0; i < additionalEmails.length; i++) {
-        console.log(additionalEmails[i])
-        console.log(additionalEmails)
         if (additionalEmails[i] == null || !formValidator.isValidEmail(additionalEmails[i])) {
             throw new Error("Invalid email " + additionalEmails[i]);
         }
@@ -239,6 +236,19 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
       user.activities.splice(index, 1);
     }
     await saveActivityTypes(user, profileId);
+}
+
+/**
+ * Gets the specified user's profile including lat/lon, or null if the profile does not have a location.
+ * @param profileId Profile ID to get the city location of
+ * @returns the profile's set location, or null if the profile does not have a location
+ */
+export async function getProfileLocation(profileId: number): Promise<LocationCoordinatesInterface | null> {
+    try {
+        return await getUserLocation(profileId);
+    } catch (e) {
+        return null;
+    }
 }
 
 /**

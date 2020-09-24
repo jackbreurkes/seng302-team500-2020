@@ -8,8 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.springvuegradle.model.data.Activity;
-import com.springvuegradle.model.data.ActivityOutcome;
+import com.springvuegradle.model.data.ActivityPin;
 import com.springvuegradle.model.data.ActivityType;
+import com.springvuegradle.model.data.GeoPosition;
 
 /**
  * class used to return an Activity entity as JSON data
@@ -32,8 +33,18 @@ public class ActivityResponse {
     private Long numFollowers;
     private Long numParticipants;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private GeoPosition geoposition;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private GeoPosition[] boundingBox; // array of size 2 - first element is southwest point, second is northeast point
+
 	@JsonProperty("activity_type")
     private List<String> activityTypes;
+
+    /**
+     * default constructor used for serialising response JSON in tests
+     */
+    protected ActivityResponse() {}
 
     /**
      * default constructor
@@ -59,6 +70,16 @@ public class ActivityResponse {
             this.startTime = activity.getStartTime();
             this.endTime = activity.getEndTime();
         }
+
+        if (activity.getActivityPin() != null) {
+            ActivityPin pin = activity.getActivityPin();
+            this.geoposition = new GeoPosition(pin.getLatitude(), pin.getLongitude());
+            this.boundingBox = new GeoPosition[] {
+                    new GeoPosition(pin.getSouthwestBoundingLatitude(), pin.getSouthwestBoundingLongitude()),
+                    new GeoPosition(pin.getNortheastBoundingLatitude(), pin.getNortheastBoundingLongitude())
+            };
+        }
+
         this.creatorId = activity.getCreator().getUser().getUserId();
         this.activityTypes = activity.getActivityTypes()
                 .stream()
@@ -152,5 +173,13 @@ public class ActivityResponse {
 
     public List<ActivityOutcomeResponse> getOutcomes() {
         return outcomes;
+    }
+
+    public GeoPosition getGeoposition() {
+        return geoposition;
+    }
+
+    public GeoPosition[] getBoundingBox() {
+        return boundingBox;
     }
 }

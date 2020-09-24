@@ -3,38 +3,58 @@ package com.springvuegradle.endpoints;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.springvuegradle.exceptions.UserNotAuthorizedException;
-import com.springvuegradle.exceptions.UserNotAuthenticatedException;
-import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.model.data.*;
-import com.springvuegradle.model.repository.*;
-import com.springvuegradle.model.requests.PutActivityTypesRequest;
-import com.springvuegradle.model.requests.UpdateRoleRequest;
-import com.springvuegradle.util.FormValidator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.ForbiddenOperationException;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
+import com.springvuegradle.exceptions.UserNotAuthorizedException;
+import com.springvuegradle.model.repository.ActivityRepository;
+import com.springvuegradle.model.repository.ActivityTypeRepository;
+import com.springvuegradle.model.repository.ChangeLogRepository;
+import com.springvuegradle.model.repository.CountryRepository;
+import com.springvuegradle.model.repository.EmailRepository;
+import com.springvuegradle.model.repository.LocationRepository;
+import com.springvuegradle.model.repository.ProfileRepository;
+import com.springvuegradle.model.repository.RoleRepository;
+import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.ProfileObjectMapper;
+import com.springvuegradle.model.requests.PutActivityTypesRequest;
+import com.springvuegradle.model.requests.UpdateRoleRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 import com.springvuegradle.model.responses.ProfileCreatedResponse;
 import com.springvuegradle.model.responses.ProfileResponse;
+import com.springvuegradle.util.FormValidator;
 
 
 /**
  * Endpoint for the PUT /profiles/{profile_id} request
- * @author Jack van Heugten Breurkes
  */
 @RestController
 @RequestMapping("/profiles")
@@ -90,10 +110,9 @@ public class UserProfileController {
      */
     @Autowired
     private LocationRepository locationRepository;
-
-    private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
-    private final short STD_ADMIN_USER_PERMISSION = 126;
-    private final short SUPER_ADMIN_USER_PERMISSION = 127;
+    
+    private static final String INVALID_FULL_NAME_ERROR_MESSAGE = "Has not provided a valid full name (made up of at least a first and last name)";
+    private static final String NOT_FOUND_ERROR_MESSAGE = " not found";
 
     /**
      * handle when user tries to PUT /profiles/{profile_id}
@@ -102,7 +121,8 @@ public class UserProfileController {
     @CrossOrigin
     public ProfileResponse updateProfile(
             @Valid @RequestBody ProfileObjectMapper request,
-            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, ParseException, UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
+            @PathVariable("profileId") long profileId, HttpServletRequest httpRequest) throws RecordNotFoundException, 
+    		UserNotAuthenticatedException, InvalidRequestFieldException, UserNotAuthorizedException {
         // check correct authentication
         UserAuthorizer.getInstance().checkIsTargetUserOrAdmin(httpRequest, profileId, userRepository);
         request.checkParseErrors(); // throws an error if an invalid profile field was sent as part of the request
@@ -164,7 +184,7 @@ public class UserProfileController {
         for (String countryName : countryNames) {
             Optional<Country> country = countryRepository.findByName(countryName);
             if (country.isEmpty()) {
-                throw new RecordNotFoundException("country " + countryName + " not found");
+                throw new RecordNotFoundException("country " + countryName + NOT_FOUND_ERROR_MESSAGE);
             }
             countries.add(country.get());
         }
@@ -175,7 +195,6 @@ public class UserProfileController {
         List<ActivityType> activityTypes = new ArrayList<>();
         for (String activityTypeName : activityTypeNames) {
             Optional<ActivityType> optionalActivityType = activityTypeRepository.getActivityTypeByActivityTypeName(activityTypeName);
-            System.out.println(activityTypeName);
             if (optionalActivityType.isPresent()) {
                 activityTypes.add(optionalActivityType.get());
             } else {
@@ -208,13 +227,18 @@ public class UserProfileController {
         String method = request.getParameter("method");
         String useExactEmail = request.getParameter("exactEmail"); // if the email should be found exactly
 
-    	List<Profile> profiles = new ArrayList<Profile>();	// would eventually be results from query of database with parameters
+    	List<Profile> profiles = new ArrayList<>();	// would eventually be results from query of database with parameters
     	
 		if (searchedNickname != null && !searchedNickname.equals("")) {
-			profiles = profileRepository.findByNickNameStartingWith(searchedNickname);
-		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
+			profiles = profileRepository.findByNickNameStartingWithIgnoreCase(searchedNickname);
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")
+                && searchedLastname != null && !searchedLastname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
-		} else if (searchedFullname != null && !searchedFullname.equals("")) {
+		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
+            profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
+        } else if (searchedLastname != null && !searchedLastname.equals("")) {
+            profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+        } else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && !searchedEmail.equals("")) {
 		    boolean exact = useExactEmail != null && useExactEmail.equals("true");
@@ -239,7 +263,7 @@ public class UserProfileController {
     private List<Profile> getUsersByFullname(String fullname) throws InvalidRequestFieldException {
     	String[] names = fullname.strip().split(" ");
     	if (names.length < 2) {
-    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
     	String firstname = "";
@@ -254,14 +278,14 @@ public class UserProfileController {
 	    	lastname = names[1];
     	}
     	if (firstname.length() == 0 || lastname.length() == 0) {
-    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
-    	List<Profile> profiles = new ArrayList<Profile>();
+    	List<Profile> profiles;
     	if (middlename.length() == 0) {
-    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
-    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, middlename, lastname);
     	}
 
 		return profiles;
@@ -272,20 +296,20 @@ public class UserProfileController {
      * @param firstname initial (or full) part of the firstname to find
      * @param middlename initial (or full) part of the middlename to find
      * @param lastname initial (or full) part of the lastname to find
-     * @return list of profiles whose first, middle and last names match the portions specified
-     * @throws InvalidRequestFieldException if there is not at least one character in both of the first and last names
+     * @return list of profiles whose first, middle and last names match the portions specified (case insensitive)
+     * @throws InvalidRequestFieldException if there is not at least one character in either of the first and last names
      */
     private List<Profile> getUsersByNamePieces(String firstname, String middlename, String lastname) throws InvalidRequestFieldException {
 
     	if (lastname == null || lastname.length() == 0) {
-    		throw new InvalidRequestFieldException("Has not provided a valid full name (made up of at least a first and last name)");
+    		throw new InvalidRequestFieldException(INVALID_FULL_NAME_ERROR_MESSAGE);
     	}
     	
-    	List<Profile> profiles = new ArrayList<Profile>();
+    	List<Profile> profiles;
     	if (middlename == null || middlename.length() == 0) {
-    		profiles = profileRepository.findByFirstNameStartingWithAndLastNameStartingWith(firstname, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, lastname);
     	} else {
-    		profiles = profileRepository.findByFirstNameStartingWithAndMiddleNameStartingWithAndLastNameStartingWith(firstname, middlename, lastname);
+    		profiles = profileRepository.findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(firstname, middlename, lastname);
     	}
 
 		return profiles;
@@ -303,9 +327,9 @@ public class UserProfileController {
     	  # if there is an @ in the query, match the query string then anything after
     	  # e.g. test@gmail.co(.*) */
     	
-    	List<Email> emails = new ArrayList<Email>();
-    	Set<Profile> profileSet = new HashSet<Profile>();
-    	List<Profile> profiles = new ArrayList<Profile>();
+    	List<Email> emails = new ArrayList<>();
+    	Set<Profile> profileSet = new HashSet<>();
+    	List<Profile> profiles = new ArrayList<>();
 
     	String[] emailPortions = email.split("@");
     	if  (!email.contains("@")) {
@@ -332,7 +356,7 @@ public class UserProfileController {
     		profileSet.add(foundProfile);
     	}
     	
-    	profileSet.forEach((Profile profile) -> {profiles.add(profile);});
+    	profileSet.forEach(profiles::add);
 
     	return profiles;
     }
@@ -344,8 +368,6 @@ public class UserProfileController {
      * @return the list of profiles matching the search
      */
     private List<Profile> getProfilesByActivityTypes(String spaceSeparatedActivityTypeNames, String method) throws InvalidRequestFieldException, RecordNotFoundException {
-        List<Profile> profiles = new ArrayList<>();
-
         if (spaceSeparatedActivityTypeNames.isBlank()) {
             throw new InvalidRequestFieldException("activity search string cannot be empty");
         }
@@ -370,12 +392,11 @@ public class UserProfileController {
             }
         }
 
-        if (method.toLowerCase().equals("or")) {
-            profiles = profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
+        if (method.equalsIgnoreCase("or")) {
+            return profileRepository.findByActivityTypesContainsAnyOf(activityTypeNames);
         } else { // method equals "and"
-            profiles = profileRepository.findByActivityTypesContainsAllOf(activityTypeNames);
+            return profileRepository.findByActivityTypesContainsAllOf(activityTypeNames);
         }
-        return profiles;
     }
 
 
@@ -386,13 +407,8 @@ public class UserProfileController {
     @CrossOrigin
     public Object createprofile(@Valid @RequestBody ProfileObjectMapper userRequest) throws NoSuchAlgorithmException, RecordNotFoundException, InvalidRequestFieldException {
 
-        User user = null;
-        try {
-            user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository, countryRepository, activityTypeRepository, locationRepository);
-        } catch (ParseException ex) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
-        }
-        // an InvalidRequestFieldException will be caught by ExceptionHandlerController
+        User user = userRequest.createNewProfile(userRepository, emailRepository, profileRepository,
+                countryRepository, activityTypeRepository, locationRepository);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ProfileCreatedResponse(user.getUserId()));
     }
@@ -405,14 +421,45 @@ public class UserProfileController {
      */
     private Location addLocationIfNotExisting(Location location) {
         Optional<Location> existing = locationRepository.findLocationByCityAndCountry(location.getCity(), location.getCountry());
-        if (existing != null && existing.isPresent()) {
+        if (existing.isPresent()) {
             return existing.get();
         }
 
         return locationRepository.save(location);
     }
 
+    /**
+     * Handles viewing another profile including its location details (latitude, longitude)
+     * @param profileId profile id to view
+     * @return response entity to be sent to the client
+     */
+    @GetMapping("/{profileId}/latlon")
+    @CrossOrigin
+    public GeoPosition viewProfileLocation(@PathVariable("profileId") long profileId, HttpServletRequest request) throws RecordNotFoundException {
+    	Optional<Profile> optionalProfile = profileRepository.findById(profileId);
+        if (optionalProfile.isPresent()) {
+            Profile profile = optionalProfile.get();
+            Location location = profile.getLocation();
 
+            if (location.getLatitude() == null || location.getLongitude() == null) {
+            	Location newLocation = location.lookupAndValidate();
+            	
+            	if (newLocation == null) {
+            		throw new RecordNotFoundException("Could not resolve location for profile id "+profileId);
+            	}
+            	
+            	location.setLatitude(newLocation.getLatitude());
+            	location.setLongitude(newLocation.getLongitude());
+            	locationRepository.save(location);
+            	
+            	profileRepository.save(profile);
+            }
+            
+            return new GeoPosition(location.getLatitude(), location.getLongitude());
+        } else {
+            throw new RecordNotFoundException("Profile with id " + profileId + NOT_FOUND_ERROR_MESSAGE);
+        }
+    }
 
     /**
      * Handles viewing another profile
@@ -468,17 +515,20 @@ public class UserProfileController {
         return new ProfileResponse(profile, emailRepository);
     }
 
+
+
     /**
      * Gets information about a certain profile or returns an error object for the client
      * @param id Profile ID of the profile to view
      * @return response entity to be sent to the client
      */
     private ProfileResponse view(long id) throws RecordNotFoundException {
-        if (profileRepository.existsById(id)) {
-            Profile profile = profileRepository.findById(id).get();
+    	Optional<Profile> optionalProfile = profileRepository.findById(id);
+        if (optionalProfile.isPresent()) {
+            Profile profile = optionalProfile.get();
             return new ProfileResponse(profile, emailRepository);
         } else {
-            throw new RecordNotFoundException("Profile with id " + id + " not found");
+            throw new RecordNotFoundException("Profile with id " + id + NOT_FOUND_ERROR_MESSAGE);
         }
     }
     

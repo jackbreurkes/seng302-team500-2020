@@ -2,9 +2,9 @@
   <div id="HomeFeedCard">
     <v-layout justify-center class="pt-1">
         <v-card width='600' height='100%'>
-            <v-toolbar color="blue" dark flat height='50'>
+            <v-toolbar  :color="suggestion ? 'green' : 'blue'" dark flat height='50'>
                 <v-icon class="mr-2">mdi-account-edit</v-icon>
-                <v-toolbar-title>{{activityName}}</v-toolbar-title>
+                <v-toolbar-title >{{activityName}}</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-menu bottom left offset-y>
                     <template v-slot:activator="{ on, attrs }">
@@ -13,8 +13,9 @@
                         icon
                         v-bind="attrs"
                         v-on="on"
+                        v-if="!suggestion"
                       >
-                        <v-icon>mdi-dots-vertical</v-icon>
+                        <v-icon >mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
 
@@ -40,6 +41,9 @@
 import Vue from 'vue'
 import {unfollowActivity} from '../controllers/activity.controller';
 import * as authService from '../services/auth.service';
+// eslint-disable-next-line no-unused-vars
+import { CreateActivityRequest } from '../scripts/Activity';
+import { getActivity } from '../controllers/activity.controller'
 
 const HomeFeedCard = Vue.extend({
     name: "HomeFeedCard",
@@ -50,15 +54,18 @@ const HomeFeedCard = Vue.extend({
             creatorName: this.cardData.creator_name,
             editorName: this.cardData.editorName,
             editorAction: "edited",
-            userActionTimeStamp: this.cardData.edited_timestamp,
+            userActionTimeStamp: this.cardData.edited_timestamp || null,
             entityId: this.cardData.entity_id,
             creatorId: this.cardData.creator_id,
             oldValue: "",
             newValue: "",
             infoString: "",
+            suggestion: false,
+            activity: [] as CreateActivityRequest,
         };
     },
-    created(){
+    async created(){
+        this.activity = await getActivity(this.cardData.creator_id, this.cardData.entity_id);
         this.parseChangelogResponse();
     },
 
@@ -116,11 +123,22 @@ const HomeFeedCard = Vue.extend({
                     activityTypesString += element + ", ";
                 });
                 return activityTypesString.substring(0, activityTypesString.length - 2);
+            } else if (this.cardData.changed_attribute == "RECOMMENDED_ACTIVITY"){
+                let actName = this.activityName;
+                this.activityName = "Recommended: " + actName;
+                this.suggestion = true;
+                return "Suggested because it is in " + this.activity.location + " and you are interested in at least one of " + this.activity.activity_type;
             }
             return this.cardData.changed_attribute;
         },
         parseChangelogResponse: function(){
-            this.infoString = this.cardData.editor_name + " " + this.parseEditorAction() + " on " + this.parseTime(this.cardData.edited_timestamp);
+            let string = this.parseEditorAction();
+            
+            if(!this.suggestion) {
+                this.infoString = this.cardData.editor_name + " " + string + " on " + this.parseTime(this.cardData.edited_timestamp);
+            } else {
+                this.infoString = string;
+            }
         },
         unsubscribe: async function() {
             let myProfileId = await authService.getMyUserId();
@@ -139,6 +157,7 @@ const HomeFeedCard = Vue.extend({
             this.creatorName = null;
             this.activityName = "Unfollowed"
             this.infoString = "You have unfollowed this activity. You will no longer receive updates about this activity."
+            this.$root.$emit('refreshPins');
         }
     }
 })

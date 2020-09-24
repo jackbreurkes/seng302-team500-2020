@@ -15,6 +15,9 @@ import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.requests.UpdatePrimaryEmailRequest;
 import com.springvuegradle.model.responses.ErrorResponse;
 
+/**
+ * REST controller for updating a user's primary email
+ */
 @RestController
 public class UpdatePrimaryEmailController {
 	

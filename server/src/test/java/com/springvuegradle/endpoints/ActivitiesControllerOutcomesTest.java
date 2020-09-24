@@ -56,6 +56,9 @@ public class ActivitiesControllerOutcomesTest {
 	private ActivityTypeRepository activityTypeRepo;
 
 	@MockBean
+	private ActivityPinRepository activityPinRepository;
+
+	@MockBean
 	private UserRepository userRepo;
 
 	@MockBean

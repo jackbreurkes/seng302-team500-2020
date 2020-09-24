@@ -1,5 +1,7 @@
 package com.springvuegradle.auth;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.exceptions.UserNotAuthorizedException;
@@ -11,18 +13,13 @@ import com.springvuegradle.model.repository.ActivityRepository;
 import com.springvuegradle.model.repository.UserActivityRoleRepository;
 import com.springvuegradle.model.repository.UserRepository;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Null;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
 public class UserAuthorizer {
     /**
      * Instance of the UserAuthorizer
      */
     private static UserAuthorizer authInstance = null;
 
-    private final short ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private static final short ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     /**
      * Private constructor for singlton pattern
@@ -140,6 +137,26 @@ public class UserAuthorizer {
             throw new UserNotAuthorizedException("you must be authenticated as someone with permission to edit this activity (admin, creator or organiser)");
         }
         return authId; //if an organiser
+    }
 
+    /**
+     * Checks that the user is involved in some way with a given activity,
+     * as either the creator, an organiser or a participant.
+     * @param request the HttpServletRequest for the operation
+     * @param activity the activity the request's sender is expected to be involved with
+     * @param userActivityRoleRepository repository of user activity roles
+     * @return the user's id if they are involved with the activity
+     * @throws UserNotAuthenticatedException if the user isn't logged in
+     * @throws UserNotAuthorizedException if the user does not have permission
+     */
+    public long checkIsInvolvedWithActivity(HttpServletRequest request, Activity activity, UserActivityRoleRepository userActivityRoleRepository) throws UserNotAuthenticatedException, UserNotAuthorizedException {
+        long authId = checkIsAuthenticated(request);
+
+        boolean hasRole = userActivityRoleRepository.getRoleEntryByUserId(authId, activity.getId()).isPresent();
+        boolean isCreator = activity.getCreator().getUser().getUserId() == authId;
+        if (!hasRole && !isCreator) {
+            throw new UserNotAuthorizedException("must be a participant, organiser or creator of the activity to log results");
+        }
+        return authId;
     }
 }

@@ -6,8 +6,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Main class that runs the application
- * @author Alex Hobson
- *
  */
 public class Main {
 
