@@ -365,12 +365,13 @@ class ActivitySearchRepositoryImplTest {
     }
 
     @Test
-    void findRecommendedActivitiesStartInPast_NoneFound(){
+    void findRecommendedActivitiesEndInPast_NoneFound(){
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(selfActivityType);
 
         Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
         tempActivity.setStartTime("1990-11-01T12:11:28+1200");
+        tempActivity.setEndTime("1990-12-01T12:11:28+1200");
 
         List<ActivityPin> returnList = new ArrayList<>();
         returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
@@ -385,18 +386,42 @@ class ActivitySearchRepositoryImplTest {
         Set<ActivityType> activityTypes1 = new HashSet<>();
         activityTypes1.add(selfActivityType);
 
-        Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
-        tempActivity.setStartTime("1990-11-01T12:11:28+1200");
+        Activity pastActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
+        pastActivity.setStartTime("1990-11-01T12:11:28+1200");
+        pastActivity.setEndTime("1991-11-01T12:11:28+1200");
+        Activity recommendedActivity = new Activity("Activity Name 2", false, "Nowhere", otherProfile, activityTypes1);
+        Activity activityICreated = new Activity("Activity Name 3", false, "Nowhere", selfProfile, activityTypes1);
 
         List<ActivityPin> returnList = new ArrayList<>();
-        returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
-        returnList.add(new ActivityPin(new Activity("Activity Name 2", false, "Nowhere", otherProfile, activityTypes1), 9.5f, 9.5f, 0,0,0,0 ));
-        returnList.add(new ActivityPin(new Activity("Activity Name 2", false, "Nowhere", selfProfile, activityTypes1), 9.5f, 9.5f, 0,0,0,0 ));
+        returnList.add(new ActivityPin(pastActivity, 9.5f, 9.5f, 0,0,0,0 ));
+        returnList.add(new ActivityPin(recommendedActivity, 9.5f, 9.5f, 0,0,0,0 ));
+        returnList.add(new ActivityPin(activityICreated, 9.5f, 9.5f, 0,0,0,0 ));
 
 
         Mockito.when(activityPinRepository.findPinsInBounds(selfProfile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,selfProfile.getLocation().getLongitude() + BOUNDING_BOX_SIZE, selfProfile.getLocation().getLatitude() - BOUNDING_BOX_SIZE, selfProfile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged())).thenReturn(returnList);
 
-        assertEquals(1, activityRepository.findRecommendedActivitiesByProfile(selfProfile).size());
+        List<Activity> results = activityRepository.findRecommendedActivitiesByProfile(selfProfile);
+        assertEquals(1, results.size());
+        assertEquals(recommendedActivity, results.get(0));
+    }
+
+    @Test
+    void findRecommendedActivities_StartInPast_EndInFuture_IsRecommended(){
+        Set<ActivityType> activityTypes1 = new HashSet<>();
+        activityTypes1.add(selfActivityType);
+
+        Activity tempActivity = new Activity("Activity Name", true, "Nowhere", otherProfile, activityTypes1);
+        tempActivity.setStartTime("1990-10-10T12:11:28+1200");
+        tempActivity.setEndTime("2025-05-02T12:11:28+1200");
+
+        List<ActivityPin> returnList = new ArrayList<>();
+        returnList.add(new ActivityPin(tempActivity, 9.5f, 9.5f, 0,0,0,0 ));
+
+        Mockito.when(activityPinRepository.findPinsInBounds(selfProfile.getLocation().getLatitude() + BOUNDING_BOX_SIZE,selfProfile.getLocation().getLongitude() + BOUNDING_BOX_SIZE, selfProfile.getLocation().getLatitude() - BOUNDING_BOX_SIZE, selfProfile.getLocation().getLongitude() - BOUNDING_BOX_SIZE, Pageable.unpaged())).thenReturn(returnList);
+
+        List<Activity> results = activityRepository.findRecommendedActivitiesByProfile(selfProfile);
+        assertEquals(1, results.size());
+        assertEquals(tempActivity, results.get(0));
     }
 
 }
