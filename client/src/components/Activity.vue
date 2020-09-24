@@ -17,6 +17,8 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <div>
+                  <v-chip v-if="isHappeningNow()" class="mr-2" color="green">Happening Now</v-chip>
+                  <v-chip v-if="isInPast()" class="mr-2" color="red">Activity Finished</v-chip>
                   <v-chip v-if="currentUsersProfileId === creatorId" outlined class="mr-1">Creator</v-chip>
                   <v-chip v-if="organiser" outlined class="mr-1">Organiser</v-chip>
                   <v-chip v-if="following" outlined class="mr-1">Following</v-chip>
@@ -88,8 +90,8 @@
               <v-row>
                 <v-col cols="2"><v-icon class="mr-2">mdi-map-marker</v-icon> Location:</v-col>
                 <v-col cols="6">{{activity.location}}</v-col>
-                <v-col ><v-btn v-if="hasPin" v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
-              </v-row>
+                <v-col><v-btn v-if="hasPin" v-on:click="viewOnMap" text small color="primary"><v-icon>mdi-map-marker</v-icon> Show on map </v-btn> </v-col>
+                </v-row>
               <v-row v-if="hasTimeFrame(activity)">
                 <v-col cols="2"><v-icon class="mr-2">mdi-clock-outline</v-icon> Timeframe:</v-col>
                 <v-col md="auto">
@@ -106,8 +108,7 @@
                 <v-col cols="4">Timeframe:</v-col>
                 <v-col cols="8">Activity is continuous</v-col>
               </v-row>
-
-              <v-chip
+                <v-chip
                 class="mr-2 mb-2"
                 v-for="activityType of activity.activity_type"
                 v-bind:key="activityType"
@@ -448,6 +449,25 @@ const Activity = Vue.extend({
       // Populates the datatable that holds all the participants/oraganisers
       this.search();
     },
+
+    isHappeningNow: function(){
+      if(this.activity.end_time !== undefined && this.activity.start_time !== undefined){
+        if(activityController.isFutureDateTime(this.activity.end_time) && !activityController.isFutureDateTime(this.activity.start_time)){
+          return true;
+        }
+      }
+      return false;
+    },
+
+    isInPast: function() {
+      if(this.activity.end_time !== undefined){
+        if(!activityController.isFutureDateTime(this.activity.end_time)){
+          return true;
+        }
+      }
+      return false;
+    },
+
     /**
      * Send the user to the activity's edit page
      */
