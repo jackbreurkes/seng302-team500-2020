@@ -1,25 +1,19 @@
 package com.springvuegradle.endpoints;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.LocalDate;
-import java.util.*;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.exceptions.ExceptionHandlerController;
+import com.springvuegradle.exceptions.InvalidRequestFieldException;
 import com.springvuegradle.model.data.*;
+import com.springvuegradle.model.repository.*;
+import com.springvuegradle.model.responses.ActivityPinResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -37,19 +31,18 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springvuegradle.exceptions.ExceptionHandlerController;
-import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.model.repository.ActivityPinRepository;
-import com.springvuegradle.model.repository.ActivityRepository;
-import com.springvuegradle.model.repository.ProfileRepository;
-import com.springvuegradle.model.repository.SubscriptionRepository;
-import com.springvuegradle.model.repository.UserActivityRoleRepository;
-import com.springvuegradle.model.repository.UserRepository;
-import com.springvuegradle.model.responses.ActivityPinResponse;
 import org.springframework.util.MultiValueMap;
+
+import java.time.LocalDate;
+import java.util.*;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EnableAutoConfiguration
 @AutoConfigureMockMvc(addFilters = false)
@@ -540,28 +533,28 @@ public class MapsControllerTest {
 
         List<ActivityPin> pins = new ArrayList<>();
 
-        // Create first activity - should be recommended
         Activity activity1 = new Activity("Activity 1", false, "Location", creatorProfile, activityTypes);
-        activity1.setActivityTypes(activityTypes);
+        activity1.setId(1L);
         ActivityPin pin1 = new ActivityPin(activity1, 8, 8, 0f, 0f, 0f, 0f);
         pins.add(pin1);
         Mockito.when(subscriptionRepository.isSubscribedToActivity(activity1.getId(), senderProfile)).thenReturn(false);
 
-        // Create second activity - should be recommended
         Activity activity2 = new Activity("Activity 2", false, "Location", creatorProfile, activityTypes);
-        activity2.setActivityTypes(new HashSet<>(activityTypes));
+        activity2.setId(2L);
         ActivityPin pin2 = new ActivityPin(activity2, 8, 8, 0f, 0f, 0f, 0f);
         pins.add(pin2);
         Mockito.when(subscriptionRepository.isSubscribedToActivity(activity2.getId(), senderProfile)).thenReturn(false);
 
-        // Create third activity - should not be recommended as has no activity types that match user's interests
         Activity activity3 = new Activity("Activity 3", false, "Location", creatorProfile, new HashSet<>());
+        activity3.setId(3L);
         ActivityPin pin3 = new ActivityPin(activity3, 8, 8, 0f, 0f, 0f, 0f);
         pins.add(pin3);
         Mockito.when(subscriptionRepository.isSubscribedToActivity(activity3.getId(), senderProfile)).thenReturn(false);
 
         Mockito.when(activityPinRepository.findPinsInBounds(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), any()))
                 .thenReturn(pins);
+        Mockito.when(activityRepository.findRecommendedActivitiesByProfile(Mockito.any(Profile.class)))
+                .thenReturn(Arrays.asList(activity1, activity2));
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                 .get("/maps")
@@ -577,6 +570,11 @@ public class MapsControllerTest {
 
         String responseJson = result.getResponse().getContentAsString();
         List<ActivityPinResponse> response = objectMapper.readValue(responseJson, new TypeReference<>() {});
+
+        ArgumentCaptor<Profile> captor = ArgumentCaptor.forClass(Profile.class);
+        Mockito.verify(activityRepository).findRecommendedActivitiesByProfile(captor.capture());
+        assertEquals(1, captor.getAllValues().size());
+        assertEquals(senderProfile, captor.getValue());
 
         assertEquals(3, response.size());
         assertTrue(response.get(0).getIsRecommended());

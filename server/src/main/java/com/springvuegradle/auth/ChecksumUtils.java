@@ -1,10 +1,10 @@
 package com.springvuegradle.auth;
 
+import com.springvuegradle.model.data.User;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import com.springvuegradle.model.data.User;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class ChecksumUtils {
 	 */
 	public static String hashPassword(long userId, String plaintextPassword) throws NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		String toChecksum = String.valueOf(userId) + plaintextPassword; //userid as salt for added security
+		String toChecksum = userId + plaintextPassword; //userid as salt for added security
 		byte[] hash = digest.digest(toChecksum.getBytes(StandardCharsets.UTF_8));
 		return bytesToHex(hash);
 	}
@@ -48,7 +48,7 @@ public class ChecksumUtils {
 	 */
 	public static String generateToken(long userId) throws NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-512");
-		String toChecksum = String.valueOf(userId) + "-" + String.valueOf(System.currentTimeMillis());
+		String toChecksum = userId + "-" + System.currentTimeMillis();
 		byte[] hash = digest.digest(toChecksum.getBytes(StandardCharsets.UTF_8));
 		return bytesToHex(hash);
 	}
@@ -70,4 +70,10 @@ public class ChecksumUtils {
 	    }
 	    return new String(hexChars);
 	}
+
+	/**
+	 * private constructor to hide the implicit public constructor.
+	 * used because this is a utility class with only static methods, so should never be instantiated.
+	 */
+	private ChecksumUtils() {}
 }
