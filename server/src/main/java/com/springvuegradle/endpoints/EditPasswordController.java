@@ -23,7 +23,7 @@ import java.util.Optional;
 @RestController
 public class EditPasswordController {
 
-    int ADMIN_USER_MINIMUM_PERMISSION = 120;
+    private final int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     @Autowired
     private UserRepository userRepository;

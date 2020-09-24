@@ -16,6 +16,7 @@ public enum ActivityRole {
      */
     private final String friendlyName;
 
+    @Override
     public String toString() {
         return jsonName.toUpperCase();
     }

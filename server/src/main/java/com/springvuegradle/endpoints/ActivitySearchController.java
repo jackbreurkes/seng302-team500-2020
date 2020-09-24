@@ -2,7 +2,6 @@ package com.springvuegradle.endpoints;
 
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.InvalidRequestFieldException;
-import com.springvuegradle.exceptions.RecordNotFoundException;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Activity;
 import com.springvuegradle.model.repository.ActivityRepository;
@@ -45,7 +44,7 @@ public class ActivitySearchController {
         ArrayList<String> searchTerms = new ArrayList<>(Arrays.asList(requestSearchTerms));
         //Expecting frontend to strip/split strings appropriate, for both quotation marks and space separated. Pages start at 0
         List<String> queryTerms = searchTerms.stream().filter(term -> term.length() > 0).collect(Collectors.toList());
-        if(queryTerms.size() == 0){
+        if(queryTerms.isEmpty()) {
             throw new InvalidRequestFieldException("No non-empty search terms were entered");
         }
         if (page < 0) {
