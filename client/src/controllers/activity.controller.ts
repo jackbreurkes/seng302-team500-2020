@@ -84,7 +84,6 @@ export async function validateLocation(location : string){
   return locationObject;
 }
 
-
 /**
  * Edit an activity
  * @param createActivityRequest Data related to the activity to edit

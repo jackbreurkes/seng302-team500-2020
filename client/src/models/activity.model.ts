@@ -142,7 +142,7 @@ export async function getActivityOrganisers(activityId: number): Promise<UserApi
  */
 export async function getActivityRole(profileId: number, activityId: number): Promise<string> {
   let res;
-  res = await instance.get(`/activities/${activityId}/roles/${profileId}`)
+  res = await instance.get(`/activities/${activityId}/roles/${profileId}`);
   return res.data;
 }
 

@@ -252,7 +252,7 @@
                 <v-row justify="end">
                   <v-btn @click="cancelButtonClicked" class="ma-1" width="100" outlined>Cancel</v-btn>
 
-                  <div v-if="this.isEditing">
+                  <div v-if="this.isEditing && this.isCreator">
                     <v-dialog v-model="confirmDeleteModal" width="290">
                       <template v-slot:activator="{ on }">
                         <v-btn v-on="on" color="error" class="ma-1" width="100" outlined>Delete</v-btn>
@@ -304,6 +304,7 @@ import * as userSearch from "../controllers/userSearch.controller";
 import { UserApiFormat } from "../scripts/User";
 // eslint-disable-next-line no-unused-vars
 import { LocationCoordinatesInterface } from '../scripts/LocationCoordinatesInterface';
+import { getMyUserId } from "../services/auth.service"
 
 // app Vue instance
 const CreateActivity = Vue.extend({
@@ -320,6 +321,7 @@ const CreateActivity = Vue.extend({
       organiserEmail: "",
       organisers: [] as UserApiFormat[],
       isEditing: false as boolean,
+      isCreator: true as boolean,
       editingId: NaN as number,
       currentProfileId: NaN as number,
       startDate: "",
@@ -411,9 +413,12 @@ const CreateActivity = Vue.extend({
         .getActivityOrganisers(this.editingId)
         .then(organisers => {
           this.organisers = organisers;
+          //checking if each organiser is the creaotr
+          this.organisers.forEach(this.checkIsCreator);
         })
         .catch(() => {});
     }
+
     this.checkOutcomesLength();
   },
 
@@ -450,7 +455,11 @@ const CreateActivity = Vue.extend({
         return;
       }
     },
-
+    checkIsCreator: function(user: UserApiFormat){
+      if(user.profile_id === getMyUserId()){
+        this.isCreator = false;
+      }
+    },
     /**
      * removes an organiser from the activity.
      * @param organiserToDelete the organiser to remove from the activity
