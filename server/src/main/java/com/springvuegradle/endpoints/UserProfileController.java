@@ -242,7 +242,7 @@ public class UserProfileController {
             }
 		} else if (searchedLastname != null && !searchedLastname.equals("")) {
             if(searchedMiddlename != null && !searchedMiddlename.equals("")){
-                profiles = profileRepository.findByMiddleNameStartingWithIgnoreCaseAndFirstNameStartingWithIgnoreCase(searchedMiddlename, searchedLastname);
+                profiles = profileRepository.findByMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(searchedMiddlename, searchedLastname);
             }else{
                 profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
             }

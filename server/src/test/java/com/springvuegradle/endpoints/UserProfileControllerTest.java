@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.json.JSONParser;
+import org.apache.tomcat.util.json.ParseException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -499,7 +501,55 @@ class UserProfileControllerTest {
 
         assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
-    
+
+    @Test
+    void testGetUserByFirstAndMiddleName() throws Exception {
+        String middleName = "David";
+        String firstName = "Alex";
+        Profile profile = new Profile(new User(1), firstName, "AAA", LocalDate.EPOCH, Gender.MALE);
+        profile.setMiddleName(middleName);
+        List<Profile> profileList = Collections.singletonList(profile);
+        Mockito.when(profileRepository.findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(firstName, middleName)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("middlename", middleName)
+                .queryParam("firstname", firstName)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
+    }
+
+    @Test
+    void testGetUserByLastAndMiddleName() throws Exception {
+        String middleName = "David";
+        String lastName = "Alex";
+        Profile profile = new Profile(new User(1), "AAA", lastName, LocalDate.EPOCH, Gender.MALE);
+        profile.setMiddleName(middleName);
+        List<Profile> profileList = Collections.singletonList(profile);
+        Mockito.when(profileRepository.findByMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(middleName, lastName)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("middlename", middleName)
+                .queryParam("lastname", lastName)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
+    }
+
     @Test
     public void testGetUserByFullFullnameWithMiddleName() throws Exception {
     	
