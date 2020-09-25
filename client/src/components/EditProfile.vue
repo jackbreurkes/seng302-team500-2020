@@ -164,7 +164,7 @@
 
               <v-row justify="end">
                 <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
-                <v-btn @click="saveButtonClicked" color="primary" class="ma-1 mr-3" width="150">Save profile</v-btn>
+                <v-btn @click="saveButtonClicked" color="primary" class="ma-1 mr-3" width="150" :loading="isSubmitting">Save profile</v-btn>
               </v-row>
               <br />
             </v-card-text>
@@ -216,7 +216,7 @@
               <br /><br />
               <v-row justify="end">
                 <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
-                <v-btn id="updateEmail" @click="updateEmail()" color="primary" class="ma-1 mr-3" width="150">Save emails</v-btn>
+                <v-btn id="updateEmail" @click="updateEmail()" color="primary" class="ma-1 mr-3" width="150" :loading="isSubmitting">Save emails</v-btn>
               </v-row>
             </v-card-text>
           </v-card>
@@ -256,7 +256,7 @@
                 <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
                 <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
                 <v-row justify="end">
-                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary" class="mr-3">Update password</v-btn>
+                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary" class="mr-3" :loading="isSubmitting">Update password</v-btn>
                 </v-row>
               </v-form>
               <!-- insert edit email and edit password forms here -->
@@ -345,7 +345,8 @@ const Homepage = Vue.extend({
       repeatPassword: "",
       passwordErrorMessage: "",
       passwordSuccessMessage: "",
-      confirmDeleteModal: false
+      confirmDeleteModal: false,
+      isSubmitting: false as boolean
     };
   },
 
@@ -504,6 +505,7 @@ const Homepage = Vue.extend({
       if (
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
+        this.isSubmitting = true;
         profileController
           .persistChangesToProfile(this.editedUser, this.currentProfileId)
           .then(() => {
@@ -512,9 +514,10 @@ const Homepage = Vue.extend({
           .catch((e) => {
             alert(e.message);
           })
-          .then(() => {
+          .finally(() => {
+            this.isSubmitting = false;
             this.$root.$emit('refreshMapAndPins');
-          });
+          })
       }
     },
 
@@ -533,12 +536,14 @@ const Homepage = Vue.extend({
          if (this.editedUser.additional_email === undefined) {
            this.editedUser.additional_email = [];
          }
+         this.isSubmitting = true;
         profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
           .then(() => {
             // refresh the page after updating emails
             history.go(0);
           })
-          .catch(err => console.log(err));
+          .catch(err => console.log(err))
+          .finally(() => {this.isSubmitting = false;});
       }
     },
 
@@ -599,6 +604,7 @@ const Homepage = Vue.extend({
 
       if (this.newPassword != this.repeatPassword) return;
 
+      this.isSubmitting = true;
       profileController
         .updatePassword(
           this.oldPassword,
@@ -611,6 +617,9 @@ const Homepage = Vue.extend({
         })
         .catch((err: any) => {
           this.passwordErrorMessage = err.message;
+        })
+        .finally(() => {
+          this.isSubmitting = false;
         });
 
       this.oldPassword = "";
