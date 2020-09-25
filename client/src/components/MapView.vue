@@ -262,7 +262,12 @@
           }
           positionsOfNewPins[position.lat].push(position.lon);
           
-          let potentialFoundMarker = this.displayedMarkers.find(element => element.getPosition().lat() == position.lat && element.getPosition().lng() == position.lon);
+          const epsilon = 0.00005;
+          let potentialFoundMarker = this.displayedMarkers.find(element => {
+            return Math.abs(element.getPosition().lat() - position.lat) < epsilon
+            && Math.abs(element.getPosition().lng() - position.lon) < epsilon;
+          });
+
           let highestRole = this.isShowingSearchResults ? 3 : PinsController.getHighestRoleIndex(pins);
 
           if (potentialFoundMarker !== undefined) {
