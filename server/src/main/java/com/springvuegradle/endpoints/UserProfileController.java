@@ -235,9 +235,19 @@ public class UserProfileController {
                 && searchedLastname != null && !searchedLastname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
 		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
-            profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
-        } else if (searchedLastname != null && !searchedLastname.equals("")) {
-            profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+		    //TODO
+            if(searchedMiddlename != null && !searchedMiddlename.equals("")){
+                profiles = profileRepository.findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(searchedFirstname, searchedMiddlename);
+            }else{
+                profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
+            }
+		} else if (searchedLastname != null && !searchedLastname.equals("")) {
+		    //TODO
+            if(searchedMiddlename != null && !searchedMiddlename.equals("")){
+                profiles = profileRepository.findByMiddleNameStartingWithIgnoreCaseAndFirstNameStartingWithIgnoreCase(searchedMiddlename, searchedLastname);
+            }else{
+                profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+            }
         } else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && !searchedEmail.equals("")) {
