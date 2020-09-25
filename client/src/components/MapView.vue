@@ -346,7 +346,12 @@
         this.displayedActivities = [];
         for (let activityIndex in allActivities) {
           let activityId = allActivities[activityIndex];
-          let activity = await getActivityById(activityId.activity_id);
+          let activity;
+          try {
+            activity = await getActivityById(activityId.activity_id);
+          } catch (e) {
+            continue; // activity not loaded, do not attempt to display
+          }
           this.displayedActivities.push(activity);
         }
 
