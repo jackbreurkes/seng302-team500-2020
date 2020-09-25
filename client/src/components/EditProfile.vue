@@ -234,6 +234,7 @@
                   dense
                   filled
                   required
+                  v-if="!isAdmin"
                 ></v-text-field>
                 <v-text-field
                   v-model="newPassword"
@@ -278,7 +279,7 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import {updateActivityTypes} from "../models/user.model"
-import { clearAuthInfo } from "../services/auth.service";
+import { clearAuthInfo, isAdmin } from "../services/auth.service";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -288,6 +289,7 @@ const Homepage = Vue.extend({
     let formValidator = new FormValidator();
     return {
       titleBarUserName: "",
+      isAdmin: false as Boolean,
       currentProfileId: NaN as number,
       editedUser: {} as UserApiFormat,
       inputRules: {
@@ -360,6 +362,7 @@ const Homepage = Vue.extend({
       // profile id in route not a number
       this.$router.push({ name: "login" });
     }
+    this.isAdmin = isAdmin();
     this.currentProfileId = profileId;
     profileController.fetchProfileWithId(profileId)
       .then(user => {
