@@ -1,15 +1,5 @@
 package com.springvuegradle.endpoints;
 
-import java.security.NoSuchAlgorithmException;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.springvuegradle.auth.UserAuthorizer;
 import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import com.springvuegradle.model.data.Email;
@@ -17,6 +7,15 @@ import com.springvuegradle.model.data.User;
 import com.springvuegradle.model.repository.EmailRepository;
 import com.springvuegradle.model.repository.UserRepository;
 import com.springvuegradle.model.responses.UserResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Process GET /whoami
@@ -37,8 +36,12 @@ public class WhoAmIController {
     private EmailRepository emailRepository;
 
     private final short SUPER_ADMIN_USER_PERMISSION = 127;
-    private final String SUPER_ADMIN_EMAIL = "super@admin.com";
-    private final String SUPER_ADMIN_PASSWORD = "IncludeActuals5348";
+
+    @Value("${super_admin_email}")
+    private String superAdminEmailAddress;
+
+    @Value("${super_admin_password}")
+    private String superAdminPassword;
 	
     /**
      * Calls checkStartUpAdmin method
@@ -66,13 +69,13 @@ public class WhoAmIController {
             
             superAdmin = userRepository.getSuperAdmin().get(0);	// Will fail here in tests if no mocking is used
             try {
-                superAdmin.setPassword(SUPER_ADMIN_PASSWORD);
+                superAdmin.setPassword(superAdminPassword);
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
             userRepository.save(superAdmin);
 
-            Email superAdminEmail = new Email(superAdmin, SUPER_ADMIN_EMAIL, true);
+            Email superAdminEmail = new Email(superAdmin, superAdminEmailAddress, true);
             emailRepository.save(superAdminEmail);
             emailRepository.findByEmail(superAdminEmail.getEmail()).setIsPrimary(true);
         } else {

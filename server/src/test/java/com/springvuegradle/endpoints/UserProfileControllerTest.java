@@ -5,12 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springvuegradle.model.responses.HomeFeedResponse;
 import org.apache.tomcat.util.json.JSONParser;
+import org.apache.tomcat.util.json.ParseException;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -80,6 +86,9 @@ class UserProfileControllerTest {
     private RoleRepository roleRepository;
     @MockBean
     private ChangeLogRepository changeLogRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Creates the user profile controller and inserts the mocks we define in the place of the repositories
@@ -499,7 +508,55 @@ class UserProfileControllerTest {
 
         assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
     }
-    
+
+    @Test
+    void testGetUserByFirstAndMiddleName() throws Exception {
+        String middleName = "David";
+        String firstName = "Alex";
+        Profile profile = new Profile(new User(1), firstName, "AAA", LocalDate.EPOCH, Gender.MALE);
+        profile.setMiddleName(middleName);
+        List<Profile> profileList = Collections.singletonList(profile);
+        Mockito.when(profileRepository.findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(firstName, middleName)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("middlename", middleName)
+                .queryParam("firstname", firstName)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
+    }
+
+    @Test
+    void testGetUserByLastAndMiddleName() throws Exception {
+        String middleName = "David";
+        String lastName = "Alex";
+        Profile profile = new Profile(new User(1), "AAA", lastName, LocalDate.EPOCH, Gender.MALE);
+        profile.setMiddleName(middleName);
+        List<Profile> profileList = Collections.singletonList(profile);
+        Mockito.when(profileRepository.findByMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(middleName, lastName)).thenReturn(profileList);
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles")
+                .queryParam("middlename", middleName)
+                .queryParam("lastname", lastName)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ArrayList<LinkedHashMap<String, Object>> body = getResultListJson(result.getResponse().getContentAsString());
+        LinkedHashMap<String, Object> profileFound = body.get(0);
+
+        assertEquals(BigInteger.valueOf(1L), profileFound.get("profile_id"));
+    }
+
     @Test
     public void testGetUserByFullFullnameWithMiddleName() throws Exception {
     	
@@ -852,6 +909,36 @@ class UserProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isNumber());
+    }
+
+    @Test
+    public void testGetProfileLocation_AuthorizedButNoProfileLocation_ReturnsLocationWithNaNLatLon() throws Exception {
+        long profileId = 1;
+        long authId = 2;
+
+        Profile profile = new Profile(new User(profileId), "First", "Last", LocalDate.EPOCH, Gender.NON_BINARY);
+
+        Mockito.when(profileRepository.existsById(profileId)).thenReturn(true);
+        Mockito.when(profileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        User authUser = Mockito.mock(User.class);
+        Mockito.when(authUser.getPermissionLevel()).thenReturn(0);
+        Mockito.when(userRepository.findById(authId)).thenReturn(Optional.of(authUser));
+
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
+                .get("/profiles/" + profileId + "/latlon")
+                .requestAttr("authenticatedid", authId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lat").isString())  // lat and lon are NaN if no location exists
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lon").isString())  // NaN is considered a string
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        Map<String, String> recommendationResponses = objectMapper.readValue(responseJson, new TypeReference<>() {});
+
+        assertEquals("NaN", recommendationResponses.get("lat"));
+        assertEquals("NaN", recommendationResponses.get("lon"));
     }
 
     @Test

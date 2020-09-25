@@ -64,6 +64,8 @@ deploy-test-server:
     - sed -i "s/DB_URL/$SQL_URL\/$SQL_TEST_DATABASE/g" /home/gitlab-runner/runTestServer.sh
     - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" /home/gitlab-runner/runTestServer.sh
     - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/SUPER_ADMIN_EMAIL/$SUPER_ADMIN_EMAIL/g" /home/gitlab-runner/runTestServer.sh
+    - sed -i "s/SUPER_ADMIN_PWD/$SUPER_ADMIN_PWD/g" /home/gitlab-runner/runTestServer.sh
     - sudo systemctl restart testServer
   only:
     - dev
@@ -101,6 +103,8 @@ deploy-prod-server:
     - sed -i "s/DB_URL/$SQL_URL\/$SQL_PROD_DATABASE/g" /home/gitlab-runner/runProdServer.sh
     - sed -i "s/DB_USERNAME/$SQL_USERNAME/g" /home/gitlab-runner/runProdServer.sh
     - sed -i "s/DB_PASSWORD/$SQL_PASSWORD/g" /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/SUPER_ADMIN_EMAIL/$SUPER_ADMIN_EMAIL/g" /home/gitlab-runner/runProdServer.sh
+    - sed -i "s/SUPER_ADMIN_PWD/$SUPER_ADMIN_PWD/g" /home/gitlab-runner/runProdServer.sh
     - sudo systemctl restart prodServer
   only:
     - tags

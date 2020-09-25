@@ -60,6 +60,7 @@
       </div>
   </v-col>
     <v-data-table
+    onmouseover="" style="cursor: pointer;"
     :no-data-text="noDataText"
     :headers="headers"
     :items="users"

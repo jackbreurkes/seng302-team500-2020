@@ -235,9 +235,17 @@ public class UserProfileController {
                 && searchedLastname != null && !searchedLastname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
 		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
-            profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
-        } else if (searchedLastname != null && !searchedLastname.equals("")) {
-            profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+            if(searchedMiddlename != null && !searchedMiddlename.equals("")){
+                profiles = profileRepository.findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(searchedFirstname, searchedMiddlename);
+            }else{
+                profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
+            }
+		} else if (searchedLastname != null && !searchedLastname.equals("")) {
+            if(searchedMiddlename != null && !searchedMiddlename.equals("")){
+                profiles = profileRepository.findByMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(searchedMiddlename, searchedLastname);
+            }else{
+                profiles = profileRepository.findByLastNameStartingWithIgnoreCase(searchedLastname);
+            }
         } else if (searchedFullname != null && !searchedFullname.equals("")) {
 			profiles = getUsersByFullname(searchedFullname);
 		} else if (searchedEmail != null && !searchedEmail.equals("")) {
@@ -429,7 +437,8 @@ public class UserProfileController {
     }
 
     /**
-     * Handles viewing another profile including its location details (latitude, longitude)
+     * Handles viewing another profile including its location details (latitude, longitude).
+     * Location returned will have lat and lon values of NaN if the user does not have a location added to their profile.
      * @param profileId profile id to view
      * @return response entity to be sent to the client
      */
@@ -440,6 +449,10 @@ public class UserProfileController {
         if (optionalProfile.isPresent()) {
             Profile profile = optionalProfile.get();
             Location location = profile.getLocation();
+
+            if (location == null) {
+                return new GeoPosition(Float.NaN, Float.NaN);
+            }
 
             if (location.getLatitude() == null || location.getLongitude() == null) {
             	Location newLocation = location.lookupAndValidate();

@@ -38,11 +38,11 @@
                       v-model="editedUser.fitness"
                       label="Fitness Level"
                       :mandatory="false">
-                      <v-radio label="Muffin (no fitness)" :value="0"></v-radio>
-                      <v-radio label="Potato (little fitness)" :value="1"></v-radio>
-                      <v-radio label="Carrot (moderate fitness)" :value="2"></v-radio>
-                      <v-radio label="Blueberry (outdoors enthusiast)" :value="3"></v-radio>
-                      <v-radio label="Kale (fitness fanatic)" :value="4"></v-radio>
+                      <v-radio label="No Fitness (Chocolate Muffin)" :value="0"></v-radio>
+                      <v-radio label="Little Fitness (Fruit Muffin)" :value="1"></v-radio>
+                      <v-radio label="Moderate Fitness (Nut Muffin)" :value="2"></v-radio>
+                      <v-radio label="Enthusiastically Fit (Kale Muffin)" :value="3"></v-radio>
+                      <v-radio label="Crazy Fit (No Muffin)" :value="4"></v-radio>
                       <v-radio label="Unspecified" :value="-1"></v-radio>
                     </v-radio-group>
                   </v-container-fluid>
@@ -107,7 +107,7 @@
                   ></v-date-picker>
                 </v-menu>
                 <v-container>
-                  <v-card-title>Set your Location:<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1">Clear Current Location</v-btn></v-card-title>
+                  <v-card-title>Set your Location<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1" text color="primary">Clear Current Location</v-btn></v-card-title>
                   <v-row>
                     <v-col cols="8" sm="4">
                       <v-text-field
@@ -164,7 +164,7 @@
 
               <v-row justify="end">
                 <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
-                <v-btn @click="saveButtonClicked" color="primary" class="ma-1 mr-3" width="150">Save profile</v-btn>
+                <v-btn @click="saveButtonClicked" color="primary" class="ma-1 mr-3" width="150" :loading="isSubmitting">Save profile</v-btn>
               </v-row>
               <br />
             </v-card-text>
@@ -216,7 +216,7 @@
               <br /><br />
               <v-row justify="end">
                 <v-btn @click="returnToProfile" class="ma-1" outlined width="150">Cancel</v-btn>
-                <v-btn id="updateEmail" @click="updateEmail()" color="primary" class="ma-1 mr-3" width="150">Save emails</v-btn>
+                <v-btn id="updateEmail" @click="updateEmail()" color="primary" class="ma-1 mr-3" width="150" :loading="isSubmitting">Save emails</v-btn>
               </v-row>
             </v-card-text>
           </v-card>
@@ -234,6 +234,7 @@
                   dense
                   filled
                   required
+                  v-if="!isAdmin"
                 ></v-text-field>
                 <v-text-field
                   v-model="newPassword"
@@ -256,7 +257,7 @@
                 <v-alert type="error" v-if="passwordErrorMessage">{{ passwordErrorMessage }}</v-alert>
                 <v-alert type="success" v-if="passwordSuccessMessage">{{ passwordSuccessMessage }}</v-alert>
                 <v-row justify="end">
-                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary" class="mr-3">Update password</v-btn>
+                  <v-btn id="updatePassword" @click="updatePasswordButtonClicked" color="primary" class="mr-3" :loading="isSubmitting">Update password</v-btn>
                 </v-row>
               </v-form>
               <!-- insert edit email and edit password forms here -->
@@ -278,7 +279,7 @@ import FormValidator from "../scripts/FormValidator";
 // eslint-disable-next-line no-unused-vars
 import { RegisterFormData } from "../controllers/register.controller";
 import {updateActivityTypes} from "../models/user.model"
-import { clearAuthInfo } from "../services/auth.service";
+import { clearAuthInfo, isAdmin } from "../services/auth.service";
 // app Vue instance
 const Homepage = Vue.extend({
   name: "Homepage",
@@ -288,6 +289,7 @@ const Homepage = Vue.extend({
     let formValidator = new FormValidator();
     return {
       titleBarUserName: "",
+      isAdmin: false as Boolean,
       currentProfileId: NaN as number,
       editedUser: {} as UserApiFormat,
       inputRules: {
@@ -345,7 +347,8 @@ const Homepage = Vue.extend({
       repeatPassword: "",
       passwordErrorMessage: "",
       passwordSuccessMessage: "",
-      confirmDeleteModal: false
+      confirmDeleteModal: false,
+      isSubmitting: false as boolean
     };
   },
 
@@ -359,6 +362,7 @@ const Homepage = Vue.extend({
       // profile id in route not a number
       this.$router.push({ name: "login" });
     }
+    this.isAdmin = isAdmin();
     this.currentProfileId = profileId;
     profileController.fetchProfileWithId(profileId)
       .then(user => {
@@ -504,6 +508,7 @@ const Homepage = Vue.extend({
       if (
         (this.$refs.editForm as Vue & { validate: () => boolean }).validate()
       ) {
+        this.isSubmitting = true;
         profileController
           .persistChangesToProfile(this.editedUser, this.currentProfileId)
           .then(() => {
@@ -512,9 +517,10 @@ const Homepage = Vue.extend({
           .catch((e) => {
             alert(e.message);
           })
-          .then(() => {
+          .finally(() => {
+            this.isSubmitting = false;
             this.$root.$emit('refreshMapAndPins');
-          });
+          })
       }
     },
 
@@ -533,12 +539,14 @@ const Homepage = Vue.extend({
          if (this.editedUser.additional_email === undefined) {
            this.editedUser.additional_email = [];
          }
+         this.isSubmitting = true;
         profileController.updateUserEmails(this.editedUser.primary_email, this.editedUser.additional_email, this.currentProfileId)
           .then(() => {
             // refresh the page after updating emails
             history.go(0);
           })
-          .catch(err => console.log(err));
+          .catch(err => console.log(err))
+          .finally(() => {this.isSubmitting = false;});
       }
     },
 
@@ -599,6 +607,7 @@ const Homepage = Vue.extend({
 
       if (this.newPassword != this.repeatPassword) return;
 
+      this.isSubmitting = true;
       profileController
         .updatePassword(
           this.oldPassword,
@@ -611,6 +620,9 @@ const Homepage = Vue.extend({
         })
         .catch((err: any) => {
           this.passwordErrorMessage = err.message;
+        })
+        .finally(() => {
+          this.isSubmitting = false;
         });
 
       this.oldPassword = "";

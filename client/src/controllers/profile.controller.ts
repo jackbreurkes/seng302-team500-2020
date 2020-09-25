@@ -245,7 +245,12 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
  */
 export async function getProfileLocation(profileId: number): Promise<LocationCoordinatesInterface | null> {
     try {
-        return await getUserLocation(profileId);
+        let location =  await getUserLocation(profileId);
+        if (isNaN(location.lat) || isNaN(location.lon)) {
+            return null;
+        } else {
+            return location;
+        }
     } catch (e) {
         return null;
     }
@@ -267,7 +272,7 @@ export async function persistChangesToProfile(updatedProfile: UserApiFormat, pro
             location = `${city},${state},${country}`
         }
         if (!(await checkCountryValidity(location))) {
-            throw new Error("Location is not a city")
+            throw new Error("The location you entered could not be found.")
 
         } else if (city !== "" && state !== "" && country !== ""){
             let validLocation: LocationInterface = {city, state, country};

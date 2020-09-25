@@ -5,8 +5,11 @@
       <ActivityCard :activityName="activity.activity_name" :activityLocation="activity.location" :activityDescription="activity.description" :isContinuous="activity.continuous" :activityStartTime="activity.start_time" :activityEndTime="activity.end_time" :activityType="activity.activity_type" :activityId="activity.activity_id" :creatorId="activity.creator_id" :authority="hasAuthority" ></ActivityCard>
     </v-card>
   </div>
-  <div v-else>
+  <div v-else-if="hasAuthority">
         <p>You haven't created any activities in the {{tabState}} time category yet - <router-link :to="{ name: 'createActivity', params: { profileId: this.userId }}"><p>Click here to make one!</p></router-link></p>
+  </div>
+  <div v-else>
+        <p>This user hasnt created any actvities in the {{tabState}} category yet</p>
   </div>
 </template>
 

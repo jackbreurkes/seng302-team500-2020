@@ -116,7 +116,7 @@ public class HomeFeedController {
     @GetMapping("/{profileId}/recommendations")
     @CrossOrigin
     public List<HomeFeedResponse> getActivitySuggestions(@PathVariable("profileId") long profileId, HttpServletRequest httpRequest)
-            throws UserNotAuthorizedException, UserNotAuthenticatedException, InvalidRequestFieldException, RecordNotFoundException {
+            throws UserNotAuthorizedException, UserNotAuthenticatedException, RecordNotFoundException {
 
         UserAuthorizer.getInstance().checkIsTargetUser(httpRequest, profileId);
 

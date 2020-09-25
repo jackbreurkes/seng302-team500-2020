@@ -17,6 +17,8 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
     public Optional<Profile> findById(User user);
 	public List<Profile> findByNickNameStartingWithIgnoreCase(String nickname);
 	public List<Profile> findByFirstNameStartingWithIgnoreCase(String firstname);
+	public List<Profile> findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(String firstname, String middlename);
+	public List<Profile> findByMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(String middlname, String lastname);
 	public List<Profile> findByLastNameStartingWithIgnoreCase(String lastname);
 	public List<Profile> findByFirstNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(String firstname, String lastname);
 	public List<Profile> findByFirstNameStartingWithIgnoreCaseAndMiddleNameStartingWithIgnoreCaseAndLastNameStartingWithIgnoreCase(String firstname, String middlename, String lastname);

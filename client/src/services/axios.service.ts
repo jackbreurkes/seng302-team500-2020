@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as auth from "./auth.service";
+import log from "./logger.service";
 
 const SERVER_URL = process.env.VUE_APP_SERVER_ADD;
 
@@ -43,7 +44,7 @@ instance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       auth.clearAuthInfo();
     }
-    console.error(error);
+    log(error, "error");
     error.message = axiosErrorToMessage(error);
     return Promise.reject(error);
   }

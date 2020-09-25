@@ -3,6 +3,8 @@ package com.springvuegradle.endpoints;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.springvuegradle.exceptions.RecordNotFoundException;
+import com.springvuegradle.exceptions.UserNotAuthenticatedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,18 +26,18 @@ public class LogoutController {
 
 	@DeleteMapping("/logmeout")
 	@CrossOrigin
-	public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) throws UserNotAuthenticatedException, RecordNotFoundException {
 		if (request.getAttribute("authenticatedid") == null) {
-			return ResponseEntity.status(401).body(new ErrorResponse("You are not logged in"));
+			throw new UserNotAuthenticatedException("You are not logged in");
 		}
 
 		String token = request.getHeader("X-Auth-Token");
 		if (token == null) {
-			return ResponseEntity.status(HttpStatus.resolve(401)).body(new ErrorResponse("user not logged in"));
+			throw new UserNotAuthenticatedException("user not logged in");
 		}
 
 		if (!sessionRepo.existsById(token)) {
-			return ResponseEntity.status(HttpStatus.resolve(404)).body(new ErrorResponse("session not found"));
+			throw new RecordNotFoundException("session not found");
 		}
 
 		sessionRepo.deleteById(token);
