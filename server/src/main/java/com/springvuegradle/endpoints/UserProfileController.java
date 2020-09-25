@@ -235,14 +235,12 @@ public class UserProfileController {
                 && searchedLastname != null && !searchedLastname.equals("")) {
 			profiles = getUsersByNamePieces(searchedFirstname, searchedMiddlename, searchedLastname);
 		} else if (searchedFirstname != null && !searchedFirstname.equals("")) {
-		    //TODO
             if(searchedMiddlename != null && !searchedMiddlename.equals("")){
                 profiles = profileRepository.findByFirstNameStartingIgnoreCaseWithAndMiddleNameStartingWithIgnoreCase(searchedFirstname, searchedMiddlename);
             }else{
                 profiles = profileRepository.findByFirstNameStartingWithIgnoreCase(searchedFirstname);
             }
 		} else if (searchedLastname != null && !searchedLastname.equals("")) {
-		    //TODO
             if(searchedMiddlename != null && !searchedMiddlename.equals("")){
                 profiles = profileRepository.findByMiddleNameStartingWithIgnoreCaseAndFirstNameStartingWithIgnoreCase(searchedMiddlename, searchedLastname);
             }else{
