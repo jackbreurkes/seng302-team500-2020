@@ -3,6 +3,7 @@
   <p class="pl-1" style="color: red">{{ errorMessage }}</p>
 
     <v-data-table
+    onmouseover="" style="cursor: pointer;"
     :no-data-text="noDataText"
     :headers="headers"
     :items="results"
