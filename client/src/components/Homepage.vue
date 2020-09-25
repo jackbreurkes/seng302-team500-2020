@@ -76,7 +76,9 @@
                 <p v-if="currentUser.location.state === undefined"> Current Location: {{ currentUser.location.city }}, {{ currentUser.location.country }}</p>
                 <br />
                 </div>
-  
+                   <p v-if="currentUser.location === undefined && currentUser.activities.length === 0">
+                     Did you know you can get recommended activities by adding <br> a location and interests to your profile? <router-link to="" v-on:click.native="editProfile"> Click Here! </router-link>
+                  </p>
                 <div v-if="currentlyHasAuthority">
                   <p class="mb-0">Primary email: {{ currentUser.primary_email }}</p>
                   <div v-if="currentUser.additional_email && currentUser.additional_email.length > 0">

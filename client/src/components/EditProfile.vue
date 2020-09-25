@@ -107,7 +107,7 @@
                   ></v-date-picker>
                 </v-menu>
                 <v-container>
-                  <v-card-title>Set your Location:<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1">Clear Current Location</v-btn></v-card-title>
+                  <v-card-title>Set your Location<v-btn v-if="editedUser.location.city !== ''" @click="clearLocation" class="ml-1" text color="primary">Clear Current Location</v-btn></v-card-title>
                   <v-row>
                     <v-col cols="8" sm="4">
                       <v-text-field
