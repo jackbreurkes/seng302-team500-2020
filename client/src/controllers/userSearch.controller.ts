@@ -7,27 +7,35 @@ export async function searchUsers(searchTerms: Dictionary<string>) {
   }
 
 export function getShortenedActivitiesString(activities: string[], searchTerms : Dictionary<string>){
+
   let activitiesString = "";
-  //here not working
-  if(searchTerms["activity"] !== undefined){
-    //activities
+
+  if(searchTerms["activity"] !== undefined){    // If the user is searching by activity interests
     const tempSearchActivities : string [] = searchTerms["activity"].split(" ");
-    tempSearchActivities.forEach(element => {
-      if(activities.includes(element) && activities.length < 3){
-        activitiesString += element + ", ";
+    let total_added = 0;
+
+    for (let i = 0; total_added < 3 && i < tempSearchActivities.length; i++) {
+      if (activities.includes(tempSearchActivities[i])) {     // If the activity is an interest of the user
+        activitiesString = activitiesString + tempSearchActivities[i] + ", ";
+        total_added++;
       }
-    });
-    return activitiesString.trim().substring(0, activitiesString.length-2);
-  }else{
-    if (activities == undefined || activities.length == 0) {
+    }
+    activitiesString = activitiesString.substring(0, activitiesString.length-2);
+    if (activities.length > total_added) {    // If the user has more activities still
+      activitiesString += "...";
+    }
+    return activitiesString;
+
+  }else{    // The user is searching either by name, nickname, or email
+    if (activities == undefined || activities.length == 0) {  // They have no activities
       return "";
-    } else if (activities.length <= 3) {
+    } else if (activities.length <= 3) {    // Has less than 3 activities so include all in summary
       for (let activityIndex in activities) {
         activitiesString = activitiesString + activities[activityIndex] + ", ";
       }
       activitiesString = activitiesString.substring(0, activitiesString.length-2);
       return activitiesString;
-    } else {
+    } else {      // Get only the first three activities for the interests summary
       for (let i = 0; i < 3; i++) {
         activitiesString = activitiesString + activities[i] + ", ";
       }
