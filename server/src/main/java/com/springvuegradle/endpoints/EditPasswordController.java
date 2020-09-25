@@ -23,7 +23,7 @@ import java.util.Optional;
 @RestController
 public class EditPasswordController {
 
-    private final int ADMIN_USER_MINIMUM_PERMISSION = 120;
+    static final int ADMIN_USER_MINIMUM_PERMISSION = 120;
 
     @Autowired
     private UserRepository userRepository;
@@ -83,7 +83,7 @@ public class EditPasswordController {
 
         //all completed checks apply to both admin user and normal user
 
-        if(!(editingUser.get().getPermissionLevel() > ADMIN_USER_MINIMUM_PERMISSION)){
+        if(editingUser.get().getPermissionLevel() <= ADMIN_USER_MINIMUM_PERMISSION){
             //admin can edit
             //assuming user does not have the correct permission levels but is editing their own profile
             if (updatePasswordRequest.getOldPassword() == null) {
