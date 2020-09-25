@@ -245,7 +245,12 @@ export async function removeAndSaveActivityType(activityType: string, profileId:
  */
 export async function getProfileLocation(profileId: number): Promise<LocationCoordinatesInterface | null> {
     try {
-        return await getUserLocation(profileId);
+        let location =  await getUserLocation(profileId);
+        if (isNaN(location.lat) || isNaN(location.lon)) {
+            return null;
+        } else {
+            return location;
+        }
     } catch (e) {
         return null;
     }

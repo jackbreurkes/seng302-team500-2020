@@ -429,7 +429,8 @@ public class UserProfileController {
     }
 
     /**
-     * Handles viewing another profile including its location details (latitude, longitude)
+     * Handles viewing another profile including its location details (latitude, longitude).
+     * Location returned will have lat and lon values of NaN if the user does not have a location added to their profile.
      * @param profileId profile id to view
      * @return response entity to be sent to the client
      */
@@ -440,6 +441,10 @@ public class UserProfileController {
         if (optionalProfile.isPresent()) {
             Profile profile = optionalProfile.get();
             Location location = profile.getLocation();
+
+            if (location == null) {
+                return new GeoPosition(Float.NaN, Float.NaN);
+            }
 
             if (location.getLatitude() == null || location.getLongitude() == null) {
             	Location newLocation = location.lookupAndValidate();
