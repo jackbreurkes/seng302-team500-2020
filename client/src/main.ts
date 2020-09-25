@@ -98,6 +98,20 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
+  //checks if the user is going to an edit profile page which is not their own
+  //and if so redirects to homefeed
+  if(to.name === "editProfile" && !auth.isAdmin() && parseInt(to.params.profileId) !== auth.getMyUserId()){
+    next({name: "homefeed"});
+    return;
+  }
+
+  //checks if a user is trying to go to a unnamed route and if so
+  //they are redirected to the homefeed
+  if(to.name === null){
+    next({name: "homefeed"});
+    return;
+  }
+
   next();
 });
 
